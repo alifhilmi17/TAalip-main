@@ -11,7 +11,7 @@
   <!-- Menyiapkan halaman mendukung karakter universal dan tata letak untuk HP / Laptop -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+
   <!-- Judul bar atas memori Browser -->
   <title>LIBAS - Akses Masuk</title>
 
@@ -41,9 +41,9 @@
   <!-- Pengelompokan seluruh kontainer kotak Login di sumbu tengah. -->
   <div class="login-wrapper">
     <div class="login-card">
-      
+
       <!-- Efek Lampu Sorot (Spotlight) menyoroti kartu saat mouse melewati / mengitari elemen. -->
-      <div class="card-spotlight"></div> 
+      <div class="card-spotlight"></div>
 
       <!-- Judul dan Arahan Singkat Panel Login -->
       <h2>Selamat Datang Kembali!</h2>
@@ -51,11 +51,11 @@
 
       <!-- Pemicu mekanisme Login, secara palsu/prototipe langsung membanting arah menuju Dasbor saat disubmit -->
       <form action="dashboardTAalip.html" method="get" id="loginForm">
-        
+
         <!-- Field 1: Formulir Isian Nama Identitas -->
         <div class="input-group">
-          <label for="username">Username Kredensial</label>
-          <input type="text" id="username" placeholder="Masukkan ID atau nama unik Anda" autocomplete="off" required>
+          <label for="username">Username Akses</label>
+          <input type="text" id="username" placeholder="Masukkan username Anda" autocomplete="off" required>
         </div>
 
         <!-- Field 2: Formulir Isian Kata Kunci Rahasia -->
@@ -63,7 +63,7 @@
           <label for="password">Kata Sandi (Password)</label>
           <div class="password-wrapper">
             <input type="password" id="password" placeholder="Masukkan kode sandi yang valid" required>
-            
+
             <!-- Tombol Interaktif berbentuk Ikon Mata (untuk mengintip kelalaian ketik password) -->
             <span class="toggle-password" id="togglePassword" title="Tampilkan / Sembunyikan Sandi">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -89,7 +89,7 @@
           <a href="index.html" style="font-size: 13px; opacity: 0.8;">← Kembali ke Beranda Utama</a>
         </p>
       </div>
-    
+
     </div> <!-- Penutup Login Card -->
   </div> <!-- Penutup Wrapper Login -->
 
@@ -100,7 +100,7 @@
   </div>
 
   <!-- Memanggil Logic JS perihal Efek Spotlight Kaca, Animasi Hover Ayam, dan Toggle Mata Sandi -->
-  <script src="js/login-interactive.js"></script>
+  <script type="module" src="js/login-interactive.js"></script>
 
 </body>
 

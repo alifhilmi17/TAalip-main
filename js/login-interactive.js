@@ -4,6 +4,9 @@
    Deskripsi: Script khusus yang memberikan efek interaktif 
    serta animasi lucu pada halaman Login (Otentikasi).
 ========================================================= */
+import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { auth, db } from "./firebase-init.js";
 
 // Semua instruksi baru boleh dijalankan apabila struktur HTML layar selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
@@ -118,30 +121,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================
-    // 5. ANIMASI LOADING & AYAM LARI SAAT MASUK KE SISTEM
+    // 5. ANIMASI LOADING & AYAM LARI SAAT MASUK KE SISTEM DENGAN FIREBASE
     // =========================================
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             // JANGAN langsung memindahkan layar, cegat dengan Event Prevent ini
             e.preventDefault(); 
 
             // Pasangkan stempel gaya CSS loading ke tombolnya untuk mengganti tulisan ke logo putar
             loginBtn.classList.add('loading');
 
-            // --- EASTER EGG LIBAS: Keluarkan anak ayam lari ----
-            const chickenOverlay = document.getElementById('chicken-overlay');
-            if (chickenOverlay) {
-                // Menambahkan kelas 'active' merangsang fungsi pindak layer objek ayam dari luar layar (hide to show)
-                chickenOverlay.classList.add('active');
-            }
+            // Menangkap nilai teks (value) username dan kata sandi yang telah diketikkan pengguna
+            const usernameVal = document.getElementById('username').value.trim();
+            const passwordVal = document.getElementById('password').value;
 
-            // Menunggu si ayam menyebrang beresih ke kanan (Skenario simulasi memakan 3 detik).
-            // Anda bisa mengganti ini dengan pengecekan database tulen jika API tersedia nantinya.
-            setTimeout(() => {
-                // Setelah tuntas, pindahkan halaman layaknya redirect asli
-                const action = loginForm.getAttribute('action'); // Menangkap href HTML
-                window.location.href = action; // 'dashboardTAalip.html'
-            }, 3000); 
+            try {
+                // 1. Tarik email asli dari database karena Firebase Auth butuh Email bukan Username
+                const usersRef = collection(db, "user");
+                const q = query(usersRef, where("username", "==", usernameVal));
+                const querySnapshot = await getDocs(q);
+
+                // Jika username terketik tidak ditemukan rekamannya di database
+                if (querySnapshot.empty) {
+                    throw { code: 'auth/user-not-found' }; 
+                }
+
+                // Jika ditemukan, bedah datanya dan ekstrak emailnya
+                const actualEmail = querySnapshot.docs[0].data().email;
+
+                // 2. Proses krusial: Memeriksa dan mencocokkan kredensial dengan database Firebase
+                // signInWithEmailAndPassword akan melempar error jika email tak ada atau sandi salah
+                await signInWithEmailAndPassword(auth, actualEmail, passwordVal);
+
+                // --- EASTER EGG LIBAS: Keluarkan anak ayam lari ----
+                const chickenOverlay = document.getElementById('chicken-overlay');
+                if (chickenOverlay) {
+                    chickenOverlay.classList.add('active');
+                }
+
+                // Setelah berhasil masuk, jalankan animasi sebentar lalu alihkan
+                setTimeout(() => {
+                    const action = loginForm.getAttribute('action'); 
+                    window.location.href = action || 'dashboardTAalip.html';
+                }, 3000);
+
+            } catch (error) {
+                // Tahap penanganan jika Firebase menolak akses (gagal login)
+                // Hapus stempel (class) 'loading' supaya tombol bisa ditekan kembali
+                loginBtn.classList.remove('loading');
+                
+                // Menerjemahkan kode error pelik dari Firebase menjadi Bahasa Indonesia
+                // yang ramah agar pengguna peternak bisa paham kesalahannya di mana
+                let errorMsg = "Terjadi kesalahan.";
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMsg = "Username atau sandi yang Anda masukkan salah, mohon periksa kembali.";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMsg = "Terlalu banyak percobaan gagal beruntun. Coba lagi beberapa saat.";
+                } else if (error.code === 'permission-denied') {
+                    errorMsg = "Database tertutup! Buka Firebase Console > Firestore > Rules, ubah bagian 'allow read' menjadi 'if true;' agar sistem bisa mencari Username.";
+                } else {
+                    errorMsg = error.message; // Kalau-kalau ada error darurat lainnya
+                }
+                
+                // Tonjolkan pesan peringatannya di layar
+                alert("Gagal masuk: " + errorMsg);
+            }
         });
     }
 });

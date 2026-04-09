@@ -9,15 +9,49 @@
    serta Algoritma Validasi Ganda untuk fitur ganti kata sandi.
 ========================================================= */
 
+import { onAuthStateChanged, updateProfile, updateEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { auth, db } from "./firebase-init.js";
+
 // =========================================
 // 1. LOGIKA UTAMA (Berjalan Saat Layar Dimuat)
 // Penjelasan: Eksekusi dikaitkan ke Event Listener DOMContentLoaded.
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
     // Definisi variabel dengan mengambil elemen-elemen penting dari HTML berdasarkan ID
+    // Definisi variabel dengan mengambil elemen-elemen penting dari HTML berdasarkan ID
     const form = document.getElementById("editProfileForm");
     const avatarInput = document.getElementById("profileImageUpload");
     const avatarPreview = document.getElementById("profileImagePreview");
+
+    // --- PREFILL DATA AKUN DARI FIREBASE ---
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // Isikan nilai email dari akun yang sedang login
+            document.getElementById("emailAddr").value = user.email || '';
+            // Isikan username dari displayName Auth
+            document.getElementById("username").value = user.displayName || '';
+            
+            // Lakukan penarikan data mendalam dari database Firestore koleksi "user"
+            try {
+                const docRef = doc(db, "user", user.uid);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const profileData = docSnap.data();
+                    // Prefill field fullname dan telepon berdasarkan tangkapan database
+                    document.getElementById("fullName").value = profileData.fullname || '';
+                    document.getElementById("phoneNum").value = profileData.phone || '';
+                }
+            } catch (err) {
+                console.error("Kesalahan membaca dokumen Firestore: ", err);
+            }
+            
+        } else {
+            // Jika tidak ada user login, kembalikan ke layar login
+            window.location.href = "login.html";
+        }
+    });
 
     // -----------------------------------------
     // A. Fitur Live Preview Ganti Foto Profil
@@ -42,14 +76,20 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // -----------------------------------------
-    // B. Fitur Validasi Form & Simpan Perubahan
+    // B. Fitur Validasi Form & Simpan Perubahan ke Firebase
     // -----------------------------------------
     // Mencegat (Intercept) aksi ketika tombol "Simpan" ditekan
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
         e.preventDefault(); // Mencegah reload halaman standar browser
 
+        const user = auth.currentUser;
+        if (!user) return; // Jika mendadak ter-logout
+
         // 1. Ambil teks masukan Profil dengan membuang spasi kosong di ujung (trim)
-        const targetName = document.getElementById("fullName").value.trim();
+        const targetFullName = document.getElementById("fullName").value.trim();
+        const targetUsername = document.getElementById("username").value.trim();
+        const targetEmail = document.getElementById("emailAddr").value.trim();
+        const targetPhone = document.getElementById("phoneNum").value.trim();
 
         // 2. Ambil parameter pengamanan kata sandi (Password)
         const currPass = document.getElementById("currentPass").value;
@@ -58,11 +98,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // --- SISTEM VALIDASI KEAMANAN SEDERHANA ---
         // Pengecekan hanya berjalan apabila user bermaksud mengisi Password Baru.
+        let isChangingPassword = false;
         if (newPass !== "" || confPass !== "") {
+            isChangingPassword = true;
 
             // a. Syarat Wajib: Harus menyertakan Password Lama
             if (currPass === "") {
-                Swal.fire("Peringatan", "Harap masukkan password Anda saat ini untuk mengubah struktur kata sandi.", "warning");
+                Swal.fire("Peringatan", "Harap masukkan password Anda saat ini untuk mengubah seluk-beluk akun/sandi.", "warning");
                 return; // Berhenti memproses simpan
             }
 
@@ -79,55 +121,69 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        // --- APABILA LOLOS VALIDASI: MULAI PROSES PENYIMPANAN ---
+        // Tampilkan loading update
         Swal.fire({
             title: "Menyimpan Perubahan...",
-            html: "Pembaruan profil Anda sedang diproses sistem.",
-            timer: 1500, // Efek pura-pura loading lambat selama 1,5 detik
-            timerProgressBar: true,
-
-            // Animasi Ikon Bulat Memutar Cerdas
+            html: "Memperbarui profil Anda dengan server Firebase.",
+            allowEscapeKey: false,
+            allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
-            },
-
-            // Setelah loading tuntas, munculkan popup sukses hijau!
-            willClose: () => {
-                Swal.fire(
-                    "Sukses!",
-                    `Biodata terbaru atas nama ${targetName} berhasil tersimpan di sistem.`,
-                    "success"
-                ).then(() => {
-                    // Akhiri proses dengan mengarahkan layar kembali ke Menu Utama Dasbor
-                    window.location.href = "dashboardTAalip.html";
-                });
             }
         });
 
+        try {
+            // Update Username di DisplayName Firebase
+            if (targetUsername !== user.displayName) {
+                await updateProfile(user, { displayName: targetUsername });
+            }
+
+            // Update Email jika diganti
+            if (targetEmail !== user.email) {
+                await updateEmail(user, targetEmail);
+            }
+
+            // Update Password jika kolom diisi (Peringatan: Biasanya ini butuh re-autentikasi / re-login ulang)
+            // Sistem akan menangkap error "auth/requires-recent-login" bila login sudah basi
+            if (isChangingPassword) {
+                await updatePassword(user, newPass);
+            }
+
+            // Memperbarui/Memasukkan keseluruhan data teks sinkron ke Firestore
+            // Menggunakan setDoc + merge:true otomatis membuat file baru jika belum ada (terutama user lama)
+            const docRef = doc(db, "user", user.uid);
+            await setDoc(docRef, {
+                fullname: targetFullName,
+                username: targetUsername,
+                email: targetEmail,
+                phone: targetPhone
+            }, { merge: true });
+
+            // Tutup loading dan tampilkan Sukses
+            Swal.fire(
+                "Sukses!",
+                "Informasi akun Anda telah berhasil diperbarui.",
+                "success"
+            ).then(() => {
+                // Akhiri proses dengan mengarahkan layar kembali ke Dasbor
+                window.location.href = "dashboardTAalip.html";
+            });
+
+        } catch (error) {
+            // Menangkap pesan gagal update (khususnya security Firebase)
+            let errorMsg = error.message;
+            if (error.code === 'auth/requires-recent-login') {
+                errorMsg = "Perubahan alamat Email / Password membutuhkan Anda untuk keluar (Logout) terlebih dahulu dan masuk ulang (Re-login) demi alasan keamanan.";
+            } else if (error.code === 'auth/invalid-email') {
+                errorMsg = "Alamat email baru tidak valid.";
+            }
+
+            Swal.fire("Pembaruan Gagal", errorMsg, "error");
+        }
     });
 });
 
 // =========================================
 // 2. FUNGSI TAMBAHAN DI LUAR LINGKUP
 // =========================================
-
-/**
- * Fitur Logout (Keluar Sesi)
- * Menampilkan jendela konfirmasi darurat bilamana pengguna tersasar menekan tombol Logout (jika ada).
- */
-function logoutUser() {
-    Swal.fire({
-        title: "Yakin ingin Logout dari Profil?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, Keluarkan Saya",
-        cancelButtonText: "Batal Keluar",
-        confirmButtonColor: "#d33",  // Merah (Bahaya)
-        cancelButtonColor: "#3085d6" // Biru (Normal)
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Bila disetujui, putuskan sesi dan paksa buang ke halaman Login Awal.
-            window.location.href = "login.html";
-        }
-    });
-}
+// Fungsi logoutUser dihapus dan diserahkan ke auth-state.js secara global.
