@@ -1,0 +1,435 @@
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: login.css
+   Deskripsi: Menangani segala corak desain, gaya warna, dan 
+   tatanan tata letak antarmuka spesial gerbang portal Login.
+========================================================= */
+
+/* =========================================
+   1. REGULASI DASAR
+   ========================================= */
+/* Melenyapkan garis ruang ganjil bawaan dan menerapkan pengekangan ukuran kotak tepi total (Box Sizing) */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif; /* Mengadopsi set font Poppins */
+}
+
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #111; /* Dasar Gelap total penahan latar */
+  overflow: hidden; /* Dilarang merayap/menggulir ke sudut manapun bilau tertusuk konten panjang */
+  perspective: 1000px;
+  /* Kacamata simulasi dimensi kedalaman Z yang memungkinkan kartu login ini dapat "Tilted 3D" */
+}
+
+/* =========================================
+   2. DESAIN TEKSTUR & ELEMEN LATAR BLUR (Background)
+   ========================================= */
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2; /* Urutan layar sangat dasar mundur */
+  overflow: hidden;
+  background: radial-gradient(circle at center, #181824 0%, #0f111a 100%); /* Corak pencahayaan titik kebal menipis */
+}
+
+.shapes-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1; 
+}
+
+/* Deklarasi standar bola buram ber-blur-kasar untuk properti mengapung (Orbs) */
+.shape {
+  position: absolute;
+  border-radius: 50%; /* Mengunci sudut menjadi lingkaran sferikal (bulat) */
+  filter: blur(80px); /* Lensa pengaburan kamera tebal */
+  opacity: 0.5;
+  animation: floatShape 20s infinite ease-in-out alternate;
+}
+
+/* Bola 1: Warna Kuning Oranye */
+.shape-1 {
+  width: 400px;
+  height: 400px;
+  background: #ffcc70; 
+  top: -100px;
+  left: -100px;
+  animation-duration: 15s;
+}
+
+/* Bola 2: Warna Persik/Oranye Pucat (Peach) */
+.shape-2 {
+  width: 500px;
+  height: 500px;
+  background: #ff7e5f;
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -5s; 
+  animation-duration: 20s;
+}
+
+/* Bola 3: Oranye redup yang sangat samar */
+.shape-3 {
+  width: 300px;
+  height: 300px;
+  background: #ffb347; 
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.3;
+  animation-delay: -10s;
+  animation-duration: 18s;
+}
+
+/* Jaring lapis halus meniru "kamera kusam" gaya Noise Overlay. Konsistensi modern estetika */
+.shapes-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opactiy='0.05'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none;
+}
+
+/* Rute perjalanan nafas animasi gerak (Keyframes) latar belakang Orbs */
+@keyframes floatShape {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 30px) scale(1.1); }
+  100% { transform: translate(-30px, 80px) scale(0.9); }
+}
+
+/* =========================================
+   3. LAPITAN PEMBUNGKUS KARTU LOGIN UTAMA
+   ========================================= */
+.login-wrapper {
+  position: relative;
+  width: 380px; /* Standar kekakuan maksimal lebar form di peraga */
+  z-index: 10;
+}
+
+/* Estetika Kotak Formulir meniru tekstur kaca es (CSS Glassmorphism) */
+.login-card {
+  background: rgba(255, 255, 255, 0.03); /* Lapis cat warna putih tembus 3% */
+  backdrop-filter: blur(24px);           /* Syarat wajib pemantul visual belakang agar pudar membeku */
+  -webkit-backdrop-filter: blur(24px);
+  padding: 48px 40px;
+  border-radius: 28px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08); /* Garis potong tepinya bagai kaca dipotong */
+  color: #fff;
+  
+  /* Efek muncul perlahan menyundul naik ke pelukan netra layar */
+  animation: fadeIn 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Lapisan Khusus merambat terang saat kursor mouse mondar mandiri menyeret sorotan bayang */
+.card-spotlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.04), transparent 40%);
+  z-index: 1;
+}
+
+/* Pengubah penulisan huruf Sambutan di Form */
+.login-card h2 {
+  font-weight: 700;
+  font-size: 30px;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.login-card .subtitle {
+  font-size: 14px;
+  color: #a1a1aa; /* Huruf terabaikan diredupkan demi prioritas hierarki baca */
+  margin-bottom: 36px;
+  font-weight: 300;
+}
+
+/* =========================================
+   4. TATA LETAK KOLOM MASUKAN IDENTITAS (Form Input)
+   ========================================= */
+.input-group {
+  text-align: left;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 2;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+  display: block;
+  font-weight: 500;
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  outline: none; /* Coret batas kaku klik seleksi rupa penjelajah (Browser Outline) */
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+/* Perilaku desain ketika pengguna merayapkan kursor ketik di dalam kolom (Focus Mode) */
+.input-group input:focus {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 204, 112, 0.5); /* Aksen kuning cerah garis kolom */
+  box-shadow: 0 0 0 3px rgba(255, 204, 112, 0.2);
+}
+
+.input-group input::placeholder {
+  color: #71717a;
+}
+
+/* Logo Ikon Mata Pengintip Sandi */
+.toggle-password {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-password:hover {
+  opacity: 1;
+}
+
+/* =========================================
+   5. DEKORASI TOMBOL MASUK UTAMA
+   ========================================= */
+.login-btn {
+  width: 100%;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ffcc70 0%, #ff7e5f 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer; /* Tanda jari telunjuk */
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 10px 20px -5px rgba(255, 204, 112, 0.4);
+  margin-top: 16px;
+  z-index: 2;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+/* Sabuk siluet silau pelengkap cahaya mengambang perak pada Tombol Masuk */
+.login-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-20deg) translateX(-150%);
+  transition: all 0.5s ease;
+}
+
+.login-btn:hover::after {
+  transform: skewX(-20deg) translateX(150%);
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 25px -5px rgba(255, 204, 112, 0.5);
+}
+
+.login-btn:active {
+  transform: scale(0.98); /* Efek tombol gepeng seakan dipencet sungguhan */
+}
+
+/* =========================================
+   6. ELEMEN PENGANTAR (Loading Wheel Anim)
+   ========================================= */
+/* Model Lingkaran Putar Menanti Proses Server */
+.loader {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top: 3px solid #fff;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+  display: none; /* Standarnya elemen berputar ini lenyap tersembunyi */
+  margin-left: 10px;
+}
+
+/* Ketika parameter javascript menembak status "loading" aktif */
+.login-btn.loading .btn-text {
+  display: none; /* Lenyapkan teks "Masuk" */
+}
+
+.login-btn.loading .loader {
+  display: block; /* Munculkan Lingkaran Putar Mengerjakan perintah */
+}
+
+/* Memandu laju gerakan derajat melingkari poros jarum jam (Kincir Bebas) */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================================
+   7. SEKSI TAUTAN EXTRA & BALIK ARAH
+   ========================================= */
+.extra-links {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #ddd;
+}
+
+.extra-links a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+  position: relative;
+}
+
+/* Sentuhan artistik rel garis bawahi link jika disinggahi mouse cursor */
+.extra-links a::after {
+  content: '';
+  width: 0;
+  height: 2px;
+  background: #fff;
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  transition: 0.3s;
+}
+
+.extra-links a:hover::after {
+  width: 100%;
+}
+
+/* =========================================
+   8. SUNTIKAN ANIMASI "AYAM BERLARI" (EASTER EGG)
+   ========================================= */
+#chicken-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none; /* Tak bisa disentuh/tersentuh (Hanya bayangan lewa)t */
+  z-index: 1000;
+  display: none; /* Tertidur/sembunyi jika keadaan sistem damai biasa */
+}
+
+/* Siap tayang saat momen login tertrigger loading */
+#chicken-overlay.active {
+  display: block;
+}
+
+/* Format Dimensi kotak potongan gambar sprite ayam berjalan kuno ala pixelated */
+.chicken {
+  width: 100px;
+  height: 100px;
+  /* Mengambil mentahan asset */
+  background-image: url('../images/chicken_running-removebg-preview.png');
+  background-repeat: no-repeat;
+  background-size: 200% 200%; /* Peta Grid aset Sprite animasi frame by frame */
+  position: absolute;
+  bottom: 20px;
+  left: -150px;
+  image-rendering: pixelated; /* Cegah foto blur akibat pecah skala piksel kecil (Penting untuk gaya retro pixel-art) */
+}
+
+/* Memainkan pemotongan kotak per bagian sprite (Mirip buku flip-flop gerak kartun sekuen) */
+@keyframes runSprite {
+  0% { background-position: 0% 0%; }
+  25% { background-position: 100% 0%; }
+  50% { background-position: 0% 100%; }
+  75% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* Membuat patokan lintas perpindahan melintas jarak horizontal lajur layarnya */
+@keyframes moveRight {
+  0% { left: -150px; }
+  100% { left: 110%; /* Ayam menerjang keluar ke sudut pembuangan layar kanan lepas tandas */ }
+}
+
+/* Mengikat gabungan semua atraksi ke dalam wujud yang dikombinasi saat disulut memanggil .active */
+#chicken-overlay.active .chicken {
+  animation:
+    runSprite 0.4s steps(1) infinite, /* Mengepak dan melangkah cepat bersirkulasi per-millisek */
+    moveRight 3s linear forwards;     /* Mengusirnya jalan lurus maju merobos layar memakan 3 detik */
+}
+
+/* =========================================
+   9. POLA ANIMASI RIAK GELOMBANG BATU (Ripple) DI TOMBOL KLIK
+   ========================================= */
+.ripple {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border-radius: 50%;
+  animation: rippleAnim 0.6s linear;
+}
+
+/* Buih membesar dan hilang menipis meracuni klik user */
+@keyframes rippleAnim {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 300px;
+    height: 300px;
+    opacity: 0;
+  }
+}

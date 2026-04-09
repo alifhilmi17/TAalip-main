@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- ========================== -->
+    <!-- BAGIAN KEPALA (HEAD)       -->
+    <!-- Menyimpan metadata, serta mengaitkan font dan stylesheet -->
+    <!-- ========================== -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Input Produksi - LIBAS</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <link rel="stylesheet" href="css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="css/inputproduksi.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+      <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
+
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+        </div>
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html" > Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="true">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu open" id="produksiSubmenu" aria-hidden="false">
+          <a href="inputproduksi.html" class="active">📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="#">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name">Alep</p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+
+    </div>
+  </aside>
+
+    <!-- ========================= KONTEN UTAMA ========================== -->
+    <!-- Menampung selimut utama tempat letak interface pengguna bekerja -->
+    <main class="main-content">
+        <!-- Bagian Kop Halaman: Menampilkan Judul dan Tombol Aksi "Tambah" -->
+        <header class="page-header animate__animated animate__fadeInDown">
+            <div class="header-text">
+                <h2>📝 Input Produksi Harian</h2>
+                <p>Catat hasil produksi telur setiap kandang per harinya</p>
+            </div>
+            <button class="btn-primary animate__animated animate__pulse animate__infinite"
+                onclick="openProduksiModal()">
+                ➕ Tambah Produksi
+            </button>
+        </header>
+
+        <!-- Bagian Statistik Ringkas: Menampilkan kartu ringkasan telur otomatis -->
+        <section class="quick-stats produksi-stats animate__animated animate__fadeInUp">
+            <div class="stat-card">
+                <div class="stat-icon">🥚</div>
+                <div class="stat-info">
+                    <h4>Total Telur</h4>
+                    <p id="totalTelurHariIni">0 Butir</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h4>Telur Baik</h4>
+                    <p id="totalTelurBaik">0 Butir</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">❌</div>
+                <div class="stat-info">
+                    <h4>Telur Cacat/Pecah</h4>
+                    <p id="totalTelurCacat">0 Butir</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bagian Tabel Data: Menampilkan riwayat pencatatan harian yang bisa difilter -->
+        <section class="data-produksi-section animate__animated animate__fadeInUp">
+            <div class="table-container shadow-card">
+                <div class="table-header">
+                    <h3>📋 Histori Produksi Harian</h3>
+                    <div class="table-actions">
+                        <label for="filterTanggal" class="filter-label">Filter Tanggal:</label>
+                        <input type="date" id="filterTanggal" class="filter-input" onchange="filterTable()"
+                            title="Filter Tanggal">
+                        <button class="btn-filter" onclick="resetFilter()">Semua Data</button>
+                        <button class="btn-export" onclick="downloadLaporanCSV()" title="Unduh Laporan Data Produksi">📥
+                            Ekspor CSV</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="produksiTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Batch</th>
+                                <th>Jenis Telur</th>
+                                <th>Kandang</th>
+                                <th>Telur Baik</th>
+                                <th>Telur Cacat</th>
+                                <th>Total Telur</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produksiTableBody">
+                            <!-- Data dimuat dari JS -->
+                        </tbody>
+                    </table>
+                    <div id="emptyState" class="empty-state">
+                        <span class="empty-icon">📂</span>
+                        <p>Belum ada data produksi. Silakan tambah data baru!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================= MODAL / POP-UP FORMULIR ========================== -->
+    <!-- Kotak dialog melayang, dipanggil saat "Tambah Produksi" atau "Edit" ditekan -->
+    <div id="produksiModal" class="modal">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Data Produksi</h3>
+                <button class="close-btn" onclick="closeProduksiModal()">&times;</button>
+            </div>
+            <form id="produksiForm" onsubmit="saveProduksiData(event)">
+                <input type="hidden" id="produksiId">
+
+                <!-- ===== FIELD BATCH (Diisi dinamis dari data dataAyamTAalip) ===== -->
+                <div class="form-group">
+                    <label for="batchProduksi">Batch Ayam</label>
+                    <select id="batchProduksi" required onchange="autoFillFromBatch()">
+                        <option value="" disabled selected>Pilih Batch Ayam...</option>
+                        <!-- Diisi otomatis oleh JavaScript dari data dataAyamData -->
+                    </select>
+                    <small class="hint-text">*Data batch diambil dari halaman Data Ayam</small>
+                </div>
+
+                <!-- Tanggal: diisi & dikunci otomatis saat batch dipilih -->
+                <div class="form-group">
+                    <label for="tglProduksi">Tanggal Masuk Batch</label>
+                    <input type="date" id="tglProduksi" required readonly
+                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;pointer-events:none;"
+                        title="Terisi otomatis dari data batch yang dipilih">
+                    <small class="hint-text" id="tglHint">⬆️ Pilih batch terlebih dahulu</small>
+                </div>
+
+                <!-- Kandang: diisi & dikunci otomatis saat batch dipilih -->
+                <div class="form-group">
+                    <label for="kandangProduksi">Kandang</label>
+                    <!-- Hidden input sebagai backup agar nilai kandang tetap terkirim saat select disabled -->
+                    <input type="hidden" id="kandangProduksiHidden" name="kandangProduksiHidden">
+                    <select id="kandangProduksi" required disabled
+                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;">
+                        <option value="" disabled selected>— otomatis dari batch —</option>
+                        <option value="Kandang A (Utara)">Kandang A (Utara)</option>
+                        <option value="Kandang B (Timur)">Kandang B (Timur)</option>
+                        <!--<option value="Kandang C (Selatan)">Kandang C (Selatan)</option>-->
+                    </select>
+                    <small class="hint-text" id="kandangHint">⬆️ Pilih batch terlebih dahulu</small>
+                </div>
+
+                <!-- Jenis Telur Ayam: diisi & dikunci otomatis saat batch dipilih -->
+                <div class="form-group">
+                    <label for="jenisTelurProduksi">Jenis Telur Ayam</label>
+                    <input type="text" id="jenisTelurProduksi" readonly placeholder="— otomatis dari batch —"
+                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;pointer-events:none;"
+                        title="Terisi otomatis dari data batch yang dipilih">
+                    <small class="hint-text" id="jenisHint">⬆️ Pilih batch terlebih dahulu</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="telurBaik">Jumlah Telur Baik (Butir)</label>
+                    <input type="number" id="telurBaik" min="0" required oninput="calculateTotal()">
+                </div>
+
+                <div class="form-group">
+                    <label for="telurCacat">Jumlah Telur Cacat/Pecah (Butir)</label>
+                    <input type="number" id="telurCacat" min="0" required oninput="calculateTotal()">
+                </div>
+
+                <div class="form-group">
+                    <label for="totalTelur">Total Telur (Butir)</label>
+                    <input type="number" id="totalTelur" readonly
+                        style="background-color: #e2e8f0; font-weight: bold; pointer-events: none;">
+                </div>
+
+                <!--  <div class="form-group">
+                    <label for="beratTotal">Total Berat (Kg)</label>
+                    <input type="number" step="0.1" id="beratTotal" placeholder="Contoh: 15.5" required>
+                </div> -->
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeProduksiModal()">Batal</button>
+                    <button type="submit" class="btn-primary">💾 Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================= KUMPULAN SCRIPT JS ========================== -->
+    <!-- Skrip Utama Pengendali Seluruh Logika Halaman Input Produksi -->
+    <script src="js/inputproduksi.js"></script>
+</body>
+
+</html>

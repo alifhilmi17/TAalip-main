@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- Pengaturan metadata halaman dan resolusi layar yang ramah mobile -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBAS - Edit Profil</title>
+
+    <!-- Mengimpor Google Fonts (Poppins) agar tulisan UI terlihat bersih dan modern -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Memanggil Script SweetAlert2 untuk menangani interaksi Notifikasi / Pop-up -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Memanggil CSS Khusus untuk mengatur struktur antarmuka halaman profil -->
+    <link rel="stylesheet" href="css/editProfileTAalip.css">
+</head>
+
+<body>
+
+    <!-- ========================= WADAH KESELURUHAN EDIT PROFIL ========================== -->
+    <!-- Kontainer utama dengan sentuhan animasi ringan ('FadeIn') sewaktu pertama kali terbuka -->
+    <div class="edit-profile-container animate__animated animate__fadeIn">
+        
+        <!-- ========================= HEADER KEPALA PROFIL ========================== -->
+        <!-- Bagian atas kartu form yang berisi foto, tombol balik, dan warna gradasi judul -->
+        <div class="profile-header">
+            <!-- Elemen kosongan untuk membuat desain motif arsiran atau overlay pudar. -->
+            <div class="header-overlay"></div>
+            
+            <!-- Tombol Navigasi Cepat untuk Pindah ke Halaman Dasbor Utama -->
+            <a href="dashboardTAalip.html" class="back-btn" title="Kembali ke Dashboard">&#8592; Kembali</a>
+            
+            <!-- Elemen Lingkaran Foto Diri (Avatar) -->
+            <div class="profile-avatar-container">
+                <!-- Frame bundar penampil foto wajah Profil -->
+                <img src="images/Screenshot.png" alt="Foto Profil Anda" id="profileImagePreview">
+                
+                <!-- Ikon Tombol Kamera tersembunyi yang merangsang input file upload saat diklik -->
+                <label for="profileImageUpload" class="camera-icon" title="Ubah Foto Profil">📷</label>
+                <!-- Area Pilih File Sesungguhnya (Sengaja digelapkan/disembunyikan dari visual 'display: none') -->
+                <input type="file" id="profileImageUpload" accept="image/*" style="display: none;">
+            </div>
+
+            <!-- Teks Sambutan di Bawah Avatar -->
+            <h2>Edit Profil Peternak</h2>
+            <p>Perbarui informasi akun dan kredensial Anda di sini</p>
+        </div>
+
+        <!-- ========================= FORMULIR MERUBAH PROFIL ========================== -->
+        <!-- Elemen Form Utama pengguna mengunggah update data diri ke database sistem -->
+        <form id="editProfileForm" class="profile-form">
+            <!-- Pengelompokan baris masukan menjadi format CSS Grid (Kiri vs Kanan) -->
+            <div class="form-grid">
+                
+                <!-- 1. Kolom Sebelah Kiri: Area Perubahan Informasi Pribadi (Biodata) -->
+                <div class="form-section">
+                    <h3>Informasi Dasar</h3>
+                    
+                    <div class="input-group">
+                        <label for="fullName">Nama Lengkap</label>
+                        <input type="text" id="fullName" placeholder="Masukkan nama lengkap" value="Alep" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="username">Username Kredensial</label>
+                        <input type="text" id="username" placeholder="Masukkan username" value="alep_peternak" required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="emailAddr">Alamat Email Akses</label>
+                        <input type="email" id="emailAddr" placeholder="contoh@embail.com" value="alep@peternakan.com"
+                            required>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="phoneNum">Nomor Telepon Seluler</label>
+                        <input type="tel" id="phoneNum" placeholder="08xxxxxxxxxx" value="081234567890">
+                    </div>
+                </div>
+
+                <!-- 2. Kolom Sebelah Kanan: Area Sensitif (Ganti Kunci Rahasia / Password) -->
+                <div class="form-section password-section">
+                    <h3>Ganti Password <span class="badge-optional">(Opsional)</span></h3>
+                    <p class="section-desc">Peringatan: Kosongkan bagian ini jika Anda tidak ingin merubah sandi saat ini.</p>
+                    
+                    <div class="input-group">
+                        <label for="currentPass">Kata Sandi (Password) Saat Ini</label>
+                        <input type="password" id="currentPass" placeholder="Ketik kata sandi lama untuk diverifikasi">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="newPass">Kata Sandi Baru</label>
+                        <input type="password" id="newPass" placeholder="Buat kata sandi baru (Abaikan Jika Tidak Diubah)">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="confirmPass">Konfirmasi Kata Sandi Baru</label>
+                        <input type="password" id="confirmPass" placeholder="Ketik ulang kata sandi baru sekali lagi">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================= AREA TOMBOL PENYIMPANAN ========================== -->
+            <!-- Tombol pelatuk konfirmasi untuk menyetorkan isian tabel menjadi aksi Update -->
+            <div class="form-actions">
+                <button type="submit" class="save-btn">Simpan Perubahan Data</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Menautkan Script Logika Javascript agar Preview Gambar berfungsi -->
+    <script src="js/editProfileTAalip.js"></script>
+</body>
+
+</html>

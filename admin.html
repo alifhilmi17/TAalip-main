@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <!-- ========================= META & TITLE ========================== -->
+  <!-- Pengaturan dasar halaman dan judul tab browser -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Lintau Buo Administration System</title>
+
+  <!-- ========================= FONT & ANIMASI ========================== -->
+  <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <!-- ========================= CSS KUSTOM ========================== -->
+  <!-- Memuat gaya desain spesifik. Menggunakan ulang dashboard css sebagai dasar -->
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+
+  <!-- ========================= LIBRARY ========================== -->
+  <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
+
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+        </div>
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html" > Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html" >📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="#">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name">Alep</p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ========================= KONTEN UTAMA ADMIN ========================== -->
+  <main class="main-content">
+
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🛡️ Admin Panel</div>
+      <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+        aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
+
+    <!-- ===== KARTU SAMBUTAN ADMIN ===== -->
+    <section class="welcome-card admin-welcome animate__animated animate__fadeInDown">
+      <h2>Ringkasan Seluruh Sistem 🛡️</h2>
+      <p>Akses manajemen pengguna, pantau performa, dan sinkronisasi modul aplikasi peternakan.</p>
+    </section>
+
+    <!-- ===== KARTU STATISTIK GLOBAL (SUPER ADMIN) ===== -->
+    <section class="quick-stats animate__animated animate__fadeInUp">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <h4>Pengguna Aktif</h4>
+          <p id="stat-user">3 Orang</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🐓</div>
+        <div class="stat-info">
+          <h4>Total Ayam Terpantau</h4>
+          <p id="stat-admin-ayam">- Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h4>Total Transaksi Global</h4>
+          <p id="stat-admin-uang">- Transaksi</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏦</div>
+        <div class="stat-info">
+          <h4>Saldo Keuangan Terkini</h4>
+          <p id="stat-admin-prediksi">Rp 0</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== DAFTAR MODUL APLIKASI ===== -->
+    <section class="modules-grid animate__animated animate__fadeInUp">
+      <h3>🧩 Manajemen Modul Fitur</h3>
+      <div class="module-cards">
+
+        <!-- Modul Ayam -->
+        <div class="module-card">
+          <div class="mod-icon">🐓</div>
+          <h4>Modul Data Ayam</h4>
+          <p>Melihat dan menghapus data ayam, mortalitas, serta kandang.</p>
+          <a href="dataAyamTAalip.html" class="mod-btn">Buka Aplikasi</a>
+        </div>
+
+        <!-- Modul Keuangan -->
+        <div class="module-card">
+          <div class="mod-icon">💵</div>
+          <h4>Modul Keuangan</h4>
+          <p>Memantau saldo akhir pakan, biaya operasional, dan arus kas harian.</p>
+          <a href="keuangan.html" class="mod-btn">Buka Aplikasi</a>
+        </div>
+
+        <!-- Modul Prediksi -->
+        <div class="module-card">
+          <div class="mod-icon">📈</div>
+          <h4>Modul Prediksi</h4>
+          <p>Mengatur input variabel untuk engine machine learning produksi telur.</p>
+          <a href="prediksihasil.html" class="mod-btn">Buka Aplikasi</a>
+        </div>
+
+        <!-- UI Pengguna Utama -->
+        <div class="module-card">
+          <div class="mod-icon">📱</div>
+          <h4>Dashboard Pengguna</h4>
+          <p>Preview antarmuka utama yang dilihat oleh pekerja kandang.</p>
+          <a href="dashboardTAalip.html" class="mod-btn">Preview UI</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== SNAPSHOT DATA TERKINI ===== -->
+    <section class="office-admin animate__animated animate__fadeInUp" style="grid-template-columns: 1fr 1fr;">
+
+      <!-- Panel Ringkasan Ayam -->
+      <div class="schedule-card" style="align-self:stretch;">
+        <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">🐓 Snapshot Batch Ayam</h3>
+        <div class="schedule-content">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Batch</th>
+                <th>Jenis</th>
+                <th>Status</th>
+                <th>Sisa Populasi</th>
+              </tr>
+            </thead>
+            <tbody id="adminAyamSnapshot">
+              <!-- Diisi via admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Panel Ringkasan Keuangan -->
+      <div class="schedule-card" style="align-self:stretch;">
+        <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">💵 5 Transaksi Terakhir</h3>
+        <div class="schedule-content">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th>Tipe</th>
+                <th>Nominal</th>
+              </tr>
+            </thead>
+            <tbody id="adminKeuanganSnapshot">
+              <!-- Diisi via admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ===== LOG SISTEM (MOCKUP ADMIN) ===== -->
+    <section class="system-logs animate__animated animate__fadeInUp">
+      <div class="logs-container">
+        <h3>📋 Log Sistem & Aktivitas Pengguna (Terbaru)</h3>
+        <table class="logs-table">
+          <thead>
+            <tr>
+              <th>Waktu Aktual</th>
+              <th>User</th>
+              <th>Modul Fitur</th>
+              <th>Detail Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="systemLogBody">
+            <!-- Data akan diisi via admin.js (dummy activity based on localstorage) -->
+          </tbody>
+        </table>
+        <button class="clear-logs-btn" onclick="clearLogs()">Hapus Log Sistem</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================= SCRIPT UTAMA ADMIN ========================== -->
+  <script src="js/admin.js"></script>
+</body>
+
+</html>

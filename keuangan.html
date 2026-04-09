@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- Pengaturan metadata dasar dan viewport untuk responsivitas -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manajemen Data Keuangan - LIBAS</title>
+
+    <!-- Mengimpor font eksternal (Poppins) dan animasi (Animate.css) -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- File CSS untuk layout tampilan utama dan desain halaman keuangan -->
+    <link rel="stylesheet" href="css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="css/keuangan.css" />
+
+    <!-- Mengimpor library SweetAlert2 untuk menampilkan pop-up notifikasi yang menarik -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR NAVIGASI: Menu utama di sebelah kiri layar -->
+    <aside class="sidebar" aria-label="Sidebar Navigasi">
+        <div class="sidebar-content">
+
+            <!-- Logo Aplikasi -->
+            <h2 class="logo">🐔 LIBAS</h2>
+
+            <!-- ===== NAVIGASI UTAMA ===== -->
+            <nav class="main-nav">
+
+                <!-- ===== MENU Dashboard ===== -->
+                <a href="dashboardTAalip.html" class="active" title="Dashboard">🏠 Dashboard</a>
+
+                <!-- ===== SUBMENU Data Ayam ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+                    📊 Data Ayam <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+                    <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
+                    <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
+                </div>
+
+                <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+                    Rekomendasi Prediktif <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+                    <a href="prediksihasil.html"> Prediksi Hasil </a>
+                </div>
+
+                <!-- ===== SUBMENU Produksi ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+                    🥚 Produksi <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+                    <a href="inputproduksi.html">📝 Input Produksi Harian</a>
+                    <!--<a href="#">📜 Histori Penggunaan Pakan</a>-->
+                </div>
+
+                <!-- ===== SUBMENU Persediaan ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+                    📦 Persediaan <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+                    <a href="stokpakan.html">🥬 Stok Pakan</a>
+                    <a href="#">⏰ Restock Reminder</a>
+                    <!--<a href="#">📜 Histori Penggunaan Pakan</a>-->
+                </div>
+
+                <!-- ===== SUBMENU Keuangan ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+                    💵 Keuangan <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+                    <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+                    <!--<a href="#">📊 Laporan Laba/Rugi</a>-->
+                </div>
+
+                <!-- ===== SUBMENU Dokumen ===== -->
+                <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+                    📂 Dokumen <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+                    <a href="dokumen.html">📄 Pusat Dokumen</a>
+                    <!--<a href="#">🥚 Dokumen Produksi</a>
+          <a href="#">📦 Dokumen Persediaan</a>
+          <a href="#">💵 Dokumen Keuangan</a>
+          <a href="#">📊 Laporan Laba/Rugi</a>
+          <a href="#">📤 Ekspor Laporan</a>-->
+                </div>
+            </nav>
+
+            <!-- PROFIL PENGGUNA: Bagian bawah sidebar yang menampilkan foto, nama, dan tombol logout -->
+            <div class="sidebar-profile">
+                <!-- Foto profil -->
+                <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic"
+                    onclick="goToProfile()" />
+                <div class="profile-name-container">
+                    <!-- Nama profil dan edit -->
+                    <p class="profile-name">Alep</p>
+                    <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+                </div>
+                <!-- Tombol keluar dari akun -->
+                <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- KONTEN UTAMA: Area utama di sebelah kanan untuk form dan rincian data -->
+    <main class="main-content">
+        <!-- Header khusus untuk tampilan Mobile (layar kecil) -->
+        <header class="mobile-header">
+            <div class="mobile-logo">🐔 LIBAS</div>
+            <!-- Tombol hamburger untuk memunculkan sidebar -->
+            <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+                aria-label="Toggle Sidebar">
+                ☰
+            </button>
+        </header>
+
+        <!-- HEADER HALAMAN: Menampilkan Judul Modul dan Deskripsi Fungsi -->
+        <header class="page-header animate__animated animate__fadeInDown">
+            <div class="header-text">
+                <h2>📑 Manajemen Data Keuangan</h2>
+                <p>Input dan kelola catatan pemasukan serta pengeluaran peternakan Anda.</p>
+            </div>
+        </header>
+
+        <!-- AREA KEUANGAN: Baris kontainer yang terbagi menjadi bagian Form (Kiri) dan Daftar Data (Kanan) -->
+        <div class="finance-container animate__animated animate__fadeInUp">
+
+            <!-- BAGIAN KIRI: Formulir Input Transaksi Baru -->
+            <section class="finance-form-card shadow-card">
+                <div class="form-header">
+                    <h3>➕ Tambah Transaksi</h3>
+                </div>
+
+                <!-- Formulir pengisian data. Memanggil fungsi js addTransaction() saat dikirim -->
+                <form id="financeForm" onsubmit="addTransaction(event)">
+
+                    <!-- 1. Input Tanggal Transaksi -->
+                    <div class="form-group">
+                        <label for="trxDate">Tanggal Transaksi</label>
+                        <input type="date" id="trxDate" required>
+                    </div>
+
+                    <!-- 2. Pilihan Jenis (Pemasukan atau Pengeluaran) menggunakan radio button -->
+                    <div class="form-group">
+                        <label>Jenis Transaksi</label>
+                        <div class="radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="trxType" value="pemasukan" checked required>
+                                <span>Pemasukan</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="trxType" value="pengeluaran" required>
+                                <span>Pengeluaran</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. Input Keterangan atau Catatan Singkat -->
+                    <div class="form-group">
+                        <label for="trxDesc">Keterangan / Deskripsi</label>
+                        <input type="text" id="trxDesc" placeholder="Contoh: Penjualan 50 Papan Telur" required>
+                    </div>
+
+                    <!-- 4. Input Jumlah Nominal Mata Uang Rupiah -->
+                    <div class="form-group">
+                        <label for="trxAmount">Jumlah Uang (Rp)</label>
+                        <input type="number" id="trxAmount" placeholder="Contoh: 1500000" min="1" step="any" required>
+                    </div>
+
+                    <!-- 5. Kumpulan Tombol: Simpan Data ke sistem & Kosongkan isi form saat diklik -->
+                    <div class="form-actions" style="margin-top: 25px;">
+                        <button type="submit" class="btn-primary">💾 Simpan Data</button>
+                        <button type="reset" class="btn-secondary">Kosongkan</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- BAGIAN KANAN: Menampilkan Nominal Ringkasan dan Daftar Tabel Transaksi -->
+            <section class="finance-data-card shadow-card">
+
+                <!-- 1. Tiga Kartu Kecil Berisi Rangkuman Angka Keseluruhan -->
+                <div class="finance-summary-cards">
+                    <!-- Kartu Total Hasil Pemasukan (Uang Masuk) -->
+                    <div class="summary-box box-income">
+                        <h4>Total Pemasukan</h4>
+                        <p id="totalPemasukan">Rp 0</p>
+                    </div>
+                    <!-- Kartu Total Hasil Pengeluaran (Uang Keluar) -->
+                    <div class="summary-box box-expense">
+                        <h4>Total Pengeluaran</h4>
+                        <p id="totalPengeluaran">Rp 0</p>
+                    </div>
+                    <!-- Kartu Sisa Saldo Bersih Bulanan / Transaksi Total -->
+                    <div class="summary-box box-balance">
+                        <h4>Saldo Bersih</h4>
+                        <p id="totalSaldo">Rp 0</p>
+                    </div>
+                </div>
+
+                <!-- 2. Judul Tabel dan Kolom Pencarian Cepat (Filter) -->
+                <div class="table-header">
+                    <h3>📋 Riwayat Transaksi Keuangan</h3>
+                    <div class="table-actions" style="display: flex; gap: 10px; align-items: center;">
+                        <input type="text" id="searchTrx" placeholder="Cari keterangan..." onkeyup="filterTable()">
+                        <button class="btn-export" onclick="downloadLaporanCSV()" title="Unduh Laporan Keuangan">📥
+                            Ekspor CSV</button>
+                    </div>
+                </div>
+
+                <!-- 3. Tabel Daftar Seluruh Riwayat Keuangan -->
+                <div class="table-responsive">
+                    <table id="financeTable" class="data-table">
+                        <!-- Judul-Judul Kolom -->
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jenis</th>
+                                <th>Keterangan</th>
+                                <th style="text-align: right;">Jumlah (Rp)</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <!-- Isi Daftar Transaksi yang akan dimunculkan oleh javascipt secara otomatis -->
+                        <tbody id="financeTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-state">Belum ada data transaksi.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Mengimpor file JS yang berisi operasi dan sistem penyimpananan data -->
+    <script src="js/keuangan.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- ========================= META & TITLE ========================== -->
+    <!-- Pengaturan dasar halaman dan judul tab browser -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stok Pakan - LIBAS</title>
+
+    <!-- ========================= FONT & ANIMASI ========================== -->
+    <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- ========================= CSS KUSTOM ========================== -->
+    <!-- Memuat gaya desain spesifik untuk stok pakan -->
+    <link rel="stylesheet" href="css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="css/stokpakan.css" />
+
+    <!-- ========================= LIBRARY ========================== -->
+    <!-- Mengimpor notifikasi dialog peringatan yang interaktif (SweetAlert2) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+      <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
+
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+        </div>
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html" > Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html" >📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="true">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu open" id="persediaanSubmenu" aria-hidden="false">
+          <a href="stokpakan.html" class="active">🥬 Stok Pakan</a>
+          <a href="#">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name">Alep</p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+
+    </div>
+  </aside>
+
+    <!-- ========================= MAIN CONTENT ========================== -->
+    <main class="main-content">
+        <header class="page-header animate__animated animate__fadeInDown">
+            <div class="header-text">
+                <h2>🥬 Manajemen Stok Pakan</h2>
+                <p>Kelola data masuk dan keluarnya pakan ternak</p>
+            </div>
+            <button class="btn-primary animate__animated animate__pulse animate__infinite" onclick="openPakanModal()">
+                ➕ Tambah Data Pakan
+            </button>
+        </header>
+
+        <section class="quick-stats pakan-stats animate__animated animate__fadeInUp">
+            <div class="stat-card">
+                <div class="stat-icon stat-masuk">📥</div>
+                <div class="stat-info">
+                    <h4>Total Pakan Masuk</h4>
+                    <p id="totalPakanMasuk">0 Kg</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon stat-keluar">📤</div>
+                <div class="stat-info">
+                    <h4>Total Pakan Terpakai</h4>
+                    <p id="totalPakanKeluar">0 Kg</p>
+                </div>
+            </div>
+            <div class="stat-card stat-sisa-card">
+                <div class="stat-icon stat-sisa">📦</div>
+                <div class="stat-info">
+                    <h4>Sisa Stok Pakan</h4>
+                    <p id="sisaStokPakan">0 Kg</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="data-pakan-section animate__animated animate__fadeInUp">
+            <div class="table-container shadow-card">
+                <div class="table-header">
+                    <h3>📋 Riwayat Pakan</h3>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label for="filterBulanPakan" style="font-weight: 600;">Filter Bulan:</label>
+                        <input type="month" id="filterBulanPakan" onchange="filterData()" title="Filter Bulan"
+                            style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins', sans-serif;">
+                        <button class="btn-secondary" onclick="resetFilter()"
+                            style="padding: 8px 12px; border-radius: 8px; border: none; background: #e2e8f0; cursor: pointer; font-family: 'Poppins', sans-serif;">Semua
+                            Data</button>
+                        <button class="btn-export" onclick="downloadLaporanCSV()" title="Unduh Laporan Data Pakan"
+                            style="margin-left: 10px;">📥 Ekspor CSV</button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="data-table" id="pakanTable">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Jenis Pakan</th>
+                                <th>Tipe</th>
+                                <th>Jumlah (Kg)</th>
+                                <th>Keterangan</th>
+                                <th style="text-align: center;">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pakanTableBody">
+                            <!-- Data dipopulasi melalui JS -->
+                        </tbody>
+                    </table>
+                    <div id="emptyStatePakan" class="empty-state" style="display: none;">
+                        <span class="empty-icon">📂</span>
+                        <p>Belum ada data pakan. Silakan tambah data baru!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================= MODAL FORMULIR ========================== -->
+    <div id="pakanModal" class="modal">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 id="modalTitlePakan">Tambah Data Pakan</h3>
+                <button type="button" class="close-btn" onclick="closePakanModal()">&times;</button>
+            </div>
+            <form id="pakanForm" onsubmit="savePakanData(event)">
+                <input type="hidden" id="pakanId">
+
+                <div class="form-group">
+                    <label for="tglPakan">Tanggal Transaksi</label>
+                    <input type="date" id="tglPakan" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipePakan">Tipe Transaksi</label>
+                    <select id="tipePakan" required>
+                        <option value="" disabled selected>Pilih Tipe Transaksi</option>
+                        <option value="Masuk">Masuk (Beli / Restock)</option>
+                        <option value="Keluar">Keluar (Pemakaian / Konsumsi)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="jenisPakan">Jenis / Nama Pakan</label>
+                    <input type="text" id="jenisPakan" placeholder="Contoh: Konsentrat BP11, Jagung Giling" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="jumlahPakan">Jumlah (Kg)</label>
+                    <input type="number" id="jumlahPakan" min="0.1" step="0.1"
+                        placeholder="Masukkan jumlah dalam Kilogram" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="ketPakan">Keterangan Tambahan</label>
+                    <textarea id="ketPakan" rows="3"
+                        placeholder="Contoh: Dari Supplier B, Diberikan ke Kandang A"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closePakanModal()">Batal</button>
+                    <button type="submit" class="btn-primary">💾 Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Utama -->
+    <script src="js/stokpakan.js"></script>
+</body>
+
+</html>

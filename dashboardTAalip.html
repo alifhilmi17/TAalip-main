@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <!-- ========================= META & TITLE ========================== -->
+  <!-- Pengaturan dasar halaman dan judul tab browser -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lintau Buo Administration System</title>
+
+  <!-- ========================= FONT & ANIMASI ========================== -->
+  <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+  <!-- ========================= CSS KUSTOM ========================== -->
+  <!-- Memuat gaya desain spesifik untuk halaman dashboard ini -->
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+
+
+  <!-- ========================= LIBRARY ========================== -->
+  <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
+
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" class="active" title="Dashboard">🏠 Dashboard</a>
+
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+        </div>
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html" > Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html" >📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="#">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name">Alep</p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ========================= KONTEN UTAMA ========================== -->
+  <!-- Area kerja utama di sisi kanan layar untuk menampilkan widget dan data -->
+  <main class="main-content">
+
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🐔 LIBAS</div>
+      <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+        aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
+
+    <!-- ===== KARTU SAMBUTAN ===== -->
+    <section class="welcome-card animate__animated animate__fadeInDown">
+      <h2>Selamat Datang di Sistem Administrasi Peternakan!</h2>
+      <p>Kelola pakan, jadwal produksi, dan keuangan dengan lebih efisien 🐣</p>
+    </section>
+
+    <!-- ===== KARTU STATISTIK CEPAT ===== -->
+    <section class="quick-stats animate__animated animate__fadeInUp">
+      <div class="stat-card">
+        <div class="stat-icon">🥚</div>
+        <div class="stat-info">
+          <h4>Total Telur Hari Ini</h4>
+          <p id="stat-telur">- Butir</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🐓</div>
+        <div class="stat-info">
+          <h4>Total Ayam Aktif</h4>
+          <p id="stat-ayam">- Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📉</div>
+        <div class="stat-info">
+          <h4>Mortalitas Hari Ini</h4>
+          <p id="stat-mortalitas">- Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🌾</div>
+        <div class="stat-info">
+          <h4>Stok Pakan Tersisa</h4>
+          <p id="stat-pakan">- Kg</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h4>Pendapatan Bulan Ini</h4>
+          <p id="stat-pendapatan">Rp -</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== BAGIAN GRAFIK ===== -->
+    <section class="charts-section animate__animated animate__fadeInUp">
+
+      <!-- ===== GRAFIK PRODUKSI (PREMIUM CARD) ===== -->
+      <div class="chart-container chart-produksi-card">
+
+        <!-- Header grafik dengan judul dan tombol filter -->
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3>📈 Tren Produksi Telur</h3>
+            <span class="chart-subtitle">7 Hari Terakhir</span>
+          </div>
+          <div class="chart-filter-group">
+            <button class="chart-filter-btn active" id="filter7h" onclick="gantiPeriodeGrafik(7, this)">7 Hari</button>
+            <button class="chart-filter-btn" id="filter14h" onclick="gantiPeriodeGrafik(14, this)">14 Hari</button>
+            <button class="chart-filter-btn" id="filter30h" onclick="gantiPeriodeGrafik(30, this)">30 Hari</button>
+          </div>
+        </div>
+
+        <!-- Mini statistik ringkasan di atas grafik -->
+        <div class="chart-mini-stats">
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(251,133,0,0.15);color:#fb8500">🥚</span>
+            <div>
+              <p class="mini-stat-label">Total Butir</p>
+              <p class="mini-stat-val" id="chart-stat-total">0</p>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981">✅</span>
+            <div>
+              <p class="mini-stat-label">Telur Baik</p>
+              <p class="mini-stat-val" id="chart-stat-baik">0</p>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444">❌</span>
+            <div>
+              <p class="mini-stat-label">Telur Cacat</p>
+              <p class="mini-stat-val" id="chart-stat-cacat">0</p>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1">📊</span>
+            <div>
+              <p class="mini-stat-label">Rata-rata/Hari</p>
+              <p class="mini-stat-val" id="chart-stat-rata">0</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas untuk grafik -->
+        <div class="chart-canvas-wrapper">
+          <canvas id="eggProductionChart"></canvas>
+          <!-- Overlay jika data kosong -->
+          <div class="chart-empty-overlay" id="chartEmptyOverlay">
+            <span class="chart-empty-icon">🥚</span>
+            <p>Belum ada data produksi</p>
+            <small>Mulai input produksi harian untuk melihat grafik</small>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== GRAFIK KEUANGAN ===== -->
+      <div class="chart-container">
+        <h3>📊 Pemasukan vs Pengeluaran</h3>
+        <canvas id="financeChart"></canvas>
+      </div>
+
+    </section>
+
+    <!-- ===== BAGIAN UTAMA ADMIN ===== -->
+    <section class="office-admin">
+
+      <!-- ===== AKTIVITAS HARIAN ===== -->
+      <div class="manage-card animate__animated animate__fadeInUp">
+        <h3>🧺 Aktivitas Harian</h3>
+        <ul id="dailyActivityList">
+          <!-- Diisi via JavaScript -->
+        </ul>
+        <form id="addActivityForm" class="add-form" style="margin-top: 1rem;">
+          <input type="text" id="activityInput" placeholder="Tambah aktivitas..." required>
+          <button type="submit">Tambah</button>
+        </form>
+      </div>
+
+      <!-- ===== PENGUMUMAN ===== -->
+      <div class="reminder-card animate__animated animate__fadeInUp">
+        <h3>📢 Pengumuman</h3>
+        <ul id="announcementList">
+          <!-- Diisi via JavaScript -->
+        </ul>
+        <form id="addAnnouncementForm" class="add-form" style="margin-top: 1rem;">
+          <input type="text" id="announcementInput" placeholder="Tambah pengumuman..." required>
+          <button type="submit">Tambah</button>
+        </form>
+      </div>
+
+      <!-- ===== JADWAL KEGIATAN ===== -->
+      <div class="schedule-card animate__animated animate__fadeInUp">
+        <h3>📆 Jadwal Kegiatan Peternakan</h3>
+        <div class="schedule-content meeting-schedule">
+          <table id="scheduleTable">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th>Kegiatan</th>
+                <th>Tempat</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <!-- ===== FORM TAMBAH JADWAL ===== -->
+          <form id="addScheduleForm" class="add-form" style="margin-top: auto;">
+            <input type="text" id="tanggal" placeholder="Tanggal (cth: Senin, 20 Okt 2025)" required>
+            <input type="time" id="waktu" required>
+            <input type="text" id="agenda" placeholder="Kegiatan (cth: Panen Telur)" required>
+            <input type="text" id="ruangan" placeholder="Lokasi (cth: Kandang A)" required>
+            <button type="submit">➕ Tambah Kegiatan</button>
+          </form>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- ========================= SCRIPT UTAMA ========================== -->
+  <!-- Memuat library Chart.js dan interaktivitas JavaScript khusus dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/dashboardTAalip.js"></script>
+</body>
+
+</html>

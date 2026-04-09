@@ -1,0 +1,1471 @@
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: dashboardTAalip.css
+   Deskripsi: Kumpulan aturan gaya utama (Global Styling) 
+   untuk membangun tatanan tata letak antarmuka Dashboard 
+   Utama, mencakup navigasi Sidebar, Kartu Statistik, dan Top Bar.
+========================================================= */
+
+/* =========================================================
+   🧩 GLOBAL RESET & FONT
+========================================================= */
+/* Membersihkan semua margin dan border bawaan kotor dari browser */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* Agar padding tidak merusak ukuran total lebar box */
+    font-family: 'Poppins', sans-serif;
+    /* Mengadopsi font modern Poppins */
+}
+
+/* Penata bentuk tubuh utama struktur halaman */
+body {
+    display: flex;
+    /* Memposisikan Sidebar (kiri) dan Konten Utama (kanan) secara berdampingan */
+    background-color: #f9fafb;
+    /* Latar kelabu super cerah agar terkesan bersih dan profesional */
+    color: #333;
+    /* Warna huruf dominan hitam keabu-abuan agar nyaman dibaca */
+    min-height: 100vh;
+    /* Menyita tinggi halaman per layar penuh */
+}
+
+/* =========================================================
+   🧭 SIDEBAR (NAVIGASI SAMPING KIRI)
+========================================================= */
+/* Model dasar Menu Bilah Samping kiri (Pilar Utama) */
+.sidebar {
+    width: 250px;
+    /* Lebar tiang pilar navigasi */
+    height: 100vh;
+    /* Menjulang mengikuti 100% tinggi viewport layar */
+    position: fixed;
+    /* Menempel diam di layar meski halaman utama discroll ke bawah sekalipun */
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    /* Mengalirkan/merapikan tata letak item ke bawah (Vertikal) */
+    justify-content: space-between;
+    /* Mendorong profil user turun mentok kebawah, sementara logo narik mentok keatas */
+    background: linear-gradient(180deg, #ffcc70 0%, #ff7e5f 100%);
+    /* Pancaran Gradien Orange Matahari (Sentra Estetika LIBAS) */
+    color: #fff;
+    /* Karakter tulisan menjadi putih cemerlang */
+    padding: 1.5rem;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+    /* Bayangan kecil pemotong tegas batas dengan kanvas dashboard */
+    overflow-y: auto;
+    /* Izinkan menggulir manakala susunan menu terlalu panjang mentok paha layar bawah */
+}
+
+/* ===== Bagian Identitas Logo ===== */
+.sidebar .logo {
+    font-size: 1.5rem;
+    /* Ketebalan Gede */
+    font-weight: 600;
+    /* Cetak tebal judul */
+    margin-bottom: 2rem;
+    /* Ruang pisah bawah menu navigasi */
+}
+
+/* Sub-teks slogan nama panjang di bawah tulisan LIBAS */
+.sidebar .logo span {
+    display: block;
+    /* Agar turun baris */
+    font-weight: 400;
+    font-size: 1rem;
+}
+
+/* ===== Navigasi Pilihan Utama (Tombol Sidebar) ===== */
+.main-nav a,
+.main-nav button {
+    display: block;
+    /* Susun berbaris teratur satu-satu secara balok kebawah */
+    width: 100%;
+    /* Penuhi seluruh rongga ruang memanjang di Sidebar */
+    color: #fff;
+    text-decoration: none;
+    /* Coret hyperlink biru bawakan kaku browser HTML */
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    /* Memblok putih amat sangat tembus pandang sebagai latar dasar link diam */
+    padding: 0.7rem 1rem;
+    border-radius: 10px;
+    /* Pil menu agak kaku bentuk telur */
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    /* Transisi lemas untuk pergantian state Hover/Disentuh */
+}
+
+/* Reaksi Papan Latar Tombol Sidebar Kalau Kursor Menumpang (Hover) */
+.main-nav a:hover,
+.main-nav button:hover,
+.main-nav a.active {
+    background: rgba(255, 255, 255, 0.35);
+    /* Warnanya tambah pekat mengisyaratkan ketegasan "Tunjuk Sini" */
+    transform: scale(1.03);
+    /* Mumbul gede 3 % keluar mengampiri user */
+}
+
+/* ===== Tombol Saklar Terlipat (Submenu Pembuka) ===== */
+.has-submenu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    font-size: 16px;
+    padding: 10px 15px;
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Menangkap respon tekan dan sorot submenu yang aktif ngejreng membesar */
+.has-submenu:hover,
+.has-submenu.active-parent {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.03);
+}
+
+/* ===== Ruang Anak Menu Tersembunyi (Dropdown Menu) ===== */
+/* Kondisi awal aslinya disembunyikan dan diapit nol */
+.submenu {
+    overflow: hidden;
+    /* Cincang potongan anak menunya yang menclok keluar */
+    max-height: 0;
+    /* Tarik tinggi hingga kempes habis ke akar nol (Lipat!) */
+    opacity: 0;
+    /* Kasihtidak kasat mata (Kaca Benih 0%) */
+    transform: translateY(-5px);
+    /* Menyelipkan dikit menjorok posisinya di balik */
+    margin-left: 10px;
+    transition: max-height 0.4s ease, opacity 0.4s ease, transform 0.4s ease;
+    /* Animasikan pergerakan mekar durasi 0.4 dtk */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Instruksi Membuka Anak Submenu agar Meluap Tampil (Drop down) */
+.submenu.show,
+.submenu[aria-hidden="false"] {
+    max-height: 500px;
+    /* Lebarkan hingga memadai ruang anak menu keluar */
+    opacity: 1;
+    /* Kasat Matakan sepenuh 100%*/
+    transform: translateY(0);
+}
+
+/* Styling Rupa Fisik Anak Panah Submenu tersebut */
+.submenu a {
+    display: block;
+    color: #fff;
+    padding: 0.6rem 1rem;
+    text-decoration: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    margin-bottom: 0.4rem;
+    transition: all 0.3s ease;
+}
+
+.submenu a:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== Panah Pengarah (Arrow Pointing) di Sebelah Judul Submenu ===== */
+.sidebar .has-submenu .arrow {
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Rotasi Memutar Panah menghadap ke bawah ketika Menu terbuka teregang (Expanded) */
+.sidebar .has-submenu[aria-expanded="true"] .arrow {
+    transform: rotate(90deg);
+}
+
+/* =========================================================
+   👤 PROFIL PENGGUNA (BAGIAN JANGKAR BAWAH SIDEBAR)
+========================================================= */
+/* Memagar posisi Foto Peternak/Admin tepat di paling bawah rel panjang sidebar */
+.sidebar-profile {
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    /* Garis batas bening di bagian atasnya sebagai pemisah formil dengan menu */
+}
+
+/* Lingkaran Avatar Muka Profil Pekerja */
+.profile-pic {
+    width: 70px;
+    /* Skala Pas foto */
+    height: 70px;
+    border-radius: 50%;
+    /* Membulatkan ekstrim bak telor ceplok sempurna */
+    object-fit: cover;
+    /* Jangan benyok walau foto rasio aneh */
+    border: 3px solid #fff;
+    /* Tembok pigura tebalan keliling pinggir foto warnanya putih bersinar */
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+/* Membesar dikit fotonya bila dicolok Mouse */
+.profile-pic:hover {
+    transform: scale(1.1);
+}
+
+.profile-name-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    /* Secuil jarak pisah dengan tombol gerigi */
+    margin-bottom: 0.5rem;
+}
+
+/* Label Tercantum Nama Tuan Admin/Peternak tersebut */
+.profile-name {
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Tombol Kecil Ikon Roda Gigi / Pensil Edit */
+.edit-profile-icon {
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+}
+
+/* Interaksi mutar gerigi manakala jari kursor menari-nari melintas */
+.edit-profile-icon:hover {
+    color: #fff;
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Tombol Eksekusi Final - Log Out Cabut Balik Arah ke pintu Utama */
+.logout-btn {
+    margin-top: 0.5rem;
+    background: #e63946;
+    /* Merah menyala menandakan peringatan bahaya Keluar Ruangan */
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    /* Tepi tombol dibuat tidak lancip (Humanist Shape) */
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.logout-btn:hover {
+    background: #c92a34;
+    /* Meredupkan kelir darah sesaat disentuh */
+}
+
+/* =========================================================
+   🧾 KONTEN UTAMA HALAMAN KANAN & ATAP HP (MAIN CONTENT)
+========================================================= */
+/* Area Raksasa Kanan Tempat Bertaburnya Grafik/Tabel Dasbor */
+.main-content {
+    margin-left: 260px;
+    /* Memberi pengikatan celah agar Tidak tergencet ketiban tubuh Sidebar 250px! Penting! */
+    width: calc(100% - 260px);
+    /* Kalkulasi kalkulator matematis CSS secara otomatis (Bahu Membahu Menghitung) */
+    padding: 2rem;
+    height: 100vh;
+    /* Tinggi penuh layar agar area konten memiliki batas yang terdefinisi */
+    overflow-y: auto;
+    /* Mengaktifkan scroll vertikal sehingga konten formulir yang panjang dapat digulir */
+    scroll-behavior: smooth;
+    /* Animasi gulir yang mulus saat berpindah posisi */
+}
+
+/* =========================================================
+   🖱️ SCROLLBAR KUSTOM — MAIN CONTENT (Tema Oranye Emas)
+   Memberikan tampilan scrollbar yang langsing, modern, dan
+   menyatu dengan palet warna oranye khas LIBAS.
+========================================================= */
+
+/* Lebar keseluruhan jalur scrollbar */
+.main-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+/* Latar jalur scrollbar (Track) — abu-abu terang transparan */
+.main-content::-webkit-scrollbar-track {
+    background: rgba(249, 115, 22, 0.06);
+    border-radius: 100px;
+}
+
+/* Batang penarik (Thumb) scrollbar — gradien oranye emas */
+.main-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ffcc70 0%, #ff7e5f 100%);
+    border-radius: 100px;
+    border: 2px solid transparent;
+    /* Memberi efek "mengambang" dengan jarak tipis dari track */
+    background-clip: padding-box;
+    transition: background 0.3s ease;
+}
+
+/* Saat thumb-nya disentuh / digenggam (hover) — lebih cerah */
+.main-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #fbbf24 0%, #f97316 100%);
+    background-clip: padding-box;
+}
+
+/* =========================================================
+   🖱️ SCROLLBAR KUSTOM — SIDEBAR (Tema Putih Transparan)
+========================================================= */
+.sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 100px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.35);
+    border-radius: 100px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* Batangan Penanda di atas khusus bila dilihat orang pakai HP sempit */
+.mobile-header {
+    display: none;
+    /* Asal mulanya Matikan/Sembunyikan buat Layar PC Lebar Canggih / Laptop Luas */
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    /* Sisi sudutnya tumpul kalem */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    /* Bayangan soft terhampar santai di atasan */
+    margin-bottom: 2rem;
+}
+
+.mobile-logo {
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #111;
+}
+
+/* Tombol burger bar (Garis Tiga) Pemanggil Sidebar yg melipat */
+.menu-toggle {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #333;
+}
+
+/* ===== Kartu Kotak Sapaan Salam Penata Dashboard Atas ===== */
+.welcome-card {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    /* Corak Pastel Mangga-Peachy kalem tapi elegan banget merasuk kalbu */
+    padding: 1.5rem 2rem;
+    border-radius: 15px;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.welcome-card h2 {
+    color: #3a3a3a;
+    margin-bottom: 0.5rem;
+}
+
+/* =========================================================
+   📊 GRID KARTU-KARTU INDIKATOR STATISTIK CEPAT (QUICK STATS)
+========================================================= */
+/* Pembungkus Induk Tempat Menyematkan Barisan Kartu Pendek Dasbor (Jumlah Ayam, Stok, dll) */
+.quick-stats {
+    display: grid;
+    /* Ciptakan kisi tak terlihat penyusun elemen sejajar */
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    /* Rumus Sulap: Tata kartu bersebelahan semuati mungkin, namun bila menyempit <200px, terjunkan satu per satu numpuk kebawah secara adaptif natural */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Tubuh satuan tiap Kartu Status Informasi */
+.stat-card {
+    background: #fff;
+    /* Tinta Putih perawan */
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    /* Sejajarkan Ikon Gede Raksasa dengan teks disebelahnya bersahutan */
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 5px solid #ffcc70;
+    /* Corak tebal penanda aksen ciri khas tiap stat kartu ada disebelah Tepi Kiri Berdiri Tegak */
+}
+
+/* Sensasi ngambang pas kursor melewati atas permukaan kartu info dasbor stats */
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    /* Kepakan bayangan sayap lebih pekat mencuat 10% */
+}
+
+/* Wadah tempat menggantung Ikon Emoji Besar pada Kartu */
+.stat-icon {
+    font-size: 2rem;
+    /* Segede gaban (dobel skala normal) */
+    background: rgba(255, 204, 112, 0.2);
+    /* Latar kuning siram transparan membubur */
+    width: 55px;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    flex-shrink: 0;
+    /* Gak sudi mengecil andai kata teks keterangan kepanjangan sampai kendor! (Tetap pertahankan dimensi ikon) */
+}
+
+/* Teks kecil pencerahan Label "Total Ayam" */
+.stat-info h4 {
+    font-size: 0.85rem;
+    color: #777;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+}
+
+/* Angka Real Laporan Data Bernilai Besar */
+.stat-info p {
+    font-size: 1.4rem;
+    color: #333;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Pewarnaan Identitas Tema Individu Kartu agar bervariasi Pelangi Premium (Premium Feel Warna Warni Profesional Modern) */
+
+/* Kartu urutan Pertama: Tema Kuning Mas */
+.stat-card:nth-child(1) {
+    border-left-color: #f1c40f;
+}
+
+.stat-card:nth-child(1) .stat-icon {
+    background: rgba(241, 196, 15, 0.2);
+}
+
+/* Kartu urutan Kedua: Tema Hijau Zamrud Daun Panen */
+.stat-card:nth-child(2) {
+    border-left-color: #2ecc71;
+}
+
+.stat-card:nth-child(2) .stat-icon {
+    background: rgba(46, 204, 113, 0.2);
+}
+
+/* Kartu urutan Ketiga: Tema Merah Bahaya/Redup Laporan Darurat */
+.stat-card:nth-child(3) {
+    border-left-color: #e74c3c;
+}
+
+.stat-card:nth-child(3) .stat-icon {
+    background: rgba(231, 76, 60, 0.2);
+}
+
+/* Kartu urutan Keempat: Tema Biru Laut Catatan Pendapatan Segar */
+.stat-card:nth-child(4) {
+    border-left-color: #3498db;
+}
+
+.stat-card:nth-child(4) .stat-icon {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+/* Kartu urutan Kelima: Tema Ungu Misterius / Laba Investasi Estetik */
+.stat-card:nth-child(5) {
+    border-left-color: #9b59b6;
+}
+
+.stat-card:nth-child(5) .stat-icon {
+    background: rgba(155, 89, 182, 0.2);
+}
+
+/* =========================================================
+   📈 RUANGAN TATAKAN GRAFIK/CHARTS SECTION
+========================================================= */
+/* Sangkar penyekat wilayah yang meliuk mewadahi Grafik Statistik ChartJS/Sejenis. */
+.charts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    /* Pecah sejajar bersebelahan kalau muat lebarnya 400px, Kalau layar kekecilan lipat kebawah jadi satu baris tunggal (1fr Auto-fit minmax strategy!!) Sangat Ampuh! */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Frame Dudukan Kertas Putih Canvas Chart/Grafik melukis */
+.chart-container {
+    background: #fff;
+    border-radius: 15px;
+    /* Standarisasi belokan tikungan 15 point (Design System LIBAS) */
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    /* Soft drop shadowing di bokong frame chart */
+}
+
+/* Judul Identitas Label Diagram "Data Pertumbuhan Ayam Bulan Mei" Dll. */
+.chart-container h3 {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+/* ===== Formasi Kisi Layout Untuk Area Kelola Office Admin ===== */
+/* Menampung Aktivitas, Pengumuman, Agenda dll dalam formasi Tiga baris bersebelahan, Namun Kolom ke-3 (Agenda) ditarik lebarnya agak melar 1.5 kali lipat (1.5fr) */
+.office-admin {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr;
+    align-items: start;
+    gap: 1.5rem;
+}
+
+/* =========================================================
+   📦 GAYA BALOK KOTAK UNIVERSAL TUMPANG (CARD STRUCTURE)
+========================================================= */
+.office-card,
+.documents {
+    background: #fff;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    /* Tampaknya sedikit timbul lebih dari kanvas background */
+}
+
+.documents ul {
+    list-style: none;
+    /* Melenyapkan bulatan peluru hitam standar dot list ul li element. */
+}
+
+/* =========================================================
+   📅 KONTRUKSI TABEL JADWAL KEGIATAN (MEETING / AGENDA)
+========================================================= */
+.meeting-schedule {
+    overflow-x: hidden;
+    /* Cincang dan potong sisa meluber tabelnya agar tidak mendobrak box out of bounds. */
+    width: 100%;
+}
+
+.meeting-schedule table {
+    width: 100%;
+    border-collapse: separate;
+    /* Tabel rapi dan garisnya tak saling gumpal */
+    border-spacing: 0;
+    margin-bottom: 1.5rem;
+}
+
+/* Bentuk Dasar Tatanan Sel Tabel */
+.meeting-schedule th,
+.meeting-schedule td {
+    text-align: left;
+    /* Rata Kiri Semua, RAPI */
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 0.9rem;
+    color: #475569;
+    /* Tinta arang agak kelam kalem */
+    transition: all 0.2s ease;
+    word-break: break-word;
+    /* Patahkan paragraf huruf terlalu panjang tanpa ampun biar meruncing kesamping dan turun tangga (Tidak menjebol boudary layar tetangga) */
+    white-space: normal;
+}
+
+/* Bando / Sabuk Kolom Tajuk Kepala Tabelnya */
+.meeting-schedule thead th {
+    background: #f8fafc;
+    color: #64748b;
+    text-transform: uppercase;
+    /* Penegas huruf huruf besar (KAPITAL) mendenyutkan indikasi bahwa ini Kolom Kepala Judul Label! */
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    /* Jangan perbolehkan judul header dipisah patah barisnya, harus sejalur membentang biar kokoh */
+    letter-spacing: 0.5px;
+}
+
+/* Mengasah lekuk tumpul di ujung sayap kiri dan kanan pada Mahkota Kolom Utama */
+.meeting-schedule thead th:first-child {
+    border-top-left-radius: 12px;
+}
+
+.meeting-schedule thead th:last-child {
+    border-top-right-radius: 12px;
+}
+
+/* Belang-belang kuda zebra pada barisan tebal list list agenda supaya tidak pusing pembaca kalau matanya menggeser baca ke samping jauh! */
+.meeting-schedule tbody tr:nth-child(even) {
+    background-color: #fdfdfd;
+}
+
+/* Sorot Arsir Gelap bilau diusik penunjuk melayang (Hover Marker Tracker) */
+.meeting-schedule tbody tr:hover td {
+    background-color: #f8fafc;
+    color: #0f172a;
+}
+
+/* ===== Tombol 'Hapus Agenda' yang menempel di ujung baris ===== */
+.delete-btn {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    /* Merah Tanda Bahaya Destructive Warning (Konvensi UI Standard) */
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    /* Tumpul lembut agak kotak */
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.delete-btn:hover {
+    background: #ef4444;
+    /* Merah darah meletus pas disorot kursor memuncak tebal */
+    color: #fff;
+    transform: scale(1.05);
+    /* Sensasi memompa (Bumping up action indicator effect) */
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+}
+
+/* =========================================================
+   📝 SUSUNAN KOTAK PENGETIKAN PENGISIAN JADWAL (FORM TAMBAH)
+========================================================= */
+/* Wrapper atau Sangkar Pembungkus kolom kolom ketik + Pencetan tombol Tambahnya */
+.add-form {
+    display: flex;
+    flex-wrap: wrap;
+    /* Fitur memutar barisan ke baris bawah apabila mendadak ruangan tergencet HP kecil (Life-saving property Responsive) */
+    gap: 0.8rem;
+}
+
+/* Input ketikan Agenda, Tanggal, dll. */
+.add-form input {
+    flex: 1 1 180px;
+    /* Lebar minimum 180px tapi leluasa meregang menempel sisi dinding andai sisa rongga ruang banyak (Auto Stretch Flex Fill FlexGrow) */
+    padding: 0.8rem 1rem;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    /* Rona Silver kusam menyembul memberi tanda lubang input kosong siap diisi */
+    border-radius: 12px;
+    outline: none;
+    /* Cabut pembatas hitam tebal browser tua cacat */
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+/* Sorak menatap menanti jemari Anda mencet/mengetik huruf demi huruf (Focus Tracking) */
+.add-form input:focus {
+    background: #fff;
+    /* Bangun menjadi Putih bersih siap menerima ukiran takdir sejarah teks */
+    border-color: #ffcc70;
+    /* Garis emas menyala */
+    box-shadow: 0 0 0 3px rgba(255, 204, 112, 0.2);
+    /* Cincin aura oren pastel memeluk sisi sisinya melambangkan kemewahan perhatian LIBAS */
+}
+
+/* Tombol Menyimpan Beraksi Ceria Hijau! */
+.add-form button {
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    /* Pancaran gradasi segar bernafas keseimbangan hidup daun alam Hijau sukses */
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.add-form button:hover {
+    transform: scale(1.03);
+    /* Menekan mumbul membesar sejemang kala */
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Tombol Khusus Kartu Jadwal diubah berona Biru Angkasa Supaya Tak Seragam Menjemukan dengan Tombol Tambah Info Kartu Sebelahnya. Mencegah repetisi kebosanan rupa visual dasbor admin! (Variation Breaker Rule) */
+.schedule-card .add-form button {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.schedule-card .add-form button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* =========================================================
+   ✨ KERANGKA UTAMA KARTU PAPAN PENGUMUMAN HARIAN (PREMIUM CARDS)
+========================================================= */
+
+/* Template Pembungkus Fisik Cangkang Dasarnya */
+.manage-card,
+.reminder-card,
+.schedule-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    /* Bayangan Jatuh Mengendap lembut mencium aspal */
+    overflow: hidden;
+    /* Mengunci pendaran warni header agar nggak njebol dari batas belok radiusnya. Super Critical! */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    /* Teknik menganyam meluruskan bentuk badan per anak elemen secara membalok (kolom)  */
+    flex-direction: column;
+    align-self: start;
+}
+
+/* Melayang jika di-hover kursor */
+.manage-card:hover,
+.reminder-card:hover,
+.schedule-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Atap/Header Dari Masing-masing Kartu Topik Tersebut: (Dibuat Memblok Solid Warna Menutupi Kepala Frame) */
+.manage-card h3,
+.reminder-card h3,
+.schedule-card h3 {
+    margin: 0;
+    padding: 1.2rem 1.5rem;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    /* Bayangan Hitam tipis menyembul di belakang kaligrahfi putih judulnya. */
+}
+
+/* Palet Tema Gradasi untuk Dahi Kepala Topik Card Khusus: (Identitas Merek Terpisah) */
+.manage-card h3 {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    /* Segarnya Daun Alam (Aktivitas Berjalan) */
+}
+
+.reminder-card h3 {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+    /* Orange Merah Meradang Api Perhatian (PENGUMUMAN PENTING REMINDER DARURAT) */
+}
+
+.schedule-card h3 {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    /* Biru Teduh Kalem Pikiran Jernih (Jadwal Pertemuan Formil Angkasa) */
+}
+
+/* Ruang Rongga Isi Perut Card Jadwal */
+.schedule-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* Sikat dan jajah sisa ruangan vertikal sebisa mungkin menjulang mampat! (Penting tuk Flex Layout UI seimbang) */
+    overflow-x: hidden;
+    width: 100%;
+}
+
+/* Aturan Ul/Li barisan peluru urut-urutan di kartu Harian */
+.manage-card ul,
+.reminder-card ul {
+    list-style: none;
+    /* Bebas titik dot dot pengganggu HTML List tua */
+    padding: 1.2rem;
+    max-height: 250px;
+    /* Jangan lewatin 250piksel. Kl kepanjangan, potong lalu pasang sekrol keatas kebawah (Agar tidak merusak pandangan keserasian tiga kartu sekompi bersisian!!) */
+    overflow-y: auto;
+    /* Munculkan Sekrol */
+    flex-grow: 1;
+}
+
+/* Mendesain fisik batang sekrol (Scrollbar) agar lebih elok nan langsing, tak setebal bawaan murahan jendela (Windows 98) */
+.manage-card ul::-webkit-scrollbar,
+.reminder-card ul::-webkit-scrollbar {
+    width: 6px;
+}
+
+.manage-card ul::-webkit-scrollbar-thumb,
+.reminder-card ul::-webkit-scrollbar-thumb {
+    background: #e0e0e0;
+    border-radius: 10px;
+    /* Bentuk kapsul guling pijakan batang tarik rol scrollernya */
+}
+
+/* Barisan Tiap Butir/Pekerjaan List (Item List) */
+.manage-card ul li,
+.reminder-card ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    /* Latar kelabu kabut per tiap garis kotak list (Memberi struktur pembagi yg lembut tanpa menggores border Line pembatas tajam di mata) */
+    margin-bottom: 0.8rem;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    border-left: 5px solid transparent;
+    /* Garis tak nampak yg disiapkan tuk ditimpa rna sewaktu menyorot tetikus */
+    transition: all 0.2s ease;
+}
+
+/* Efek Menjalar dan Mencuat Menyamping ketika Butir List/Pekerjaan dilewati usapan Mouse Hover */
+.manage-card ul li:hover,
+.reminder-card ul li:hover {
+    background: #fff;
+    /* Tampil putih benderang menyibak lautan kelabu teman temannya di li tsb */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    /* Mengembang membumbung keluar bayangan halus */
+    transform: translateX(3px);
+    /* Nyelip geser dorong kanan 3 mm mempesona seakan merespon interaksi siap dipilih!!! (Kunci Kesuksesan UI Responsif Sentuh Mikromosi Premium) */
+}
+
+/* Tema Pewarnaan Pinggir Tepi Garis (Garis Kiri Tembok) Setiap Kartu Modul */
+.manage-card ul li {
+    border-left-color: #38ef7d;
+}
+
+.reminder-card ul li {
+    border-left-color: #ff5e62;
+}
+
+/* Keterangan / Kalimat yang Tertulis di Daftar-Daftarnya */
+.manage-card ul li span,
+.reminder-card ul li span {
+    font-size: 1.05rem;
+    color: #444;
+    /* Serbuk batu permata arang tak pekat, aman dimata kala baca lama (Contrast Reading friendly) */
+    word-break: break-word;
+    /* Patahkan memotong suku kata ekstrem menghindari meletup tumpah keluar pinggiran kartu andai huruf ejaannya tanpa spasi kepanjangan. */
+    padding-right: 10px;
+    line-height: 1.5;
+    /* Spasi rongga bernafas vertikal rentang antar garis horizontal kalimat 2 baris. */
+}
+
+/* Tata Form Ketuk Isian Menyempil di Bawah Kartu tersebut */
+.manage-card form,
+.reminder-card form {
+    padding: 0 1.5rem 1.5rem 1.5rem;
+    display: flex;
+    gap: 0.8rem;
+    margin-top: auto;
+    /* Mendorong memompa ke dasar telapak mentok menjauhi pusar tengah area! Teknik Flex-Auto-Push */
+}
+
+.schedule-card form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+}
+
+/* Tombol Menyatu Terpadu Form di Schedule Card */
+.schedule-card form button {
+    grid-column: 1 / -1;
+    /* Rentangkan bentangkan membentang seluas memakan semua rel jalur grid dari ujung awalan 1 sampai benturan ujung akhir -1 ! */
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    border-radius: 50px;
+    padding: 0.7rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+/* Tancapkan kesan mengapung tombol biru */
+.schedule-card form button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+}
+
+/* Elemen Pengetikan Karakter (Inputs Form Kotakkan Lebar) */
+.manage-card form input,
+.reminder-card form input,
+.schedule-card form input {
+    flex: 1;
+    /* Penuhi ruang mengembang serong memakan celah menganggur */
+    padding: 0.7rem 1rem;
+    /* Bantal atas bawah kiri kanan aman */
+    border-radius: 50px;
+    /* Bentuk Pil Kapsul Obat yang super melengkung halus tidak melukai estetika (Sangat Premium App Feel) */
+    border: 1px solid #eee;
+    background: #fdfdfd;
+    font-size: 0.9rem;
+    transition: 0.3s;
+}
+
+/* Perilaku Aktif Menerima Getaran Ketik/Kursor (Focus Type Active) */
+.manage-card form input:focus,
+.reminder-card form input:focus,
+.schedule-card form input:focus {
+    border-color: #ccc;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.02);
+    /* Halus silau */
+}
+
+/* Konfigurasi Dasar Pelbagai Tombol Bentuk Kapsul/Pil Bundar */
+.manage-card form button,
+.reminder-card form button,
+.schedule-card form button {
+    border-radius: 50px;
+    padding: 0.7rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.manage-card form button:hover,
+.reminder-card form button:hover,
+.schedule-card form button:hover {
+    transform: scale(1.05);
+    /* Tombol mengembang merespon deteksi manusia menyorot */
+    opacity: 0.9;
+    /* Menipis sedikit mengisyaratkan kesiapan diketukkan jari telunjuk kklik !! */
+}
+
+/* Pemasangan Ulang Warna Identik Identitas Pada Tiap Tombol Terkait Warnanya Masing Kartu di Dasbor */
+.manage-card form button {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.reminder-card form button {
+    background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+}
+
+.schedule-card form button {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+/* =========================================================
+   📢 NOTIFIKASI / PENGUMUMAN ITEM STYLING SPESIAL (Premium Notification Look)
+========================================================= */
+/* Atur ruang kosong pada himpitan kotak daftar mengingatkan peringatan bahaya (Reminder Announcement) */
+.reminder-card ul {
+    padding: 1.5rem;
+    gap: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Model Penampilan Satu Biji Pesan Peringatan */
+.announcement-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    /* Mengikat melabuh ke pojok langit-langit atasan jikalau paragraf berbaris rangkap (Multi-line text handling perfection) */
+    background: #fff;
+    border-left: 4px solid #ff5e62;
+    /* Garis Tinta Merah Kiri Lurus Pertanda Berbahaya Penting!! */
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    /* Cium aspal merangkak naik sedikit saja membayang halusnya */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+    animation: slideIn 0.4s ease-out;
+    /* Atraksi datangnya membal turun saat dirender/dibuat javascript!! Sangat Canggih menghipnotis */
+}
+
+/* Apabila User Melihat Laporan Notif, Disentuhlah Dengan Kursor, Menjorok Tampil Menantang Maju ke Depan Lensa Mata!! */
+.announcement-item:hover {
+    transform: translateY(-3px) scale(1.02);
+    /* Maju Timbul, Tambah Melayang Naek! */
+    box-shadow: 0 8px 25px rgba(255, 94, 98, 0.15);
+    /* Pendaran bayangan Merah mencucur lelehan darah warning glowing!!! */
+    background: #fffafa;
+    /* Putih sedikit pudar merah keabu-abuan pucat di punggung teks. */
+}
+
+/* Kerangka Tarian Pemanggilan Pesan Masuk Notif Baru (Sliding Incoming New Massage) */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+        /* Merangkak mulai dari palung tanah bawah 10 mm */
+    }
+
+    to {
+        opacity: 1;
+        /* Nampak terang seutuhnya di dunia */
+        transform: translateY(0);
+        /* Mencapai puncak singgahsana takdir kordinat semulanya yg benar di mata HTML. */
+    }
+}
+
+/* Penggabungan elemen rupa fisik dalam pengumuman */
+.announcement-content {
+    display: flex;
+    align-items: center;
+    flex: 1;
+}
+
+/* Rincian detil gubahan susunan aksara pada pengumuman */
+.announcement-details {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Teks Murni Isian Makna Apa yang Disampaikan ke Admin Dasbor */
+.announcement-details .text {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.4;
+    margin-bottom: 2px;
+}
+
+/* Rekaman Cangkapan Jejak Jam dan Stempel Waktu Sejarah "Satu menit yg lalu, dll" Menggunakan label waktu perak */
+.announcement-details .time-stamp {
+    font-size: 0.75rem;
+    color: #999;
+    /* Cukup abu pucat yang sekejap terlihat tapi diremehkan, biar pikiran fokus ke Isi Teks Utama Pesannya Saja (Information Hierarchy Mastering). */
+    font-weight: 400;
+}
+
+/* =========================================================
+   🔘 TOMBOL TINDAKAN CEPAT DALAM LIST HARIAN (ACTION BUTTONS - SECURE CHECK & TRASH DELETE)
+========================================================= */
+/* Grup Gabungan Rapatkan Tombol Tombol kecil tindakan beres / Hapus Aja Laporan itu di pojokan Kanan Card */
+.action-btn-group {
+    display: flex;
+    gap: 8px;
+    /* Tumpuk merapat dua biji sekutu sejawat */
+    align-items: center;
+    margin-left: 10px;
+    /* Merongga sejemang jarak dengan Teks Panjang Biar Gak Berbenturan Sikut (Spacing Security) */
+}
+
+/* Rangkaian kerangka kerangka tombol bulat bunder bundar kecil penopang simbol */
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    /* Membulat penuh lingkar simetris bola sempurna! */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+    border: 1px solid transparent;
+    flex-shrink: 0;
+    /* Tak kan rela menyusut menggepeng walo layar diHimpit sempit sekalipun!!! Keteguhan wujud utuh Bundar Bulat! */
+}
+
+/* --- Tombol Centang Verifikasi Keberhasilan "Beres" Ceklis Hijau Terang --- */
+.check-btn {
+    color: #2ecc71;
+    /* Hijau Sukses Terselamatkan. Sentrum kebahagiaan hati user! */
+    border-color: #2ecc71;
+}
+
+/* Gemetar Membal Merespon Kesuksesan saat Kursor bertengger diatas Ceklisnya memancarkan aura solid Hijau kepuasan UI */
+.check-btn:hover {
+    background: #2ecc71;
+    color: white;
+    transform: scale(1.1);
+    /* Mengembang sombong mantap meluas */
+}
+
+/* --- Tombol Tong Sampah Buang Penghapusan Darurat Berwarna Karat Darah Kemarahan Merah Api --- */
+.delete-item-btn {
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+
+/* Murka menghakimi menelan tulisan putih masuk kedalam pusar merah jikalau dibidik pelatuk Hover klik! */
+.delete-item-btn:hover {
+    background: #e74c3c;
+    color: white;
+    transform: scale(1.1);
+    /* Mumbul ngancam bersiap dilumat */
+}
+
+/* Penyelerasan bantalan dorong list di sisi Kanan mengantisipasi desakan kehadiran panggung ruang tombol tombol bulat ini. (Biar tulisan kalimat List Gak tabrakan sikut!) */
+.manage-card ul li,
+.announcement-item {
+    padding-right: 5px;
+    /* Mengganjel nafas kanan */
+}
+
+
+/* Pengubah ukuran darurat menanggapi andainya layar tiba tiba berubah jadi HP Kecil (Media Query Override Cepat) */
+@media (max-width: 480px) {
+    .announcement-content {
+        gap: 10px;
+    }
+
+    .announcement-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+}
+
+/* =========================================================
+   📱 SISTEM DESAIN RESPONSIF LAYAR FLEKSIBEL (TEKNIK RESPONSIVE WEB DESIGN) (MOBILE & TABLET SUPPORT)
+======================================================== */
+
+/* --- Tuntunan Layar Komputer Tanggung Menengah (Laptop < 1200px) --- */
+@media (max-width: 1200px) {
+    .office-admin {
+        grid-template-columns: 1fr 1fr;
+        /* Menciutkan formasi dari asalnya 3 baris sejajar memanjang, turun direm mendadak jadi 2 baris aja seiring lebar merungkut mengecil. (Dibuang sisa kekanan) */
+    }
+}
+
+/* --- Tuntunan Layar Ipad Tablet Berdiri Portrait (< 992px) --- */
+@media (max-width: 992px) {
+    .office-admin {
+        grid-template-columns: 1fr;
+        /* Pasrah menyerah hancurkan dinding pemisah kolom-kolom kesamping sejajar. Jadikan mereka menyusun membalok Tugu tunggal membentur atas bawah doang (Satu Baris Lurus)! Ini strategi anti pecah/ngelibek paling gahar untuk gawai nanggung! */
+    }
+}
+
+/* --- Tuntunan Khusus Layar Telapon Genggam HP Pintar (Mobile Screen < 768px) --- */
+@media (max-width: 768px) {
+
+    /* Merubah takdir nasib Pilar Navigasi Sidebar. Sembunyikan dan diasingkan tarik menjorok jauh ke Alam Seberang Kiri Kordinat Layar (-100%). Pagar gaib z-index sangat tinggi membumbung agar melampau tabrakan (Float over everything else)!! */
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+    }
+
+    /* Mantra pamungkas sewaktu Tombol Garis Tiga Hamburger Bar ditekan/diaktifkan via JS. Sidebar akan meluncur Terbang balik lagi tampil Menampakkan Diri Sepanjang sedia kala (Kordinat 0 X!). */
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Melenyapkan beban pendorongan (margin) karena tiang sidebar aslinya sedang minggat gaib tersembunyi bersembunyi. Area Main memakan kekosongan ruang mencaplog kuasa lebarnya menabrak dinding utuh (Width 100% full!!) */
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+        /* Kurangi rongga dinding, sayang layar hp kecil kalo space terbuang mubazir kebesaran ketebalan padding. */
+    }
+
+    /* Memastikan sistem Office Administrasi tugu list harian hanya sebatang 1 baris */
+    .office-admin {
+        grid-template-columns: 1fr;
+    }
+
+    /* Mengekang Grid Kapsul Kilat Info Statistik Angka agar baris menyesuaikan otomatis numpuk tapi minimal mengecil seukuran 150 piksel saja gak boleh menciut memijah lgi. Cukup! */
+    .quick-stats {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    /* Merombak Sapa Sambutan "Selamat Datang" biar membulat tengah tumpuk menetes warnanya tebal beda dikit bentuknya */
+    .welcome-card {
+        padding: 1.5rem;
+        text-align: center;
+        border-left: none;
+        /* Buang garis pembatas kuno */
+        border-top: 6px solid #ff7e5f;
+        /* Kasih sabuk pita tebal berona peach api oren melintang gagah di Atap Card nya!! */
+    }
+
+    /* Mencabut Nyabut Hiasan ornamen after di welcome card demi bersihnya layar hp. Pengorbanan estetika demi kemerdekaan fungsi luasan layar sempit. */
+    .welcome-card::after {
+        display: none;
+    }
+
+    /* Memenggal dan Mematahkan form ketikan masukan yg dulunya memanjang sejajar cantik... Dipaksa rela lurus melungsur sejajar vertikal bertumpuk seperti susunan bata. */
+    .manage-card form,
+    .reminder-card form,
+    .schedule-card form {
+        flex-direction: column;
+    }
+
+    /* Form pengetikan dan tombolnya rela memelototkan diri mencungkil memakan 100% kelonggaran baris tsb demi jempol HP besar. Nyaman dipencet jempol raksasa! */
+    .add-form input {
+        width: 100%;
+    }
+
+    .manage-card form button,
+    .reminder-card form button,
+    .schedule-card form button {
+        width: 100%;
+    }
+
+    /* Nah, barulah Sabuk Pengikat Bando Atasan Layar Pembuka Menu Muncul menampakkan dirinya di HP. Mengganti eksistensi Sidebar yang sedang dibungkam di relung kiri pojok alam tak kasat mata. */
+    .mobile-header {
+        display: flex;
+    }
+}
+
+/* --- Tuntunan Ujung Tombak Terakhir! Layar Paling Sempit SejagatRaya (HP iPhone jadul 5/SE Resolusi < 480px Super Tiny Tiny Screen) --- */
+@media (max-width: 480px) {
+
+    /* Terjunkan Barisan Grafik yang asalnya msh mendesak Berbelah bersisian. Remukan!! Semua Harus Lurus Bawah Numpuk demi kejelasan Data Grafik tidak menggembel kepotong burik layar sempit kecil banget! (1fr Single Stack) */
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-card h2 {
+        font-size: 1.3rem;
+        /* Menciut kempeskan tulisan Judul Gede biar tak muntah membentur garis batas card! */
+    }
+}
+
+
+/* =========================================================
+   📈 GRAFIK PRODUKSI PREMIUM - ENHANCED CHART STYLES
+   Tambahan gaya eksklusif untuk kartu grafik Tren Produksi Telur
+   yang lebih informatif, menarik, dan premium.
+========================================================= */
+
+/* === Kartu Chart Produksi Khusus (Override base chart-container) === */
+/* Memberikan padding lebih lapang dan border aksen atas berwarna emas */
+.chart-produksi-card {
+    padding: 0;
+    overflow: hidden;
+    /* Cegah dekorasi header meluber keluar radius */
+    border-top: 4px solid transparent;
+    background-image: linear-gradient(white, white),
+        linear-gradient(90deg, #fb8500, #ffb703, #10b981);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    /* Teknik border gradien modern */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-produksi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(251, 133, 0, 0.15);
+}
+
+/* === Header Grafik: Judul + Tombol Filter di satu baris === */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.4rem 1.5rem 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+/* Grup teks judul */
+.chart-title-group h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.2rem 0;
+    text-align: left;
+}
+
+/* Subtitle periode di bawah judul */
+.chart-subtitle {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* === Grup Tombol Filter Periode (7/14/30 Hari) === */
+.chart-filter-group {
+    display: flex;
+    gap: 0.4rem;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+/* Tombol dasar filter */
+.chart-filter-btn {
+    padding: 0.35rem 0.75rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Tombol filter yang sedang aktif dipilih */
+.chart-filter-btn.active {
+    background: linear-gradient(135deg, #fb8500 0%, #ffb703 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(251, 133, 0, 0.4);
+}
+
+.chart-filter-btn:hover:not(.active) {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* === Mini Statistik Ringkasan (4 Kotak Angka di Atas Grafik) === */
+.chart-mini-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    margin: 0;
+}
+
+/* Tiap kotak statistik kecil */
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-right: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.mini-stat:last-child {
+    border-right: none;
+}
+
+.mini-stat:hover {
+    background: #fafafa;
+}
+
+/* Ikon kotak warna dalam mini-stat */
+.mini-stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Label kecil abu */
+.mini-stat-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+    margin: 0 0 0.15rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+
+/* Nilai angka besar */
+.mini-stat-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+    transition: all 0.3s ease;
+}
+
+/* === Wrapper Canvas + Empty Overlay === */
+.chart-canvas-wrapper {
+    position: relative;
+    padding: 1rem 1.2rem 1.2rem;
+}
+
+/* Overlay tampilan kosong jika belum ada data */
+.chart-empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    border-radius: 0 0 15px 15px;
+    z-index: 10;
+    text-align: center;
+    gap: 0.5rem;
+    /* Tersembunyi secara default, ditampilkan via JS jika data kosong */
+    display: none;
+}
+
+.chart-empty-icon {
+    font-size: 2.5rem;
+    animation: bobFloat 2.5s ease-in-out infinite;
+}
+
+.chart-empty-overlay p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+
+.chart-empty-overlay small {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Animasi mengambang untuk ikon empty state */
+@keyframes bobFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* === Responsif untuk layar kecil === */
+@media (max-width: 768px) {
+    .chart-mini-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chart-header {
+        flex-direction: column;
+    }
+
+    .mini-stat {
+        padding: 0.7rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-mini-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chart-filter-group {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -1,0 +1,533 @@
+/* =========================================================
+   CUSTOM STYLES FOR PREDIKSI HASIL (MINIMALIST & CLEAN)
+========================================================= */
+
+/* --- Bagian Header Halaman --- */
+/* Mengatur tampilan kotak judul halaman agar terlihat modern, berwarna gradasi, dan melengkung di sudutnya */
+.page-header {
+    margin-bottom: 2.5rem;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(118, 75, 162, 0.3);
+    position: relative;
+    overflow: hidden;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease;
+    cursor: default;
+}
+
+.page-header:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 35px rgba(118, 75, 162, 0.5);
+}
+
+/* --- Dekorasi Watermark Header --- */
+/* Menambahkan ikon grafik transparan sebagai hiasan di pojok kanan bawah header halaman */
+.page-header::after {
+    content: '📉📈';
+    position: absolute;
+    right: 20px;
+    bottom: -20px;
+    font-size: 8rem;
+    opacity: 0.15;
+    transform: rotate(-10deg);
+    transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease;
+    pointer-events: none;
+}
+
+.page-header:hover::after {
+    transform: rotate(5deg) scale(1.15) translateY(-10px);
+    opacity: 0.35;
+}
+
+.page-header h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
+    position: relative;
+    z-index: 1;
+}
+
+.page-header p {
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0;
+    max-width: 80%;
+    line-height: 1.6;
+    position: relative;
+    z-index: 1;
+}
+
+/* --- Bagian Container Utama --- */
+/* Membagi area halaman menjadi dua kolom (kiri untuk form, kanan untuk hasil grafik) */
+.prediction-container {
+    display: grid;
+    grid-template-columns: 38% 62%;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* --- Bagian Kartu Pembungkus --- */
+/* Memberikan latar belakang putih/gradasi, batas, dan efek bayangan pada kotak di sekitar elemen (seperti form) */
+.shadow-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* --- Bagian Kotak Informasi (Petunjuk Penggunaan) --- */
+/* Tampilan untuk kotak pesan atau petunjuk langkah-langkah di atas formulir */
+.info-banner {
+    background: #f8fafc;
+    border-left: 3px solid #cbd5e1;
+    padding: 1rem 1.25rem;
+    border-radius: 6px;
+    margin-bottom: 2rem;
+}
+
+.info-banner h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: #334155;
+    font-weight: 600;
+}
+
+.info-banner ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* --- Bagian Seksi dalam Formulir --- */
+/* Memberi jarak per bagian di dalam form agar tidak terlalu rapat */
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.section-label {
+    font-size: 1rem;
+    color: #0f172a;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.section-desc {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+}
+
+/* --- Bagian Grid untuk Input Data Historis --- */
+/* Menyusun kotak input data (H-2, H-1, Hari Ini) agar sejajar ke samping dengan sistem grid tiga kolom */
+.historical-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.form-group-mini {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-mini label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group-mini .highlight-label {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.hist-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #334155;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.hist-input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* For Today's input (Hari ini) */
+.hist-input.required-today {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.hist-input.required-today:focus {
+    border-color: #3b82f6;
+    background: #fff;
+}
+
+/* --- Bagian Tombol Pilihan Tab (Produksi / Biaya & Pemasukan) --- */
+/* Mengatur tampilan area pembungkus tombol agar terlihat seperti saklar pilihan */
+.toggle-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    background: #f8f9fa;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid #e1e8ed;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #7f8c8d;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+    color: #2c3e50;
+    background: #e1e8ed;
+}
+
+/* --- Bagian Button Produksi --- */
+.tab-btn.active {
+    background: #00b4db;
+    color: #2c3e50;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Bagian Animasi Transisi Tab --- */
+/* Memberikan efek muncul perlahan (fade in) ketika tab baru atau kontennya dibuka */
+.historical-tab {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Bagian Layout Baris Formulir --- */
+/* Membuat kolom form bawah (Masa MA, Harga per Kg, dsb.) sejajar menyamping jika diletakkan di baris yang sama */
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group.half {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+.styled-select,
+.form-group input[type="number"] {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #334155;
+    transition: all 0.2s ease;
+}
+
+.styled-select:focus,
+.form-group input[type="number"]:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* --- Bagian Tombol Prediksi --- */
+/* Mengatur font, warna latar gradien biru, efek bayangan, dan perubahan saat tombol ditekan atau dilewati mouse (hover) */
+.btn-ma {
+    width: 100%;
+    background: linear-gradient(135deg, #00b4db, #0083B0);
+    color: white;
+    padding: 1.2rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    margin-top: 1rem;
+    box-shadow: 0 6px 15px rgba(255, 255, 255, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-ma:hover {
+    background: linear-gradient(135deg, #00b4db, #0083B0);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(33, 114, 30, 0.45);
+}
+
+.btn-ma:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3);
+}
+
+/* --- Bagian Grid Untuk Kartu Hasil Statistik (Quick Stats) --- */
+/* Menyusun kotak-kotak kecil hasil perhitungan agar rapi berjajar dua kolom per baris */
+.result-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.result-card {
+    background: linear-gradient(135deg, #ffffff 0%, #fdfbfb 100%);
+    border-radius: 12px;
+    padding: 1.2rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.stat-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
+
+.result-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+}
+
+.result-card:hover::before {
+    background: linear-gradient(to bottom, #FF416C, #FF4B2B);
+}
+
+/* --- Bagian Kartu Hasil Statistik --- */
+/* Mengatur ukuran, warna ikon, dan kotak di dalam kartu statistik agar terlihat hidup (vibrant) */
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+/* --- Bagian Efek Kilauan (Shine) Pada Ikon --- */
+/* Menambahkan efek animasi garis cahaya putih miring yang melewati ikon secara berulang */
+.stat-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    transform: skewX(-25deg);
+    animation: shine 3s infinite;
+    z-index: -1;
+}
+
+@keyframes shine {
+    0% {
+        left: -100%;
+    }
+
+    20% {
+        left: 200%;
+    }
+
+    100% {
+        left: 200%;
+    }
+}
+
+.stat-icon.yellow-bg {
+    background: linear-gradient(135deg, #FDB813 0%, #ff9800 100%);
+    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
+}
+
+.stat-icon.green-bg {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 6px 15px rgba(56, 239, 125, 0.4);
+}
+
+.stat-icon.red-bg {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+    box-shadow: 0 6px 15px rgba(255, 75, 43, 0.4);
+}
+
+.stat-icon.blue-bg {
+    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
+    box-shadow: 0 6px 15px rgba(0, 114, 255, 0.4);
+}
+
+.result-card h4 {
+    font-size: 0.75rem;
+    color: #475569;
+    margin-bottom: 0.2rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.result-card p {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.result-card small {
+    font-size: 0.7rem;
+    color: #64748b;
+    display: block;
+    margin-top: 0.2rem;
+    line-height: 1.4;
+}
+
+/* --- Warna Background Khusus Tiap Kartu Hasil --- */
+.result-card.bg-produksi {
+    background: linear-gradient(135deg, #fffcf2 0%, #fff6e0 100%);
+    border-color: #fde4a9;
+}
+
+.result-card.bg-produksi:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
+}
+
+.result-card.bg-pendapatan {
+    background: linear-gradient(135deg, #f2fbf6 0%, #e3f7ed 100%);
+    border-color: #bcebcf;
+}
+
+.result-card.bg-pendapatan:hover {
+    border-color: #10b981;
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+}
+
+.result-card.bg-biaya {
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%);
+    border-color: #fecdd3;
+}
+
+.result-card.bg-biaya:hover {
+    border-color: #ef4444;
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+}
+
+.result-card.bg-keuntungan {
+    background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%);
+    border-color: #bae6fd;
+}
+
+.result-card.bg-keuntungan:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+}
+
+/* --- Bagian Pewarnaan Teks Indikator (Naik/Turun) --- */
+/* Memaksa perubahan warna teks menjadi merah jika hasil negatif, dan hijau jika positif */
+.highlight-text-red {
+    color: #ef4444 !important;
+}
+
+.highlight-text-green {
+    color: #16a34a !important;
+}
+
+/* --- Bagian Pembungkus Grafik (Chart) --- */
+/* Memberikan latar belakang putih dan efek bayangan lembut di belakang area lokasi grafik digambar */
+.chart-container {
+    background: #ffffff;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    padding: 2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+.chart-container h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e3c72;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.canvas-wrapper {
+    position: relative;
+    height: 400px;
+    width: 100%;
+}
+
+/* --- Bagian Tampilan Layar Kecil (Responsif / Mobile / Tablet) --- */
+/* Mengubah susunan kolom yang tadinya kiri-kanan menjadi atas-bawah jika layar lebih kecil dari 1024 piksel */
+@media (max-width: 1024px) {
+    .prediction-container {
+        grid-template-columns: 1fr;
+    }
+}

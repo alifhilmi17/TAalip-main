@@ -1,0 +1,86 @@
+<!-- =========================================================
+     SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+     File: index.html
+     Deskripsi: Halaman utama (Landing Page) sebagai gerbang 
+     masuk sebelum pengguna melakukan Login atau Pendaftaran.
+========================================================= -->
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <!-- Pengaturan metadata dasar dan viewport untuk responsivitas (ukuran layar) -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Lintau Buo Administration System - Portal Profesional Peternakan">
+  
+  <!-- Judul yang muncul pada tab browser -->
+  <title>Selamat Datang di LIBAS</title>
+
+  <!-- Mengimpor Font 'Poppins' dari Google Fonts untuk tampilan teks yang modern -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Mengimpor file CSS khusus untuk mengatur gaya desain halaman Landing Page ini -->
+  <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+  <!-- ========================= AREA BACKGROUND ========================== -->
+  <!-- Latar belakang halaman dengan elemen dekorasi lampu neon (glow) dan tekstur bintik (noise) -->
+  <div class="background-wrapper">
+    <!-- Tiga bola cahaya warna-warni (orb) yang melayang di latar belakang -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+    
+    <!-- Lapisan overlay (tekstur kasar/noise) untuk memberikan kesan desain premium/elegan -->
+    <div class="noise-overlay"></div>
+  </div>
+
+  <!-- ========================= KONTEN UTAMA (HERO SECTION) ========================== -->
+  <!-- Bagian tengah layar yang menampilkan logo, judul, dan tombol akses masuk -->
+  <main class="hero-container">
+    <!-- Kotak transparan berlapis efek kaca (Glassmorphism) pemanis UI -->
+    <div class="hero-glass">
+
+      <!-- Ikon Logo (Kepala Ayam) -->
+      <div class="brand-icon" style="font-size: 42px; line-height: 1; user-select: none;">
+        🐔
+      </div>
+
+      <!-- Teks Judul Sambutan Utama -->
+      <h1 class="welcome-title">Selamat Datang di <span class="gradient-text">LIBAS</span></h1>
+      <p class="subtitle"> Lintau Buo Administration </p>
+
+      <!-- Label/Chip fitur singkat aplikasi -->
+      <div class="features-list">
+        <span class="badge">Profesional</span>
+        <span class="badge">Efisien</span>
+        <span class="badge">Terorganisir</span>
+      </div>
+
+      <!-- Kumpulan Tombol Akses (Login & Daftar) -->
+      <div class="auth-buttons">
+        
+        <!-- Tombol Menuju Halaman Login -->
+        <a href="login.html" class="btn btn-primary" title="Masuk ke Akun Anda">
+          <span>Masuk ke Portal</span>
+          <!-- Ikon Panah/Pintu Masuk dalam format SVG -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
+          </svg>
+        </a>
+        
+        <!-- Tombol Menuju Halaman Pembuatan Akun Baru (Signup) -->
+        <a href="signup.html" class="btn btn-secondary" title="Buat Akun Baru">
+          <span>Buat Akun</span>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+</body>
+
+</html>

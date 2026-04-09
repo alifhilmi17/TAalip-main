@@ -1,0 +1,211 @@
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: admin.css
+   Deskripsi: Menata tampilan visual elemen-elemen khusus 
+   pada Halaman Panel Admin (Dashboard Administrator).
+========================================================= */
+
+/* =========================================
+   1. KARTU SAMBUTAN ADMIN (Hero Banner)
+   ========================================= */
+/* Memberikan latar belakang gradien gelap elegan khas admin */
+.admin-welcome {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%); /* Transisi warna biru dongker gelap */
+  color: #f8fafc; /* Warna teks putih keabu-abuan agar kontras */
+  box-shadow: 0 8px 25px rgba(30, 41, 59, 0.2); /* Bayangan lembut untuk memberikan kedalaman (efek mengambang) */
+}
+
+/* Judul ucapan selamat datang di panel admin */
+.admin-welcome h2 {
+  color: #fff; /* Putih bersih untuk judul utama */
+  font-weight: 600; /* Ketebalan font sedang (Semi-bold) */
+}
+
+/* Teks paragraf pendukung di bawah judul */
+.admin-welcome p {
+  color: #cbd5e1; /* Warna teks agak redup agar tidak berebut fokus dengan judul */
+}
+
+/* =========================================
+   2. PENYESUAIAN SIDEBAR UNTUK ADMIN
+   ========================================= */
+/* Mengubah warna latar sidebar menjadi lebih gelap khusus halaman admin */
+.sidebar {
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); /* Gradasi biru kelam agar terkesan kokoh / eksklusif */
+  border-right: 1px solid #334155; /* Garis pembatas tipis di kanan sidebar */
+}
+
+/* Warna logo aplikasi di sidebar admin */
+.sidebar .logo {
+  color: #38bdf8; /* Biru langit cerah (Cyan) */
+}
+
+/* Teks kecil pemanis di bawah logo */
+.sidebar .logo span {
+  color: #94a3b8; /* Teks abu-abu redup */
+  font-size: 0.85rem; /* Ukuran font diperkecil sedikit */
+  font-style: italic; /* Gaya huruf miring untuk estetika */
+}
+
+/* =========================================
+   3. GRID DAFTAR MODUL APLIKASI
+   ========================================= */
+/* Pembungkus luar barisan kartu modul */
+.modules-grid {
+  margin-top: 2rem; /* Jarak atas dari elemen sebelumnya */
+  margin-bottom: 2rem; /* Jarak bawah menuju elemen berikutnya */
+}
+
+/* Judul bagian grid kartu modul */
+.modules-grid h3 {
+  font-size: 1.2rem; /* Ukuran font agak besar */
+  color: #1e293b; /* Warna font gelap kebiruan */
+  margin-bottom: 1rem; /* Jarak antara judul dan kartu */
+  font-weight: 600; /* Font semi-bold */
+}
+
+/* Kontainer yang mengatur formasi kartu modul secara otomatis (Responsive Grid) */
+.module-cards {
+  display: grid; /* Menggunakan CSS Grid Layout */
+  /* Membuat kolom responsif: ukuran tiap kolom minimal 240px, maksimal selebar mungkin (1 fr) */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem; /* Jarak celah horizontal & vertikal antar kartu (Gutter) */
+}
+
+/* =========================================
+   4. DESAIN KARTU MODUL INDIVIDU
+   ========================================= */
+/* Model fisik setiap kartu yang melambangkan satu modul */
+.module-card {
+  background: #fff; /* Latar kartu berwarna putih bersih */
+  border-radius: 15px; /* Menumpulkan/melengkungkan sudut kartu */
+  padding: 1.5rem; /* Memberikan ruang napas di dalam kotak */
+  text-align: center; /* Meratakan ikon & teks ke tengah (Center align) */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bayangan sangat tipis untuk membedakan dari latar belakang */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transisi halus animasi pemuaian ukuran dan bayangan */
+  
+  /* Flexbox untuk kartu agar isinya elastis meregang mengisi bawah (agar tinggi kartu sejajar semua) */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; 
+}
+
+/* Animasi sederhana ketika kursor menyorot (Hover) kartu modul */
+.module-card:hover {
+  transform: translateY(-5px); /* Kartu seolah melayang mengambang naik 5 pixel */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* Bayangannya jadi sedikit lebih tebal layaknya benda terangkat nyata */
+}
+
+/* Ukuran ikon di dalam kartu (Biasanya emoji atau icon font) */
+.mod-icon {
+  font-size: 3rem; /* Besaran ikon yang sangat mencolok */
+  margin-bottom: 1rem; /* Mendorong teks judul ke bawah sedikit */
+}
+
+/* Nama/Judul dari Modul pada kartu tsb */
+.module-card h4 {
+  font-size: 1.1rem; /* Teks berukuran 1.1x dari ukuran dasar */
+  color: #0f172a; /* Warna dark blue agar tegas terbaca */
+  margin-bottom: 0.5rem;
+  font-weight: 600; /* Tebal sedang */
+}
+
+/* Deskripsi rincian apa isi modul tersebut */
+.module-card p {
+  font-size: 0.85rem; /* Huruf diperkecil */
+  color: #64748b; /* Abu-abu batu */
+  margin-bottom: 1.5rem; /* Batas jarak dengan tombol di bawahnya */
+  line-height: 1.5; /* Peregangan jarak per-baris teks agar nyaman dibaca (Ketinggian Garis) */
+  flex-grow: 1; /* Deskripsi ini yang akan merenggang jika teks sedikit, agar menekan tombol mentok ke bawah card terus! */
+}
+
+/* Tombol Akses Modul ("Kelola Data", "Buka Keuangan" dll) */
+.mod-btn {
+  display: inline-block; /* Agar padding dan margin berfungsi optimal pada link <a> */
+  background: #3b82f6; /* Warna Latar Biru Terang (Aksen) */
+  color: #fff; /* Teks Putih Terang */
+  text-decoration: none; /* Menghilangkan coretan garis bawah bawaan klik link biru HTML */
+  font-weight: 500;
+  padding: 0.6rem 1.2rem; /* Ukuran rongga tombol (atas-bawah dan kiri-kanan) */
+  border-radius: 8px; /* Tumpul sudut tombol proporsional */
+  transition: background 0.3s; /* Lembut meregang bereaksi merubah warna kalau disentuh kursor */
+}
+
+/* Perilaku tombol kelola pas kena hover */
+.mod-btn:hover {
+  background: #2563eb; /* Gradasi sedikit ke biru lenyap/lebih tua (Hover state blue darken) */
+}
+
+/* =========================================
+   5. TABEL CATATAN LOG SISTEM 
+   ========================================= */
+/* Kotak pembungkus tabel log rekaman perbuatan aplikasi */
+.system-logs {
+  background: #fff;
+  border-radius: 15px; /* Sama dengan kartu modul, bingkai bulat 15 piksel */
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Bayangan membumbung tipis */
+  margin-bottom: 2rem;
+}
+
+/* Judul bagian riwayat Log */
+.system-logs h3 {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  
+  /* Hiasan pita penegas berwarna kuning senja/emas di sebelah kiri Judul log sistem */
+  border-left: 4px solid #f59e0b; 
+  padding-left: 10px; /* Menyisihkan jarak judul spasi agar tidak lengket menempel ke pitanya */
+}
+
+/* Penata tampilan wadah Tabel Induk */
+.logs-table {
+  width: 100%; /* Memaksa menyebarkan tabel sepenuh-penuhnya melebarkan lebarnya 100% mengikuti kotak wadah ayahnya */
+  border-collapse: collapse; /* Menghilangkan jeda garis putih tebal kuno renggang antara sel cell. Sangat penting! (modern table) */
+  margin-bottom: 1rem;
+  font-size: 0.9rem; /* Agak kecil layaknya data spreadsheet */
+  text-align: left; /* Teks tulisan merapat condong berbaris start sebelah kiri */
+}
+
+/* Regulasi ruang kosong kolom Kepala (TH) dan Isi (TD) */
+.logs-table th, .logs-table td {
+  padding: 12px 15px; /* Rongga nyaman yang lumayan luas agar data tabel tidak kesesakan bertabrakan paha/pundak tumpang tindih */
+  border-bottom: 1px solid #f1f5f9; /* Membuat list daftar bergaris bawah keabu-abuan sebagai pembatas antarsusun baris vertikal */
+}
+
+/* Gaya penekanan di Sabuk Baris Judul Tabel Kolom (TH) */
+.logs-table th {
+  background-color: #f8fafc; /* Latar pucat kusam keabuan (Slate Gray) supaya membedakan kepala dengan badan row contentnya */
+  color: #475569; /* Teks agak samar elegan sedikit */
+  font-weight: 600; /* Huruf sedikit ditebalkan */
+  text-transform: uppercase; /* Membesarkan semua huruf otomatis (KAPITAL LOGO) mencerminkan ketegasan kolom judul */
+  font-size: 0.8rem;
+  letter-spacing: 0.5px; /* Jarak kerenggangan pelan sesama aksara huruf menyempurnakan bentuk UPPERCASEnya */
+}
+
+/* Efek arsir abu-abu tipis bila salah satu data rekaman lewat (Sangat berharga untuk bantuan scanning tracking mata pimpinan/admin) */
+.logs-table tbody tr:hover {
+  background-color: #f1f5f9; /* Abu-abu kalem lembut merintih saat kursor numpang lewat */
+}
+
+/* =========================================
+   6. TOMBOL HAPUS LOG
+   ========================================= */
+/* Tombol darurat warna dominan Merah membasmi Log aktivitas */
+.clear-logs-btn {
+  background: #ef4444; /* Merah menyala menandakan bahaya / hapus data */
+  color: white; /* Lawanan kontras bersih putih teks "Bersihkan" */
+  border: none; /* Matikan garis border tepi pabrikan */
+  padding: 8px 16px; /* Bantalan rongga sedikit langsing dibanding tombol panel */
+  border-radius: 8px; /* Tepi melengkung elegan standar kita (8px) */
+  cursor: pointer; /* Saat menyentuh form, tunjukan tangan/jari telunjuk mendaulat tindakan klik siap dieksekusi (pointer icon) */
+  font-weight: 500;
+  transition: background 0.3s ease; /* Animasikan memudar 0.3s lamanya warna solid */
+}
+
+/* Sentuhan Merah Meradang jika Kursor Menyambar/Mengingini/Hover klik Tombol. */
+.clear-logs-btn:hover {
+  background: #dc2626; /* Warna merah ditarik lebih redup menjurus darah gelap. */
+}

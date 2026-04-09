@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- ========================= META & TITLE ========================== -->
+    <!-- Pengaturan karakter encoding karakter dan viewport untuk perangkat mobile -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prediksi Hasil Telur & Laba - LIBAS</title>
+
+    <!-- ========================= FONT & ANIMASI ========================== -->
+    <!-- Menggunakan font Poppins dan library Animate.css untuk animasi elemen -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- ========================= CSS KUSTOM ========================== -->
+    <!-- Mewarisi CSS tata letak dashboard dan CSS khusus untuk halaman prediksi MA -->
+    <link rel="stylesheet" href="css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="css/prediksihasil.css" />
+
+    <!-- ========================= LIBRARY ========================== -->
+    <!-- Memuat SweetAlert2 untuk notifikasi pop-up dan Chart.js untuk menggambar grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+      <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
+
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+        </div>
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="true">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu open" id="kelolaSubmenu" aria-hidden="false">
+          <a href="prediksihasil.html" class="active"> Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html" >📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="#">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name">Alep</p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+
+    </div>
+  </aside>
+
+    <!-- ========================= KONTEN UTAMA ========================== -->
+    <!-- Ruang kerja utama yang berisi alat formulir prediksi mandiri dan laporan grafik hasil -->
+    <main class="main-content">
+
+        <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+        <header class="mobile-header">
+            <div class="mobile-logo">🐔 LIBAS</div>
+            <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+                aria-label="Toggle Sidebar">
+                ☰
+            </button>
+        </header>
+
+        <!-- ===== HEADER HALAMAN ===== -->
+        <header class="page-header animate__animated animate__fadeInDown">
+            <div class="header-text">
+                <h2>📈 Prediksi Cerdas Moving Average (MA)</h2>
+                <p>Proyeksi produksi telur dan profitabilitas bisnis menggunakan metode statistik Moving Average.</p>
+            </div>
+        </header>
+
+        <!-- ===== AREA PREDIKSI: FORM INPUT & GRAFIK HASIL ===== -->
+        <div class="prediction-container animate__animated animate__fadeInUp">
+
+            <!-- ===================== PANEL KIRI: FORM PREDIKSI ===================== -->
+            <section class="prediction-form-card shadow-card">
+
+                <!-- Banner Informasi dan Panduan Penggunaan MA -->
+                <div class="info-banner"
+                    style="background: linear-gradient(135deg, #00b4db, #0083B0); color: white; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0, 180, 219, 0.25); position: relative; overflow: hidden; border: none;">
+
+                    <!-- Dekorasi Latar Belakang Lingkaran -->
+                    <div
+                        style="position: absolute; right: -20px; top: -40px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%;">
+                    </div>
+                    <div
+                        style="position: absolute; left: 40%; bottom: -50px; width: 100px; height: 100px; background: rgba(255,255,255,0.05); border-radius: 50%;">
+                    </div>
+
+                    <!-- Judul Panduan -->
+                    <h4
+                        style="margin: 0 0 15px 0; font-size: 1.15rem; color: #ffffff; display: flex; align-items: center; gap: 10px; font-weight: 700;">
+                        <span
+                            style="background: rgba(255,255,255,0.25); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1.2rem; box-shadow: inset 0 0 8px rgba(255,255,255,0.2);">💡</span>
+                        Panduan Prediksi Cerdas Moving Average (MA):
+                    </h4>
+
+                    <!-- Daftar Langkah-langkah Penggunaan -->
+                    <div style="display: flex; flex-direction: column; gap: 12px; position: relative; z-index: 1;">
+
+                        <!-- Langkah 1: Memilih Periode MA -->
+                        <div
+                            style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.3); padding: 14px 18px; border-radius: 12px; display: flex; gap: 12px; align-items: start; backdrop-filter: blur(5px); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <span
+                                style="background: #ffffff; color: #0083B0; font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">1</span>
+                            <p
+                                style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #ffffff; font-weight: 400;">
+                                <strong>Pilih Periode:</strong> Tentukan <span
+                                    style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem;">Periode
+                                    MA</span> di bawah. Angka besar memperhalus tren jarak panjag, angka kecil lebih
+                                sensitif ke fluktuasi harian.
+                            </p>
+                        </div>
+
+                        <!-- Langkah 2: Mengisi Data Historis -->
+                        <div
+                            style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.3); padding: 14px 18px; border-radius: 12px; display: flex; gap: 12px; align-items: start; backdrop-filter: blur(5px); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <span
+                                style="background: #ffffff; color: #0083B0; font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">2</span>
+                            <p
+                                style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #ffffff; font-weight: 400;">
+                                <strong>Isi Data Historis:</strong> Ketikkan tab data produksi & tab laba Anda mulai
+                                dari Hari Ini mundur kebelakang (selaras dengan setting MA).
+                                <em
+                                    style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; display: block; margin-top: 8px; font-size: 0.85rem; border-left: 3px solid #ffd700; font-style: normal; line-height: 1.6;">
+                                    <strong>📝 Contoh Cara Kerja MA (Periode 3 Hari):</strong><br>
+                                    Jika panen 3 hari kebelakang Anda adalah: <strong>100, 110, dan 120
+                                        butir</strong>.<br>
+                                    Sistem akan meramal panen besok dengan mencari nilai rata-ratanya:<br>
+                                    <span
+                                        style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; font-family: monospace;">(100
+                                        + 110 + 120) ÷ 3 = <strong style="color: #ffd700;">110 butir</strong></span>
+                                    prediksi untuk esok! <!-- <br>asdsad -->
+                                </em>
+                            </p>
+                        </div>
+
+                        <!-- Langkah 3: Menjalankan Analisis -->
+                        <div
+                            style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255,255,255,0.3); padding: 14px 18px; border-radius: 12px; display: flex; gap: 12px; align-items: start; backdrop-filter: blur(5px); box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                            <span
+                                style="background: #ffffff; color: #0083B0; font-weight: 800; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.9rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">3</span>
+                            <p
+                                style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #ffffff; font-weight: 400;">
+                                <strong>Mulai Analisis:</strong> Klik tombol kalkulasi ✨ <strong
+                                    style="color: #ffd700;">ANALISIS DENGAN MA</strong> untuk menciptakan grafik ramalan
+                                esok hari!
+                            </p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ===== FORMULIR PREDIKSI ===== -->
+                <form id="predictionForm" onsubmit="calculatePrediction(event)">
+
+                    <!-- TAB PILIHAN: PRODUKSI ATAU KEUNTUNGAN -->
+                    <div class="toggle-tabs">
+                        <button type="button" class="tab-btn active" onclick="switchHistoricalTab('produksi', this)">🥚
+                            Produksi (Butir)</button>
+                        <button type="button" class="tab-btn" onclick="switchHistoricalTab('keuntungan', this)">💰
+                            Keuntungan (Rp)</button>
+                    </div>
+
+                    <!-- INPUT 1A: DATA HISTORIS PRODUKSI (BUTIR) -->
+                    <div id="tabProduksi" class="form-group historical-tab"
+                        style="background: linear-gradient(to bottom right, #ffffff, #f0f8fb); border: 2px solid #bce0fd; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.08);">
+                        <label
+                            style="font-size: 1.15rem; color: #1e3c72; font-weight: 700; border-bottom: 3px solid #3498db; padding-bottom: 8px; margin-bottom: 12px; display: inline-block; letter-spacing: 0.5px;">
+                            📊 Data Historis Produksi Panen (Butir)
+                        </label>
+                        <p style="font-size: 0.9rem; color: #576574; margin-bottom: 25px; line-height: 1.6;">
+                            Masukkan angka panen secara berurutan mundur dari Hari Ini sesuai <strong>Periode
+                                MA</strong>.
+                        </p>
+                        <div class="historical-inputs">
+                            <!-- Kumpulan Input Data Harian (H-6 hingga Hari Ini) -->
+                            <div class="form-group-mini">
+                                <label>H-6 (Opsi)</label>
+                                <input type="number" id="hist6" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-5 (Opsi)</label>
+                                <input type="number" id="hist5" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-4 (Opsi)</label>
+                                <input type="number" id="hist4" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-3</label>
+                                <input type="number" id="hist3" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-2</label>
+                                <input type="number" id="hist2" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-1</label>
+                                <input type="number" id="hist1" class="hist-input" placeholder="-" step="any" min="0">
+                            </div>
+                            <div class="form-group-mini" style="grid-column: span 2;">
+                                <label
+                                    style="font-weight: 700; color: #d35400; background: #ffeaa7; padding: 3px 10px; border-radius: 6px; border-left: 3px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block; margin-bottom: 8px;">
+                                    Hari Ini (Wajib)</label>
+                                <input type="number" id="hist0" class="hist-input" placeholder="-" step="any" min="0"
+                                    required
+                                    style="border: 2px solid #f39c12; background: #fffcf2; font-size: 1.1rem; padding: 12px; box-shadow: inset 0 0 10px rgba(243, 156, 18, 0.1), 0 0 12px rgba(243, 156, 18, 0.15);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INPUT 1B: DATA HISTORIS KEUNTUNGAN (RUPIAH) -->
+                    <div id="tabKeuntungan" class="form-group historical-tab"
+                        style="display: none; background: linear-gradient(to bottom right, #ffffff, #f0fcf4); border: 2px solid #c3edd3; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.08);">
+                        <label
+                            style="font-size: 1.15rem; color: #1e5128; font-weight: 700; border-bottom: 3px solid #2ecc71; padding-bottom: 8px; margin-bottom: 12px; display: inline-block; letter-spacing: 0.5px;">
+                            💰 Data Historis Laba Keuangan (Rp)
+                        </label>
+                        <p style="font-size: 0.9rem; color: #576574; margin-bottom: 25px; line-height: 1.6;">
+                            Catat nilai bersih keuntungan harian yang masuk ke dompet Anda pada periode yang sama.
+                        </p>
+                        <div class="historical-inputs">
+                            <div class="form-group-mini">
+                                <label>H-6 (Opsi)</label>
+                                <input type="number" id="prof6" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-5 (Opsi)</label>
+                                <input type="number" id="prof5" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-4 (Opsi)</label>
+                                <input type="number" id="prof4" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-3</label>
+                                <input type="number" id="prof3" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-2</label>
+                                <input type="number" id="prof2" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini">
+                                <label>H-1</label>
+                                <input type="number" id="prof1" class="hist-input" placeholder="-" step="any">
+                            </div>
+                            <div class="form-group-mini" style="grid-column: span 2;">
+                                <label
+                                    style="font-weight: 700; color: #218c46; background: #e8f8f0; padding: 3px 10px; border-radius: 6px; border-left: 3px solid #2ecc71; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block; margin-bottom: 8px;">
+                                    Hari Ini (Wajib)</label>
+                                <input type="number" id="prof0" class="hist-input" placeholder="-" step="any" required
+                                    style="border: 2px solid #27ae60; background: #f2fbf6; font-size: 1.1rem; padding: 12px; box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.1), 0 0 12px rgba(46, 204, 113, 0.15);">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- INPUT 2: KONFIGURASI VARIABEL PREDIKSI -->
+                    <div
+                        style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); border: 1px solid #dcdde1; padding: 25px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
+                        <label
+                            style="font-size: 1.15rem; color: #2f3640; font-weight: 700; border-bottom: 3px solid #9b59b6; padding-bottom: 8px; margin-bottom: 20px; display: inline-block; letter-spacing: 0.5px;">
+                            ⚙️ Konfigurasi Variabel Prediksi
+                        </label>
+
+                        <!-- Baris 1: Periode MA & Populasi Kandang -->
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="periodeMA" style="font-weight: 600;">Periode MA (Hari)</label>
+                                <select id="periodeMA" class="styled-select"
+                                    style="background: #fff; border-color: #9b59b6;">
+                                    <option value="3">3 Hari (Responsif)</option>
+                                    <option value="5" selected>5 Hari (Standar)</option>
+                                    <option value="7">7 Hari (Tren Panjang)</option>
+                                </select>
+                            </div>
+                            <div class="form-group half">
+                                <label for="populasi" style="font-weight: 600;">Populasi Kandang/Ayam</label>
+                                <input type="number" id="populasi" value="5000" min="1" required
+                                    style="background: #fff; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+
+                        <!-- Baris 2: Konsumsi Pakan per Ekor -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="pakanPerEkor" style="font-weight: 600;">Pakan/Ekor/Hari (Gram)</label>
+                            <input type="number" id="pakanPerEkor" value="110" min="1" step="0.1" required
+                                style="background: #fff; border: 1px solid #ddd;">
+                        </div>
+
+                        <!-- Baris 3: Pengaturan Harga Pakan & Telur -->
+                        <div class="form-row">
+                            <div class="form-group half">
+                                <label for="hargaPakan" style="font-weight: 600;">Harga Pakan/Kg</label>
+                                <input type="number" id="hargaPakan" value="8000" min="1" required
+                                    style="background: #fff; border: 1px solid #ddd;">
+                            </div>
+                            <div class="form-group half">
+                                <label for="hargaTelur" style="font-weight: 600;">Harga Telur/Papan</label>
+                                <input type="number" id="hargaTelur" value="25000" min="1" required
+                                    style="background: #fff; border: 1px solid #ddd;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi: Mulai Analisis -->
+                    <div class="form-actions" style="margin-top: 30px;">
+                        <button type="submit" class="btn-primary btn-ma" id="btnPrediksi"
+                            style="padding: 16px; letter-spacing: 0.5px; font-weight: 600; font-size: 1.05rem;">
+                            ✨ ANALISIS DENGAN MA
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ===================== PANEL KANAN: HASIL ANALISIS ===================== -->
+            <section class="prediction-results">
+
+                <!-- 1. Kartu Ringkasan Statistik Prediksi -->
+                <div class="result-cards-grid" id="resultCards">
+                    <!-- Kartu 1: Prediksi Produksi Harian -->
+                    <div class="stat-card result-card bg-produksi">
+                        <div class="stat-icon yellow-bg">🥚</div>
+                        <div class="stat-info">
+                            <h4>Prediksi Produksi Harian</h4>
+                            <p id="outProduksi">0 Kg</p>
+                            <small id="outButir">0 Butir</small>
+                        </div>
+                    </div>
+                    <!-- Kartu 2: Estimasi Pendapatan -->
+                    <div class="stat-card result-card bg-pendapatan">
+                        <div class="stat-icon green-bg">💰</div>
+                        <div class="stat-info">
+                            <h4>Estimasi Pendapatan </h4>
+                            <p id="outPendapatan">Rp 0</p>
+                            <small>Satu Hari ke Depan (Kotor)</small>
+                        </div>
+                    </div>
+                    <!-- Kartu 3: Estimasi Biaya Pakan -->
+                    <div class="stat-card result-card bg-biaya">
+                        <div class="stat-icon red-bg">📉</div>
+                        <div class="stat-info">
+                            <h4>Biaya Pakan Harian</h4>
+                            <p id="outBiayaPakan">Rp 0</p>
+                            <small>Total Kebutuhan Biaya Pokok (Modal)</small>
+                        </div>
+                    </div>
+                    <!-- Kartu 4: Proyeksi Keuntungan Bersih -->
+                    <div class="stat-card result-card highlight-card bg-keuntungan">
+                        <div class="stat-icon blue-bg">📈</div>
+                        <div class="stat-info">
+                            <h4>Proyeksi Keuntungan</h4>
+                            <p id="outKeuntungan">Rp 0</p>
+                            <small>Margin Laba Bersih / Hari (Cuan Murni)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Kontainer Grafik Prediksi -->
+                <div class="chart-container shadow-card"
+                    style="background: linear-gradient(to bottom right, #ffffff, #fdfbfb); border: 2px solid #e1e8ed; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+                    <h3
+                        style="font-size: 1.25rem; color: #2c3e50; font-weight: 700; border-bottom: 3px solid #f39c12; padding-bottom: 12px; margin-bottom: 25px; display: inline-block;">
+                        📊 Grafik Produksi Aktual vs Rekomendasi MA
+                    </h3>
+                    <!-- Pembungkus Canvas Grafik -->
+                    <div class="canvas-wrapper">
+                        <canvas id="profitChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 3. Kontainer Hasil Rekapan Prediksi -->
+                <div class="summary-container shadow-card"
+                    style="margin-top: 30px; background: linear-gradient(135deg, #ffffff 0%, #f0f8fb 100%); border: 2px solid #bce0fd; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(52, 152, 219, 0.1);">
+                    <h3
+                        style="margin-bottom: 20px; font-size: 1.25rem; color: #1e3c72; border-bottom: 3px solid #3498db; padding-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                        <span
+                            style="background: #3498db; color: white; padding: 4px 8px; border-radius: 8px; font-size: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">📋</span>
+                        Hasil Rekapan Prediksi (7 Hari Kedepan)
+                    </h3>
+                    <div class="table-responsive"
+                        style="overflow-x: auto; background: white; border-radius: 12px; border: 1px solid #d2dce6; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <table class="summary-table" id="summaryTable"
+                            style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.95rem;">
+                            <thead>
+                                <tr style="background: linear-gradient(90deg, #34495e, #2c3e50); color: white;">
+                                    <th
+                                        style="padding: 15px; font-weight: 600; border-top-left-radius: 10px; width: 15%; text-align: center;">
+                                        Hari ke-</th>
+                                    <th style="padding: 15px; font-weight: 600; width: 45%;">Prediksi Produksi
+                                    </th>
+                                    <th
+                                        style="padding: 15px; font-weight: 600; border-top-right-radius: 10px; width: 40%;">
+                                        Proyeksi Laba Bersih</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapanTableBody">
+                                <tr>
+                                    <td colspan="3"
+                                        style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; background-color: #fcfcfc;">
+                                        ✨ Lakukan analisis prediksi terlebih dahulu untuk melihat hasil rekapan disini.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+
+    </main>
+
+    <!-- ========================= SCRIPT UTAMA ========================== -->
+    <!-- Mengimpor logika Javascript untuk kalkulasi algoritma MA dan render pembuatan grafik Chart -->
+    <script src="js/prediksihasil.js"></script>
+</body>
+
+</html>

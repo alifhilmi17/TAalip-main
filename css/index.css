@@ -1,0 +1,324 @@
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: index.css
+   Deskripsi: Kumpulan aturan gaya (CSS) untuk mempercantik 
+   tampilan halaman Landing Page (index.html).
+========================================================= */
+
+/* =========================================
+   1. VARIABLE GLOBAL (Token Desain)
+   ========================================= */
+/* Menyimpan kode warna utama sebagai variabel agar mudah diubah serentak */
+:root {
+  --bg-dark: #0f111a;               /* Latar belakang tema gelap (Dark Theme) */
+  --text-main: #ffffff;             /* Warna teks utama (Putih Bersih) */
+  --text-muted: #a1a1aa;            /* Warna teks redup/sekunder (Abu-abu) */
+
+  --primary-accent: #ffcc70;        /* Warna Aksen Utama: Kuning-Oranye terang */
+  --primary-hover: #e8b153;         /* Warna saat disorot kursor (Hover) */
+  --secondary-accent: #ff7e5f;      /* Warna Aksen Kedua: Oranye-Persik (Peach) */
+
+  --surface-glass: rgba(255, 255, 255, 0.03); /* Warna transparan untuk permukaan kartu kaca */
+  --border-glass: rgba(255, 255, 255, 0.08);  /* Garis batas mengkilap pemisah kaca */
+
+  --font-main: "Poppins", sans-serif; /* Jenis font standar seluruh elemen antarmuka */
+}
+
+/* =========================================
+   2. RESET ATESTASI DASAR (Normalizing)
+   ========================================= */
+/* Melenyapkan jarak bawaan browser yang berantakan */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ukuran batas border langsung dihitung ke dalam lebar total kotak */
+}
+
+/* Mengatur bingkai luar halaman secara mutlak */
+body {
+  height: 100vh; /* Ketinggian 100% mengisi penuh layar */
+  display: flex;
+  justify-content: center; /* Memusatkan semua konten secara horizontal */
+  align-items: center;     /* Memusatkan konten tepat di garis vertikal tengah */
+  overflow: hidden;        /* Matikan fitur gulir layang (Scrollbar) memanjang */
+  
+  background-color: var(--bg-dark); /* Menggunakan variabel warna tema gelap tadi */
+  font-family: var(--font-main);
+  color: var(--text-main);
+  
+  /* Supaya render ujung tekstur tulisan lebih halus di sistem operasi MacOS/Windows */
+  -webkit-font-smoothing: antialiased; 
+}
+
+/* =========================================
+   3. BACKGROUND ABSTRAK MODERN (Orbs)
+   ========================================= */
+/* Lapisan pembungkus animasi pemandangan dasar di layar belakang */
+.background-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Mendorong posisinya jauh ke dasar/lapisan terdalam (Z axis) */
+  overflow: hidden;
+  background: radial-gradient(circle at center, #181824 0%, var(--bg-dark) 100%);
+}
+
+/* Benda "Bola Cahaya" (Orbs) Blur melayang secara lamban di Background */
+.glow-orb {
+  position: absolute;
+  border-radius: 50%; /* Membuat kotak bulat sempurna */
+  filter: blur(80px); /* Efek kamera katarak/blur ekstrim (neon glow) */
+  opacity: 0.5;       /* Penurunan kepudaran jadi setengah terang (50%) */
+  
+  /* Aturan animasi berjalan pelan 20 detik lalu memantul balik (alternate) */
+  animation: float 20s infinite ease-in-out alternate; 
+}
+
+/* Bola 1: Warna Kuning Oranye di Kiri Atas */
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--primary-accent);
+  top: -100px;
+  left: -100px;
+}
+
+/* Bola 2: Warna Peach di Kanan Bawah */
+.orb-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--secondary-accent);
+  bottom: -150px;
+  right: -100px;
+  animation-delay: -5s; /* Kecepatan pemanggilan efek sengaja dibuat telat berbeda dengan saudara setitik pelayangnya */
+}
+
+/* Bola 3: Ukuran Sedang di Tengah-Tengah Berbayang Samar */
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: #ffb347;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Kalkulasi mutlak koordinat pemosisi pusat XY */
+  opacity: 0.3;
+  animation-delay: -10s;
+}
+
+/* Jaring Filter / Tekstur Bintik-Bintik halus sebagai sentuhan efek premium */
+.noise-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Teknik kode rumit SVG Data yang direbus menjadi piksel bising semu */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opactiy='0.05'/%3E%3C/svg%3E");
+  opacity: 0.04;
+  pointer-events: none; /* Mouse tidak bisa mengklik tekstur kasar tak terlihat ini (tembus pandang interaksi) */
+}
+
+/* Konfigurasi Pergerakan (Keyframes) bernama 'float' untuk animasi Orbs */
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 30px) scale(1.1); }
+  100% { transform: translate(-30px, 80px) scale(0.9); }
+}
+
+/* =========================================
+   4. KARTU KONTEN TENGAH BERGAYA KACA (Glassmorphism)
+   ========================================= */
+/* Bingkai tak kasat mata di tengah yang mengumpulkan seluruh objek interaksi Menu Utama */
+.hero-container {
+  width: 100%;
+  max-width: 480px;
+  padding: 20px;
+  z-index: 10;
+  perspective: 1000px; /* Ruang Kedalaman dimensi 3D visual ruang elemen */
+}
+
+/* Material Kotak Kacanya di Tengah */
+.hero-glass {
+  text-align: center;
+  backdrop-filter: blur(24px); /* Ajaib: Mengaburkan elemen apa pun yang ada di balik pantulan kartunya */
+  -webkit-backdrop-filter: blur(24px);
+  background: var(--surface-glass); /* Warna transparan keabu-abuan kaca */
+  padding: 48px 40px;
+  border-radius: 28px; /* Kelengkungan Ekstrim Sisi Sudut Layar Kotak */
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  
+  /* Terapkan animasi kemunculan perlahan saat pengguna membuka web (Fade In) */
+  animation: enterCard 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  opacity: 0;
+  transform: translateY(30px) rotateX(5deg);
+}
+
+/* Aturan Tampil Fade-In Halus Ke Atas Papan Layar Kaca */
+@keyframes enterCard {
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+/* =========================================
+   5. LOGO & TEKS TYPOGRAPHY UTAMA (Typography)
+   ========================================= */
+/* Kotak Logo Ikon Kepala Ayam Mengawang */
+.brand-icon {
+  margin-bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05); /* Tembus pandang 5% Putih */
+  border: 1px solid var(--border-glass);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  
+  /* Dipasang irama animasi bernafas secara sirkular (Pulse), seolah berdetak seiring ritme web */
+  animation: pulseIcon 4s infinite ease-in-out; 
+}
+
+/* Gelombang Detak Bayangan Teks Logo */
+@keyframes pulseIcon {
+  0% { box-shadow: 0 0 0 0 rgba(255, 204, 112, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 204, 112, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 204, 112, 0); }
+}
+
+/* Judul Gede "Selamat Datang di.." */
+.welcome-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+/* Teks yang berubah warna warni layaknya hologram ("LIBAS") */
+.gradient-text {
+  background: linear-gradient(135deg, #ffcc70 0%, #ff7e5f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;  
+  color: transparent;     /* Menyembunyikan warna hitam standar membiarkan gradient yang meresap ke dalam font/huruf tersebut! */
+}
+
+/* Anak Judul "Sistem Administrasi Peternakan Lintau Buo" */
+.subtitle {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 300;
+  margin-bottom: 24px;
+}
+
+/* Kelompok Bungkusan Lencana (Kapsul Kecil) */
+.features-list {
+  display: flex;
+  justify-content: center;
+  gap: 8px; /* Spasi Horizontal antar tombol/lencana tersebut */
+  margin-bottom: 36px;
+  flex-wrap: wrap; /* Izinkan bergeser ke baris bawah apabila muatan HP tak mencukupi perbarisnya */
+}
+
+/* Lencana / Badge / Tag "Efisien" "Profesional" dlsb */
+.badge {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase; /* Huruf KAPITAL SEMUA */
+  letter-spacing: 1px;
+  padding: 6px 14px;
+  border-radius: 100px; /* Bentuk Kapsul Kiri-Kanan Bulat Ekstrim */
+  background: rgba(255, 255, 255, 0.05); /* Tinta warna putih pucat transparanan */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+}
+
+/* =========================================
+   6. TOMBOL-TOMBOL NAVIGASI & AKSI KHAS
+   ========================================= */
+/* Wrapper atau Tempat Pemegang 2 Tombol Pintu Masuk */
+.auth-buttons {
+  display: flex;
+  flex-direction: column; /* Mengalirkannya menyusun urutan secara Atas Bawah (Vertikal) */
+  gap: 16px;
+}
+
+/* Template Standar bentuk, ruang, & ukuran tombol */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none; /* Menghapus cetak miring biru Hyperlink lawas yang ada di html <a> */
+  padding: 16px 24px;
+  border-radius: 16px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden; /* Mengunci properti melenceng di dalam dindingnya saja (Masking Kilatan efek) */
+}
+
+/* Efek Sapuan Cahaya Miring (Shine Effect) yang berlalu cepat ketika hover terjadi */
+.btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-20deg) translateX(-150%);
+  transition: all 0.5s ease;
+}
+
+/* Menyapu kilat melintasi rentang panjang tombol jika diseleksi kursor perambatannya (Hover trigger!) */
+.btn:hover::after {
+  transform: skewX(-20deg) translateX(150%);
+}
+
+/* --- TEMA TOMBOL 1 --- Tombol Sign In (Utama/Primer Penuh Warna) */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+  color: white;
+  box-shadow: 0 10px 20px -5px rgba(255, 204, 112, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px); /* Naik terangkat sedikit sebesar 3 piksel */
+  box-shadow: 0 15px 25px -5px rgba(255, 204, 112, 0.5); /* Lebarkan tebal bayangan kakinya membengkak empuk */
+}
+
+/* --- TEMA TOMBOL 2 --- Tombol Sign Up (Sekunder Tembus Pandang) */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05); /* Membayangi transparan putih kelam */
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1); /* Dibuat satu tingkat lebih putih tajam saat disorot Hover. */
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* =========================================
+   7. PENYESUAIAN LAYAR (RESPONSIVITAS MOBILE KECIL)
+   ========================================= */
+/* Aturan apabila halaman Landing ditatap dari HP Resolusi super sempit Lebar di Bawah 400px (iPhone mini) */
+@media (max-width: 400px) {
+  .hero-glass {
+    padding: 36px 24px; /* Rapatkan pampatan dinding sampingnya */
+  }
+
+  .welcome-title {
+    font-size: 28px; /* Ciutkan tajuk utama judul jangan meleber dari 28 point. */
+  }
+}
