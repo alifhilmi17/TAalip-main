@@ -16,7 +16,7 @@
   <!-- ========================= CSS KUSTOM ========================== -->
   <!-- Memuat gaya desain spesifik. Menggunakan ulang dashboard css sebagai dasar -->
   <link rel="stylesheet" href="css/dashboardTAalip.css" />
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="admin.frontend/admin.css" />
 
   <!-- ========================= LIBRARY ========================== -->
   <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
@@ -93,7 +93,7 @@
       <div class="sidebar-profile">
         <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
         <div class="profile-name-container">
-          <p class="profile-name">Alep</p>
+          <p class="profile-name"></p>
           <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
         </div>
         <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
@@ -261,7 +261,9 @@
   </main>
 
   <!-- ========================= SCRIPT UTAMA ADMIN ========================== -->
-  <script src="js/admin.js"></script>
+  <script src="admin.frontend/admin.js"></script>
+  <!-- Skrip Utama Sinkronasi Autentikasi -->
+  <script type="module" src="firebase.component/auth-state.js"></script>
 </body>
 
 </html>

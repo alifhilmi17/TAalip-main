@@ -10,7 +10,7 @@
 import { createUserWithEmailAndPassword, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-// 2. Impor objek `auth` dan `db` yang sudah disiapkan dari file koneksi utama
+// 2. Impor objek `auth` and `db` yang sudah disiapkan dari file koneksi utama
 import { auth, db } from "./firebase-init.js";
 
 // Pastikan semua struktur HTML telah dirender browser sebelum menjalankan script

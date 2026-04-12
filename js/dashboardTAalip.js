@@ -42,39 +42,7 @@ function toggleSidebarMenu(submenuId) {
     }
 }
 
-/**
- * Fungsi untuk menangani aksi klik pada tombol/menu profil.
- * Saat ini menampilkan pop-up informasi menggunakan SweetAlert2.
- */
-function goToProfile() {
-    Swal.fire({
-        icon: 'info',
-        title: 'Profil Pengguna',
-        text: 'Fitur profil belum diimplementasikan 🐔',
-        confirmButtonColor: '#fb8500' // Warna oranye khas tema
-    });
-}
 
-/**
- * Fungsi untuk menangani proses logout pengguna.
- * Menampilkan konfirmasi pop-up sebelum mengarahkan ke halaman login.
- */
-function logoutUser() {
-    Swal.fire({
-        title: "Yakin ingin logout?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, logout",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#d33", // Warna merah untuk aksi destruktif
-        cancelButtonColor: "#3085d6" // Warna biru untuk batal
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Jika user menekan "Ya, logout", redirect ke halaman login
-            window.location.href = "login.html";
-        }
-    });
-}
 
 
 /* =========================================================

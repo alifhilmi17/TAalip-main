@@ -38,36 +38,7 @@ function toggleSidebarMenu(submenuId) {
     }
 }
 
-/**
- * Pemberitahuan popup saat mengeklik foto profil (Fitur masih belum tersedia)
- */
-function goToProfile() {
-    Swal.fire({
-        icon: 'info',
-        title: 'Profil Pengguna',
-        text: 'Fitur profil belum diimplementasikan 🐔',
-        confirmButtonColor: '#fb8500'
-    });
-}
 
-/**
- * Konfirmasi sistem otentikasi logout ke layar Login
- */
-function logoutUser() {
-    Swal.fire({
-        title: "Yakin ingin logout?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, logout",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "login.html";
-        }
-    });
-}
 
 // =========================================
 // 2. KONTROLER MODUL KEUANGAN INTI (CRUD OPERATIONS)

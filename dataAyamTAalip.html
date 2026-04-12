@@ -93,7 +93,7 @@
       <div class="sidebar-profile">
         <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
         <div class="profile-name-container">
-          <p class="profile-name">Alep</p>
+          <p class="profile-name"></p>
           <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
         </div>
         <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
@@ -249,6 +249,8 @@
     <!-- ========================= SCRIPT UTAMA ========================== -->
     <!-- File logika penggerak tabel interaktif, fungsi cari, dan kalkulasi total populasi ayam -->
     <script src="js/dataAyamTAalip.js"></script>
+    <!-- Skrip Utama Sinkronasi Autentikasi -->
+    <script type="module" src="firebase.component/auth-state.js"></script>
 </body>
 
 </html>

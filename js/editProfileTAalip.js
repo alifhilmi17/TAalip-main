@@ -11,7 +11,7 @@
 
 import { onAuthStateChanged, updateProfile, updateEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { auth, db } from "./firebase-init.js";
+import { auth, db } from "../firebase.component/firebase-init.js";
 
 // =========================================
 // 1. LOGIKA UTAMA (Berjalan Saat Layar Dimuat)

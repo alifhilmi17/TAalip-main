@@ -2,6 +2,13 @@ import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { auth, db } from "./firebase-init.js";
 
+/**
+ * Global Helper: Navigasi ke Halaman Edit Profil
+ */
+window.goToProfile = function() {
+    window.location.href = 'editProfileTAalip.html';
+};
+
 // Saat halaman HTML selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -38,15 +45,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Menimpa fungsi aksi Logout bawaan agar menggunakan mekanisme Logout Firebase
 window.logoutUser = async function() {
+    // Mengecek apakah library SweetAlert2 tersedia untuk tampilan yang lebih premium
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: "Yakin ingin logout?",
+            text: "Anda akan keluar dari sesi aplikasi.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Ya, Logout",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#d33", // Merah aksi destruktif
+            cancelButtonColor: "#64748b"  // Abu-abu netral
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                executeLogout();
+            }
+        });
+    } else {
+        // Fallback jika SweetAlert tidak terpanggil
+        if (confirm("Apakah Anda yakin ingin logout?")) {
+            executeLogout();
+        }
+    }
+};
+
+/**
+ * Fungsi internal untuk menjalankan proses pemutusan sesi Firebase
+ */
+async function executeLogout() {
     try {
         await signOut(auth);
         
         // Membersihkan cache lokal opsional
         localStorage.removeItem('libas_username');
 
-        alert("Anda telah berhasil keluar (Logout).");
-        window.location.href = 'login.html';
+        // Jika pakai Swal, tampilkan sukses sejenak lalu redirect
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Logout',
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.href = 'login.html';
+            });
+        } else {
+            window.location.href = 'login.html';
+        }
     } catch (error) {
-        alert("Gagal melakukan logout: " + error.message);
+        console.error("Gagal logout:", error);
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Gagal', 'Terjadi kesalahan saat logout: ' + error.message, 'error');
+        } else {
+            alert("Gagal melakukan logout: " + error.message);
+        }
     }
-};
+}
