@@ -83,11 +83,11 @@
         </div>
 
         <!-- ===== SUBMENU Dokumen ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="true">
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
           📂 Dokumen <span class="arrow">▸</span>
         </button>
-        <div class="submenu open" id="dokumenSubmenu" aria-hidden="false">
-          <a href="dokumen.html" class="active">📄 Pusat Dokumen</a>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" >📄 Pusat Dokumen</a>
         </div>
       </nav>
 
@@ -159,6 +159,22 @@
         <div class="doc-summary-info">
           <h4>Data Ayam</h4>
           <p id="count-ayam">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data kesehatan -->
+      <div class="doc-summary-card" id="card-kesehatan">
+        <div class="doc-summary-icon">🩺</div>
+        <div class="doc-summary-info">
+          <h4>Data Kesehatan</h4>
+          <p id="count-kesehatan">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data vaksinasi -->
+      <div class="doc-summary-card" id="card-vaksinasi">
+        <div class="doc-summary-icon">💉</div>
+        <div class="doc-summary-info">
+          <h4>Data Vaksinasi</h4>
+          <p id="count-vaksinasi">0 Entri</p>
         </div>
       </div>
     </section>
@@ -258,6 +274,48 @@
           </div>
         </div>
 
+        <!-- ==== KARTU EKSPOR KESEHATAN ==== -->
+        <div class="ekspor-card ekspor-kesehatan">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🩺</span>
+            <h3>Laporan Kesehatan Ayam</h3>
+          </div>
+          <p class="ekspor-card-desc">Berisi catatan medis harian ayam, gejala penyakit, dan tindakan pengobatan yang diberikan.</p>
+          <div class="ekspor-preview" id="preview-kesehatan">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">Belum ada data kesehatan untuk ditampilkan.</p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('kesehatan')" id="btn-ekspor-kesehatan">
+              📥 Ekspor CSV
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('kesehatan')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR VAKSINASI ==== -->
+        <div class="ekspor-card ekspor-vaksinasi">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">💉</span>
+            <h3>Laporan Vaksinasi</h3>
+          </div>
+          <p class="ekspor-card-desc">Berisi riwayat pemberian vaksin, jenis vaksin, dan jadwal vaksinasi yang telah dilakukan.</p>
+          <div class="ekspor-preview" id="preview-vaksinasi">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">Belum ada data vaksinasi untuk ditampilkan.</p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('vaksinasi')" id="btn-ekspor-vaksinasi">
+              📥 Ekspor CSV
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('vaksinasi')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -308,7 +366,7 @@
 
   <!-- ========================= SCRIPT UTAMA ========================== -->
   <!-- Memuat logika JavaScript khusus halaman dokumen -->
-  <script src="js/dokumen.js"></script>
+  <script type="module" src="js/dokumen.js"></script>
 
     <!-- Skrip Utama Sinkronasi Autentikasi -->
     <script type="module" src="firebase.component/auth-state.js"></script>

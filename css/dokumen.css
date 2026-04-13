@@ -219,7 +219,7 @@
     align-items: center;
     gap: 0.8rem;
     padding: 1.2rem 1.5rem;
-    color: #fff;
+    color: #ffffff;
 }
 
 /* Teks judul kartu ekspor */
@@ -255,6 +255,15 @@
     /* Merah hangat - Data Ayam */
 }
 
+.ekspor-kesehatan .ekspor-card-header {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    /* Merah hangat - Data Ayam */
+}
+
+.ekspor-vaksinasi .ekspor-card-header {
+    background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+    /* Merah hangat - Data Ayam */
+}
 /* Teks deskripsi di badan kartu */
 .ekspor-card-desc {
     font-size: 0.85rem;

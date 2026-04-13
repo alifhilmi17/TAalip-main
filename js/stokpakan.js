@@ -1,133 +1,161 @@
-/* =========================================
-   Sistem Manajemen Stok Pakan
-========================================= */
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: stokpakan.js
+   Deskripsi: Manajemen stok masuk dan keluar pakan ternak
+   menggunakan Firestore.
+========================================================= */
 
-// Data Global dan Key LocalStorage
-let pakanData = [];
-const STORAGE_KEY = 'stokPakan_TA';
+import { 
+    collection, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    doc, 
+    onSnapshot, 
+    query, 
+    orderBy 
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { db } from "../firebase.component/firebase-init.js";
 
-/**
- * Format string tanggal (YYYY-MM-DD -> DD MMM YYYY)
- */
-function formatTanggal(tglStr) {
-    if (!tglStr) return "-";
-    const dateObj = new Date(tglStr);
-    return dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+// Global State
+let dataPakan = [];
+const pakanCollection = collection(db, "stok_pakan");
+
+// ==========================================
+// 1. UTILITAS
+// ==========================================
+function formatTanggal(tglString) {
+    if (!tglString) return "-";
+    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+    return new Date(tglString).toLocaleDateString('id-ID', options);
 }
 
-// Inisialisasi awal saat dokumen ter-load
+// ==========================================
+// 2. INISIALISASI & FIREBASE LISTENER
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Muat data dari localStorage
-    if (localStorage.getItem(STORAGE_KEY)) {
-        pakanData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const q = query(pakanCollection, orderBy("tanggal", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        dataPakan = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        renderTable();
+        updateQuickStats();
+    });
+
+    // Set Default Filter ke Bulan Ini
+    const now = new Date();
+    const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    if (document.getElementById('filterBulanPakan')) {
+        document.getElementById('filterBulanPakan').value = currentMonth;
     }
-
-    // Set default filter bulan ke bulan berjalan
-    const today = new Date();
-    const currentMonth = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0');
-    const filterBulanEl = document.getElementById('filterBulanPakan');
-    if (filterBulanEl) filterBulanEl.value = currentMonth;
-
-    renderPakanTable();
-    updatePakanStats();
 });
 
-/**
- * Handler Filter: Menampilkan ulang tabel dan metrik berdasar filter bulan
- */
-function filterData() {
-    renderPakanTable();
-    updatePakanStats();
-}
+// ==========================================
+// 3. CRUD LOGIC
+// ==========================================
+window.openPakanModal = function() {
+    const form = document.getElementById('pakanForm');
+    if (form) form.reset();
+    document.getElementById('pakanId').value = "";
+    document.getElementById('modalTitlePakan').innerText = "Tambah Data Pakan";
+    document.getElementById('pakanModal').classList.add('show');
+};
 
-/**
- * Reset Filter: Mengkosongkan isian filter dan tampilkan seluruh data
- */
-function resetFilter() {
-    document.getElementById('filterBulanPakan').value = '';
-    renderPakanTable();
-    updatePakanStats();
-}
+window.closePakanModal = function() {
+    document.getElementById('pakanModal').classList.remove('show');
+};
 
-/**
- * Menghitung Total Masuk, Keluar, dan Sisa Stok Aktual
- */
-function updatePakanStats() {
-    const filterBulan = document.getElementById('filterBulanPakan')?.value || '';
+window.savePakanData = async function(event) {
+    event.preventDefault();
+    const id = document.getElementById('pakanId').value;
+    
+    const payload = {
+        tanggal: document.getElementById('tglPakan').value,
+        tipe: document.getElementById('tipePakan').value,
+        jenis: document.getElementById('jenisPakan').value,
+        jumlah: parseFloat(document.getElementById('jumlahPakan').value) || 0,
+        keterangan: document.getElementById('ketPakan').value || "",
+        updatedAt: new Date().toISOString()
+    };
 
-    let filterMasuk = 0;
-    let filterKeluar = 0;
-
-    let totalGlobalMasuk = 0;
-    let totalGlobalKeluar = 0;
-
-    pakanData.forEach(item => {
-        // Hitung akumulasi global untuk "Sisa Stok Pakan Aktual di Gudang"
-        if (item.tipe === "Masuk") {
-            totalGlobalMasuk += item.jumlah;
-        } else if (item.tipe === "Keluar") {
-            totalGlobalKeluar += item.jumlah;
+    try {
+        if (id === "") {
+            payload.createdAt = new Date().toISOString();
+            await addDoc(pakanCollection, payload);
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan ditambahkan.', timer: 1500, showConfirmButton: false });
+        } else {
+            await updateDoc(doc(db, "stok_pakan", id), payload);
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan diperbarui.', timer: 1500, showConfirmButton: false });
         }
+        window.closePakanModal();
+    } catch (err) {
+        Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
+    }
+};
 
-        // Kalkulasi untuk stat Masuk/Keluar yang difilter di layar bulan ini
-        const itemMonth = item.tanggal.substring(0, 7); // ambil YYYY-MM
-        if (!filterBulan || itemMonth === filterBulan) {
-            if (item.tipe === "Masuk") filterMasuk += item.jumlah;
-            if (item.tipe === "Keluar") filterKeluar += item.jumlah;
+window.editPakan = function(id) {
+    const item = dataPakan.find(p => p.id === id);
+    if (item) {
+        document.getElementById('pakanId').value = item.id;
+        document.getElementById('tglPakan').value = item.tanggal;
+        document.getElementById('tipePakan').value = item.tipe;
+        document.getElementById('jenisPakan').value = item.jenis;
+        document.getElementById('jumlahPakan').value = item.jumlah;
+        document.getElementById('ketPakan').value = item.keterangan || "";
+        
+        document.getElementById('modalTitlePakan').innerText = "Edit Data Pakan";
+        document.getElementById('pakanModal').classList.add('show');
+    }
+};
+
+window.deletePakan = function(id) {
+    Swal.fire({
+        title: 'Hapus Data?',
+        text: "Data ini akan dihapus permanen dari database cloud.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff6b6b'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            await deleteDoc(doc(db, "stok_pakan", id));
+            Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
         }
     });
+};
 
-    const sisaAktual = totalGlobalMasuk - totalGlobalKeluar;
-
-    // Update innerText elemen stat
-    document.getElementById('totalPakanMasuk').innerText = filterMasuk.toLocaleString('id-ID') + ' Kg';
-    document.getElementById('totalPakanKeluar').innerText = filterKeluar.toLocaleString('id-ID') + ' Kg';
-    document.getElementById('sisaStokPakan').innerText = sisaAktual.toLocaleString('id-ID') + ' Kg';
-}
-
-/**
- * Proses pembentukan isi baris (row) pada body tabel UI
- */
-function renderPakanTable() {
+// ==========================================
+// 4. DISPLAY & FILTER
+// ==========================================
+function renderTable() {
     const tbody = document.getElementById('pakanTableBody');
-    const filterBulan = document.getElementById('filterBulanPakan')?.value || '';
     const emptyState = document.getElementById('emptyStatePakan');
-    const pakanTable = document.getElementById('pakanTable');
+    const filterBulan = document.getElementById('filterBulanPakan').value;
 
     if (!tbody) return;
+    tbody.innerHTML = "";
 
-    tbody.innerHTML = ''; // Kosongkan
+    const filtered = dataPakan.filter(p => !filterBulan || p.tanggal.startsWith(filterBulan));
 
-    // Sortir urutan data descending berdasarkan tanggal (terbaru ke yang lama)
-    const sortedData = [...pakanData].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-
-    // Eksekusi filter
-    const filteredData = sortedData.filter(item => {
-        if (!filterBulan) return true;
-        const itemMonth = item.tanggal.substring(0, 7);
-        return itemMonth === filterBulan;
-    });
-
-    if (filteredData.length === 0) {
-        pakanTable.style.display = 'none';
+    if (filtered.length === 0) {
         emptyState.style.display = 'block';
     } else {
-        pakanTable.style.display = 'table';
         emptyState.style.display = 'none';
-
-        filteredData.forEach(item => {
+        filtered.forEach(p => {
             const tr = document.createElement('tr');
-            const badgeClass = item.tipe === 'Masuk' ? 'badge-masuk' : 'badge-keluar';
-
+            const typeBadge = p.tipe === "Masuk" ? 'badge-aktif' : 'badge-afkir';
             tr.innerHTML = `
-                <td>${formatTanggal(item.tanggal)}</td>
-                <td><strong>${item.jenisPakan}</strong></td>
-                <td><span class="badge-tipe ${badgeClass}">${item.tipe}</span></td>
-                <td><strong>${item.jumlah.toLocaleString('id-ID')}</strong></td>
-                <td>${item.keterangan || '-'}</td>
+                <td>${formatTanggal(p.tanggal)}</td>
+                <td>${p.jenis}</td>
+                <td><span class="badge ${typeBadge}">${p.tipe}</span></td>
+                <td><strong>${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
+                <td>${p.keterangan || '-'}</td>
                 <td style="text-align: center;">
-                    <button class="btn-edit" onclick="editPakan('${item.id}')">✏️ Edit</button>
-                    <button class="btn-delete" onclick="deletePakan('${item.id}')">🗑️ Hapus</button>
+                    <button class="btn-edit" onclick="editPakan('${p.id}')">✏️</button>
+                    <button class="btn-delete" onclick="deletePakan('${p.id}')">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -135,214 +163,47 @@ function renderPakanTable() {
     }
 }
 
-/**
- * Handle Modal Operations
- */
-function openPakanModal() {
-    document.getElementById('pakanForm').reset();
-    document.getElementById('pakanId').value = "";
-    document.getElementById('modalTitlePakan').innerText = "Tambah Transaksi Pakan";
-
-    // Default form tgl adalah hari ini
-    const today = new Date();
-    document.getElementById('tglPakan').value = today.toISOString().split('T')[0];
-
-    document.getElementById('pakanModal').classList.add('show');
-}
-
-function closePakanModal() {
-    document.getElementById('pakanModal').classList.remove('show');
-}
-
-/**
- * Handle Penambahan vs Pengeditan (Submit Form)
- */
-function savePakanData(e) {
-    e.preventDefault();
-
-    const idInput = document.getElementById('pakanId').value;
-    const tglInput = document.getElementById('tglPakan').value;
-    const tipeInput = document.getElementById('tipePakan').value;
-    const jenisInput = document.getElementById('jenisPakan').value;
-    const jumlahInput = parseFloat(document.getElementById('jumlahPakan').value);
-    const ketInput = document.getElementById('ketPakan').value;
-
-    if (idInput === "") {
-        // Mode Tambah Baru
-        const newItem = {
-            id: 'PKN-' + Date.now(),
-            tanggal: tglInput,
-            tipe: tipeInput,
-            jenisPakan: jenisInput,
-            jumlah: jumlahInput,
-            keterangan: ketInput
-        };
-        pakanData.push(newItem);
-        Swal.fire({ icon: 'success', title: 'Tersimpan', text: 'Data stok pakan berhasil ditambahkan', timer: 1500, showConfirmButton: false });
-    } else {
-        // Mode Edit Update
-        const index = pakanData.findIndex(p => p.id === idInput);
-        if (index > -1) {
-            pakanData[index] = {
-                id: idInput,
-                tanggal: tglInput,
-                tipe: tipeInput,
-                jenisPakan: jenisInput,
-                jumlah: jumlahInput,
-                keterangan: ketInput
-            };
-            Swal.fire({ icon: 'success', title: 'Diperbarui', text: 'Data stok pakan berhasil diubah', timer: 1500, showConfirmButton: false });
-        }
-    }
-
-    // Tulis ke localStorage
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pakanData));
-
-    // Ubah tampilan bulan difilter mengikuti bulan input agar data baru lgsg terlihat
-    const currentMonth = tglInput.substring(0, 7);
-    document.getElementById('filterBulanPakan').value = currentMonth;
-
-    closePakanModal();
-    renderPakanTable();
-    updatePakanStats();
-}
-
-/**
- * Menyiapkan isian form untuk proses perbaikan 
- */
-function editPakan(id) {
-    const item = pakanData.find(p => p.id === id);
-    if (!item) return;
-
-    document.getElementById('pakanId').value = item.id;
-    document.getElementById('tglPakan').value = item.tanggal;
-    document.getElementById('tipePakan').value = item.tipe;
-    document.getElementById('jenisPakan').value = item.jenisPakan;
-    document.getElementById('jumlahPakan').value = item.jumlah;
-    document.getElementById('ketPakan').value = item.keterangan || '';
-
-    document.getElementById('modalTitlePakan').innerText = "Edit Transaksi Pakan";
-    document.getElementById('pakanModal').classList.add('show');
-}
-
-/**
- * Hapus Item dengan konfirmasi ganda
- */
-function deletePakan(id) {
-    Swal.fire({
-        title: 'Hapus Data?',
-        text: 'Data yang dihapus tidak bisa dikembalikan!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, Hapus!',
-        cancelButtonText: 'Batal'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            pakanData = pakanData.filter(p => p.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(pakanData));
-
-            renderPakanTable();
-            updatePakanStats();
-            Swal.fire('Dihapus!', 'Data telah terhapus dari memori lokal.', 'success');
-        }
-    });
-}
-
-// =========================================
-// Fungsi UI Navigasi Global
-// =========================================
-function toggleSidebarMenu(submenuId) {
-    const submenu = document.getElementById(submenuId);
-    if (submenu.classList.contains('show')) {
-        submenu.classList.remove('show');
-    }
-    const isHidden = submenu.getAttribute("aria-hidden") === "true";
-    const parentButton = submenu.previousElementSibling;
-
-    submenu.setAttribute("aria-hidden", !isHidden);
-    parentButton.setAttribute("aria-expanded", isHidden);
-
-    if (isHidden) {
-        parentButton.classList.add("active-parent");
-    } else {
-        parentButton.classList.remove("active-parent");
-    }
-}
-
-function goToProfile() {
-    Swal.fire('Fitur Terkunci', 'Halaman profil belum difungsikan', 'info');
-}
-
-function logoutUser() {
-    Swal.fire({
-        title: "Keluar dari Aplikasi?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Logout"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "login.html";
-        }
-    });
-}
-
-/**
- * Mengunduh (download) laporan stok pakan dalam bentuk file CSV.
- */
-function downloadLaporanCSV() {
-    if (pakanData.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Data Kosong',
-            text: 'Tidak ada data stok pakan untuk diekspor.',
-            confirmButtonColor: '#fb8500'
-        });
-        return;
-    }
-
-    // Header untuk file CSV
-    let csvContent = "ID,Tanggal,Jenis Pakan,Tipe,Jumlah (Kg),Keterangan\n";
-
-    // Loop data untuk mengisi baris CSV
-    pakanData.forEach(item => {
-        // Sanitasi koma di dalam string keterangan
-        let ket = item.keterangan ? item.keterangan.replace(/,/g, " ") : "-";
-
-        let row = `${item.id},${item.tanggal},${item.jenisPakan},${item.tipe},${item.jumlah},${ket}`;
-        csvContent += row + "\n";
+function updateQuickStats() {
+    let masuk = 0;
+    let keluar = 0;
+    
+    dataPakan.forEach(p => {
+        if (p.tipe === "Masuk") masuk += p.jumlah;
+        else keluar += p.jumlah;
     });
 
-    // Buat Blob objek dari string
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    if(document.getElementById('totalPakanMasuk')) document.getElementById('totalPakanMasuk').innerText = masuk.toLocaleString('id-ID') + ' Kg';
+    if(document.getElementById('totalPakanKeluar')) document.getElementById('totalPakanKeluar').innerText = keluar.toLocaleString('id-ID') + ' Kg';
+    if(document.getElementById('sisaStokPakan')) document.getElementById('sisaStokPakan').innerText = (masuk - keluar).toLocaleString('id-ID') + ' Kg';
+}
 
-    // Buat elemen anchor pemandu unduhan
-    const link = document.createElement("a");
+window.filterData = function() {
+    renderTable();
+};
+
+window.resetFilter = function() {
+    document.getElementById('filterBulanPakan').value = "";
+    renderTable();
+};
+
+window.downloadLaporanCSV = function() {
+    if (dataPakan.length === 0) return;
+    let csv = "Tanggal,Jenis Pakan,Tipe,Jumlah (Kg),Keterangan\n";
+    dataPakan.forEach(p => {
+        csv += `${p.tanggal},"${p.jenis}","${p.tipe}",${p.jumlah},"${p.keterangan || ''}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
-    link.setAttribute("href", url);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Laporan_Pakan_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+};
 
-    // Penamaan file dinamis
-    let date = new Date();
-    let fileDate = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-    link.setAttribute("download", `Laporan_Stok_Pakan_${fileDate}.csv`);
-
-    // Eksekusi unduhan 
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-
-    // Pembersihan
-    document.body.removeChild(link);
-
-    // Sukses
-    Swal.fire({
-        icon: 'success',
-        title: 'Sukses',
-        text: 'File Laporan CSV berhasil diunduh.',
-        timer: 2000,
-        showConfirmButton: false
-    });
-}
+// Sidebar
+window.toggleSidebarMenu = function(id) {
+    const el = document.getElementById(id);
+    const isHidden = el.getAttribute('aria-hidden') === 'true';
+    el.setAttribute('aria-hidden', !isHidden);
+    el.previousElementSibling.setAttribute('aria-expanded', isHidden);
+};
