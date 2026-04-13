@@ -351,9 +351,69 @@ window.cetakLaporan = function(modul) {
 // =========================================
 // 6. UTILS & ACTIONS
 // =========================================
+/**
+ * Menampilkan daftar seluruh file laporan yang tersedia dan memberikan opsi untuk mengunduh semuanya secara massal.
+ */
 window.eksporSemuaCSV = function() {
-    ['produksi', 'pakan', 'keuangan', 'ayam', 'kesehatan', 'vaksinasi'].forEach((m, i) => {
-        setTimeout(() => window.eksporCSV(m), i * 600);
+    // Menyiapkan daftar modul untuk ditampilkan di modal
+    const modules = [
+        { id: 'produksi', name: 'Laporan Produksi Harian', icon: '🥚' },
+        { id: 'pakan', name: 'Laporan Stok Pakan', icon: '🌾' },
+        { id: 'keuangan', name: 'Laporan Keuangan', icon: '💰' },
+        { id: 'ayam', name: 'Laporan Data Ayam/Populasi', icon: '🐓' },
+        { id: 'kesehatan', name: 'Laporan Kesehatan Ayam', icon: '🩺' },
+        { id: 'vaksinasi', name: 'Laporan Jadwal Vaksinasi', icon: '💉' }
+    ];
+
+    // Membangun daftar HTML untuk ditampilkan dalam popup
+    const listHtml = modules.map(m => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px dashed #eee;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 1.2rem;">${m.icon}</span>
+                <span style="font-weight: 500; font-size: 0.9rem;">${m.name}</span>
+            </div>
+            <span style="color: #6366f1; font-weight: 700; font-size: 0.75rem;">SIAP UNDUH</span>
+        </div>
+    `).join('');
+
+    Swal.fire({
+        title: 'Pusat Unduhan Massal',
+        html: `
+            <div style="text-align: left; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px;">
+                <p style="margin-bottom: 12px; font-size: 0.85rem; color: #64748b;">Sistem telah menyiapkan <b>${modules.length} file CSV</b> terpisah dari seluruh data modul peternakan Anda:</p>
+                <div style="max-height: 250px; overflow-y: auto;">
+                    ${listHtml}
+                </div>
+                <p style="margin-top: 15px; font-size: 0.75rem; color: #ef4444; line-height: 1.4;">
+                    <b>💡 Catatan:</b> Browser Anda mungkin akan menanyakan izin untuk mengunduh banyak file sekaligus. Harap pilih <b>"Izinkan/Allow"</b>.
+                </p>
+            </div>
+        `,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '🚀 Unduh Semua File',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#6366f1',
+        cancelButtonColor: '#64748b',
+        width: '500px'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            tambahLog('📦 Memulai proses unduhan massal seluruh modul...', '📦');
+            
+            // Loop eksekusi download dengan interval 600ms untuk mencegah pemblokiran browser
+            modules.forEach((m, i) => {
+                setTimeout(() => window.eksporCSV(m.id), i * 650);
+            });
+
+            // Notifikasi proses dimulai
+            Swal.fire({
+                title: 'Proses Dimulai',
+                text: 'Mengekspor data ke format CSV. Silahkan cek folder Download Anda.',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
     });
 };
 
