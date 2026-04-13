@@ -2,17 +2,18 @@
  * =========================================================
  * SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
  * File: admin.js
- * Deskripsi: Logika operasional untuk Panel Admin, 
- * mengelola snapshot data dan log aktivitas.
+ * Deskripsi: File ini menangani logika utama untuk halaman 
+ * Admin Panel, termasuk pemuatan statistik global, ringkasan 
+ * data terbaru (snapshot), dan pengelolaan log aktivitas sistem.
  * =========================================================
  */
 
-// Menjalankan inisialisasi saat dokumen selesai dimuat
+// Menjalankan inisialisasi saat struktur dokumen HTML selesai dimuat oleh browser
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Admin Panel Berhasil Dimuat.");
-    loadAdminStats();
-    loadSnapshots();
-    loadSystemLogs();
+    loadAdminStats(); // Hitung angka-angka statistik dashboard admin
+    loadSnapshots();  // Tampilkan tabel ringkasan data terbaru
+    loadSystemLogs(); // Tampilkan log jejak aktivitas sistem
 });
 
 /**

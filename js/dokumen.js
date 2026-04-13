@@ -27,11 +27,14 @@ let state = {
 // =========================================
 // 1. TAMPILKAN TANGGAL HARI INI
 // =========================================
+/**
+ * Menampilkan nama hari dan tanggal saat ini di header halaman
+ */
 function tampilkanTanggalHariIni() {
     const el = document.getElementById('tanggalHariIni');
     if (!el) return;
     const opsi = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const tglStr = new Date().toLocaleDateString('id-ID', opsi);
+    const tglStr = new Date().toLocaleDateString('id-ID', opsi); // Format Indonesia
     el.textContent = `📅 ${tglStr.charAt(0).toUpperCase() + tglStr.slice(1)}`;
 }
 
@@ -94,11 +97,17 @@ document.addEventListener('DOMContentLoaded', () => {
 // =========================================
 // 3. UI UPDATE LOGIC
 // =========================================
+/**
+ * Fungsi sentral untuk memperbarui seluruh tampilan data di halaman Dokumen
+ */
 function perbaruiUI() {
-    perbaruiRingkasan();
-    tampilkanPreview();
+    perbaruiRingkasan(); // Angka-angka total entri
+    tampilkanPreview(); // Baris-baris data terbaru
 }
 
+/**
+ * Memperbarui angka indikator jumlah total data yang tersimpan di Firestore untuk setiap modul
+ */
 function perbaruiRingkasan() {
     if (document.getElementById('count-produksi')) document.getElementById('count-produksi').textContent = `${state.produksi.length} Entri`;
     if (document.getElementById('count-pakan')) document.getElementById('count-pakan').textContent = `${state.pakan.length} Entri`;
@@ -108,8 +117,11 @@ function perbaruiRingkasan() {
     if (document.getElementById('count-vaksinasi')) document.getElementById('count-vaksinasi').textContent = `${state.vaksinasi.length} Entri`;
 }
 
+/**
+ * Mengisi section preview di UI dengan ringkasan singkat data terbaru dari database
+ */
 function tampilkanPreview() {
-    // 1. Produksi Preview
+    // 1. Produksi Preview: Menampilkan total telur harian
     renderPreview('preview-produksi', state.produksi, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const total = Number(item.totalTelur || 0).toLocaleString('id-ID');
@@ -121,7 +133,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 2. Pakan Preview
+    // 2. Pakan Preview: Menampilkan aliran masuk/keluar pakan
     renderPreview('preview-pakan', state.pakan, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const ikon = item.tipe === 'Masuk' ? '📥' : '📤';
@@ -134,7 +146,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 3. Keuangan Preview
+    // 3. Keuangan Preview: Menampilkan ringkasan transaksi
     renderPreview('preview-keuangan', state.keuangan, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const warna = item.tipe === 'pemasukan' ? '#10b981' : '#ef4444';
@@ -148,7 +160,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 4. Ayam Preview
+    // 4. Ayam Preview: Menampilkan status populasi per batch
     renderPreview('preview-ayam', state.ayam, (item) => {
         const sisaStr = Number(item.sisaAyam || 0).toLocaleString('id-ID');
         const warnaBadge = item.status === 'Aktif' ? '#10b981' : item.status === 'Panen' ? '#3b82f6' : '#f59e0b';
@@ -163,7 +175,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 5. Kesehatan Preview
+    // 5. Kesehatan Preview: Menampilkan angka ayam sakit/mati
     renderPreview('preview-kesehatan', state.kesehatan, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const batch = item.batchName || 'N/A';
@@ -178,7 +190,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 6. Vaksinasi Preview
+    // 6. Vaksinasi Preview: Menampilkan jadwal vaksin mendatang/selesai
     renderPreview('preview-vaksinasi', state.vaksinasi, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const warna = item.status === 'Selesai' ? '#10b981' : '#f59e0b';
@@ -211,6 +223,10 @@ function formatTanggalPreview(tgl) {
 // =========================================
 // 4. EKSPOR CSV
 // =========================================
+/**
+ * Mengekspor data modul tertentu ke dalam format file CSV (.csv)
+ * @param {string} modul - Nama modul (produksi, pakan, keuangan, dll)
+ */
 window.eksporCSV = function(modul) {
     const data = state[modul];
     if (!data || data.length === 0) {
@@ -218,13 +234,14 @@ window.eksporCSV = function(modul) {
         return;
     }
 
+    // Menambah Byte Order Mark (BOM) agar Excel dapat membaca karakter spesial/tanda baca dengan benar
     const csvContent = '\uFEFF' + buatKontenCSV(modul, data);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = `laporan_${modul}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click();
+    link.click(); // Trigger download
     
     tambahLog(`📥 Ekspor CSV: ${modul} (${data.length} entri)`, '📥');
 };
@@ -266,6 +283,10 @@ function buatKontenCSV(modul, data) {
 // =========================================
 // 5. CETAK LAPORAN
 // =========================================
+/**
+ * Mencetak laporan modul tertentu ke printer atau format PDF (Print Preview)
+ * @param {string} modul - Nama modul yang akan dicetak
+ */
 window.cetakLaporan = function(modul) {
     const data = state[modul];
     if (!data || data.length === 0) return;
@@ -273,7 +294,7 @@ window.cetakLaporan = function(modul) {
     let headers = [];
     let tableRows = '';
     
-    // Konfigurasi Tabel Berdasarkan Modul
+    // Konfigurasi Header dan Baris Tabel Berdasarkan Modul yang dipilih
     if(modul === 'produksi') {
         headers = ['Tanggal', 'Batch', 'Baik', 'Cacat', 'Total'];
         tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.batchLabel}</td><td align="right">${d.telurBaik}</td><td align="right">${d.telurCacat}</td><td align="right"><b>${d.totalTelur}</b></td></tr>`).join('');
@@ -294,6 +315,7 @@ window.cetakLaporan = function(modul) {
         tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.tipe}</td><td>${d.jenis}</td><td align="right">${d.jumlah} Kg</td></tr>`).join('');
     }
 
+    // Bangun struktur HTML untuk jendela cetak
     const htmlContent = `
         <html>
         <head>
@@ -317,10 +339,11 @@ window.cetakLaporan = function(modul) {
         </body>
         </html>`;
 
+    // Buka jendela baru dan kirim perintah cetak browser
     const win = window.open('', '_blank');
     win.document.write(htmlContent);
     win.document.close();
-    win.print();
+    win.print(); // Perintah cetak
     
     tambahLog(`🖨️ Cetak laporan: ${modul} (${data.length} entri)`, '🖨️');
 };
@@ -355,8 +378,28 @@ window.toggleSidebarMenu = function(id) {
     const el = document.getElementById(id);
     if(!el) return;
     const isHidden = el.getAttribute('aria-hidden') === 'true';
+    const parentButton = el.previousElementSibling;
+    
+    // Toggle ARIA attributes
     el.setAttribute('aria-hidden', !isHidden);
-    el.previousElementSibling.setAttribute('aria-expanded', isHidden);
+    parentButton.setAttribute('aria-expanded', isHidden);
+    
+    // Toggle CSS classes for visual feedback
+    if (isHidden) {
+        el.classList.add('show');
+        parentButton.classList.add('active-parent');
+    } else {
+        el.classList.remove('show');
+        parentButton.classList.remove('active-parent');
+    }
+};
+
+window.eksporGabunganCSV = function() {
+    Swal.fire('Fitur', 'Fitur Ekspor Gabungan sedang dalam pengembangan.', 'info');
+};
+
+window.cetakLaporanTerpadu = function() {
+    Swal.fire('Fitur', 'Fitur Cetak Terpadu sedang dalam pengembangan.', 'info');
 };
 
 window.goToProfile = () => window.location.href = 'editProfileTAalip.html';

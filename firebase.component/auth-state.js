@@ -1,15 +1,23 @@
+/* =========================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File: auth-state.js
+   Deskripsi: Mengelola status autentikasi pengguna secara 
+   real-time, pembaruan nama profil di UI, serta fungsi logout.
+========================================================= */
+
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { auth, db } from "./firebase-init.js";
 
 /**
  * Global Helper: Navigasi ke Halaman Edit Profil
+ * Fungsi ini dipanggil dari ikon pensil atau menu profil di Sidebar
  */
 window.goToProfile = function() {
     window.location.href = 'editProfileTAalip.html';
 };
 
-// Saat halaman HTML selesai dimuat
+// Menunggu struktur DOM selesai dimuat
 document.addEventListener('DOMContentLoaded', () => {
     
     // Mengecek Status Login Pengguna secara Realtime dari Firebase
@@ -43,7 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// Menimpa fungsi aksi Logout bawaan agar menggunakan mekanisme Logout Firebase
+/**
+ * Fungsi global untuk menangani proses Logout Pengguna.
+ * Menggunakan SweetAlert jika tersedia untuk user experience yang lebih baik.
+ */
 window.logoutUser = async function() {
     // Mengecek apakah library SweetAlert2 tersedia untuk tampilan yang lebih premium
     if (typeof Swal !== 'undefined') {
@@ -54,7 +65,7 @@ window.logoutUser = async function() {
             showCancelButton: true,
             confirmButtonText: "Ya, Logout",
             cancelButtonText: "Batal",
-            confirmButtonColor: "#d33", // Merah aksi destruktif
+            confirmButtonColor: "#f59e0b", // Oranye
             cancelButtonColor: "#64748b"  // Abu-abu netral
         }).then(async (result) => {
             if (result.isConfirmed) {
@@ -62,8 +73,8 @@ window.logoutUser = async function() {
             }
         });
     } else {
-        // Fallback jika SweetAlert tidak terpanggil
-        if (confirm("Apakah Anda yakin ingin logout?")) {
+        // Mekanisme konfirmasi standar browser (fallback)
+        if (confirm("Apakah Anda yakin ingin keluar?")) {
             executeLogout();
         }
     }

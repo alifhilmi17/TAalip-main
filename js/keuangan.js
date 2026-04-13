@@ -1,8 +1,9 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: keuangan.js
-   Deskripsi: Manajemen pencatatan pemasukan dan pengeluaran
-   menggunakan Firestore.
+   Deskripsi: File ini menangani manajemen pencatatan keuangan
+   termasuk pemasukan (income) dan pengeluaran (expense)
+   menggunakan cloud database Firebase Firestore.
 ========================================================= */
 
 import { 
@@ -24,6 +25,10 @@ const keuanganCollection = collection(db, "keuangan");
 // ==========================================
 // 1. UTILITAS
 // ==========================================
+/**
+ * Memformat angka menjadi format mata uang Rupiah (IDR)
+ * @param {number} number - Angka yang akan diformat
+ */
 function formatIDR(number) {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -64,9 +69,13 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==========================================
 // 3. CRUD LOGIC
 // ==========================================
+/**
+ * Menambah catatan transaksi baru (Pemasukan/Pengeluaran) ke Firestore
+ */
 window.addTransaction = async function(event) {
     event.preventDefault();
 
+    // Mengambil data dari form
     const tanggal = document.getElementById('trxDate').value;
     const tipe = document.querySelector('input[name="trxType"]:checked').value;
     const deskripsi = document.getElementById('trxDesc').value;
@@ -81,7 +90,7 @@ window.addTransaction = async function(event) {
     };
 
     try {
-        await addDoc(keuanganCollection, payload);
+        await addDoc(keuanganCollection, payload); // Simpan ke koleksi 'keuangan'
         Swal.fire({
             icon: 'success',
             title: 'Berhasil',
@@ -90,13 +99,17 @@ window.addTransaction = async function(event) {
             showConfirmButton: false
         });
         document.getElementById('financeForm').reset();
-        // Reset date
+        // Reset tanggal ke hari ini setelah simpan
         document.getElementById('trxDate').value = new Date().toISOString().split('T')[0];
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     }
 };
 
+/**
+ * Menghapus transaksi berdasarkan ID dokumen Firestore
+ * @param {string} id - UID dokumen
+ */
 window.deleteTransaction = function(id) {
     Swal.fire({
         title: 'Hapus Transaksi?',
@@ -150,6 +163,9 @@ function renderTable() {
     }
 }
 
+/**
+ * Menghitung dan memperbarui ringkasan saldo, total pemasukan, dan total pengeluaran
+ */
 function updateSummary() {
     let income = 0;
     let expense = 0;

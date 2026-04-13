@@ -106,6 +106,10 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHistoricalInputs();
 });
 
+/**
+ * Menambah atau mengurangi jumlah hari riwayat data yang ingin diinput
+ * @param {number} delta - Angka perubahan (contoh: +1 atau -1)
+ */
 function changeHistoryCount(delta) {
     let inputEl = document.getElementById('jumlahHariHistoris');
     let current = parseInt(inputEl.value);
@@ -117,6 +121,9 @@ function changeHistoryCount(delta) {
     renderHistoricalInputs();
 }
 
+/**
+ * Menangani perubahan jumlah hari riwayat secara manual via ketik keyboard
+ */
 function manualChangeHistoryCount() {
     let inputEl = document.getElementById('jumlahHariHistoris');
     let current = parseInt(inputEl.value);
@@ -126,6 +133,10 @@ function manualChangeHistoryCount() {
     renderHistoricalInputs();
 }
 
+/**
+ * Merender (Membangun) baris-baris input dinamis untuk histori produksi dan keuntungan
+ * Berdasarkan jumlah hari (X) yang ditentukan pengguna.
+ */
 function renderHistoricalInputs() {
     const prodContainer = document.getElementById('containerHistProd');
     const profitContainer = document.getElementById('containerHistProf');
@@ -133,7 +144,7 @@ function renderHistoricalInputs() {
 
     let periodeMA = parseInt(document.getElementById('periodeMA').value) || 5;
 
-    // Simpan data sebelumnya supaya tidak hilang
+    // Simpan data sebelumnya supaya tidak hilang saat jumlah baris berubah
     let oldProd = {};
     let oldProfit = {};
     for (let i = 0; i <= totalHistoryDays + 10; i++) {
@@ -158,7 +169,7 @@ function renderHistoricalInputs() {
             labelText = `H-${i} (Opsi)`;
         }
 
-        // Cek req
+        // Definisi gaya visual untuk baris "Hari Ini" agar menonjol
         let isToday = (i === 0);
 
         let labelStyleProd = isToday ? 'font-weight: 700; color: #d35400; background: #ffeaa7; padding: 3px 10px; border-radius: 6px; border-left: 3px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block; margin-bottom: 8px;' : '';
@@ -405,6 +416,10 @@ function calculatePrediction(event) {
 /**
  * Fungsi Sub-Renderer: ChartJS Maker.
  * Memuat dua sisi sumbu Axis (Kg vs Rupiah). Sumbu kiri dan Sumbu kanan bertumpang tindih secara canggih.
+ * @param {Array} historyKg - Data produksi aktual (Kg)
+ * @param {Array} historyKeuntungan - Data keuntungan aktual (Rp)
+ * @param {Array} predictKg - Data ramalan produksi 7 hari (Kg)
+ * @param {Array} predictKeuntungan - Data ramalan keuntungan 7 hari (Rp)
  */
 function updateChart(historyKg, historyKeuntungan, predictKg, predictKeuntungan) {
     const ctx = document.getElementById('profitChart').getContext('2d');

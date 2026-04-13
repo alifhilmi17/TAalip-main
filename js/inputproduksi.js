@@ -65,6 +65,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // =========================================
 // 3. UI INTERACTIONS (DROPDOWNS & AUTOFILL)
 // =========================================
+/**
+ * Memuat daftar pilihan (options) Batch Ayam yang sedang 'Aktif' ke dalam dropdown modal
+ * @param {string} selectedId - ID Batch yang ingin dipilih secara otomatis (saat mode Edit)
+ */
 function loadBatchOptions(selectedId = '') {
     const selectEl = document.getElementById('batchProduksi');
     if (!selectEl) return;
@@ -136,6 +140,9 @@ function unlockBatchFields() {
     });
 }
 
+/**
+ * Menghitung otomatis total telur berdasarkan jumlah telur baik dan cacat
+ */
 window.calculateTotal = function() {
     const baik = parseInt(document.getElementById('telurBaik').value) || 0;
     const cacat = parseInt(document.getElementById('telurCacat').value) || 0;
@@ -156,19 +163,26 @@ window.openProduksiModal = function() {
     if (modal) modal.classList.add('show');
 };
 
+/**
+ * Menutup jendela modal input produksi
+ */
 window.closeProduksiModal = function() {
     const modal = document.getElementById('produksiModal');
     if (modal) modal.classList.remove('show');
 };
 
+/**
+ * Menyimpan data produksi harian ke Firestore (Mode Tambah/Edit)
+ */
 window.saveProduksiData = async function(event) {
     event.preventDefault();
 
     const idInput = document.getElementById('produksiId').value;
     const batchEl = document.getElementById('batchProduksi');
     
+    // Memberntuk objek data produksi
     const payload = {
-        tanggal: document.getElementById('tglProduksi').value, // This is the batch entry date or production date? The HTML says "Tanggal Masuk Batch". I'll keep it as is.
+        tanggal: document.getElementById('tglProduksi').value, 
         batchId: batchEl.value,
         batchLabel: batchEl.options[batchEl.selectedIndex].text,
         jenisTelur: document.getElementById('jenisTelurProduksi').value,
@@ -181,10 +195,12 @@ window.saveProduksiData = async function(event) {
 
     try {
         if (idInput === "") {
+            // Mode Tambah Baru
             payload.createdAt = new Date().toISOString();
             await addDoc(produksiCollection, payload);
             Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi ditambahkan.', timer: 2000, showConfirmButton: false });
         } else {
+            // Mode Update Data
             await updateDoc(doc(db, "produksi_harian", idInput), payload);
             Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi diperbarui.', timer: 2000, showConfirmButton: false });
         }

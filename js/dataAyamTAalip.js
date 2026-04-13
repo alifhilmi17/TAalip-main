@@ -29,6 +29,11 @@ const ayamCollection = collection(db, "populasi_ayam");
 // =========================================
 // 2. MODUL UTILITAS
 // =========================================
+/**
+ * Fungsi utilitas untuk memformat string tanggal menjadi format Indonesia yang mudah dibaca
+ * @param {string} tglString - String tanggal format ISO (YYYY-MM-DD)
+ * @returns {string} Tanggal terformat (Contoh: 1 Jan 2024)
+ */
 function formatTanggal(tglString) {
     if (!tglString) return "-";
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
@@ -131,20 +136,30 @@ function renderTable() {
 const modal = document.getElementById('ayamModal');
 const form = document.getElementById('ayamForm');
 
+/**
+ * Membuka jendela modal untuk menambah data batch ayam baru
+ */
 window.openAyamModal = function() {
-    form.reset();
-    document.getElementById('ayamId').value = "";
+    form.reset(); // Bersihkan formulir
+    document.getElementById('ayamId').value = ""; // Pastikan ID kosong (Mode Tambah)
     document.getElementById('modalTitle').innerText = "Tambah Batch Ayam";
-    modal.classList.add('show');
+    modal.classList.add('show'); // Tampilkan modal dengan class CSS
 };
 
+/**
+ * Menutup jendela modal data ayam
+ */
 window.closeAyamModal = function() {
     modal.classList.remove('show');
 };
 
+/**
+ * Menyimpan data ayam ke Firestore (Bisa mode Tambah Baru atau Edit)
+ */
 window.saveAyamData = async function(event) {
-    event.preventDefault();
+    event.preventDefault(); // Mencegah reload halaman
 
+    // Menangkap nilai-nilai dari input form
     const docId = document.getElementById('ayamId').value;
     const tglMasuk = document.getElementById('tglMasuk').value;
     const jenisAyam = document.getElementById('jenisAyam').value;
@@ -153,6 +168,7 @@ window.saveAyamData = async function(event) {
     const kandang = document.getElementById('kandang').value;
     const statusAyam = document.getElementById('statusAyam').value;
 
+    // Objek paket data (payload) yang akan dikirim ke database
     const payload = {
         tglMasuk,
         jenis: jenisAyam,
@@ -165,12 +181,13 @@ window.saveAyamData = async function(event) {
 
     try {
         if (docId === "") {
-            // MODE TAMBAH
+            // LOGIKA MODE TAMBAH BARU
+            // Membuat ID kustom otomatis (B-001, B-002, dst)
             const customId = "B-" + String(dataAyam.length + 1).padStart(3, '0');
             payload.customId = customId;
             payload.createdAt = new Date().toISOString();
             
-            await addDoc(ayamCollection, payload);
+            await addDoc(ayamCollection, payload); // Simpan ke Firestore
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
@@ -179,9 +196,9 @@ window.saveAyamData = async function(event) {
                 showConfirmButton: false
             });
         } else {
-            // MODE EDIT
+            // LOGIKA MODE EDIT/UPDATE DATA LAMA
             const docRef = doc(db, "populasi_ayam", docId);
-            await updateDoc(docRef, payload);
+            await updateDoc(docRef, payload); // Perbarui dokumen di Firestore
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
@@ -190,16 +207,21 @@ window.saveAyamData = async function(event) {
                 showConfirmButton: false
             });
         }
-        window.closeAyamModal();
+        window.closeAyamModal(); // Tutup modal setelah sukses
     } catch (error) {
         console.error("Error saving document: ", error);
         Swal.fire("Error", "Gagal menyimpan data: " + error.message, "error");
     }
 };
 
+/**
+ * Mengisi formulir modal dengan data ayam yang dipilih untuk diedit
+ * @param {string} id - UID dokumen Firestore
+ */
 window.editAyam = function(id) {
-    const ayam = dataAyam.find(a => a.id === id);
+    const ayam = dataAyam.find(a => a.id === id); // Cari data di memori lokal (state)
     if (ayam) {
+        // Prefill kolom-kolom form
         document.getElementById('ayamId').value = ayam.id;
         document.getElementById('tglMasuk').value = ayam.tglMasuk;
         document.getElementById('jenisAyam').value = ayam.jenis;
@@ -213,6 +235,10 @@ window.editAyam = function(id) {
     }
 };
 
+/**
+ * Menghapus data batch ayam secara permanen dari Firestore
+ * @param {string} id - UID dokumen Firestore
+ */
 window.deleteAyam = function(id) {
     Swal.fire({
         title: 'Hapus Data?',
@@ -226,7 +252,7 @@ window.deleteAyam = function(id) {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                await deleteDoc(doc(db, "populasi_ayam", id));
+                await deleteDoc(doc(db, "populasi_ayam", id)); // Hapus dari Firestore
                 Swal.fire('Terhapus!', 'Data batch telah dihapus.', 'success');
             } catch (error) {
                 Swal.fire("Error", "Gagal menghapus data: " + error.message, "error");
@@ -235,28 +261,38 @@ window.deleteAyam = function(id) {
     });
 };
 
+/**
+ * Fitur pencarian cepat di tabel (Client-side filtering)
+ */
 window.searchTable = function() {
     const input = document.getElementById("searchAyam").value.toLowerCase();
     const rows = document.querySelectorAll("#ayamTableBody tr");
 
     rows.forEach(row => {
         const textContent = row.innerText.toLowerCase();
-        row.style.display = textContent.includes(input) ? "" : "none";
+        row.style.display = textContent.includes(input) ? "" : "none"; // Sembunyikan jika tidak cocok
     });
 };
 
+/**
+ * Mengunduh seluruh ringkasan data ayam dalam format berkas CSV
+ */
 window.downloadLaporanCSV = function() {
     if (dataAyam.length === 0) {
         Swal.fire({ icon: 'warning', title: 'Data Kosong', text: 'Tidak ada data ayam untuk diekspor.' });
         return;
     }
 
+    // Header Tabel CSV
     let csvContent = "ID Batch,Tanggal Masuk,Jenis Telur Ayam,Populasi Awal,Sisa Ayam,Kandang,Status\n";
+    
+    // Looping data menjadi baris teks CSV
     dataAyam.forEach(ayam => {
         let row = `${ayam.customId || ayam.id},${ayam.tglMasuk},${ayam.jenis},${ayam.jumlahAwal},${ayam.sisaAyam},${ayam.kandang},${ayam.status}`;
         csvContent += row + "\n";
     });
 
+    // Proses download browser
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);

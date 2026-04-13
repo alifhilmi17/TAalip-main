@@ -55,52 +55,55 @@ let financeChartInstance = null;
 // 3. INISIALISASI & LISTENERS
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // A. Schedules
+    // A. Schedules: Mendengarkan perubahan data jadwal secara real-time
     onSnapshot(query(collection(db, "schedules"), orderBy("createdAt", "desc")), (snap) => {
         state.schedules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderSchedule();
+        renderSchedule(); // Perbarui tabel jadwal di UI
     });
 
-    // B. Activities
+    // B. Activities: Mendengarkan daftar aktivitas harian
     onSnapshot(query(collection(db, "daily_activities"), orderBy("createdAt", "desc")), (snap) => {
         state.activities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderActivities();
+        renderActivities(); // Perbarui daftar ceklis aktivitas
     });
 
-    // C. Announcements
+    // C. Announcements: Mendengarkan pengumuman atau notifikasi sistem
     onSnapshot(query(collection(db, "announcements"), orderBy("createdAt", "desc")), (snap) => {
         state.announcements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderAnnouncements();
+        renderAnnouncements(); // Perbarui tampilan pengumuman
     });
 
-    // D. Data Produksi
+    // D. Data Produksi: Mendengarkan data jumlah telur harian
     onSnapshot(collection(db, "produksi_harian"), (snap) => {
         state.produksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates();
+        updateDashboardAggregates(); // Hitung ulang statistik dashboard
     });
 
-    // E. Data Keuangan
+    // E. Data Keuangan: Mendengarkan transaksi pemasukan/pengeluaran
     onSnapshot(collection(db, "keuangan"), (snap) => {
         state.keuangan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates();
+        updateDashboardAggregates(); // Hitung ulang total pendapatan
     });
 
-    // F. Data Ayam
+    // F. Data Ayam: Mendengarkan data populasi dan status batch ayam
     onSnapshot(collection(db, "populasi_ayam"), (snap) => {
         state.ayam = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates();
+        updateDashboardAggregates(); // Perbarui jumlah ekor ayam aktif
     });
 
-    // G. Data Pakan
+    // G. Data Pakan: Mendengarkan aliran masuk dan keluar pakan
     onSnapshot(collection(db, "stok_pakan"), (snap) => {
         state.pakan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates();
+        updateDashboardAggregates(); // Perbarui sisa stok pakan
     });
 });
 
 // =========================================
 // 4. MODULE: SCHEDULE
 // =========================================
+/**
+ * Merender daftar jadwal ke dalam tabel HTML
+ */
 function renderSchedule() {
     const tbody = document.querySelector("#scheduleTable tbody");
     if (!tbody) return;
@@ -149,6 +152,9 @@ window.deleteScheduleItem = async function(id) {
 // =========================================
 // 5. MODULE: ACTIVITIES
 // =========================================
+/**
+ * Merender daftar aktivitas harian dalam bentuk list item interaktif
+ */
 function renderActivities() {
     const list = document.getElementById("dailyActivityList");
     if (!list) return;
@@ -255,6 +261,9 @@ window.deleteAnnouncementItem = async function(id) {
 // =========================================
 // 7. AGGREGATES, STATS & CHARTS
 // =========================================
+/**
+ * Menghitung dan memperbarui seluruh angka ringkasan (Statistik) di Dashboard
+ */
 function updateDashboardAggregates() {
     const today = new Date().toISOString().split('T')[0];
     
@@ -310,6 +319,10 @@ window.gantiPeriodeGrafik = function(hari, btn) {
     renderEggChart(hari);
 };
 
+/** 
+ * Merender Grafik Produksi Telur menggunakan Chart.js
+ * @param {number} nHari - Jumlah hari riwayat yang ingin ditampilkan
+ */
 function renderEggChart(nHari) {
     const canvas = document.getElementById('eggProductionChart');
     if (!canvas) return;
@@ -359,6 +372,9 @@ function renderEggChart(nHari) {
     });
 }
 
+/**
+ * Merender Grafik Perbandingan Keuangan (Mingguan)
+ */
 function renderFinanceChart() {
     const canvas = document.getElementById('financeChart');
     if (!canvas) return;

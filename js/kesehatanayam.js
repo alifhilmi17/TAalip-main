@@ -68,12 +68,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+/**
+ * Berpindah tab antara 'Pencatatan Kesehatan' dan 'Penjadwalan Vaksinasi'
+ * @param {string} tabId - ID tab yang ingin diaktifkan
+ */
 window.switchTab = function(tabId) {
     const tabBtns = document.querySelectorAll('.tab-btn');
     tabBtns.forEach(btn => btn.classList.remove('active'));
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
-        content.style.display = 'none';
+        content.style.display = 'none'; // Sembunyikan semua tab
         content.classList.remove('active');
     });
 
@@ -140,16 +144,21 @@ window.onBatchVaksinChange = function() {
 // ==========================================
 // 5. KESEHATAN CRUD
 // ==========================================
+/**
+ * Membuka jendela modal pencatatan kesehatan (Bisa mode Tambah Baru atau Edit)
+ * @param {string} id - ID Dokumen Firestore (opsional, jika ingin edit)
+ */
 window.openKesehatanModal = function(id = null) {
     const modal = document.getElementById('kesehatanModal');
     const form = document.getElementById('kesehatanForm');
     const title = document.getElementById('modalKesehatanTitle');
 
-    form.reset();
+    form.reset(); // Bersihkan form
     document.getElementById('kesehatanId').value = '';
     document.getElementById('kesKandang').value = '';
 
     if (id) {
+        // MODE EDIT
         title.innerText = "Edit Catatan Kesehatan";
         const item = dataKesehatan.find(x => x.id == id);
         if (item) {
@@ -164,8 +173,9 @@ window.openKesehatanModal = function(id = null) {
             document.getElementById('kesStatus').value = item.status;
         }
     } else {
+        // MODE TAMBAH BARU
         title.innerText = "Catat Kesehatan Ayam";
-        document.getElementById('kesTanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('kesTanggal').value = new Date().toISOString().split('T')[0]; // Default hari ini
     }
     modal.classList.add('show');
 };
@@ -174,6 +184,9 @@ window.closeKesehatanModal = function() {
     document.getElementById('kesehatanModal').classList.remove('show');
 };
 
+/**
+ * Menyimpan data kesehatan ke koleksi Firestore "kesehatan_ayam"
+ */
 window.saveKesehatan = async function(e) {
     e.preventDefault();
     const id = document.getElementById('kesehatanId').value;
@@ -181,6 +194,7 @@ window.saveKesehatan = async function(e) {
     const batchId = batchSelect.value;
     const batchText = batchSelect.options[batchSelect.selectedIndex].text;
     
+    // Membentuk paket data kesehatan
     const payload = {
         tanggal: document.getElementById('kesTanggal').value,
         batchId: batchId,
@@ -196,8 +210,10 @@ window.saveKesehatan = async function(e) {
 
     try {
         if (id) {
+            // Update jika ada ID (Mode Edit)
             await updateDoc(doc(db, "kesehatan_ayam", id), payload);
         } else {
+            // Add baru (Mode Tambah)
             payload.createdAt = new Date().toISOString();
             await addDoc(kesCollection, payload);
         }
@@ -403,6 +419,9 @@ function renderVaksinTable() {
 // ==========================================
 // 7. STATISTICS
 // ==========================================
+/**
+ * Memperbarui angka statistik kesehatan di kartu atas (Dashboard Mini)
+ */
 function updateStats() {
     const elSakit = document.getElementById('statAyamSakit');
     const elMati = document.getElementById('statAyamMati');

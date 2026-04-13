@@ -150,14 +150,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Memperbarui/Memasukkan keseluruhan data teks sinkron ke Firestore
-            // Menggunakan setDoc + merge:true otomatis membuat file baru jika belum ada (terutama user lama)
+            // Menggunakan setDoc + merge:true otomatis membuat data baru jika belum ada 
             const docRef = doc(db, "user", user.uid);
             await setDoc(docRef, {
-                fullname: targetFullName,
-                username: targetUsername,
-                email: targetEmail,
-                phone: targetPhone
-            }, { merge: true });
+                fullname: targetFullName, // Simpan Nama Lengkap kustom
+                username: targetUsername, // Simpan Username (untuk pencarian)
+                email: targetEmail,        // Simpan Email (sinkronisasi)
+                phone: targetPhone         // Simpan Nomor Telepon
+            }, { merge: true }); // Merge: true memastikan field lain tidak terhapus (seperti profilePic url dll)
 
             // Tutup loading dan tampilkan Sukses
             Swal.fire(

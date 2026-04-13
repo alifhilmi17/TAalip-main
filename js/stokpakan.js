@@ -1,8 +1,9 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: stokpakan.js
-   Deskripsi: Manajemen stok masuk dan keluar pakan ternak
-   menggunakan Firestore.
+   Deskripsi: File ini mengelola pencatatan stok pakan ternak,
+   mencatat aliran pakan masuk dan keluar, serta menghitung
+   sisa stok secara real-time menggunakan Firestore.
 ========================================================= */
 
 import { 
@@ -69,10 +70,14 @@ window.closePakanModal = function() {
     document.getElementById('pakanModal').classList.remove('show');
 };
 
+/**
+ * Menyimpan data pakan ke Firestore (Tambah atau Edit)
+ */
 window.savePakanData = async function(event) {
     event.preventDefault();
     const id = document.getElementById('pakanId').value;
     
+    // Objek data pakan
     const payload = {
         tanggal: document.getElementById('tglPakan').value,
         tipe: document.getElementById('tipePakan').value,
@@ -84,19 +89,25 @@ window.savePakanData = async function(event) {
 
     try {
         if (id === "") {
+            // Logika Tambah Baru
             payload.createdAt = new Date().toISOString();
             await addDoc(pakanCollection, payload);
             Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan ditambahkan.', timer: 1500, showConfirmButton: false });
         } else {
+            // Logika Update (Edit)
             await updateDoc(doc(db, "stok_pakan", id), payload);
             Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan diperbarui.', timer: 1500, showConfirmButton: false });
         }
-        window.closePakanModal();
+        window.closePakanModal(); // Tutup modal setelah simpan
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     }
 };
 
+/**
+ * Mengambil data pakan untuk diedit dan membukanya di modal
+ * @param {string} id - UID dokumen Firestore
+ */
 window.editPakan = function(id) {
     const item = dataPakan.find(p => p.id === id);
     if (item) {
@@ -112,6 +123,10 @@ window.editPakan = function(id) {
     }
 };
 
+/**
+ * Menghapus data pakan secara permanen dari Firestore
+ * @param {string} id - UID dokumen Firestore
+ */
 window.deletePakan = function(id) {
     Swal.fire({
         title: 'Hapus Data?',
@@ -121,7 +136,7 @@ window.deletePakan = function(id) {
         confirmButtonColor: '#ff6b6b'
     }).then(async (result) => {
         if (result.isConfirmed) {
-            await deleteDoc(doc(db, "stok_pakan", id));
+            await deleteDoc(doc(db, "stok_pakan", id)); // Hapus dari Firestore
             Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
         }
     });
