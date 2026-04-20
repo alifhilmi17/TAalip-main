@@ -1,75 +1,86 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
-   File: dataAyamTAalip.css
-   Deskripsi: Koleksi penyesuaian estetika layar antarmuka 
-   spesifik Menu Inventaris Populasi & Tabel Data Ayam.
+   File        : dataAyamTAalip.css
+   Deskripsi   : Gaya visual halaman Inventaris Populasi &
+                 Tabel Data Batch Ayam.
+   Mencakup    : header oranye, tombol, kartu statistik,
+                 tabel data, badge status, modal form,
+                 scrollbar modal, dan responsif mobile.
 ========================================================= */
 
-/* =========================================
-   1. KARTU SAMBUTAN KEPALA HALAMAN (Header Orange)
-   ========================================= */
+
+/* =========================================================
+   📌 HEADER HALAMAN DATA AYAM
+========================================================= */
+/* Blok judul atas berwarna oranye khas peternakan dengan dekorasi ikon ayam
+   transparan di pojok; memiliki efek hover mengambang */
 .page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
-    /* Warna Gradien Oranye Matahari Terbenam Khas Peternakan */
+    background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);   /* Gradien oranye terbenam */
     padding: 30px 40px;
     border-radius: 20px;
     margin-bottom: 35px;
     box-shadow: 0 10px 25px rgba(234, 88, 12, 0.25);
-    /* Pendaran bayangan di balik kartu menumbuhkan kesan mengambang */
     color: white;
     position: relative;
-    overflow: hidden;
-    /* Mencegat aset Ayam jumbo agar tidak mencuat jelek memotong keluar batas header */
+    overflow: hidden;                          /* Mencegat ikon ayam jumbo tidak keluar batas */
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease;
     cursor: default;
 }
 
-/* Reaksi Sentuhan Kursor: Terangkat dan Bayangan Tebal Membesar */
+/* =========================================================
+   📌 EFEK HOVER HEADER
+========================================================= */
+/* Header terangkat ke atas dan bayangan oranye menguat saat kursor melewatinya */
 .page-header:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 35px rgba(234, 88, 12, 0.4);
 }
 
-/* Teknik penyisipan ikon/emoji Raksasa (Watermark Ayam Raksasa Blur di Pojok Kanan Atas Oranye) */
+/* =========================================================
+   🐓 DEKORASI WATERMARK IKON AYAM
+========================================================= */
+/* Ikon ayam raksasa 15% transparan di pojok kanan sebagai hiasan latar header */
 .page-header::after {
     content: '🐓';
     position: absolute;
     right: 220px;
     top: -20px;
     font-size: 140px;
-    opacity: 0.15;
-    /* Kadar ketebus-pandangan cuma 15% / Super Tipis pudar */
+    opacity: 0.15;                             /* Sangat pudar agar tidak mengganggu teks */
     transform: rotate(15deg);
     transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease;
-    pointer-events: none;
-    /* Dilarang merespon klik mouse */
+    pointer-events: none;                      /* Ikon tidak bisa diklik */
 }
 
-/* Jika panen/header dihover, Ayamnya seakan tersenyum melotot kaget membesar */
+/* Ikon ayam berputar dan membesar saat header di-hover */
 .page-header:hover::after {
     transform: rotate(-5deg) scale(1.15) translateY(-5px);
     opacity: 0.3;
 }
 
-/* Rangka Tulisan */
+/* =========================================================
+   🔤 KONTAINER TEKS HEADER
+========================================================= */
+/* Berada di atas z-index agar tidak tertimpa ikon watermark */
 .header-text {
     position: relative;
     z-index: 1;
 }
 
+/* Judul halaman besar dan tebal */
 .header-text h2 {
     font-size: 1.85rem;
     font-weight: 800;
     margin: 0 0 8px 0;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-    /* Bayangan keras hitam penebar teks menaikkan kejelasan font di atas background cerah */
     color: white;
     letter-spacing: 0.5px;
 }
 
+/* Teks deskripsi di bawah judul */
 .header-text p {
     font-size: 1.05rem;
     opacity: 0.9;
@@ -78,52 +89,56 @@
     color: white;
 }
 
-/* =========================================
-   2. REKAAN TOMBOL-TOMBOL NAVIGASI HALAMAN INI
-   ========================================= */
-/* Tombol Dasar (Default Type) / Gaya Hijau Cerah */
+
+/* =========================================================
+   🔘 TOMBOL UTAMA — ADD BATCH (BTN PRIMARY)
+========================================================= */
+/* Tombol hijau utama untuk membuka form tambah batch ayam baru */
 .btn-primary {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     color: white;
     border: none;
     padding: 12px 24px;
-    border-radius: 50px;
-    /* Lengkungan bentuk Tipe Kapsul Melingkar Penuh */
+    border-radius: 50px;                       /* Bentuk kapsul melingkar penuh */
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-    /* Pendaran bayangan Hijau */
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    /* Renggangan Spasi untuk ikon emoji */
     position: relative;
     z-index: 1;
 }
 
+/* Tombol naik dan bayangan menguat saat hover */
 .btn-primary:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
-/* --- Varian Khusus --- Tombol "Tambah Batch" Putih Polos membalut Header Oranye */
+/* =========================================================
+   🔘 TOMBOL ADD BATCH DI DALAM HEADER (WARNA PUTIH)
+========================================================= */
+/* Override: tombol di dalam header oranye menggunakan latar putih dengan teks oranye */
 .page-header .btn-primary {
     background: white;
-    color: #ea580c;
-    /* Warnanya Font yang Justru Oranye */
+    color: #ea580c;                            /* Teks oranye kontras dengan latar putih */
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Tombol putih menguning pucat saat hover untuk umpan balik visual */
 .page-header .btn-primary:hover {
     background: #fffaf0;
-    /* Saat didekati, putihnya berubah layu menguning sedikit seakan mendeteksi aksi user */
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     color: #c2410c;
 }
 
-/* Konstruksi Tombol 'Edit' dan 'Hapus' kecil-kecil barisan Aksi si setiap baris list di Tabel HTML */
+/* =========================================================
+   ✏️ TOMBOL EDIT DAN HAPUS — DASAR
+========================================================= */
+/* Dasar gaya bersama tombol kecil Edit & Hapus di setiap baris tabel */
 .btn-edit,
 .btn-delete {
     padding: 8px 14px;
@@ -140,28 +155,35 @@
     margin-right: 5px;
 }
 
-/* Tombol Edit Warna Emas / Kuning Ceria Peringatan */
+/* =========================================================
+   ✏️ TOMBOL EDIT (KUNING)
+========================================================= */
+/* Kuning muda menandakan aksi mengubah/memperbaiki data batch */
 .btn-edit {
     background: #fef08a;
     color: #a16207;
     border: 1px solid #fde047;
 }
 
+/* Tombol edit berubah kuning penuh dan membesar saat hover */
 .btn-edit:hover {
     background: #eab308;
     color: white;
     transform: scale(1.05);
-    /* Membasar sekitar limabelas persen demi kesan "POP" out mengisyaratkan kesiapan beraksi */
     box-shadow: 0 4px 10px rgba(234, 179, 8, 0.3);
 }
 
-/* Tombol Hapus Berbahaya Warna Tinta Darah / Merah Bahaya (Destructive Alert Indicator) */
+/* =========================================================
+   🗑️ TOMBOL HAPUS (MERAH)
+========================================================= */
+/* Merah muda menandakan aksi destruktif: menghapus data batch ayam */
 .btn-delete {
     background: #fee2e2;
     color: #ef4444;
     border: 1px solid #fecaca;
 }
 
+/* Tombol hapus berubah merah penuh saat hover sebagai peringatan */
 .btn-delete:hover {
     background: #ef4444;
     color: white;
@@ -169,7 +191,10 @@
     box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
-/* Tombol Ekspor Data ke Laporan File CSV */
+/* =========================================================
+   📥 TOMBOL EKSPOR CSV
+========================================================= */
+/* Tombol biru bergradien untuk mengunduh data batch ayam ke file CSV */
 .btn-export {
     background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
@@ -187,28 +212,32 @@
     gap: 0.5rem;
 }
 
+/* Tombol ekspor naik dan bayangan biru menguat saat hover */
 .btn-export:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
-/* =========================================
-   3. PANEL INFORMASI KILAT (KARTU QUICK STATS AYAM HOVER EFFECT)
-   ========================================= */
-/* Efek Hover untuk semua bungkusan Info Angka-Angkat Statistik di atas tabel */
+
+/* =========================================================
+   📊 KARTU STATISTIK KILAT AYAM (QUICK STATS)
+========================================================= */
+/* Tiga kartu ringkasan di atas tabel: total ayam, status aktif, dan batch berjalan */
 .ayam-stats .stat-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-left: 5px solid #f97316;
-    /* Pembatas Garis tebal menandai elemen di Tepi Kiri ala Meteran progres */
+    border-left: 5px solid #f97316;            /* Aksen garis kiri oranye default */
 }
 
+/* Kartu naik dan bayangan oranye muncul saat di-hover */
 .ayam-stats .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(249, 115, 22, 0.15);
-    /* Aksen glow saat dihampiri pointernya Mouse User */
 }
 
-/* Pewarnaan per-Individual Modul Kotak (1: Kuning - 2: Oranye - 3: Biru) */
+/* =========================================================
+   🎨 WARNA AKSEN KARTU STATISTIK — KUNING (KARTU 1)
+========================================================= */
+/* Kartu pertama: tema kuning untuk jumlah total ayam */
 .ayam-stats .stat-card:nth-child(1) {
     border-left-color: #eab308;
 }
@@ -217,6 +246,10 @@
     background: rgba(234, 179, 8, 0.2);
 }
 
+/* =========================================================
+   🎨 WARNA AKSEN KARTU STATISTIK — ORANYE (KARTU 2)
+========================================================= */
+/* Kartu kedua: tema oranye untuk jumlah batch yang sedang aktif */
 .ayam-stats .stat-card:nth-child(2) {
     border-left-color: #f97316;
 }
@@ -225,6 +258,10 @@
     background: rgba(249, 115, 22, 0.2);
 }
 
+/* =========================================================
+   🎨 WARNA AKSEN KARTU STATISTIK — BIRU (KARTU 3)
+========================================================= */
+/* Kartu ketiga: tema biru untuk informasi batch panen/afkir */
 .ayam-stats .stat-card:nth-child(3) {
     border-left-color: #3b82f6;
 }
@@ -234,24 +271,25 @@
 }
 
 
-/* =========================================
-   4. KERTAS TABEL UTAMA BADAN KONTEN AYAM
-   ========================================= */
-/* Kertas bayangan tatakan Tabel besar */
+/* =========================================================
+   🃏 WRAPPER KARTU TABEL UTAMA
+========================================================= */
+/* Kotak putih lebar dengan aksen garis atas biru sebagai wadah tabel data batch */
 .table-container.shadow-card {
     background: #ffffff;
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.02);
-    border-top: 5px solid #3b82f6;
-    /* Tepian biru mantap mirip garis map buku catatan adminstrator */
+    border-top: 5px solid #3b82f6;             /* Penanda biru identitas kartu tabel */
     margin-bottom: 2rem;
 }
 
-/* =========================================
-   5. DEKORASI FUNGSI JUDUL TABEL SERTA BAR PENCARIAN
-   ========================================= */
+
+/* =========================================================
+   🏷️ HEADER BARIS JUDUL DAN PENCARIAN TABEL
+========================================================= */
+/* Baris di atas tabel memuat judul dan kotak pencarian; dipisahkan garis putus */
 .table-header {
     display: flex;
     justify-content: space-between;
@@ -259,12 +297,11 @@
     margin-bottom: 25px;
     padding-bottom: 15px;
     border-bottom: 2px dashed #f1f5f9;
-    /* Jahitan putus-putus pembatas antara panel judul vs awal nama field list di tabel bawah */
-    flex-wrap: wrap;
-    /* Fitur memutar kolom jika layar tiba-tiba disempitkan di PC */
+    flex-wrap: wrap;                           /* Pindah baris jika layar disempitkan */
     gap: 1rem;
 }
 
+/* Teks judul di sisi kiri header tabel */
 .table-header h3 {
     margin: 0;
     color: #1e293b;
@@ -272,7 +309,10 @@
     font-weight: 700;
 }
 
-/* Gaya Ketik / Kotak Pencarian "Cari berdasar ID/Kandang" */
+/* =========================================================
+   🔍 KOTAK PENCARIAN DI HEADER TABEL
+========================================================= */
+/* Input berbentuk kapsul untuk mencari batch berdasarkan ID/kandang */
 .table-header input {
     padding: 10px 18px;
     border: 1px solid #cbd5e1;
@@ -281,33 +321,40 @@
     font-size: 0.9rem;
     width: 250px;
     background: #f8fafc;
-    /* Rona perak keabuan sangat tipis untuk kotak kosong netral */
     transition: all 0.3s;
     outline: none;
 }
 
-/* Mempertebal border pinggiran oranye ketika orang beneran mau mulai klik Ngetik sesuatu mencari ayam (Focus) */
+/* Garis tepi berubah oranye saat input pencarian aktif */
 .table-header input:focus {
     background: #fff;
     border-color: #f97316;
     box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
 }
 
-/* =========================================
-   6. KONTRUKSI BADAN SEL-SEL TABEL (Data Lists)
-   ========================================= */
+/* =========================================================
+   📜 WRAPPER TABEL RESPONSIF
+========================================================= */
+/* Membungkus tabel dengan scroll horizontal di layar sempit */
 .table-responsive {
     overflow-x: auto;
-    /* Merelakan ada gulir geser menyamping andai tabelnya kepanjangan dan menyembul melampaui ukuran pinggir HP. Agar tidak rusak tampilan */
     border-radius: 12px;
 }
 
+/* =========================================================
+   📋 TABEL DATA BATCH AYAM
+========================================================= */
+/* Tabel tanpa border bergabung untuk tampilan bersih antar sel */
 .data-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
+/* =========================================================
+   📋 SEL TABEL (TH & TD)
+========================================================= */
+/* Padding, ukuran font, dan perataan tengah untuk semua sel tabel */
 .data-table th,
 .data-table td {
     padding: 16px 15px;
@@ -318,33 +365,39 @@
     text-align: center;
 }
 
-/* Area Judul Label Kolom di Kepala Tabel list (Tanggal, Jenis, Dll...) */
+/* =========================================================
+   🏷️ KEPALA KOLOM TABEL (HEADER TH)
+========================================================= */
+/* Latar abu, teks kapital, dan posisi sticky agar header selalu terlihat saat scroll */
 .data-table th {
-    background: #f8fafc;
-    /* Sedikit beda dr kertas aseli penyamaran pemisah header kolom vs isi */
+    background: #f8fafc;                       /* Sedikit berbeda dari latar isi tabel */
     font-weight: 700;
     text-align: center;
     color: #475569;
     position: sticky;
-    /* Jika ditarik scroll, baris panutan kepala ini selalu tak terikut ngilang melainkan nempel/mengintip di atap layar */
-    top: 0;
+    top: 0;                                    /* Kepala tabel selalu terlihat saat discroll */
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 0.5px;
 }
 
+/* =========================================================
+   🖱️ EFEK HOVER BARIS TABEL
+========================================================= */
+/* Baris tabel berubah latar saat kursor melewatinya */
 .data-table tbody tr {
     transition: background-color 0.2s ease;
 }
 
 .data-table tbody tr:hover {
-    background-color: #fffaf0;
-    /* Sentuhan warna peringatan "Anda menunjuk Baris ini" / Highlight saat di-hover */
+    background-color: #fffaf0;                 /* Kuning sangat pucat ala tema oranye ayam */
 }
 
-/* =========================================
-   7. LENCANA (Kapsul Status Ayam yang Warna-Warni - Misal : Status "Aktif","Panen","Afkir")
-   ========================================= */
+
+/* =========================================================
+   🏷️ LENCANA STATUS BATCH AYAM (BADGE)
+========================================================= */
+/* Kapsul kecil berwarna yang menandai status setiap batch ayam */
 .badge {
     padding: 6px 14px;
     border-radius: 30px;
@@ -355,27 +408,41 @@
     text-align: center;
 }
 
+/* =========================================================
+   💚 BADGE AKTIF (HIJAU)
+========================================================= */
+/* Hijau muda menandakan batch ayam yang sedang berjalan */
 .badge-aktif {
     background: #dcfce7;
     color: #166534;
     border: 1px solid #bbf7d0;
 }
 
+/* =========================================================
+   💙 BADGE PANEN (BIRU)
+========================================================= */
+/* Biru muda menandakan batch yang sudah selesai masa produksi (panen) */
 .badge-panen {
     background: #dbeafe;
     color: #1e40af;
     border: 1px solid #93c5fd;
 }
 
+/* =========================================================
+   ❤️ BADGE AFKIR (MERAH)
+========================================================= */
+/* Merah muda menandakan batch yang sudah diafkir (tidak produktif lagi) */
 .badge-afkir {
     background: #fee2e2;
     color: #991b1b;
     border: 1px solid #fecaca;
 }
 
-/* =========================================
-   8. VISUAL STATE KOSONG (Saat Anda belum punya isi data di Browser/Local Storage)
-   ========================================= */
+
+/* =========================================================
+   💬 TAMPILAN KOSONG (EMPTY STATE)
+========================================================= */
+/* Pesan terpusat yang tampil saat tabel belum memiliki data batch ayam */
 .empty-state {
     display: none;
     text-align: center;
@@ -387,6 +454,10 @@
     margin-top: 20px;
 }
 
+/* =========================================================
+   🖼️ IKON EMPTY STATE
+========================================================= */
+/* Emoji besar di atas teks kosong agar tampilan lebih ramah dan informatif */
 .empty-state .empty-icon {
     font-size: 3rem;
     display: block;
@@ -394,10 +465,11 @@
     opacity: 0.5;
 }
 
-/* =========================================
-   9. POP-UP KOTAK FORMULIR INPUT/EDIT DATA AYAM 
-   ========================================= */
-/* Bungker layangan hitam semu buram penutup tabir seluruh web di belakang layar Modal Dialog-box */
+
+/* =========================================================
+   🪟 OVERLAY MODAL (BACKDROP)
+========================================================= */
+/* Lapisan hitam buram dan blur yang menutupi seluruh halaman di balik kotak form */
 .modal {
     display: none;
     position: fixed;
@@ -407,55 +479,66 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);                /* Efek blur di belakang modal */
     align-items: center;
     justify-content: center;
 }
 
+/* Modal ditampilkan saat kelas 'show' diberikan via JavaScript */
 .modal.show {
     display: flex;
-    /* Teknik paksaan menampilkan dengan kelas CSS */
 }
 
-/* Fisik Kotak Form berwarna tebal di Tengah Muka */
+/* =========================================================
+   🃏 KONTEN MODAL (KOTAK FORM)
+========================================================= */
+/* Kotak putih di tengah overlay dengan aksen garis atas oranye */
 .modal-content {
     background-color: #ffffff;
     padding: 30px;
     border-radius: 20px;
     width: 100%;
     max-width: 500px;
-    max-height: 90vh;
-    /* Batas tinggi maksimal 90% layar agar tidak melebihi viewport */
-    overflow-y: auto;
-    /* Mengaktifkan scroll di dalam modal jika jumlah field formulir banyak */
+    max-height: 90vh;                          /* Batas tinggi 90% layar agar tidak overflow */
+    overflow-y: auto;                          /* Scroll di dalam modal jika terlalu panjang */
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
     position: relative;
-    border-top: 5px solid #f97316;
-    /* Penanda Oranye Tegas di bagian dahi popup ini */
+    border-top: 5px solid #f97316;             /* Penanda oranye identitas modul data ayam */
     scroll-behavior: smooth;
 }
 
-/* Scrollbar Kustom Modal Data Ayam — Tema Oranye Tipis Elegan */
+/* =========================================================
+   🖱️ SCROLLBAR MODAL — JALUR (TRACK)
+========================================================= */
+/* Jalur scrollbar di dalam modal dengan latar oranye sangat transparan */
 .modal-content::-webkit-scrollbar {
     width: 6px;
 }
 
 .modal-content::-webkit-scrollbar-track {
-    background: rgba(249, 115, 22, 0.06);
+    background: rgba(249, 115, 22, 0.06);      /* Oranye sangat pudar */
     border-radius: 100px;
-    margin: 10px 0;
-    /* Jarak vertikal agar scrollbar tidak menyentuh ujung sudut melengkung modal */
+    margin: 10px 0;                            /* Jarak vertical agar tidak menyentuh sudut modal */
 }
 
+/* =========================================================
+   🖱️ SCROLLBAR MODAL — PEGANGAN (THUMB)
+========================================================= */
+/* Batang scrollbar modal bergradien kuning-oranye */
 .modal-content::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #ffcc70 0%, #f97316 100%);
     border-radius: 100px;
 }
 
+/* Pegangan lebih gelap saat di-hover */
 .modal-content::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #fbbf24 0%, #ea580c 100%);
 }
 
+/* =========================================================
+   🏷️ HEADER MODAL (JUDUL + TOMBOL TUTUP)
+========================================================= */
+/* Baris atas modal memuat judul dan tombol ×, dipisahkan garis putus-putus */
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -465,6 +548,7 @@
     padding-bottom: 15px;
 }
 
+/* Teks judul modal */
 .modal-header h3 {
     margin: 0;
     font-size: 1.3rem;
@@ -472,7 +556,10 @@
     font-weight: 700;
 }
 
-/* Tombol Tutup X kecil di sudut atas kotak dialog Modal popup */
+/* =========================================================
+   ✖️ TOMBOL TUTUP MODAL (×)
+========================================================= */
+/* Tombol X abu di sudut kanan atas modal untuk menutup dialog tanpa menyimpan */
 .close-btn {
     background: transparent;
     border: none;
@@ -483,20 +570,25 @@
     line-height: 1;
 }
 
+/* Berubah merah dan memutar saat hover sebagai umpan balik interaktif */
 .close-btn:hover {
     color: #ef4444;
-    /* Jadi sirah darah */
-    transform: rotate(90deg);
-    /* Mutar Salto patah karena transisi saat menolak X */
+    transform: rotate(90deg);                  /* Efek putaran saat menolak / menutup */
 }
 
-/* =========================================
-   10. MODEL KOTAK INPUT ISIAN DI DALAM MODAL (FORM FIELD)
-   ========================================= */
+
+/* =========================================================
+   📋 GRUP INPUT FORM MODAL (FORM GROUP)
+========================================================= */
+/* Kontainer satu baris input modal yang memberi jarak antar field */
 .form-group {
     margin-bottom: 20px;
 }
 
+/* =========================================================
+   🏷️ LABEL INPUT FORM MODAL
+========================================================= */
+/* Teks panduan di atas setiap kotak input dalam modal */
 .form-group label {
     display: block;
     font-weight: 600;
@@ -505,6 +597,10 @@
     font-size: 0.95rem;
 }
 
+/* =========================================================
+   ✏️ KOTAK INPUT DAN SELECT DI MODAL
+========================================================= */
+/* Kotak abu muda yang berubah putih saat diklik untuk diisi */
 .form-group input,
 .form-group select {
     width: 100%;
@@ -519,14 +615,22 @@
     color: #334155;
 }
 
+/* =========================================================
+   ✏️ EFEK FOKUS INPUT MODAL (AKTIF)
+========================================================= */
+/* Garis tepi berubah oranye dan kotak naik sedikit saat input aktif diketik */
 .form-group input:focus,
 .form-group select:focus {
-    border-color: #f97316;
+    border-color: #f97316;                     /* Oranye identitas modul data ayam */
     background: #fff;
     box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.15);
     transform: translateY(-2px);
 }
 
+/* =========================================================
+   💬 TEKS BANTUAN (HINT TEXT)
+========================================================= */
+/* Keterangan kecil miring di bawah input yang memberi petunjuk format atau aturan */
 .hint-text {
     font-size: 0.8rem;
     color: #64748b;
@@ -535,7 +639,10 @@
     font-style: italic;
 }
 
-/* Wilayah Tombol Penugasan "SIMPAN / BATAL" ujung modal. */
+/* =========================================================
+   🔘 AREA TOMBOL AKSI MODAL (SIMPAN & BATAL)
+========================================================= */
+/* Baris tombol di bagian bawah modal, sejajar ke kanan */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
@@ -543,6 +650,10 @@
     margin-top: 30px;
 }
 
+/* =========================================================
+   ⚪ TOMBOL BATAL DI MODAL (ABU)
+========================================================= */
+/* Tombol abu untuk menutup modal tanpa menyimpan perubahan */
 .modal-actions .btn-secondary {
     background-color: #f1f5f9;
     color: #64748b;
@@ -554,26 +665,28 @@
     font-weight: 600;
 }
 
+/* Tombol batal sedikit menggelap saat hover */
 .modal-actions .btn-secondary:hover {
     background-color: #e2e8f0;
     color: #334155;
     transform: translateY(-2px);
 }
 
-/* =========================================
-   11. ATURAN PENYESUAIAN PENGKONDISIAN HP/Gawai Mini (RESPONSIF/MOBILE-VIEW)
-   ========================================= */
-/* Untuk HP: Ketika layar mengecil < 768 alias gawai potret seukuran hp standar */
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR KECIL (≤768px)
+========================================================= */
+/* Di HP: header ditumpuk vertikal dan ikon watermark diperkecil */
 @media (max-width: 768px) {
 
-    /* Rusak pembagian tata letak blok header, ubah mode vertikal bersusun Atas -> Bawah */
+    /* Header berubah dari baris sejajar menjadi kolom vertikal */
     .page-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
 
-    /* Ciutkan ukuran Font Air Muka Ayam blur agar muat di Pojok kanan */
+    /* Ikon ayam diperkecil dan dipindah ke pojok kanan layar HP */
     .page-header::after {
         right: 10px;
         top: 10px;

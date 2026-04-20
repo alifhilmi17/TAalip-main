@@ -21,7 +21,8 @@ let state = {
     keuangan: [],
     ayam: [],
     kesehatan: [],
-    vaksinasi: []
+    vaksinasi: [],
+    prediksi: []  // Histori hasil prediksi MA
 };
 
 // =========================================
@@ -81,6 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
         perbaruiUI();
     });
 
+    // Listener Histori Prediksi MA
+    onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc")), (snap) => {
+        state.prediksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        perbaruiUI();
+    });
+
     // Auto open submenu Dokumen di Sidebar
     const dokSubMenu = document.getElementById('dokumenSubmenu');
     if (dokSubMenu) {
@@ -115,6 +122,8 @@ function perbaruiRingkasan() {
     if (document.getElementById('count-ayam')) document.getElementById('count-ayam').textContent = `${state.ayam.length} Entri`;
     if (document.getElementById('count-kesehatan')) document.getElementById('count-kesehatan').textContent = `${state.kesehatan.length} Entri`;
     if (document.getElementById('count-vaksinasi')) document.getElementById('count-vaksinasi').textContent = `${state.vaksinasi.length} Entri`;
+    // Update ringkasan prediksi jika elemen tersedia
+    if (document.getElementById('count-prediksi')) document.getElementById('count-prediksi').textContent = `${state.prediksi.length} Entri`;
 }
 
 /**
@@ -190,7 +199,7 @@ function tampilkanPreview() {
         </div>`;
     });
 
-    // 6. Vaksinasi Preview: Menampilkan jadwal vaksin mendatang/selesai
+    // 6. Vaksinasi Preview
     renderPreview('preview-vaksinasi', state.vaksinasi, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const warna = item.status === 'Selesai' ? '#10b981' : '#f59e0b';
@@ -200,6 +209,21 @@ function tampilkanPreview() {
         <div class="preview-row">
             <span class="preview-label">💉 ${tgl} &nbsp;|&nbsp; ${jenis}</span>
             <span class="preview-val" style="color:${warna}">${metode}</span>
+        </div>`;
+    });
+
+    // 7. Prediksi Preview: Menampilkan ringkasan histori analisis MA
+    renderPreview('preview-prediksi', state.prediksi, (item) => {
+        const tgl = new Date(item.tanggal);
+        const tglStr = tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        const waktuStr = tgl.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const profit = Math.round(item.keuntungan || 0);
+        const warna = profit >= 0 ? '#10b981' : '#ef4444';
+        const prefix = profit >= 0 ? '+' : '';
+        return `
+        <div class="preview-row">
+            <span class="preview-label">🧠 ${tglStr} ${waktuStr} &nbsp;|&nbsp; MA-${item.periodeMA}</span>
+            <span class="preview-val" style="color:${warna}">${prefix}Rp ${profit.toLocaleString('id-ID')}</span>
         </div>`;
     });
 }
@@ -276,6 +300,23 @@ function buatKontenCSV(modul, data) {
             header = 'ID,Tanggal,Batch,Kandang,Jenis Vaksin,Metode,Status,Catatan';
             baris = data.map(d => [d.id, d.tanggal, d.batchName, d.kandang, d.jenis, d.metode, d.status, d.catatan].map(sanitize).join(','));
             break;
+        case 'prediksi':
+            header = 'ID,Tanggal Analisis,Batch/Populasi,Periode MA,Populasi (Ekor),Prediksi Produksi (Kg),Prediksi Produksi (Butir),Estimasi Pendapatan (Rp),Biaya Pakan (Rp),Proyeksi Laba (Rp),Status Keuangan,Rekomendasi Utama';
+            baris = data.map(d => [
+                d.id,
+                new Date(d.tanggal).toLocaleString('id-ID'),
+                d.batchLabel || '-',
+                d.periodeMA,
+                d.populasi,
+                d.prediksiBesokKg ? d.prediksiBesokKg.toFixed(2) : '0',
+                d.prediksiBesokButir || '0',
+                Math.round(d.estimasiPendapatan || 0),
+                Math.round(d.biayaPakan || 0),
+                Math.round(d.keuntungan || 0),
+                (d.keuntungan || 0) >= 0 ? 'UNTUNG' : 'RUGI',
+                d.rekomendasiUtama || '-'
+            ].map(sanitize).join(','));
+            break;
     }
     return [header, ...baris].join('\n');
 }
@@ -313,6 +354,13 @@ window.cetakLaporan = function(modul) {
     } else if(modul === 'pakan') {
         headers = ['Tanggal', 'Tipe', 'Jenis', 'Jumlah'];
         tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.tipe}</td><td>${d.jenis}</td><td align="right">${d.jumlah} Kg</td></tr>`).join('');
+    } else if(modul === 'prediksi') {
+        headers = ['Tanggal', 'MA', 'Populasi', 'Prod. (Kg)', 'Laba (Rp)', 'Status', 'Rekomendasi'];
+        tableRows = data.map(d => {
+            const tgl = new Date(d.tanggal).toLocaleString('id-ID');
+            const status = (d.keuntungan || 0) >= 0 ? '<span style="color:#16a34a;font-weight:700">UNTUNG</span>' : '<span style="color:#dc2626;font-weight:700">RUGI</span>';
+            return `<tr><td>${tgl}</td><td>MA-${d.periodeMA}</td><td>${(d.populasi||0).toLocaleString('id-ID')} Ekor</td><td>${d.prediksiBesokKg ? d.prediksiBesokKg.toFixed(2) : '0'} Kg</td><td>Rp ${Math.round(d.keuntungan||0).toLocaleString('id-ID')}</td><td>${status}</td><td style="font-size:0.85em;max-width:200px;white-space:normal">${d.rekomendasiUtama || '-'}</td></tr>`;
+        }).join('');
     }
 
     // Bangun struktur HTML untuk jendela cetak
@@ -362,7 +410,8 @@ window.eksporSemuaCSV = function() {
         { id: 'keuangan', name: 'Laporan Keuangan', icon: '💰' },
         { id: 'ayam', name: 'Laporan Data Ayam/Populasi', icon: '🐓' },
         { id: 'kesehatan', name: 'Laporan Kesehatan Ayam', icon: '🩺' },
-        { id: 'vaksinasi', name: 'Laporan Jadwal Vaksinasi', icon: '💉' }
+        { id: 'vaksinasi', name: 'Laporan Jadwal Vaksinasi', icon: '💉' },
+        { id: 'prediksi', name: 'Laporan Hasil Prediksi MA', icon: '🧠' }
     ];
 
     // Membangun daftar HTML untuk ditampilkan dalam popup

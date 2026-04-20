@@ -221,7 +221,7 @@
                     <div id="tabProduksi" class="form-group historical-tab"
                         style="background: linear-gradient(to bottom right, #ffffff, #f0f8fb); border: 2px solid #bce0fd; padding: 25px; border-radius: 16px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.08);">
                         <label
-                            style="font-size: 1.15rem; color: #1e3c72; font-weight: 700; border-bottom: 3px solid #3498db; padding-bottom: 8px; margin-bottom: 12px; display: inline-block; letter-spacing: 0.5px;">
+                            style="font-size: 1.15rem; color: #d35400; font-weight: 700; border-bottom: 3px solid #f39c12; padding-bottom: 8px; margin-bottom: 12px; display: inline-block; letter-spacing: 0.5px;">
                             📊 Data Historis Produksi Panen (Butir)
                         </label>
                         <p style="font-size: 0.9rem; color: #576574; margin-bottom: 25px; line-height: 1.6;">
@@ -330,16 +330,20 @@
                                 </select>
                             </div>
                             <div class="form-group half">
-                                <label for="populasi" style="font-weight: 600;">Populasi Kandang/Ayam</label>
-                                <input type="number" id="populasi" value="5000" min="1" required
-                                    style="background: #fff; border: 1px solid #ddd;">
+                                <label for="populasiBatch" style="font-weight: 600;">Populasi Kandang/Ayam</label>
+                                <select id="populasiBatch" class="styled-select" required
+                                    style="background: #fff; border-color: #9b59b6;">
+                                    <option value="" disabled selected>⏳ Memuat batch...</option>
+                                </select>
+                                <input type="hidden" id="populasi" value="0">
+                                <small id="populasiBatchInfo" style="font-size: 0.78rem; color: #7f8c8d; margin-top: 4px; display: block;">Pilih batch ayam aktif dari data yang sudah diinput.</small>
                             </div>
                         </div>
 
                         <!-- Baris 2: Konsumsi Pakan per Ekor -->
                         <div class="form-group" style="margin-top: 15px;">
                             <label for="pakanPerEkor" style="font-weight: 600;">Pakan/Ekor/Hari (Gram)</label>
-                            <input type="number" id="pakanPerEkor" value="110" min="1" step="0.1" required
+                            <input type="number" id="pakanPerEkor" placeholder="Contoh: 110" min="1" step="0.1" required
                                 style="background: #fff; border: 1px solid #ddd;">
                         </div>
 
@@ -347,12 +351,12 @@
                         <div class="form-row">
                             <div class="form-group half">
                                 <label for="hargaPakan" style="font-weight: 600;">Harga Pakan/Kg</label>
-                                <input type="number" id="hargaPakan" value="8000" min="1" required
+                                <input type="number" id="hargaPakan" placeholder="Contoh: 8000" min="1" required
                                     style="background: #fff; border: 1px solid #ddd;">
                             </div>
                             <div class="form-group half">
                                 <label for="hargaTelur" style="font-weight: 600;">Harga Telur/Papan</label>
-                                <input type="number" id="hargaTelur" value="25000" min="1" required
+                                <input type="number" id="hargaTelur" placeholder="Contoh: 25000" min="1" required
                                     style="background: #fff; border: 1px solid #ddd;">
                             </div>
                         </div>
@@ -461,6 +465,84 @@
                     </div>
                 </div>
 
+                <!-- Tombol Download CSV Prediksi Aktif -->
+                <div id="downloadPrediksiBtn" style="display: none; margin-top: 18px; text-align: right;">
+                    <button type="button" onclick="downloadPrediksiCSV()"
+                        style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; border: none; padding: 12px 28px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(39,174,96,0.35); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; letter-spacing: 0.3px;"
+                        onmouseenter="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 22px rgba(39,174,96,0.45)';"
+                        onmouseleave="this.style.transform=''; this.style.boxShadow='0 4px 15px rgba(39,174,96,0.35)';">
+                        📥 Download CSV Prediksi Ini
+                    </button>
+                    <a href="dokumen.html" 
+                        style="display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 12px 22px; border-radius: 12px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 15px rgba(118,75,162,0.3); transition: all 0.3s ease;"
+                        onmouseenter="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 22px rgba(118,75,162,0.45)';"
+                        onmouseleave="this.style.transform=''; this.style.boxShadow='0 4px 15px rgba(118,75,162,0.3)';">
+                        📂 Lihat di Pusat Dokumen
+                    </a>
+                </div>
+
+                <!-- 4. Kontainer Rekomendasi Prediktif -->
+                <div id="rekomendasiContainer" class="rekomendasi-container shadow-card"
+                    style="display: none; margin-top: 30px; background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 100%); border: 2px solid #d4bfff; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(155, 89, 182, 0.12);">
+                    <h3 style="margin-bottom: 20px; font-size: 1.25rem; color: #4a1f8a; border-bottom: 3px solid #9b59b6; padding-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700;">
+                        <span style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; padding: 6px 10px; border-radius: 10px; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">🧠</span>
+                        Rekomendasi Prediktif & Tindakan
+                    </h3>
+                    <div id="rekomendasiContent">
+                        <!-- Diisi oleh JavaScript -->
+                    </div>
+                </div>
+
+                <!-- 5. Kontainer Histori Prediksi -->
+                <div class="history-container shadow-card"
+                    style="margin-top: 30px; background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%); border: 2px solid #c8d6e5; padding: 25px; border-radius: 16px; box-shadow: 0 8px 25px rgba(99, 110, 114, 0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                        <h3 style="font-size: 1.25rem; color: #2c3e50; border-bottom: 3px solid #636e72; padding-bottom: 12px; display: flex; align-items: center; gap: 8px; font-weight: 700; margin: 0;">
+                            <span style="background: linear-gradient(135deg, #636e72, #2d3436); color: white; padding: 6px 10px; border-radius: 10px; font-size: 1rem; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">📜</span>
+                            Histori Prediksi
+                        </h3>
+                        <!-- Grup tombol aksi histori -->
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                            <!-- Tombol download CSV histori prediksi terakhir -->
+                            <button type="button" id="btnDownloadHistory" onclick="downloadPrediksiCSV()"
+                                style="background: linear-gradient(135deg, #27ae60, #1e8449); color: white; border: none; padding: 8px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(39,174,96,0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px;"
+                                onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(39,174,96,0.45)';"
+                                onmouseleave="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(39,174,96,0.3)';">
+                                📥 Download CSV
+                            </button>
+                            <!-- Tombol hapus semua riwayat histori -->
+                            <button type="button" id="btnClearHistory" onclick="clearPredictionHistory()"
+                                style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 8px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(231,76,60,0.3); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 6px;"
+                                onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 18px rgba(231,76,60,0.45)';"
+                                onmouseleave="this.style.transform=''; this.style.boxShadow='0 4px 12px rgba(231,76,60,0.3)';">
+                                🗑️ Hapus Semua Histori
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive" style="overflow-x: auto; background: white; border-radius: 12px; border: 1px solid #dfe6e9; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <table class="summary-table" id="historyTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: linear-gradient(90deg, #2d3436, #636e72); color: white;">
+                                    <th style="padding: 14px; font-weight: 600; border-top-left-radius: 10px; width: 5%; text-align: center;">No</th>
+                                    <th style="padding: 14px; font-weight: 600; width: 18%;">Tanggal & Waktu</th>
+                                    <th style="padding: 14px; font-weight: 600; width: 10%;">MA</th>
+                                    <th style="padding: 14px; font-weight: 600; width: 15%;">Prediksi Produksi</th>
+                                    <th style="padding: 14px; font-weight: 600; width: 17%;">Proyeksi Laba</th>
+                                    <th style="padding: 14px; font-weight: 600; width: 25%;">Rekomendasi Utama</th>
+                                    <th style="padding: 14px; font-weight: 600; border-top-right-radius: 10px; width: 10%; text-align: center;">Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #7f8c8d; font-style: italic; background-color: #fcfcfc;">
+                                        📜 Belum ada histori prediksi. Lakukan analisis prediksi untuk mulai menyimpan riwayat.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </section>
         </div>
 
@@ -468,7 +550,7 @@
 
     <!-- ========================= SCRIPT UTAMA ========================== -->
     <!-- Mengimpor logika Javascript untuk kalkulasi algoritma MA dan render pembuatan grafik Chart -->
-    <script src="js/prediksihasil.js"></script>
+    <script type="module" src="js/prediksihasil.js"></script>
     <!-- Skrip Utama Sinkronasi Autentikasi -->
     <script type="module" src="firebase.component/auth-state.js"></script>
 </body>

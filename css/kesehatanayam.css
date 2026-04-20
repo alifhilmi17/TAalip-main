@@ -1,15 +1,18 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
-   File: kesehatanayam.css
-   Deskripsi: Kumpulan dari gaya tampilan elemen khusus untuk
-   modul Kesehatan Ayam dan Penjadwalan Vaksinasi.
+   File        : kesehatanayam.css
+   Deskripsi   : Gaya visual halaman Modul Kesehatan Ayam
+                 dan Penjadwalan Vaksinasi.
+   Mencakup    : header biru, kartu statistik, navigasi tabs,
+                 tabel data, badge status, modal form, dan responsif.
 ========================================================= */
 
-/* =========================================
-   1. KARTU HEADER HALAMAN SPESIFIK KESEHATAN
-   Kotak di atas sendiri dengan gradasi biru ala rumah sakit/klinik hewan.
-   Memiliki efek sentuhan kursor (hover) sedikit mengambang.
-   ========================================= */
+
+/* =========================================================
+   📌 HEADER HALAMAN KESEHATAN AYAM
+========================================================= */
+/* Blok judul atas berwarna biru langit ala klinik hewan;
+   memiliki ikon rumah sakit transparan di pojok dan efek hover mengambang */
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -26,11 +29,19 @@
     cursor: default;
 }
 
+/* =========================================================
+   📌 EFEK HOVER HEADER
+========================================================= */
+/* Header terangkat ke atas dan bayangan menguat saat kursor melewatinya */
 .page-header:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 35px rgba(2, 132, 199, 0.4);
 }
 
+/* =========================================================
+   🎨 DEKORASI WATERMARK IKON (RUMAH SAKIT)
+========================================================= */
+/* Ikon 🏥 raksasa transparan di pojok kanan atas sebagai hiasan latar header kesehatan */
 .page-header::after {
     content: '🏥';
     position: absolute;
@@ -40,19 +51,25 @@
     opacity: 0.15;
     transform: rotate(15deg);
     transition: transform 0.6s ease, opacity 0.6s ease;
-    pointer-events: none;
+    pointer-events: none;            /* Ikon tidak bisa diklik */
 }
 
+/* Ikon berputar ringan dan membesar saat header di-hover */
 .page-header:hover::after {
     transform: rotate(-5deg) scale(1.15) translateY(-5px);
     opacity: 0.3;
 }
 
+/* =========================================================
+   🔤 TEKS HEADER (JUDUL & DESKRIPSI)
+========================================================= */
+/* Kontainer teks di atas z-index agar tidak tertimpa watermark */
 .header-text {
     position: relative;
     z-index: 1;
 }
 
+/* Judul besar dan tebal */
 .header-text h2 {
     font-size: 1.85rem;
     font-weight: 800;
@@ -62,6 +79,7 @@
     letter-spacing: 0.5px;
 }
 
+/* Teks deskripsi di bawah judul */
 .header-text p {
     font-size: 1.05rem;
     opacity: 0.9;
@@ -70,16 +88,20 @@
     color: white;
 }
 
+/* =========================================================
+   🔘 GRUP TOMBOL AKSI HEADER
+========================================================= */
+/* Pembungkus tombol-tombol di kanan header (tambah vaksinasi, tambah catatan medis) */
 .header-actions {
     display: flex;
     gap: 15px;
     z-index: 1;
 }
 
-/* =========================================
-   2. REKAAN TOMBOL-TOMBOL AKSI & PINTASAN
-   Tombol di sudut kanan atas untuk membuka Popup Modal (Warning / Kuning & Success / Hijau)
-   ========================================= */
+/* =========================================================
+   🟡 TOMBOL PERINGATAN — WARNING (KUNING)
+========================================================= */
+/* Tombol kuning untuk membuka form tambah catatan medis/penyakit */
 .btn-warning {
     background: #f59e0b;
     color: white;
@@ -93,12 +115,17 @@
     transition: all 0.3s ease;
 }
 
+/* Tombol warning menggelap dan naik saat hover */
 .btn-warning:hover {
     background: #d97706;
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
 }
 
+/* =========================================================
+   💚 TOMBOL SUKSES — SUCCESS (HIJAU)
+========================================================= */
+/* Tombol hijau untuk membuka form tambah jadwal vaksinasi */
 .btn-success {
     background: #10b981;
     color: white;
@@ -112,16 +139,18 @@
     transition: all 0.3s ease;
 }
 
+/* Tombol success menggelap dan naik saat hover */
 .btn-success:hover {
     background: #059669;
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
 
-/* =========================================
-   3. PANEL INFORMASI KILAT (KARTU QUICK STATS KESEHATAN)
-   Ringkasan kotak putih berisi emoji sakit dsb, yang menonjol dan memiliki padding besar.
-   ========================================= */
+
+/* =========================================================
+   📊 GRID KARTU STATISTIK KILAT
+========================================================= */
+/* Tiga kartu ringkasan statistik kesehatan: total sakit, mati, dan vaksin terjadwal */
 .quick-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -129,6 +158,10 @@
     margin-bottom: 2rem;
 }
 
+/* =========================================================
+   🃏 KARTU STATISTIK (STAT CARD)
+========================================================= */
+/* Kotak putih membulat berisi ikon berwarna dan angka statistik kesehatan */
 .stat-card {
     background: #ffffff;
     border-radius: 20px;
@@ -141,11 +174,16 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Kartu naik sedikit dan bayangan menguat saat di-hover */
 .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
+/* =========================================================
+   🖼️ ALAS IKON STATISTIK
+========================================================= */
+/* Kotak membulat yang menampung emoji/ikon kesehatan dalam kartu statistik */
 .stat-icon {
     font-size: 2.2rem;
     width: 65px;
@@ -156,21 +194,37 @@
     border-radius: 16px;
 }
 
+/* =========================================================
+   🟡 IKON STATISTIK — PERINGATAN (KUNING)
+========================================================= */
+/* Alas kuning untuk ikon yang mewakili data penyakit/gejala sakit */
 .stat-icon.warning-icon {
     background: rgba(245, 158, 11, 0.15);
     color: #f59e0b;
 }
 
+/* =========================================================
+   ❤️ IKON STATISTIK — BAHAYA (MERAH)
+========================================================= */
+/* Alas merah untuk ikon yang mewakili data kematian ayam */
 .stat-icon.danger-icon {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
 }
 
+/* =========================================================
+   💚 IKON STATISTIK — SUKSES (HIJAU)
+========================================================= */
+/* Alas hijau untuk ikon yang mewakili data vaksinasi terjadwal / sehat */
 .stat-icon.success-icon {
     background: rgba(16, 185, 129, 0.15);
     color: #10b981;
 }
 
+/* =========================================================
+   🔤 INFO TEKS KARTU STATISTIK
+========================================================= */
+/* Label abu kecil dan angka besar di sebelah kanan ikon dalam kartu */
 .stat-info h4 {
     margin: 0;
     color: #64748b;
@@ -185,18 +239,23 @@
     color: #1e293b;
 }
 
-/* =========================================
-   4. TATA LETAK NAVIGASI TABS
-   Barisan pilihan tombol pemicu ganti layar. (Medis VS Vaksinasi)
-   ========================================= */
+
+/* =========================================================
+   🗂️ NAVIGASI TABS (CATATAN MEDIS / VAKSINASI)
+========================================================= */
+/* Baris tombol pilihan tab untuk berganti antara tampilan catatan medis dan vaksinasi */
 .tabs-container {
     display: flex;
     gap: 15px;
     margin-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #e2e8f0;      /* Garis bawah pemisah area tab */
     padding-bottom: 10px;
 }
 
+/* =========================================================
+   🔘 TOMBOL TAB (TIDAK AKTIF)
+========================================================= */
+/* Tombol tab dalam keadaan tidak dipilih: transparan dengan teks abu */
 .tab-btn {
     background: transparent;
     border: none;
@@ -209,39 +268,54 @@
     transition: all 0.3s;
 }
 
+/* Hover state: latar abu muda dan teks biru */
 .tab-btn:hover {
     background: #f1f5f9;
     color: #0284c7;
 }
 
+/* =========================================================
+   🔘 TOMBOL TAB (AKTIF DIPILIH)
+========================================================= */
+/* Tab yang sedang dipilih: latar biru penuh dengan teks putih */
 .tab-btn.active {
     background: #0284c7;
     color: white;
     box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
 }
 
+/* =========================================================
+   📄 KONTEN TAB
+========================================================= */
+/* Panel konten tab yang disembunyikan secara default */
 .tab-content {
     display: none;
 }
 
+/* Panel konten ditampilkan saat kelas 'active' diberikan via JavaScript */
 .tab-content.active {
     display: block;
 }
 
-/* =========================================
-   5. DEKORASI KERTAS TABEL UTAMA (LIST DATA)
-   Panel putih lebar sebagai pondasi tabel data HTML
-   ========================================= */
+
+/* =========================================================
+   🃏 WRAPPER KARTU TABEL UTAMA
+========================================================= */
+/* Kotak putih lebar dengan aksen garis atas biru sebagai wadah tabel data kesehatan */
 .table-container.shadow-card {
     background: #ffffff;
     border-radius: 20px;
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     border: 1px solid rgba(0, 0, 0, 0.02);
-    border-top: 5px solid #0284c7;
+    border-top: 5px solid #0284c7;         /* Penanda warna modul kesehatan (biru) */
     margin-bottom: 2rem;
 }
 
+/* =========================================================
+   🏷️ HEADER BARIS JUDUL TABEL
+========================================================= */
+/* Baris di atas tabel memuat judul dan tombol aksi */
 .table-header {
     display: flex;
     justify-content: space-between;
@@ -251,6 +325,7 @@
     border-bottom: 2px dashed #f1f5f9;
 }
 
+/* Teks judul di header tabel */
 .table-header h3 {
     margin: 0;
     color: #1e293b;
@@ -258,18 +333,30 @@
     font-weight: 700;
 }
 
+/* =========================================================
+   🔘 AREA AKSI TABEL (FILTER + EKSPOR)
+========================================================= */
+/* Kontainer filter dropdown + tombol ekspor yang berada di sisi kanan header tabel */
 .table-actions {
     display: flex;
     gap: 12px;
     align-items: center;
 }
 
+/* =========================================================
+   🏷️ LABEL FILTER
+========================================================= */
+/* Teks kecil di depan dropdown filter untuk memberi konteks */
 .filter-label {
     font-weight: 600;
     color: #475569;
     font-size: 0.95rem;
 }
 
+/* =========================================================
+   🔽 INPUT DROPDOWN FILTER
+========================================================= */
+/* Dropdown pilihan periode atau jenis data untuk memfilter tabel */
 .filter-input {
     padding: 10px 16px;
     border: 1px solid #cbd5e1;
@@ -280,12 +367,17 @@
     background: #f8fafc;
 }
 
+/* Garis tepi berubah biru saat filter aktif */
 .filter-input:focus {
     background: #fff;
     border-color: #0284c7;
     box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
 }
 
+/* =========================================================
+   📥 TOMBOL EKSPOR CSV KESEHATAN
+========================================================= */
+/* Tombol indigo/ungu bergradien untuk mengunduh data kesehatan ke CSV */
 .btn-export {
     background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
     color: white;
@@ -298,22 +390,35 @@
     transition: all 0.3s;
 }
 
+/* Tombol ekspor naik dan bayangan menguat saat hover */
 .btn-export:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
 }
 
+/* =========================================================
+   📜 WRAPPER TABEL RESPONSIF
+========================================================= */
+/* Membungkus tabel dengan scroll horizontal di layar sempit */
 .table-responsive {
     overflow-x: auto;
     border-radius: 12px;
 }
 
+/* =========================================================
+   📋 TABEL DATA KESEHATAN
+========================================================= */
+/* Tabel tanpa border bergabung, terpisah rapi per sel */
 .data-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
 }
 
+/* =========================================================
+   📋 SEL TABEL (TH & TD)
+========================================================= */
+/* Padding, font, dan perataan tengah untuk semua sel tabel */
 .data-table th,
 .data-table td {
     padding: 16px 15px;
@@ -323,6 +428,10 @@
     text-align: center;
 }
 
+/* =========================================================
+   🏷️ KEPALA KOLOM TABEL (TH)
+========================================================= */
+/* Latar abu, teks kapital, sticky agar selalu terlihat saat scroll */
 .data-table th {
     background: #f8fafc;
     font-weight: 700;
@@ -331,14 +440,19 @@
     font-size: 0.85rem;
 }
 
+/* =========================================================
+   🖱️ EFEK HOVER BARIS TABEL
+========================================================= */
+/* Latar baris berubah biru sangat pucat saat kursor melewatinya */
 .data-table tbody tr:hover {
     background-color: #f0f9ff;
 }
 
-/* =========================================
-   6. VISUAL STATE KOSONG DATA
-   Menyembunyikan tabel dan memunculkan emot sedih jika tidak ada agenda divaksin.
-   ========================================= */
+
+/* =========================================================
+   💬 TAMPILAN KOSONG (EMPTY STATE)
+========================================================= */
+/* Pesan dan ikon saat tabel belum memiliki data kesehatan apapun */
 .empty-state {
     display: none;
     text-align: center;
@@ -356,10 +470,11 @@
     opacity: 0.5;
 }
 
-/* =========================================
-   7. POP-UP KOTAK FORMULIR (MODAL DIALOG)
-   Lapisan hitam pudar di belakang dan bungkus form Inputan data ayam berskala besar.
-   ========================================= */
+
+/* =========================================================
+   🪟 OVERLAY MODAL (BACKDROP)
+========================================================= */
+/* Lapisan hitam buram yang menutupi halaman di balik kotak dialog form */
 .modal {
     display: none;
     position: fixed;
@@ -374,10 +489,15 @@
     justify-content: center;
 }
 
+/* Modal ditampilkan saat kelas 'show' diberikan */
 .modal.show {
     display: flex;
 }
 
+/* =========================================================
+   🃏 KONTEN MODAL (KOTAK FORM)
+========================================================= */
+/* Kotak putih modal di tengah overlay dengan aksen garis atas biru */
 .modal-content {
     background-color: #ffffff;
     padding: 30px;
@@ -387,10 +507,13 @@
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    border-top: 5px solid #0284c7;
+    border-top: 5px solid #0284c7;         /* Penanda biru identitas modul kesehatan */
 }
 
-/* Scrollbar Modal */
+/* =========================================================
+   🖱️ SCROLLBAR MODAL KESEHATAN
+========================================================= */
+/* Scrollbar minimal di dalam modal saat form terlalu panjang */
 .modal-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -404,6 +527,10 @@
     border-radius: 100px;
 }
 
+/* =========================================================
+   🏷️ HEADER MODAL (JUDUL + TOMBOL TUTUP)
+========================================================= */
+/* Baris atas modal memuat judul dan tombol × dipisahkan garis putus */
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -413,6 +540,7 @@
     padding-bottom: 15px;
 }
 
+/* Teks judul modal */
 .modal-header h3 {
     margin: 0;
     font-size: 1.3rem;
@@ -420,6 +548,10 @@
     font-weight: 700;
 }
 
+/* =========================================================
+   ✖️ TOMBOL TUTUP MODAL (×)
+========================================================= */
+/* Tombol X abu kecil untuk menutup form dialog */
 .close-btn {
     background: transparent;
     border: none;
@@ -429,23 +561,37 @@
     transition: 0.3s;
 }
 
+/* Berubah merah saat hover sebagai peringatan aksi tutup */
 .close-btn:hover {
     color: #ef4444;
 }
 
+/* =========================================================
+   📋 GRUP INPUT FORM MODAL
+========================================================= */
+/* Jarak dan struktur satu baris input di dalam modal */
 .form-group {
     margin-bottom: 20px;
 }
 
+/* =========================================================
+   📏 FORM ROW (DUA INPUT SEJAJAR)
+========================================================= */
+/* Baris yang menampung dua input sejajar (misal: tanggal + jenis vaksin) */
 .form-row {
     display: flex;
     gap: 15px;
 }
 
+/* Input mengambil setengah lebar saat di dalam form-row */
 .form-group.half {
     flex: 1;
 }
 
+/* =========================================================
+   🏷️ LABEL INPUT FORM MODAL
+========================================================= */
+/* Teks panduan di atas setiap kotak input di dalam modal */
 .form-group label {
     display: block;
     font-weight: 600;
@@ -454,12 +600,17 @@
     font-size: 0.95rem;
 }
 
+/* Keterangan kecil tambahan di sebelah label (misal: opsional) */
 .form-group label small {
     font-weight: normal;
     color: #94a3b8;
     font-size: 0.8rem;
 }
 
+/* =========================================================
+   ✏️ KOTAK INPUT, SELECT, DAN TEXTAREA DI MODAL
+========================================================= */
+/* Kotak abu muda yang berubah putih saat diklik untuk diisi */
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -475,10 +626,15 @@
     box-sizing: border-box;
 }
 
+/* Textarea bisa diubah tingginya secara vertikal oleh pengguna */
 .form-group textarea {
     resize: vertical;
 }
 
+/* =========================================================
+   🔒 INPUT HANYA BACA (READ-ONLY)
+========================================================= */
+/* Input yang tidak bisa diubah pengguna ditampilkan abu dengan kursor not-allowed */
 .readonly-input {
     background-color: #e2e8f0 !important;
     color: #64748b !important;
@@ -486,6 +642,10 @@
     pointer-events: none;
 }
 
+/* =========================================================
+   🔘 AREA TOMBOL AKSI MODAL (SIMPAN & BATAL)
+========================================================= */
+/* Baris tombol di bagian bawah modal, sejajar ke kanan */
 .modal-actions {
     display: flex;
     justify-content: flex-end;
@@ -493,6 +653,10 @@
     margin-top: 30px;
 }
 
+/* =========================================================
+   💙 TOMBOL SIMPAN DI MODAL (BIRU)
+========================================================= */
+/* Tombol biru untuk menyimpan catatan medis atau jadwal vaksinasi */
 .btn-primary {
     background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
     color: white;
@@ -505,11 +669,16 @@
     transition: all 0.3s;
 }
 
+/* Tombol simpan naik sedikit saat hover */
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(2, 132, 199, 0.4);
 }
 
+/* =========================================================
+   ⚪ TOMBOL BATAL DI MODAL (ABU)
+========================================================= */
+/* Tombol abu untuk menutup modal tanpa menyimpan perubahan */
 .btn-secondary {
     background-color: #f1f5f9;
     color: #64748b;
@@ -526,7 +695,10 @@
     color: #334155;
 }
 
-/* Lencana / Badge */
+/* =========================================================
+   🏷️ LENCANA STATUS VAKSINASI / KESEHATAN (BADGE)
+========================================================= */
+/* Kapsul kecil berwarna yang menandai status kondisi dan jenis penyakit */
 .badge {
     padding: 6px 12px;
     border-radius: 50px;
@@ -534,31 +706,50 @@
     font-weight: 700;
 }
 
+/* =========================================================
+   🟡 BADGE PERINGATAN (WARNING)
+========================================================= */
+/* Kuning muda menandai kondisi perlu perhatian */
 .badge-warning {
     background: #fef3c7;
     color: #d97706;
     border: 1px solid #fde68a;
 }
 
+/* =========================================================
+   💚 BADGE SUKSES (SEHAT / SELESAI)
+========================================================= */
+/* Hijau muda menandai kondisi sehat atau jadwal vaksinasi selesai */
 .badge-success {
     background: #dcfce7;
     color: #15803d;
     border: 1px solid #bbf7d0;
 }
 
+/* =========================================================
+   ❤️ BADGE BAHAYA (SAKIT / KRITIS)
+========================================================= */
+/* Merah muda menandai kondisi kritis atau sakit parah */
 .badge-danger {
     background: #fee2e2;
     color: #b91c1c;
     border: 1px solid #fecaca;
 }
 
+/* =========================================================
+   💙 BADGE INFORMASI (TERJADWAL)
+========================================================= */
+/* Biru muda menandai vaksinasi yang terjadwal belum terlaksana */
 .badge-info {
     background: #e0f2fe;
     color: #0369a1;
     border: 1px solid #bae6fd;
 }
 
-/* Buttons Action in Table */
+/* =========================================================
+   ✏️ TOMBOL EDIT DAN HAPUS DI BARIS TABEL
+========================================================= */
+/* Dasar gaya bersama tombol aksi kecil di setiap baris tabel */
 .btn-edit,
 .btn-delete {
     padding: 8px 12px;
@@ -571,53 +762,70 @@
     margin-right: 5px;
 }
 
+/* =========================================================
+   ✏️ TOMBOL EDIT (KUNING)
+========================================================= */
+/* Kuning muda menandai aksi mengubah data */
 .btn-edit {
     background: #fef08a;
     color: #d97706;
     border: 1px solid #fde68a;
 }
 
+/* Tombol edit berubah kuning penuh saat hover */
 .btn-edit:hover {
     background: #fcd34d;
     color: white;
 }
 
+/* =========================================================
+   🗑️ TOMBOL HAPUS (MERAH)
+========================================================= */
+/* Merah muda menandai aksi menghapus data (destruktif) */
 .btn-delete {
     background: #fee2e2;
     color: #ef4444;
     border: 1px solid #fecaca;
 }
 
+/* Tombol hapus berubah merah penuh saat hover */
 .btn-delete:hover {
     background: #ef4444;
     color: white;
 }
 
-/* =========================================
-   8. PERANGKAT MOBILE RESPONSIVE
-   Menyiapkan gaya yang adaptif apabila diakses pada handphone
-   ========================================= */
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR KECIL (≤768px)
+========================================================= */
+/* Penyesuaian untuk HP: susunan berubah dari sejajar menjadi bertumpuk */
 @media (max-width: 768px) {
+
+    /* Header ditumpuk vertikal di HP */
     .page-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
 
+    /* Ikon watermark diperkecil dan dipindah ke pojok */
     .page-header::after {
         right: 10px;
         top: 10px;
         font-size: 100px;
     }
 
+    /* Grid statistik dikecilkan jadi satu kolom */
     .quick-stats {
         grid-template-columns: 1fr;
     }
 
+    /* Tab bisa pindah baris agar tidak overflow */
     .tabs-container {
         flex-wrap: wrap;
     }
 
+    /* Input dalam form modal disusun vertikal */
     .form-row {
         flex-direction: column;
         gap: 15px;

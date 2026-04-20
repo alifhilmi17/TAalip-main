@@ -316,6 +316,27 @@
           </div>
         </div>
 
+        <!-- ==== KARTU EKSPOR PREDIKSI ==== -->
+        <div class="ekspor-card ekspor-prediksi" style="border-top: 4px solid #9b59b6;">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🧠</span>
+            <h3>Laporan Hasil Prediksi</h3>
+          </div>
+          <p class="ekspor-card-desc">Berisi riwayat analisis prediksi Moving Average (MA): proyeksi produksi, laba/rugi, dan rekomendasi tindakan prediktif.</p>
+          <div class="ekspor-preview" id="preview-prediksi">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">Belum ada data prediksi untuk ditampilkan.</p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('prediksi')" id="btn-ekspor-prediksi">
+              📥 Ekspor CSV
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('prediksi')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 

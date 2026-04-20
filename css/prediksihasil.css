@@ -1,9 +1,19 @@
 /* =========================================================
-   CUSTOM STYLES FOR PREDIKSI HASIL (MINIMALIST & CLEAN)
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File        : prediksihasil.css
+   Deskripsi   : Gaya visual halaman Prediksi Analisis Hasil
+                 Produksi Telur Ayam Petelur.
+   Mencakup    : header ungu, container grid, form seksi,
+                 kartu hasil, grafik, rekomendasi, histori,
+                 scrollbar, animasi, dan responsif.
 ========================================================= */
 
-/* --- Bagian Header Halaman --- */
-/* Mengatur tampilan kotak judul halaman agar terlihat modern, berwarna gradasi, dan melengkung di sudutnya */
+
+/* =========================================================
+   📌 HEADER HALAMAN PREDIKSI HASIL
+========================================================= */
+/* Blok judul atas berwarna ungu/violet sebagai identitas visual modul prediksi;
+   memiliki ikon grafik transparan di pojok dan efek hover mengambang */
 .page-header {
     margin-bottom: 2.5rem;
     padding: 2.5rem;
@@ -20,13 +30,19 @@
     cursor: default;
 }
 
+/* =========================================================
+   📌 EFEK HOVER HEADER
+========================================================= */
+/* Header terangkat dan bayangan ungu menguat saat kursor melewatinya */
 .page-header:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 35px rgba(118, 75, 162, 0.5);
 }
 
-/* --- Dekorasi Watermark Header --- */
-/* Menambahkan ikon grafik transparan sebagai hiasan di pojok kanan bawah header halaman */
+/* =========================================================
+   🎨 DEKORASI WATERMARK IKON GRAFIK
+========================================================= */
+/* Dua ikon grafik naik-turun raksasa di pojok kanan bawah sebagai hiasan latar header */
 .page-header::after {
     content: '📉📈';
     position: absolute;
@@ -36,14 +52,19 @@
     opacity: 0.15;
     transform: rotate(-10deg);
     transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease;
-    pointer-events: none;
+    pointer-events: none;         /* Ikon tidak bisa diklik */
 }
 
+/* Ikon berputar dan membesar saat header di-hover */
 .page-header:hover::after {
     transform: rotate(5deg) scale(1.15) translateY(-10px);
     opacity: 0.35;
 }
 
+/* =========================================================
+   🔤 JUDUL TEKS HEADER (H2)
+========================================================= */
+/* Teks nama halaman besar dan tebal, berada di atas z-index watermark */
 .page-header h2 {
     font-size: 2.2rem;
     font-weight: 800;
@@ -55,6 +76,10 @@
     z-index: 1;
 }
 
+/* =========================================================
+   📝 PARAGRAF DESKRIPSI HEADER
+========================================================= */
+/* Teks pendukung di bawah judul; dibatasi 80% lebar agar mudah dibaca */
 .page-header p {
     font-size: 1.05rem;
     color: rgba(255, 255, 255, 0.9);
@@ -65,8 +90,11 @@
     z-index: 1;
 }
 
-/* --- Bagian Container Utama --- */
-/* Membagi area halaman menjadi dua kolom (kiri untuk form, kanan untuk hasil grafik) */
+
+/* =========================================================
+   📐 LAYOUT UTAMA DUA KOLOM (FORM | HASIL GRAFIK)
+========================================================= */
+/* Grid pembagi halaman: kolom kiri (38%) untuk form input, kolom kanan (62%) untuk hasil */
 .prediction-container {
     display: grid;
     grid-template-columns: 38% 62%;
@@ -74,8 +102,10 @@
     align-items: start;
 }
 
-/* --- Bagian Kartu Pembungkus --- */
-/* Memberikan latar belakang putih/gradasi, batas, dan efek bayangan pada kotak di sekitar elemen (seperti form) */
+/* =========================================================
+   🃏 KARTU FORM PREDIKSI (SHADOW CARD)
+========================================================= */
+/* Kotak ungu bergradien yang membungkus seluruh form variabel prediksi */
 .shadow-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
@@ -84,8 +114,11 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* --- Bagian Kotak Informasi (Petunjuk Penggunaan) --- */
-/* Tampilan untuk kotak pesan atau petunjuk langkah-langkah di atas formulir */
+
+/* =========================================================
+   ℹ️ BANNER PETUNJUK PENGGUNAAN
+========================================================= */
+/* Kotak info abu di bagian atas form yang menjelaskan langkah-langkah penggunaan */
 .info-banner {
     background: #f8fafc;
     border-left: 3px solid #cbd5e1;
@@ -94,6 +127,7 @@
     margin-bottom: 2rem;
 }
 
+/* Judul di dalam banner info */
 .info-banner h4 {
     margin: 0 0 0.5rem 0;
     font-size: 1rem;
@@ -101,6 +135,7 @@
     font-weight: 600;
 }
 
+/* Daftar langkah-langkah dalam banner */
 .info-banner ol {
     margin: 0;
     padding-left: 1.25rem;
@@ -109,12 +144,19 @@
     line-height: 1.6;
 }
 
-/* --- Bagian Seksi dalam Formulir --- */
-/* Memberi jarak per bagian di dalam form agar tidak terlalu rapat */
+
+/* =========================================================
+   📋 SEKSI FORM (FORM SECTION)
+========================================================= */
+/* Pembatas jarak antar kelompok input dalam form agar tidak terlalu rapat */
 .form-section {
     margin-bottom: 2rem;
 }
 
+/* =========================================================
+   🏷️ LABEL SEKSI FORM
+========================================================= */
+/* Teks judul kelompok input yang lebih besar dan tebal */
 .section-label {
     font-size: 1rem;
     color: #0f172a;
@@ -123,6 +165,10 @@
     display: block;
 }
 
+/* =========================================================
+   📝 DESKRIPSI SEKSI FORM
+========================================================= */
+/* Teks abu kecil di bawah label seksi yang menjelaskan fungsi kelompok input */
 .section-desc {
     font-size: 0.85rem;
     color: #64748b;
@@ -130,19 +176,30 @@
     line-height: 1.5;
 }
 
-/* --- Bagian Grid untuk Input Data Historis --- */
-/* Menyusun kotak input data (H-2, H-1, Hari Ini) agar sejajar ke samping dengan sistem grid tiga kolom */
+
+/* =========================================================
+   📊 GRID INPUT HISTORIS (H-2, H-1, HARI INI)
+========================================================= */
+/* Tiga kolom sejajar untuk memasukkan data produksi 3 hari berturut-turut */
 .historical-inputs {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
 }
 
+/* =========================================================
+   📋 GRUP INPUT MINI (FORM GROUP MINI)
+========================================================= */
+/* Kontainer satu input historis: label + kotak input tersusun vertikal */
 .form-group-mini {
     display: flex;
     flex-direction: column;
 }
 
+/* =========================================================
+   🏷️ LABEL INPUT MINI
+========================================================= */
+/* Teks kecil abu di atas setiap kotak input historis */
 .form-group-mini label {
     font-size: 0.8rem;
     color: #64748b;
@@ -150,11 +207,16 @@
     font-weight: 500;
 }
 
+/* Label dipertebal untuk kolom "Hari Ini" (data hari ini wajib diisi) */
 .form-group-mini .highlight-label {
     color: #0f172a;
     font-weight: 600;
 }
 
+/* =========================================================
+   ✏️ KOTAK INPUT HISTORIS (HIST INPUT)
+========================================================= */
+/* Kotak input teks-tengah yang digunakan untuk data produksi historis */
 .hist-input {
     width: 100%;
     padding: 0.6rem;
@@ -167,25 +229,33 @@
     background: #fff;
 }
 
+/* Garis tepi berubah biru saat input aktif */
 .hist-input:focus {
     border-color: #3b82f6;
     outline: none;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* For Today's input (Hari ini) */
+/* =========================================================
+   ✏️ INPUT HARI INI (REQUIRED TODAY)
+========================================================= */
+/* Variasi input abu muda yang menandai kolom wajib diisi hari ini */
 .hist-input.required-today {
     border-color: #94a3b8;
     background: #f8fafc;
 }
 
+/* Garis normal saat input hari ini aktif */
 .hist-input.required-today:focus {
     border-color: #3b82f6;
     background: #fff;
 }
 
-/* --- Bagian Tombol Pilihan Tab (Produksi / Biaya & Pemasukan) --- */
-/* Mengatur tampilan area pembungkus tombol agar terlihat seperti saklar pilihan */
+
+/* =========================================================
+   🔘 AREA TAB TOGGLE (PRODUKSI / BIAYA)
+========================================================= */
+/* Saklar tombol yang memungkinkan pengguna berganti antara tab input produksi dan biaya */
 .toggle-tabs {
     display: flex;
     gap: 10px;
@@ -196,6 +266,10 @@
     border: 1px solid #e1e8ed;
 }
 
+/* =========================================================
+   🔘 TOMBOL TAB (TIDAK AKTIF)
+========================================================= */
+/* Tab dalam keadaan tidak aktif: transparan dengan teks abu */
 .tab-btn {
     flex: 1;
     padding: 10px;
@@ -209,20 +283,26 @@
     transition: all 0.3s ease;
 }
 
+/* Hover state: latar abu muda dan teks gelap */
 .tab-btn:hover {
     color: #2c3e50;
     background: #e1e8ed;
 }
 
-/* --- Bagian Button Produksi --- */
+/* =========================================================
+   🔘 TOMBOL TAB AKTIF (PRODUKSI)
+========================================================= */
+/* Tab yang sedang dipilih: latar biru dengan teks gelap dan bayangan */
 .tab-btn.active {
     background: #00b4db;
     color: #2c3e50;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* --- Bagian Animasi Transisi Tab --- */
-/* Memberikan efek muncul perlahan (fade in) ketika tab baru atau kontennya dibuka */
+/* =========================================================
+   🎬 ANIMASI TRANSISI KONTEN TAB (FADE IN)
+========================================================= */
+/* Efek muncul pelan dari atas saat tab baru diaktifkan */
 .historical-tab {
     animation: fadeIn 0.3s ease-in-out;
 }
@@ -232,30 +312,41 @@
         opacity: 0;
         transform: translateY(-5px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* --- Bagian Layout Baris Formulir --- */
-/* Membuat kolom form bawah (Masa MA, Harga per Kg, dsb.) sejajar menyamping jika diletakkan di baris yang sama */
+
+/* =========================================================
+   📏 BARIS FORM SEJAJAR (FORM ROW)
+========================================================= */
+/* Dua input sejajar dalam satu baris (misal: masa MA + harga/kg) */
 .form-row {
     display: flex;
     gap: 1.5rem;
     margin-bottom: 1rem;
 }
 
+/* =========================================================
+   📋 GRUP INPUT STANDAR (FORM GROUP)
+========================================================= */
+/* Jarak standar antar grup input dalam form */
 .form-group {
     margin-bottom: 1rem;
 }
 
+/* Input mengambil setengah lebar saat berada dalam form-row */
 .form-group.half {
     flex: 1;
     margin-bottom: 0;
 }
 
+/* =========================================================
+   🏷️ LABEL INPUT STANDAR
+========================================================= */
+/* Label abu kecil di atas setiap kotak input dalam form */
 .form-group label {
     font-size: 0.85rem;
     font-weight: 500;
@@ -264,6 +355,10 @@
     display: block;
 }
 
+/* =========================================================
+   ✏️ SELECT DAN INPUT ANGKA STANDAR
+========================================================= */
+/* Kotak dropdown dan input angka dengan garis abu dan transisi fokus */
 .styled-select,
 .form-group input[type="number"] {
     width: 100%;
@@ -275,6 +370,7 @@
     transition: all 0.2s ease;
 }
 
+/* Garis tepi berubah biru saat input aktif */
 .styled-select:focus,
 .form-group input[type="number"]:focus {
     border-color: #3b82f6;
@@ -282,8 +378,11 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* --- Bagian Tombol Prediksi --- */
-/* Mengatur font, warna latar gradien biru, efek bayangan, dan perubahan saat tombol ditekan atau dilewati mouse (hover) */
+
+/* =========================================================
+   🚀 TOMBOL JALANKAN PREDIKSI (BTN MA)
+========================================================= */
+/* Tombol besar biru berteks kapital untuk menjalankan kalkulasi model MA prediksi */
 .btn-ma {
     width: 100%;
     background: linear-gradient(135deg, #00b4db, #0083B0);
@@ -301,19 +400,24 @@
     letter-spacing: 1px;
 }
 
+/* Tombol naik dan bayangan menguat saat hover */
 .btn-ma:hover {
     background: linear-gradient(135deg, #00b4db, #0083B0);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(33, 114, 30, 0.45);
 }
 
+/* Tombol kembali ke posisi semula saat ditekan */
 .btn-ma:active {
     transform: translateY(0);
     box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3);
 }
 
-/* --- Bagian Grid Untuk Kartu Hasil Statistik (Quick Stats) --- */
-/* Menyusun kotak-kotak kecil hasil perhitungan agar rapi berjajar dua kolom per baris */
+
+/* =========================================================
+   📊 GRID KARTU HASIL STATISTIK (QUICK RESULT CARDS)
+========================================================= */
+/* Dua kolom kartu kecil yang menampilkan hasil prediksi: produksi, pendapatan, biaya, keuntungan */
 .result-cards-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -321,6 +425,10 @@
     margin-bottom: 1.5rem;
 }
 
+/* =========================================================
+   🃏 KARTU HASIL STATISTIK (RESULT CARD)
+========================================================= */
+/* Setiap kotak putih membulat berisi ikon berwarna dan angka hasil prediksi */
 .result-card {
     background: linear-gradient(135deg, #ffffff 0%, #fdfbfb 100%);
     border-radius: 12px;
@@ -337,6 +445,10 @@
     box-sizing: border-box;
 }
 
+/* =========================================================
+   📋 INFO TEKS DI DALAM KARTU HASIL
+========================================================= */
+/* Kontainer teks (label + angka) di sebelah kanan ikon dalam kartu */
 .stat-info {
     flex: 1;
     display: flex;
@@ -344,20 +456,25 @@
     justify-content: center;
 }
 
-
-
+/* =========================================================
+   🖱️ EFEK HOVER KARTU HASIL
+========================================================= */
+/* Kartu naik dan bayangan membesar saat kursor melewatinya */
 .result-card:hover {
     transform: translateY(-8px) scale(1.02);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
     border-color: #cbd5e1;
 }
 
+/* Bar merah muncul di kiri bawah kartu saat hover */
 .result-card:hover::before {
     background: linear-gradient(to bottom, #FF416C, #FF4B2B);
 }
 
-/* --- Bagian Kartu Hasil Statistik --- */
-/* Mengatur ukuran, warna ikon, dan kotak di dalam kartu statistik agar terlihat hidup (vibrant) */
+/* =========================================================
+   🖼️ ALAS IKON BERWARNA (STAT ICON)
+========================================================= */
+/* Kotak membulat yang menampung emoji/ikon dalam kartu hasil dengan animasi shine */
 .stat-icon {
     width: 50px;
     height: 50px;
@@ -374,8 +491,10 @@
     z-index: 1;
 }
 
-/* --- Bagian Efek Kilauan (Shine) Pada Ikon --- */
-/* Menambahkan efek animasi garis cahaya putih miring yang melewati ikon secara berulang */
+/* =========================================================
+   ✨ EFEK KILAUAN (SHINE) PADA IKON
+========================================================= */
+/* Garis cahaya putih miring yang melintas berulang di atas ikon secara otomatis */
 .stat-icon::after {
     content: '';
     position: absolute;
@@ -383,46 +502,58 @@
     left: -100%;
     width: 50%;
     height: 100%;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
     transform: skewX(-25deg);
     animation: shine 3s infinite;
     z-index: -1;
 }
 
+/* =========================================================
+   🎬 ANIMASI KILAUAN IKON (SHINE)
+========================================================= */
+/* Menggerakkan garis cahaya dari kiri ke kanan berulang setiap 3 detik */
 @keyframes shine {
-    0% {
-        left: -100%;
-    }
-
-    20% {
-        left: 200%;
-    }
-
-    100% {
-        left: 200%;
-    }
+    0%   { left: -100%; }
+    20%  { left: 200%; }
+    100% { left: 200%; }
 }
 
+/* =========================================================
+   🎨 WARNA ALAS IKON — KUNING (PRODUKSI)
+========================================================= */
 .stat-icon.yellow-bg {
     background: linear-gradient(135deg, #FDB813 0%, #ff9800 100%);
     box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
 }
 
+/* =========================================================
+   🎨 WARNA ALAS IKON — HIJAU (PENDAPATAN)
+========================================================= */
 .stat-icon.green-bg {
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     box-shadow: 0 6px 15px rgba(56, 239, 125, 0.4);
 }
 
+/* =========================================================
+   🎨 WARNA ALAS IKON — MERAH (BIAYA)
+========================================================= */
 .stat-icon.red-bg {
     background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
     box-shadow: 0 6px 15px rgba(255, 75, 43, 0.4);
 }
 
+/* =========================================================
+   🎨 WARNA ALAS IKON — BIRU (KEUNTUNGAN)
+========================================================= */
 .stat-icon.blue-bg {
     background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
     box-shadow: 0 6px 15px rgba(0, 114, 255, 0.4);
 }
 
+/* =========================================================
+   🔤 TEKS LABEL DAN NILAI KARTU HASIL
+========================================================= */
+/* Label abu kecil di atas angka besar dalam kartu hasil prediksi */
 .result-card h4 {
     font-size: 0.75rem;
     color: #475569;
@@ -431,6 +562,7 @@
     line-height: 1.3;
 }
 
+/* Angka nominal besar hasil prediksi */
 .result-card p {
     font-size: 1.2rem;
     font-weight: 700;
@@ -439,6 +571,7 @@
     line-height: 1.2;
 }
 
+/* Keterangan kecil di bawah angka (misal: satuan telur) */
 .result-card small {
     font-size: 0.7rem;
     color: #64748b;
@@ -447,7 +580,11 @@
     line-height: 1.4;
 }
 
-/* --- Warna Background Khusus Tiap Kartu Hasil --- */
+
+/* =========================================================
+   🎨 WARNA LATAR KARTU HASIL — PRODUKSI (KUNING)
+========================================================= */
+/* Gradien kuning muda untuk kartu prediksi jumlah telur */
 .result-card.bg-produksi {
     background: linear-gradient(135deg, #fffcf2 0%, #fff6e0 100%);
     border-color: #fde4a9;
@@ -458,6 +595,10 @@
     box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
 }
 
+/* =========================================================
+   🎨 WARNA LATAR KARTU HASIL — PENDAPATAN (HIJAU)
+========================================================= */
+/* Gradien hijau muda untuk kartu prediksi total pendapatan */
 .result-card.bg-pendapatan {
     background: linear-gradient(135deg, #f2fbf6 0%, #e3f7ed 100%);
     border-color: #bcebcf;
@@ -468,6 +609,10 @@
     box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
 }
 
+/* =========================================================
+   🎨 WARNA LATAR KARTU HASIL — BIAYA (MERAH)
+========================================================= */
+/* Gradien merah muda untuk kartu prediksi total biaya produksi */
 .result-card.bg-biaya {
     background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%);
     border-color: #fecdd3;
@@ -478,6 +623,10 @@
     box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
 }
 
+/* =========================================================
+   🎨 WARNA LATAR KARTU HASIL — KEUNTUNGAN (BIRU)
+========================================================= */
+/* Gradien biru muda untuk kartu prediksi keuntungan bersih */
 .result-card.bg-keuntungan {
     background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%);
     border-color: #bae6fd;
@@ -488,18 +637,28 @@
     box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
 }
 
-/* --- Bagian Pewarnaan Teks Indikator (Naik/Turun) --- */
-/* Memaksa perubahan warna teks menjadi merah jika hasil negatif, dan hijau jika positif */
+
+/* =========================================================
+   🔴 TEKS INDIKATOR NEGATIF (MERAH)
+========================================================= */
+/* Memaksa warna merah pada angka yang menunjukkan nilai negatif/kerugian */
 .highlight-text-red {
     color: #ef4444 !important;
 }
 
+/* =========================================================
+   💚 TEKS INDIKATOR POSITIF (HIJAU)
+========================================================= */
+/* Memaksa warna hijau pada angka yang menunjukkan nilai positif/keuntungan */
 .highlight-text-green {
     color: #16a34a !important;
 }
 
-/* --- Bagian Pembungkus Grafik (Chart) --- */
-/* Memberikan latar belakang putih dan efek bayangan lembut di belakang area lokasi grafik digambar */
+
+/* =========================================================
+   📈 PEMBUNGKUS GRAFIK (CHART CONTAINER)
+========================================================= */
+/* Kotak putih dengan shadow lembut yang menjadi wadah kanvas grafik prediksi */
 .chart-container {
     background: #ffffff;
     border-radius: 16px;
@@ -508,6 +667,7 @@
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
 
+/* Judul grafik dengan garis bawah pemisah */
 .chart-container h3 {
     font-size: 1.15rem;
     font-weight: 700;
@@ -518,16 +678,187 @@
     display: inline-block;
 }
 
+/* =========================================================
+   📐 WRAPPER KANVAS GRAFIK
+========================================================= */
+/* Kontainer dengan tinggi tetap 400px untuk kanvas Chart.js */
 .canvas-wrapper {
     position: relative;
     height: 400px;
     width: 100%;
 }
 
-/* --- Bagian Tampilan Layar Kecil (Responsif / Mobile / Tablet) --- */
-/* Mengubah susunan kolom yang tadinya kiri-kanan menjadi atas-bawah jika layar lebih kecil dari 1024 piksel */
+
+/* =========================================================
+   💡 KONTAINER KARTU REKOMENDASI PREDIKTIF
+========================================================= */
+/* Pembungkus flex yang menampung semua kartu saran tindakan berdasarkan hasil prediksi */
+.rekomendasi-container {
+    transition: all 0.3s ease;
+}
+
+/* =========================================================
+   🃏 KARTU REKOMENDASI PREDIKTIF
+========================================================= */
+/* Setiap kartu saran tindakan yang muncul setelah prediksi selesai dijalankan */
+.rekomendasi-card {
+    cursor: default;
+}
+
+/* Kartu rekomendasi naik sedikit saat di-hover */
+.rekomendasi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* =========================================================
+   🎬 ANIMASI MUNCUL KARTU REKOMENDASI (SLIDE IN UP)
+========================================================= */
+/* Setiap kartu rekomendasi muncul dari bawah ke atas saat dirender oleh JavaScript */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Terapkan animasi slideInUp ke semua kartu rekomendasi */
+.rekomendasi-card {
+    animation: slideInUp 0.4s ease-out forwards;
+}
+
+
+/* =========================================================
+   🕓 KONTAINER HISTORI PREDIKSI
+========================================================= */
+/* Pembungkus tabel riwayat semua prediksi yang pernah dijalankan */
+.history-container {
+    transition: all 0.3s ease;
+}
+
+/* =========================================================
+   🏷️ KEPALA KOLOM TABEL HISTORI (STICKY)
+========================================================= */
+/* Header tabel histori selalu terlihat di atas saat area tabel discroll */
+.history-container table th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+/* =========================================================
+   🖱️ EFEK HOVER DAN BELANG-BELANG BARIS HISTORI
+========================================================= */
+/* Baris genap sedikit berbeda latar; semua baris berubah biru saat di-hover */
+.history-container table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.history-container table tbody tr:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.015);
+}
+
+.history-container table tbody tr:hover {
+    background-color: #f1f5f9 !important;
+}
+
+
+/* =========================================================
+   📋 TABEL RINGKASAN (SUMMARY TABLE)
+========================================================= */
+/* Gaya font dan perataan vertikal untuk tabel ringkasan hasil dan histori */
+.summary-table {
+    font-family: 'Poppins', sans-serif;
+}
+
+.summary-table th,
+.summary-table td {
+    vertical-align: middle;
+}
+
+
+/* =========================================================
+   🗑️ TOMBOL HAPUS SEMUA HISTORI
+========================================================= */
+/* Efek hover tombol hapus histori: naik dan bayangan merah menguat */
+#btnClearHistory:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.45) !important;
+}
+
+/* Tombol kembali ke posisi semula saat ditekan */
+#btnClearHistory:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   🖱️ SCROLLBAR KUSTOM TABEL RESPONSIF (HORIZONTAL)
+========================================================= */
+/* Scrollbar horisontal yang tipis dan elegan untuk tabel yang melebihi lebar layar */
+.table-responsive::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR MENENGAH (≤1024px)
+========================================================= */
+/* Di tablet/laptop: grid dua kolom berubah menjadi satu kolom bertumpuk */
 @media (max-width: 1024px) {
+    /* Kolom form dan grafik disusun vertikal */
     .prediction-container {
         grid-template-columns: 1fr;
+    }
+
+    /* Padding kartu rekomendasi dikecilkan di layar sempit */
+    .rekomendasi-card {
+        padding: 16px !important;
+    }
+
+    /* Font tabel histori diperkecil di layar menengah */
+    .history-container table {
+        font-size: 0.82rem;
+    }
+}
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR KECIL HP (≤768px)
+========================================================= */
+/* Di HP: kartu hasil menjadi satu kolom dan grid input historis jadi dua kolom */
+@media (max-width: 768px) {
+
+    /* Kartu hasil statistik dari 2 kolom jadi 1 kolom */
+    .result-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Input historis dari 3 kolom jadi 2 kolom */
+    .historical-inputs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Baris form sejajar disusun vertikal */
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
     }
 }

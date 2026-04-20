@@ -1,76 +1,100 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
-   File: editProfileTAalip.css
-   Deskripsi: Menangani gaya visual khusus (Style) untuk halaman 
-   Pengaturan Profil Pengguna & Keamanan Kata Sandi.
+   File        : editProfileTAalip.css
+   Deskripsi   : Gaya visual halaman Edit Profil Pengguna &
+                 Pengaturan Keamanan Kata Sandi.
+   Mencakup    : body scroll, scrollbar, kartu profil,
+                 header avatar, form grid, input fields,
+                 tombol simpan, dan responsif mobile.
 ========================================================= */
 
+
+/* =========================================================
+   🖥️ TUBUH HALAMAN EDIT PROFIL (BODY)
+========================================================= */
+/* Latar abu kebiruan pucat; memusatkan kartu edit profil secara horizontal
+   dengan scrolling vertikal aktif agar form yang panjang bisa digulir */
 body {
     margin: 0;
     padding: 2rem 0;
     font-family: 'Poppins', sans-serif;
-    background-color: #f7f9fc; /* Warna abu-abu kebiruan yang sangat pucat demi nuansa lapang */
+    background-color: #f7f9fc;             /* Abu biru sangat pucat yang lapang */
     display: flex;
-    justify-content: center;   /* Merapikan letak form selalu di tengah horizontal */
-    align-items: flex-start;   /* Biarkan konten mulai dari atas agar scroll ke bawah dapat berfungsi */
+    justify-content: center;               /* Kartu selalu di tengah horizontal */
+    align-items: flex-start;               /* Mulai dari atas agar scroll ke bawah berfungsi */
     min-height: 100vh;
-    overflow-y: auto;          /* Mengaktifkan scroll vertikal pada halaman ini */
+    overflow-y: auto;                      /* Mengaktifkan scroll vertikal halaman */
     scroll-behavior: smooth;
 }
 
-/* =========================================
-   🖱️ SCROLLBAR KUSTOM — Edit Profil (Tema Oranye Kuning)
-   Scrollbar langsing bergradien emas-oranye sesuai header profil
-   ========================================= */
+
+/* =========================================================
+   🖱️ SCROLLBAR KUSTOM HALAMAN (TEMA ORANYE KUNING)
+========================================================= */
+/* Scrollbar tipis bergradien emas-oranye yang menyatu dengan palet warna header profil */
 body::-webkit-scrollbar {
     width: 8px;
 }
 
+/* =========================================================
+   🖱️ SCROLLBAR — JALUR (TRACK)
+========================================================= */
+/* Jalur scrollbar dengan latar kuning sangat transparan */
 body::-webkit-scrollbar-track {
     background: rgba(255, 204, 112, 0.08);
     border-radius: 100px;
 }
 
+/* =========================================================
+   🖱️ SCROLLBAR — PEGANGAN (THUMB)
+========================================================= */
+/* Batang pegangan scrollbar bergradien kuning-oranye */
 body::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #ffcc70 0%, #ff7e5f 100%);
     border-radius: 100px;
-    border: 2px solid transparent;
+    border: 2px solid transparent;         /* Ruang tipis agar terlihat mengambang */
     background-clip: padding-box;
 }
 
+/* Pegangan lebih gelap saat hover */
 body::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #fbbf24 0%, #f97316 100%);
     background-clip: padding-box;
 }
 
-/* =========================================
-   1. WADAH UTAMA KARTU EDIT PROFIL 
-   ========================================= */
-/* Container Utama Panel Edit Profil */
+
+/* =========================================================
+   🃏 CONTAINER UTAMA KARTU EDIT PROFIL
+========================================================= */
+/* Kotak putih lebar yang membungkus seluruh isi halaman edit profil;
+   memiliki sudut membulat besar dan shadow lembut ala kartu premium */
 .edit-profile-container {
     width: 100%;
     max-width: 800px;
-    background: #ffffff; /* Putih bersih layaknya kertas */
+    background: #ffffff;
     border-radius: 20px;
-    /* Soft shadow memunculkan kesan elegan kartu melayang (Elevated visual) */
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08); 
-    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);  /* Shadow lembut melambangkan kartu melayang */
+    overflow: hidden;                              /* Kunci gradien header tetap di dalam radius */
     margin: 2rem;
 }
 
-/* =========================================
-   2. AREA HEADER ATAS (Kepala Profil)
-   ========================================= */
-/* Header Profil (Gradient) */
+
+/* =========================================================
+   🎨 HEADER PROFIL (AREA ATAS GRADIEN ORANYE)
+========================================================= */
+/* Bagian teratas kartu dengan gradien oranye khas LIBAS sebagai identitas header profil */
 .profile-header {
-    background: linear-gradient(135deg, #ffcc70 0%, #ff7e5f 100%); /* Corak sapuan Oranye ceria khas desain LIBAS */
+    background: linear-gradient(135deg, #ffcc70 0%, #ff7e5f 100%);
     color: #fff;
     padding: 3rem 2rem 2rem;
     text-align: center;
     position: relative;
 }
 
-/* Tombol Navigasi darurat 'KEMBALI' di sudut kiri atas */
+/* =========================================================
+   🔙 TOMBOL KEMBALI KE DASHBOARD
+========================================================= */
+/* Tombol navigasi di pojok kiri atas header untuk kembali ke halaman sebelumnya */
 .back-btn {
     position: absolute;
     top: 1.5rem;
@@ -79,36 +103,45 @@ body::-webkit-scrollbar-thumb:hover {
     text-decoration: none;
     font-weight: 500;
     font-size: 0.95rem;
-    background: rgba(255, 255, 255, 0.2); /* Membulatkan latar tulisannya dengan sedikit putih transparan */
+    background: rgba(255, 255, 255, 0.2);  /* Latar putih transparan di atas header */
     padding: 0.5rem 1rem;
     border-radius: 30px;
     transition: all 0.3s ease;
 }
 
-/* Efek saat didekati Mouse: Bergeser sedikit ke kiri (Panah mundur) */
+/* Tombol mundur ke kiri sedikit saat hover sebagai umpan balik arah kembali */
 .back-btn:hover {
     background: rgba(255, 255, 255, 0.4);
-    transform: translateX(-3px); 
+    transform: translateX(-3px);
 }
 
-/* Struktur lingkar bundaran penopang foto profil pengguna */
+/* =========================================================
+   🖼️ CONTAINER AVATAR PROFIL
+========================================================= */
+/* Membungkus foto profil bundar dan ikon kamera edit secara bersama-sama */
 .profile-avatar-container {
     position: relative;
     display: inline-block;
     margin-top: 1rem;
 }
 
-/* Gaya potong lingkaran foto */
+/* =========================================================
+   📷 FOTO PROFIL PENGGUNA
+========================================================= */
+/* Gambar foto profil berbentuk lingkaran sempurna dengan batas putih tebal */
 .profile-avatar-container img {
     width: 120px;
     height: 120px;
-    border-radius: 50%; /* Membulat Sempurna Tipe Avatar */
-    object-fit: cover;  /* Bila foto aslinya persegi panjang, potong secara paksa tanpa harus gepeng */
-    border: 4px solid #fff; /* Tembok putih tebal sebagai batas foto dan background header */
+    border-radius: 50%;                    /* Membulat sempurna tipe avatar */
+    object-fit: cover;                     /* Memotong foto agar tidak gepeng */
+    border: 4px solid #fff;               /* Batas putih tebal sebagai pigura foto */
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
-/* Ikon Kamera kecil penanda bahwa foto profil tersebut 'Bisa Diklik/Diubah' */
+/* =========================================================
+   📷 IKON KAMERA (TOMBOL UBAH FOTO)
+========================================================= */
+/* Lingkaran kecil ikon kamera di pojok kanan bawah foto; menandai foto bisa diubah */
 .camera-icon {
     position: absolute;
     bottom: 0;
@@ -125,44 +158,59 @@ body::-webkit-scrollbar-thumb:hover {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.2s;
     font-size: 1.2rem;
-    border: 2px solid #ff7e5f;
+    border: 2px solid #ff7e5f;            /* Batas oranye menandai elemen interaktif */
 }
 
-/* Membesar sedikit jika dipancing interaksi mouse (Hover) */
+/* Ikon kamera membesar sedikit saat di-hover */
 .camera-icon:hover {
     transform: scale(1.1);
     background: #fdfdfd;
 }
 
-/* Kalimat "Edit Profil Peternak" di Bawah Foto */
+/* =========================================================
+   🔤 JUDUL HEADER PROFIL (H2)
+========================================================= */
+/* Nama pengguna besar di bawah foto profil */
 .profile-header h2 {
     margin: 1rem 0 0.2rem;
     font-size: 1.8rem;
 }
 
+/* =========================================================
+   📝 DESKRIPSI HEADER PROFIL
+========================================================= */
+/* Kalimat deskripsi kecil di bawah nama (misal: peran pengguna) */
 .profile-header p {
     margin: 0;
     opacity: 0.9;
     font-size: 1rem;
 }
 
-/* =========================================
-   3. AREA KERANGKA FORMULIR 
-   ========================================= */
-/* Bantalan Putih di dasar Header */
+
+/* =========================================================
+   📝 AREA FORMULIR PROFIL
+========================================================= */
+/* Bantalan putih berisi semua field input di bawah header avatar */
 .profile-form {
     padding: 2.5rem;
 }
 
-/* CSS Grid membagi wilayah bawah kartunya menjadi dua Blok seimbang (Tipe Biodata vs Tipe Keamanan) */
+/* =========================================================
+   📐 GRID DUA KOLOM FORMULIR (BIODATA | KEAMANAN)
+========================================================= */
+/* Membagi area form menjadi dua kolom sejajar:
+   kiri untuk informasi dasar, kanan untuk keamanan kata sandi */
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Dua kolom bersebalahan porsinya 1 bagian (Fraction) banding 1 bagian */
+    grid-template-columns: 1fr 1fr;        /* Dua kolom setara 1:1 */
     gap: 2rem;
     margin-bottom: 2rem;
 }
 
-/* Penulisan Label tiap Judul Kolom (cth: "Informasi Dasar", "Keamanan Sandi") */
+/* =========================================================
+   🏷️ JUDUL SEKSI DALAM FORMULIR (H3)
+========================================================= */
+/* Teks judul di atas grup input (misal: "Informasi Dasar", "Keamanan Sandi") */
 .form-section h3 {
     color: #333;
     border-bottom: 2px solid #f1f5f9;
@@ -171,7 +219,10 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 1.2rem;
 }
 
-/* Lencana status (Badge) untuk label khusus pertanda bahwa form tidak wajib diisi/dibiarkan. */
+/* =========================================================
+   🏷️ LENCANA OPSIONAL (BADGE OPTIONAL)
+========================================================= */
+/* Tag kecil abu di sebelah label yang menandai field tidak wajib diisi */
 .badge-optional {
     font-size: 0.75rem;
     background: #e2e8f0;
@@ -181,7 +232,10 @@ body::-webkit-scrollbar-thumb:hover {
     vertical-align: middle;
 }
 
-/* Teks kecil penjelasan pengingat sistem */
+/* =========================================================
+   📝 DESKRIPSI SEKSI (SECTION DESC)
+========================================================= */
+/* Teks abu kecil di bawah judul seksi yang menjelaskan petunjuk pengisian */
 .section-desc {
     font-size: 0.85rem;
     color: #718096;
@@ -190,12 +244,18 @@ body::-webkit-scrollbar-thumb:hover {
     line-height: 1.4;
 }
 
-/* Spacing atau jarak antar grup kolom isian */
+/* =========================================================
+   📋 GRUP INPUT (INPUT GROUP)
+========================================================= */
+/* Kontainer satu field: label + kotak input tersusun vertikal dengan jarak bawah */
 .input-group {
     margin-bottom: 1.2rem;
 }
 
-/* Nama Penanda form isinya apa */
+/* =========================================================
+   🏷️ LABEL INPUT
+========================================================= */
+/* Teks panduan di atas setiap kotak input yang menjelaskan data yang diisikan */
 .input-group label {
     display: block;
     font-weight: 500;
@@ -204,7 +264,10 @@ body::-webkit-scrollbar-thumb:hover {
     font-size: 0.95rem;
 }
 
-/* Kotak Pengetikan ketata letak (Padding dll) ketat rapi */
+/* =========================================================
+   ✏️ KOTAK INPUT FORM PROFIL
+========================================================= */
+/* Kotak input dengan border abu membulat; berubah saat aktif diketik */
 .input-group input {
     width: 100%;
     padding: 0.8rem 1rem;
@@ -216,48 +279,57 @@ body::-webkit-scrollbar-thumb:hover {
     box-sizing: border-box;
 }
 
-/* Visual mewah saat kotak form sedang diketik aktif atau diklik kursor tetikus (Focus State) */
+/* =========================================================
+   ✏️ EFEK FOKUS INPUT (AKTIF DIKETIK)
+========================================================= */
+/* Garis tepi berubah kuning-emas khas LIBAS dan cincin cahaya muncul saat input diklik */
 .input-group input:focus {
-    outline: none; /* Buang warna pinggiran aneh penanda aslinya browser web */
-    border-color: #ffcc70; /* Cetakkan warna ciri khas oren pastel emas per-ayaman LIBAS */
-    box-shadow: 0 0 0 3px rgba(255, 204, 112, 0.3); /* Menambahkan cincin bayangan glowing halus pada kotaknya */
-    background: #fffafa; 
+    outline: none;                                          /* Hapus bingkai klik bawaan browser */
+    border-color: #ffcc70;                                  /* Aksen kuning khas lini LIBAS */
+    box-shadow: 0 0 0 3px rgba(255, 204, 112, 0.3);        /* Cincin glowing halus di sekeliling */
+    background: #fffafa;
 }
 
-/* =========================================
-   4. TOMBOL EKSEKUSI PENYELESAIAN TUGAS
-   ========================================= */
-/* Tombol di set sejajar mentok rata kanan batas boks */
+
+/* =========================================================
+   🔘 AREA TOMBOL AKSI FORMULIR
+========================================================= */
+/* Merapikan posisi tombol simpan ke sisi kanan bawah kartu profile */
 .form-actions {
-    text-align: right; 
+    text-align: right;
 }
 
-/* Mengubah bentuk dasar elemen <button> asli browser yang jelek menjadi kotak melengkung elit */
+/* =========================================================
+   💚 TOMBOL SIMPAN PERUBAHAN PROFIL
+========================================================= */
+/* Tombol besar bergradien hijau yang menandai aksi penyimpanan data sukses */
 .save-btn {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); /* Corak gradien HIJAU Segar = Makna Similiar Menyimpan Data / SUKSES */
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: #fff;
     border: none;
     padding: 1rem 2.5rem;
     font-size: 1.1rem;
     font-weight: 600;
-    border-radius: 50px; /* Lengkungan Tipe Pill ekstrem */
+    border-radius: 50px;                   /* Bentuk Pill ekstrem berbentuk lonjong */
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
 }
 
-/* Reaksi hover mengambang membesar apabila diusap tetikus */
+/* Tombol naik dan bayangan menguat saat hover */
 .save-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
 }
 
-/* =========================================
-   5. RESPON LAYAR UNTUK PENGGUNA TELEPON GENGGAM (Responsive Rule)
-   ========================================= */
-/* Apabila lebar layar mengecil (HP / Layar Monitor di-Resize mentok) atau di Bawah Resolusi 768px...  */
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR KECIL (≤768px)
+========================================================= */
+/* Di HP: dua kolom form diubah menjadi satu kolom bertumpuk */
 @media (max-width: 768px) {
+    /* Hapus pembagian dua kolom, jadikan satu kolom penuh */
     .form-grid {
-        grid-template-columns: 1fr; /* Matikan pembagian 2 kolom bersebelahan, biarkan tumpuk bertingkat 1 kolom utuh atas bawah! */
+        grid-template-columns: 1fr;
     }
 }
