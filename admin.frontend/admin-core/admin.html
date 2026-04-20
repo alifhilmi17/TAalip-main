@@ -15,8 +15,8 @@
 
   <!-- ========================= CSS KUSTOM ========================== -->
   <!-- Memuat gaya desain spesifik. Menggunakan ulang dashboard css sebagai dasar -->
-  <link rel="stylesheet" href="css/dashboardTAalip.css" />
-  <link rel="stylesheet" href="admin.frontend/admin.css" />
+  <link rel="stylesheet" href="../../css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="admin.css" />
 
   <!-- ========================= LIBRARY ========================== -->
   <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
@@ -36,15 +36,15 @@
       <nav class="main-nav">
 
         <!-- ===== MENU Dashboard ===== -->
-        <a href="dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+        <a href="../../dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
 
         <!-- ===== SUBMENU Data Ayam ===== -->
         <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
           📊 Data Ayam <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-          <a href="dataAyamTAalip.html" >🐓 Data Ayam</a>
-          <a href="kesehatanayam.html" >Data Kesehatan Ayam</a>
+          <a href="../../dataAyamTAalip.html" >🐓 Data Ayam</a>
+          <a href="../../kesehatanayam.html" >Data Kesehatan Ayam</a>
         </div>
 
         <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
@@ -52,7 +52,7 @@
           Rekomendasi Prediktif <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-          <a href="prediksihasil.html" > Prediksi Hasil </a>
+          <a href="../../prediksihasil.html" > Prediksi Hasil </a>
         </div>
 
         <!-- ===== SUBMENU Produksi ===== -->
@@ -60,7 +60,7 @@
           🥚 Produksi <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-          <a href="inputproduksi.html" >📝 Input Produksi Harian</a>
+          <a href="../../inputproduksi.html" >📝 Input Produksi Harian</a>
         </div>
 
         <!-- ===== SUBMENU Persediaan ===== -->
@@ -68,7 +68,7 @@
           📦 Persediaan <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-          <a href="stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="../../stokpakan.html" >🥬 Stok Pakan</a>
           <a href="#">⏰ Restock Reminder</a>
         </div>
 
@@ -77,7 +77,7 @@
           💵 Keuangan <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-          <a href="keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+          <a href="../../keuangan.html" >💰 Pemasukan & Pengeluaran</a>
         </div>
 
         <!-- ===== SUBMENU Dokumen ===== -->
@@ -85,16 +85,21 @@
           📂 Dokumen <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-          <a href="dokumen.html" >📄 Pusat Dokumen</a>
+          <a href="../../dokumen.html" >📄 Pusat Dokumen</a>
         </div>
+
+        <!-- ===== TOMBOL PINDAH KE TAMPILAN PENGGUNA ===== -->
+        <a href="../../dashboardTAalip.html" class="switch-mode-btn" title="Buka Tampilan Pengguna" style="margin-top: 1.5rem;">
+          🔄 Mode Pengguna
+        </a>
       </nav>
 
       <!-- ===== PROFIL PENGGUNA ===== -->
       <div class="sidebar-profile">
-        <img src="images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <img src="../../images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
         <div class="profile-name-container">
           <p class="profile-name"></p>
-          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+          <a href="../../editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
         </div>
         <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
       </div>
@@ -113,6 +118,7 @@
         ☰
       </button>
     </header>
+
 
     <!-- ===== KARTU SAMBUTAN ADMIN ===== -->
     <section class="welcome-card admin-welcome animate__animated animate__fadeInDown">
@@ -162,7 +168,7 @@
           <div class="mod-icon">🐓</div>
           <h4>Modul Data Ayam</h4>
           <p>Melihat dan menghapus data ayam, mortalitas, serta kandang.</p>
-          <a href="dataAyamTAalip.html" class="mod-btn">Buka Aplikasi</a>
+          <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
         <!-- Modul Keuangan -->
@@ -170,7 +176,7 @@
           <div class="mod-icon">💵</div>
           <h4>Modul Keuangan</h4>
           <p>Memantau saldo akhir pakan, biaya operasional, dan arus kas harian.</p>
-          <a href="keuangan.html" class="mod-btn">Buka Aplikasi</a>
+          <a href="../../keuangan.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
         <!-- Modul Prediksi -->
@@ -178,7 +184,7 @@
           <div class="mod-icon">📈</div>
           <h4>Modul Prediksi</h4>
           <p>Mengatur input variabel untuk engine machine learning produksi telur.</p>
-          <a href="prediksihasil.html" class="mod-btn">Buka Aplikasi</a>
+          <a href="../../prediksihasil.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
         <!-- UI Pengguna Utama -->
@@ -186,9 +192,37 @@
           <div class="mod-icon">📱</div>
           <h4>Dashboard Pengguna</h4>
           <p>Preview antarmuka utama yang dilihat oleh pekerja kandang.</p>
-          <a href="dashboardTAalip.html" class="mod-btn">Preview UI</a>
+          <a href="../../dashboardTAalip.html" class="mod-btn">Preview UI</a>
         </div>
 
+      </div>
+    </section>
+
+    <!-- ===== MANAJEMEN PENGGUNA (NEW) ===== -->
+    <section class="user-management animate__animated animate__fadeInUp">
+      <div class="management-card">
+        <div class="card-header-flex">
+          <h3>👥 Manajemen Pengguna Terdaftar</h3>
+          <span class="badge" id="user-count-badge">0 Users</span>
+        </div>
+        <div class="table-responsive">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Nama Lengkap</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Tanggal Daftar</th>
+                <th>Role</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="adminUserListBody">
+              <!-- Diisi via admin.js -->
+              <tr><td colspan="5" style="text-align:center;">Memuat data pengguna...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -261,9 +295,14 @@
   </main>
 
   <!-- ========================= SCRIPT UTAMA ADMIN ========================== -->
-  <script src="admin.frontend/admin.js"></script>
-  <!-- Skrip Utama Sinkronasi Autentikasi -->
-  <script type="module" src="firebase.component/auth-state.js"></script>
+  <!-- Skrip Keamanan: Hanya Admin yang boleh masuk -->
+  <script type="module" src="../admin-gate.js"></script>
+  
+  <!-- Skrip Logika Dashboard Admin -->
+  <script type="module" src="admin.js"></script>
+  
+  <!-- Skrip Sinkronasi Autentikasi Global -->
+  <script type="module" src="../../firebase.component/auth-state.js"></script>
 </body>
 
 </html>

@@ -159,10 +159,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     chickenOverlay.classList.add('active');
                 }
 
-                // Setelah berhasil masuk, jalankan animasi sebentar lalu alihkan
+                // 3. Deteksi Role untuk Pengalihan Pintar (Redirect)
+                const userData = querySnapshot.docs[0].data();
+                const userRole = userData.role || 'user'; // Default sebagai user biasa
+
+                // Setelah berhasil masuk, jalankan animasi sejenak lalu alihkan berdasarkan role
                 setTimeout(() => {
-                    const action = loginForm.getAttribute('action'); 
-                    window.location.href = action || 'dashboardTAalip.html';
+                    if (userRole === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboardTAalip.html';
+                    }
                 }, 3000);
 
             } catch (error) {

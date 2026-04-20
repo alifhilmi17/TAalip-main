@@ -35,8 +35,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (userDocSnap.exists() && userDocSnap.data().fullname) {
                     displayNameResult = userDocSnap.data().fullname;
                 }
+
+                // --- LOGIKA SWITCHER PANEL ADMIN GLOBAL ---
+                // Hanya jalankan jika tidak sedang berada di dalam folder admin-core
+                if (!window.location.href.includes('admin-core')) {
+                    const adminRef = doc(db, "admin", user.uid);
+                    const adminSnap = await getDoc(adminRef);
+                    if (adminSnap.exists()) {
+                        const container = document.getElementById('adminSwitchContainer');
+                        if (container) container.style.display = 'block';
+                    }
+                }
             } catch (err) {
-                console.error("Gagal mengambil nama lengkap: ", err);
+                console.error("Gagal verifikasi data user/admin: ", err);
             }
 
             profileNameElements.forEach(el => {

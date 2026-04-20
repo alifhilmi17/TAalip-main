@@ -937,3 +937,403 @@
         width: 100%;
     }
 }
+
+
+/* =========================================================
+   👁️ TOMBOL LIHAT DATA (PREVIEW) DI KARTU EKSPOR
+========================================================= */
+/* Tombol ungu dengan ikon mata yang memicu modal pratinjau data penuh;
+   tampil sebelum tombol CSV dan Cetak di baris aksi kartu */
+.btn-preview {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(124, 58, 237, 0.28);
+}
+
+/* Efek membesar saat kursor melewati tombol preview */
+.btn-preview:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.42);
+}
+
+
+/* =========================================================
+   🪟 OVERLAY LATAR BELAKANG MODAL PRATINJAU
+========================================================= */
+/* Layer semi-transparan yang menutupi seluruh halaman saat modal terbuka;
+   menggunakan backdrop-filter agar tampilan halaman di belakang menjadi buram */
+.modal-overlay {
+    position: fixed;
+    inset: 0;                                  /* Menutupi seluruh viewport */
+    z-index: 9999;
+    background: rgba(15, 23, 42, 0.65);        /* Latar gelap semi-transparan */
+    backdrop-filter: blur(6px);                /* Efek buram pada konten di belakang */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    pointer-events: none;                      /* Tidak merespons klik saat tersembunyi */
+    transition: opacity 0.3s ease;
+}
+
+/* State aktif modal: terlihat dan dapat diklik */
+.modal-overlay.aktif {
+    opacity: 1;
+    pointer-events: all;
+}
+
+
+/* =========================================================
+   📦 WADAH UTAMA MODAL
+========================================================= */
+/* Kotak putih yang berisi seluruh konten modal (header, tabel, footer);
+   muncul dengan animasi geser dan perbesar saat overlay aktif */
+.modal-container {
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 960px;
+    max-height: 88vh;                          /* Batas tinggi agar modal tidak keluar layar */
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Animasi masuk kontainer saat overlay aktif */
+.modal-overlay.aktif .modal-container {
+    transform: scale(1) translateY(0);
+}
+
+
+/* =========================================================
+   🎨 HEADER MODAL PRATINJAU
+========================================================= */
+/* Pita berwarna di bagian atas modal yang memuat ikon, judul laporan,
+   dan tombol tutup; warna gradiennya diubah via JavaScript tiap modul */
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 1.8rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Default; diubah JS */
+    color: #fff;
+    flex-shrink: 0;                            /* Header tidak mengecil meski tabel panjang */
+}
+
+/* Sisi kiri header: ikon besar + judul & subjudul */
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Kotak latar ikon di header modal */
+.modal-icon {
+    font-size: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 55px;
+    height: 55px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Judul nama laporan di header modal */
+.modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 0.2rem 0;
+}
+
+/* Subjudul/keterangan jumlah entri di header modal */
+.modal-subtitle {
+    font-size: 0.82rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+/* Tombol ✕ tutup modal di pojok kanan atas */
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    font-size: 1.1rem;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* Latar tombol tutup sedikit lebih terang saat di-hover */
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
+
+/* =========================================================
+   🔎 TOOLBAR PENCARIAN & JUMLAH ENTRI
+========================================================= */
+/* Bar abu terang di bawah header yang memuat kotak pencarian dan label jumlah;
+   selalu terlihat (sticky) di atas tabel saat konten di-scroll */
+.modal-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1.8rem;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+}
+
+/* Pembungkus ikon kaca pembesar + input pencarian */
+.modal-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 0.45rem 0.9rem;
+    flex: 1;
+    max-width: 380px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Border dan bayangan muncul saat input aktif/fokus */
+.modal-search-wrap:focus-within {
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+/* Ikon kaca pembesar sebagai dekorasi input pencarian */
+.modal-search-icon {
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+/* Kotak input teks pencarian; tidak memiliki gaya bawaan browser */
+.modal-search-input {
+    border: none;
+    outline: none;
+    font-size: 0.88rem;
+    color: #334155;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+}
+
+/* Label jumlah baris yang cocok dengan filter / total entri */
+.modal-row-count {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #64748b;
+    white-space: nowrap;
+    background: #e2e8f0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+}
+
+
+/* =========================================================
+   📋 AREA KONTEN SCROLLABLE MODAL (TABEL)
+========================================================= */
+/* Area tengah modal yang berisi tabel data; dapat di-scroll secara vertikal
+   sehingga modal tidak meluber keluar layar untuk data yang panjang */
+.modal-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Pembungkus tabel dengan scroll vertikal dan horizontal */
+.modal-table-wrap {
+    overflow: auto;
+    flex: 1;
+    padding: 0 0.5rem;
+}
+
+/* Scrollbar ramping untuk area tabel modal */
+.modal-table-wrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.modal-table-wrap::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+/* Tabel data melebar penuh, sel rapat tanpa jarak antar border */
+.modal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+}
+
+/* Cell header tabel: latar abu sangat terang, teks kecil kapital */
+.modal-table thead th {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.76rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;                                    /* Header tabel "menempel" saat scroll vertikal */
+    z-index: 1;
+}
+
+/* Cell data tabel: padding nyaman dan garis bawah abu tipis */
+.modal-table tbody td {
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: #334155;
+    vertical-align: middle;
+}
+
+/* Latar abu sangat muda pada baris genap (striped effect) */
+.modal-table tbody tr:nth-child(even) td {
+    background: #fafbfc;
+}
+
+/* Latar ungu muda saat kursor melewati baris tabel */
+.modal-table tbody tr:hover td {
+    background: #f5f3ff;
+}
+
+/* Badge berwarna untuk nilai status di dalam tabel */
+.modal-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Pesan ketika tidak ada baris data yang cocok dengan pencarian */
+.modal-empty {
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 3rem 1rem;
+    margin: 0;
+}
+
+
+/* =========================================================
+   🔘 FOOTER MODAL (TOMBOL AKSI)
+========================================================= */
+/* Baris tombol di bagian paling bawah modal; selalu terlihat
+   dan tidak ikut ter-scroll bersama konten tabel */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.8rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+/* Gaya dasar bersama semua tombol di footer modal */
+.modal-footer button {
+    padding: 0.6rem 1.4rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    font-family: inherit;
+}
+
+/* Tombol Ekspor CSV di footer modal: gradien hijau */
+.modal-btn-csv {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(16, 185, 129, 0.25);
+}
+.modal-btn-csv:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+}
+
+/* Tombol Cetak di footer modal: gradien biru */
+.modal-btn-print {
+    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(59, 130, 246, 0.25);
+}
+.modal-btn-print:hover {
+    transform: scale(1.04);
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+}
+
+/* Tombol Tutup di footer modal: abu netral */
+.modal-btn-close {
+    background: #e2e8f0;
+    color: #475569;
+    margin-left: auto;                         /* Dorong ke ujung kanan footer */
+}
+.modal-btn-close:hover {
+    background: #cbd5e1;
+    color: #1e293b;
+}
+
+
+/* =========================================================
+   📱 RESPONSIF MODAL — LAYAR KECIL (≤640px)
+========================================================= */
+@media (max-width: 640px) {
+    /* Modal memenuhi layar HP tanpa padding luar */
+    .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    /* Kontainer modal memanjang ke bawah seperti bottom-sheet */
+    .modal-container {
+        border-radius: 20px 20px 0 0;
+        max-height: 92vh;
+    }
+
+    /* Toolbar pencarian tersusun vertikal di HP */
+    .modal-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+
+    /* Kotak pencarian melebar penuh */
+    .modal-search-wrap {
+        max-width: 100%;
+    }
+
+    /* Tombol footer tersusun vertikal lebar penuh */
+    .modal-footer {
+        flex-direction: column;
+    }
+    .modal-footer button {
+        width: 100%;
+    }
+    .modal-btn-close {
+        margin-left: 0;
+    }
+}

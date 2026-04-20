@@ -511,6 +511,279 @@ window.cetakLaporanTerpadu = function() {
     Swal.fire('Fitur', 'Fitur Cetak Terpadu sedang dalam pengembangan.', 'info');
 };
 
+// =========================================
+// 7. MODAL PRATINJAU DATA PENUH
+// =========================================
+
+/**
+ * Konfigurasi tampilan dan kolom tabel tiap modul pada modal pratinjau.
+ * Setiap entri mendefinisikan: ikon, judul, gradien header, dan daftar kolom tabel.
+ */
+const MODAL_CONFIG = {
+    produksi: {
+        icon: '🥚', title: 'Laporan Produksi Harian',
+        gradient: 'linear-gradient(135deg, #f59e0b 0%, #fcd34d 100%)',
+        kolom: ['Tanggal', 'Batch / Kandang', 'Jenis Telur', 'Telur Baik', 'Telur Cacat', 'Total Telur'],
+        baris: (d) => [
+            d.tanggal || '-',
+            `${d.batchLabel || '-'} / ${d.kandang || '-'}`,
+            d.jenisTelur || '-',
+            Number(d.telurBaik || 0).toLocaleString('id-ID') + ' butir',
+            Number(d.telurCacat || 0).toLocaleString('id-ID') + ' butir',
+            `<b>${Number(d.totalTelur || 0).toLocaleString('id-ID')} butir</b>`
+        ]
+    },
+    pakan: {
+        icon: '🌾', title: 'Laporan Stok Pakan',
+        gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+        kolom: ['Tanggal', 'Tipe', 'Jenis Pakan', 'Jumlah (Kg)', 'Keterangan'],
+        baris: (d) => {
+            const warna = d.tipe === 'Masuk' ? '#10b981' : '#ef4444';
+            return [
+                d.tanggal || '-',
+                `<span class="modal-badge" style="background:${warna}20;color:${warna}">${d.tipe || '-'}</span>`,
+                d.jenis || '-',
+                `${Number(d.jumlah || 0).toLocaleString('id-ID')} Kg`,
+                d.keterangan || '-'
+            ];
+        }
+    },
+    keuangan: {
+        icon: '💰', title: 'Laporan Keuangan',
+        gradient: 'linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%)',
+        kolom: ['Tanggal', 'Tipe', 'Deskripsi', 'Jumlah (Rp)'],
+        baris: (d) => {
+            const warna = d.tipe === 'pemasukan' ? '#10b981' : '#ef4444';
+            const prefix = d.tipe === 'pemasukan' ? '+' : '-';
+            return [
+                d.tanggal || '-',
+                `<span class="modal-badge" style="background:${warna}20;color:${warna}">${d.tipe || '-'}</span>`,
+                d.deskripsi || '-',
+                `<b style="color:${warna}">${prefix} Rp ${Number(d.jumlah || 0).toLocaleString('id-ID')}</b>`
+            ];
+        }
+    },
+    ayam: {
+        icon: '🐓', title: 'Laporan Data Ayam / Populasi',
+        gradient: 'linear-gradient(135deg, #ef4444 0%, #f87171 100%)',
+        kolom: ['ID Batch', 'Tgl Masuk', 'Jenis', 'Jumlah Awal', 'Sisa Ayam', 'Kandang', 'Status'],
+        baris: (d) => {
+            const warnaBadge = d.status === 'Aktif' ? '#10b981' : d.status === 'Panen' ? '#3b82f6' : '#f59e0b';
+            return [
+                d.customId || d.id?.substring(0, 8) || '-',
+                d.tglMasuk || '-',
+                d.jenis || '-',
+                Number(d.jumlahAwal || 0).toLocaleString('id-ID') + ' ekor',
+                `<b>${Number(d.sisaAyam || 0).toLocaleString('id-ID')} ekor</b>`,
+                d.kandang || '-',
+                `<span class="modal-badge" style="background:${warnaBadge}20;color:${warnaBadge}">${d.status || '-'}</span>`
+            ];
+        }
+    },
+    kesehatan: {
+        icon: '🩺', title: 'Laporan Kesehatan Ayam',
+        gradient: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
+        kolom: ['Tanggal', 'Batch', 'Kandang', 'Gejala', 'Jml Sakit', 'Jml Mati', 'Penanganan', 'Status'],
+        baris: (d) => {
+            const warna = d.status === 'Sembuh' ? '#10b981' : d.status === 'Dalam Pengobatan' ? '#f59e0b' : '#ef4444';
+            return [
+                d.tanggal || '-',
+                d.batchName || '-',
+                d.kandang || '-',
+                d.gejala || '-',
+                `<span style="color:#f59e0b;font-weight:700">${d.jmlSakit || 0}</span>`,
+                `<span style="color:#ef4444;font-weight:700">${d.jmlMati || 0}</span>`,
+                d.penanganan || '-',
+                `<span class="modal-badge" style="background:${warna}20;color:${warna}">${d.status || '-'}</span>`
+            ];
+        }
+    },
+    vaksinasi: {
+        icon: '💉', title: 'Laporan Vaksinasi Ayam',
+        gradient: 'linear-gradient(135deg, #0369a1 0%, #0284c7 100%)',
+        kolom: ['Tanggal', 'Batch', 'Kandang', 'Jenis Vaksin', 'Metode', 'Status', 'Catatan'],
+        baris: (d) => {
+            const warna = d.status === 'Selesai' ? '#10b981' : '#f59e0b';
+            return [
+                d.tanggal || '-',
+                d.batchName || '-',
+                d.kandang || '-',
+                d.jenis || '-',
+                d.metode || '-',
+                `<span class="modal-badge" style="background:${warna}20;color:${warna}">${d.status || '-'}</span>`,
+                d.catatan || '-'
+            ];
+        }
+    },
+    prediksi: {
+        icon: '🧠', title: 'Laporan Hasil Prediksi MA',
+        gradient: 'linear-gradient(135deg, #9b59b6 0%, #c39bd3 100%)',
+        kolom: ['Tanggal Analisis', 'Batch', 'Periode MA', 'Populasi', 'Prod. Besok (Kg)', 'Estimasi Pend.', 'Proyeksi Laba', 'Status', 'Rekomendasi'],
+        baris: (d) => {
+            const tgl = new Date(d.tanggal).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const laba = Math.round(d.keuntungan || 0);
+            const untung = laba >= 0;
+            const warna = untung ? '#10b981' : '#ef4444';
+            return [
+                tgl,
+                d.batchLabel || '-',
+                `MA-${d.periodeMA || '-'}`,
+                Number(d.populasi || 0).toLocaleString('id-ID') + ' ekor',
+                d.prediksiBesokKg ? d.prediksiBesokKg.toFixed(2) + ' Kg' : '0 Kg',
+                'Rp ' + Math.round(d.estimasiPendapatan || 0).toLocaleString('id-ID'),
+                `<b style="color:${warna}">${untung ? '+' : ''}Rp ${laba.toLocaleString('id-ID')}</b>`,
+                `<span class="modal-badge" style="background:${warna}20;color:${warna}">${untung ? 'UNTUNG' : 'RUGI'}</span>`,
+                `<span style="font-size:0.8rem;max-width:180px;display:inline-block;white-space:normal">${d.rekomendasiUtama || '-'}</span>`
+            ];
+        }
+    }
+};
+
+/** Nama modul yang sedang aktif di modal, digunakan oleh tombol CSV & Cetak di footer */
+let _modulModal = null;
+
+/**
+ * Membuka modal pratinjau data penuh untuk modul yang dipilih.
+ * Mengisi header dengan gradien + ikon modul, membangun tabel,
+ * dan menampilkan modal dengan animasi.
+ * @param {string} modul - Nama modul (produksi, pakan, keuangan, dll)
+ */
+window.bukaModalPreview = function(modul) {
+    const cfg = MODAL_CONFIG[modul];
+    const data = state[modul];
+
+    if (!cfg) return;
+    if (!data || data.length === 0) {
+        Swal.fire('Info', `Belum ada data ${cfg.title} untuk ditampilkan.`, 'info');
+        return;
+    }
+
+    _modulModal = modul;
+
+    // --- Atur header modal ---
+    const headerEl = document.getElementById('modalHeaderBar');
+    if (headerEl) headerEl.style.background = cfg.gradient;
+
+    const iconEl = document.getElementById('modalPreviewIcon');
+    if (iconEl) iconEl.textContent = cfg.icon;
+
+    const titleEl = document.getElementById('modalPreviewTitle');
+    if (titleEl) titleEl.textContent = cfg.title;
+
+    const subtitleEl = document.getElementById('modalPreviewSubtitle');
+    if (subtitleEl) subtitleEl.textContent = `Menampilkan ${data.length} entri tersimpan`;
+
+    // --- Bangun header tabel ---
+    const thead = document.getElementById('modalTableHead');
+    if (thead) {
+        thead.innerHTML = `<tr>${cfg.kolom.map(k => `<th>${k}</th>`).join('')}</tr>`;
+    }
+
+    // --- Bangun baris tabel ---
+    _renderBarisTabelModal(data, cfg);
+
+    // --- Reset pencarian ---
+    const searchInput = document.getElementById('modalSearchInput');
+    if (searchInput) searchInput.value = '';
+
+    // --- Update row count ---
+    _updateRowCount(data.length);
+
+    // --- Wiring tombol footer ---
+    const btnCSV = document.getElementById('modalBtnCSV');
+    if (btnCSV) btnCSV.onclick = () => window.eksporCSV(modul);
+
+    const btnPrint = document.getElementById('modalBtnPrint');
+    if (btnPrint) btnPrint.onclick = () => window.cetakLaporan(modul);
+
+    // --- Tampilkan modal ---
+    const overlay = document.getElementById('modalPreview');
+    if (overlay) {
+        overlay.classList.add('aktif');
+        document.body.style.overflow = 'hidden'; // Cegah scroll halaman di belakang modal
+    }
+
+    tambahLog(`👁️ Membuka pratinjau: ${cfg.title} (${data.length} entri)`, '👁️');
+};
+
+/**
+ * Menutup modal pratinjau dan mengembalikan scroll halaman
+ */
+window.tutupModalPreview = function() {
+    const overlay = document.getElementById('modalPreview');
+    if (overlay) overlay.classList.remove('aktif');
+    document.body.style.overflow = '';
+    _modulModal = null;
+};
+
+/**
+ * Filter baris tabel modal berdasarkan teks pencarian (case-insensitive)
+ * @param {string} kata - Teks yang diketik di kotak pencarian
+ */
+window.filterTabelModal = function(kata) {
+    const tbody = document.getElementById('modalTableBody');
+    if (!tbody) return;
+
+    const kataBersih = kata.trim().toLowerCase();
+    const baris = tbody.querySelectorAll('tr');
+    let jumlahTampil = 0;
+
+    baris.forEach(tr => {
+        const teks = tr.textContent.toLowerCase();
+        const cocok = !kataBersih || teks.includes(kataBersih);
+        tr.style.display = cocok ? '' : 'none';
+        if (cocok) jumlahTampil++;
+    });
+
+    // Tampilkan pesan kosong jika tidak ada yang cocok
+    const emptyMsg = document.getElementById('modalEmptyMsg');
+    if (emptyMsg) emptyMsg.style.display = (jumlahTampil === 0) ? 'block' : 'none';
+
+    _updateRowCount(jumlahTampil);
+};
+
+/**
+ * Membangun dan mengisi baris <tr> tabel modal dari array data
+ * @param {Array} data - Array objek data Firestore
+ * @param {Object} cfg - Konfigurasi kolom dan builder baris dari MODAL_CONFIG
+ */
+function _renderBarisTabelModal(data, cfg) {
+    const tbody = document.getElementById('modalTableBody');
+    const emptyMsg = document.getElementById('modalEmptyMsg');
+    if (!tbody) return;
+
+    tbody.innerHTML = data.map((item, idx) => {
+        const sel = cfg.baris(item);
+        return `<tr>${sel.map(v => `<td>${v ?? '-'}</td>`).join('')}</tr>`;
+    }).join('');
+
+    if (emptyMsg) emptyMsg.style.display = 'none';
+}
+
+/**
+ * Memperbarui label jumlah entri yang ditampilkan di toolbar modal
+ * @param {number} jumlah - Angka entri yang cocok
+ */
+function _updateRowCount(jumlah) {
+    const el = document.getElementById('modalRowCount');
+    if (el) el.textContent = `${jumlah.toLocaleString('id-ID')} entri`;
+}
+
+// Tutup modal saat klik pada overlay (area gelap di luar kotak)
+document.addEventListener('DOMContentLoaded', () => {
+    const overlay = document.getElementById('modalPreview');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) window.tutupModalPreview();
+        });
+    }
+});
+
+// Tutup modal saat tombol Escape ditekan
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') window.tutupModalPreview();
+});
+
 window.goToProfile = () => window.location.href = 'editProfileTAalip.html';
 window.logoutUser = () => {
     Swal.fire({ title: 'Keluar?', icon: 'question', showCancelButton: true }).then(res => {

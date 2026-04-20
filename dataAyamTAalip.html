@@ -87,6 +87,13 @@
         <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
           <a href="dokumen.html" >📄 Pusat Dokumen</a>
         </div>
+
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem;">
+            <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+               🛡️ Kembali ke Admin
+            </a>
+        </div>
       </nav>
 
       <!-- ===== PROFIL PENGGUNA ===== -->
@@ -105,6 +112,15 @@
     <!-- ========================= KONTEN UTAMA ========================== -->
     <!-- Berfokus pada antarmuka statistik dan tabel daftar data ayam -->
     <main class="main-content">
+        
+        <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+        <header class="mobile-header">
+          <div class="mobile-logo">🐔 LIBAS</div>
+          <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
+            aria-label="Toggle Sidebar">
+            ☰
+          </button>
+        </header>
 
         <!-- ===== HEADER MANAJEMEN AYAM ===== -->
         <header class="page-header animate__animated animate__fadeInDown">

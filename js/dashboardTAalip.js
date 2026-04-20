@@ -221,7 +221,6 @@ function renderAnnouncements() {
             <div class="announcement-content">
                 <div class="announcement-details">
                     <span class="text" ${item.read ? 'style="text-decoration:line-through; color:#888;"' : ''}>${item.text}</span>
-                    <span class="time-stamp">Firebase Cloud</span>
                 </div>
             </div>
             <div class="action-btn-group">
@@ -397,7 +396,7 @@ function renderFinanceChart() {
     financeChartInstance = new Chart(canvas, {
         type: 'bar',
         data: {
-            labels: ['Mgg 1', 'Mgg 2', 'Mgg 3', 'Mgg 4+'],
+            labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4+'],
             datasets: [
                 { label: 'Pemasukan', data: incomeByWeek, backgroundColor: '#10b981' },
                 { label: 'Pengeluaran', data: expenseByWeek, backgroundColor: '#ef4444' }

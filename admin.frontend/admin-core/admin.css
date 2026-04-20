@@ -64,6 +64,13 @@
   font-weight: 600; /* Font semi-bold */
 }
 
+/* Kontainer snapshot data (Ayam & Keuangan) */
+.office-admin {
+  display: grid;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
 /* Kontainer yang mengatur formasi kartu modul secara otomatis (Responsive Grid) */
 .module-cards {
   display: grid; /* Menggunakan CSS Grid Layout */
@@ -208,4 +215,82 @@
 /* Sentuhan Merah Meradang jika Kursor Menyambar/Mengingini/Hover klik Tombol. */
 .clear-logs-btn:hover {
   background: #dc2626; /* Warna merah ditarik lebih redup menjurus darah gelap. */
+}
+
+/* =========================================
+   7. TOMBOL SWITCH MODE (USER VIEW)
+   ========================================= */
+.switch-mode-btn {
+  display: block;
+  background: rgba(56, 189, 248, 0.1); /* Biru Cyan transparan */
+  color: #38bdf8 !important;
+  text-align: center;
+  padding: 10px 15px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+}
+
+.switch-mode-btn:hover {
+  background: #38bdf8;
+  color: #1e293b !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+}
+
+/* =========================================
+   8. MANAJEMEN PENGGUNA (ADMIN ONLY)
+   ========================================= */
+.user-management {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.management-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.card-header-flex h3 {
+  font-size: 1.2rem;
+  color: #0f172a;
+  font-weight: 600;
+  margin: 0;
+}
+
+.badge {
+  background: #f1f5f9;
+  color: #475569;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Modifikasi Snapshot Cards agar lebih matching dengan User Side */
+.schedule-card h3 {
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 15px 15px 0 0;
 }

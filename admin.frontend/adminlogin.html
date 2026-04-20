@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LIBAS - Admin Portal Access</title>
+    
+    <!-- Fonts & Animations -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <!-- CSS Utama Admin Login -->
+    <link rel="stylesheet" href="adminlogin.css">
+    
+    <!-- Library SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+
+    <!-- Background Animasi Blobs -->
+    <div class="bg-blobs">
+        <div class="blob" style="top: -10%; left: -10%;"></div>
+        <div class="blob" style="bottom: -10%; right: -10%; animation-delay: -5s;"></div>
+    </div>
+
+    <!-- Kotak Portal Autentikasi -->
+    <div class="auth-container animate__animated animate__fadeIn">
+        <div class="auth-card">
+            <header class="card-header">
+                <h1>LIBAS <span>ADMIN</span></h1>
+                <p id="headerDescription">Akses panel administrator sistem.</p>
+            </header>
+
+            <!-- Menu Tab Login/Daftar -->
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button class="tab-btn" onclick="switchTab('signup')">Daftar Admin</button>
+            </div>
+
+            <!-- FORM LOGIN (AKTIF) -->
+            <form id="adminLoginForm" class="auth-form active">
+                <div class="form-group">
+                    <label>Username Admin</label>
+                    <input type="text" id="loginUsername" placeholder="Username" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn" id="loginSubmitBtn">Masuk Ke Panel</button>
+            </form>
+
+            <!-- FORM DAFTAR (TERSEMBUNYI) -->
+            <form id="adminSignupForm" class="auth-form">
+                <div class="form-group">
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="signupFullname" placeholder="Super Admin Name" required>
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signupUsername" placeholder="admin_alep" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Resmi</label>
+                    <input type="email" id="signupEmail" placeholder="admin@libas.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password Baru</label>
+                    <input type="password" id="signupPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="auth-btn" id="signupSubmitBtn">Buat Akun Administrator</button>
+            </form>
+
+            <div class="footer-link">
+                <a href="../index.html">← Kembali ke Beranda Utama</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Utama Logika Admin Login -->
+    <script type="module" src="adminlogin.js"></script>
+</body>
+</html>
