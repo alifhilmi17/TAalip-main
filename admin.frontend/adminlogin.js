@@ -1,9 +1,10 @@
 /**
  * =========================================================
- * SISTEM ADMINISTRASI PETERNAKAN (KODE AUTH ADMIN)
+ * SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
  * File: adminlogin.js
  * Deskripsi: Menangani proses log masuk dan pendaftaran 
- * khusus bagi akun administrator menggunakan koleksi 'admin'.
+ * khusus bagi akun administrator menggunakan koleksi 'admin'
+ * di Firebase Firestore.
  * =========================================================
  */
 
@@ -23,9 +24,15 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { auth, db } from "../firebase.component/firebase-init.js";
 
+/**
+ * ===== 1. EVENT LISTENERS UTAMA =====
+ */
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- LOGIKA LOGIN ADMIN ---
+    /**
+     * LOGIKA LOGIN ADMINISTRATOR
+     * Memverifikasi username di koleksi 'admin' sebelum melakukan Auth.
+     */
     const loginForm = document.getElementById('adminLoginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
@@ -37,21 +44,21 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoading(btn, true);
 
             try {
-                // Mencari data di KOLEKSI: admin
+                // Tahap 1: Validasi keberadaan Username di database (Anti-Bruteforce)
                 const q = query(collection(db, "admin"), where("username", "==", username));
                 const snap = await getDocs(q);
 
-                if (snap.empty) throw new Error("Username administrator tidak terdaftar.");
+                if (snap.empty) throw new Error("Username administrator tidak terdaftar dalam sistem.");
 
                 const adminDoc = snap.docs[0].data();
                 
-                // Eksekusi Login dengan Firebase Auth
+                // Tahap 2: Eksekusi otentikasi identitas via Firebase Auth
                 await signInWithEmailAndPassword(auth, adminDoc.email, password);
 
                 Swal.fire({
                     icon: 'success',
-                    title: 'Login Berhasil',
-                    text: 'Selamat datang di Panel Kontrol, Admin!',
+                    title: 'Akses Diterima',
+                    text: 'Selamat datang kembali di Panel Pusat Pusat, Admin!',
                     timer: 1500,
                     showConfirmButton: false
                 }).then(() => {
@@ -60,12 +67,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } catch (err) {
                 setLoading(btn, false);
+                console.error("Gagal Login:", err);
                 Swal.fire("Akses Ditolak", err.message, "error");
             }
         });
     }
 
-    // --- LOGIKA DAFTAR ADMIN ---
+    /**
+     * LOGIKA PENDAFTARAN ADMINISTRATOR BARU
+     * Hanya digunakan untuk inisialisasi atau penambahan admin manual.
+     */
     const signupForm = document.getElementById('adminSignupForm');
     if (signupForm) {
         signupForm.addEventListener('submit', async (e) => {
@@ -79,36 +90,38 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoading(btn, true);
 
             try {
-                // 1. Buat Akun Firebase Auth
+                // Langkah 1: Registrasi Email & Password ke Firebase Auth
                 const cred = await createUserWithEmailAndPassword(auth, email, password);
                 
-                // 2. Update Display Name di Auth
+                // Langkah 2: Sinkronisasi identitas Profil
                 await updateProfile(cred.user, { displayName: username });
 
-                // 3. Simpan Profil ke KOLEKSI: admin
+                // Langkah 3: Persistensi data otoritas ke Koleksi 'admin'
                 await setDoc(doc(db, "admin", cred.user.uid), {
                     uid: cred.user.uid,
                     fullname: fullname,
                     username: username,
                     email: email,
-                    type: 'super_admin', // Penanda level admin
+                    role: 'admin',      // Level otoritas permanen
+                    type: 'super_admin',
                     createdAt: new Date().toISOString()
                 });
 
-                // 4. Logout otomatis agar mendarat di form login
+                // Langkah 4: Logout paksa untuk verifikasi ulang via Login
                 await signOut(auth);
 
                 Swal.fire({
                     icon: 'success',
                     title: 'Admin Terdaftar',
-                    text: 'Akun administrator baru berhasil dibuat.',
+                    text: 'Akun administrator baru berhasil diamankan di database.',
                 }).then(() => {
-                    // Reset ke tab login
+                    // Kembali ke tampilan login
                     switchTab('login'); 
                 });
 
             } catch (err) {
                 setLoading(btn, false);
+                console.error("Gagal Registrasi:", err);
                 Swal.fire("Gagal Daftar", err.message, "error");
             }
         });
@@ -116,7 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Loading state helper
+ * ===== 2. FUNGSI PEMBANTU (HELPERS) =====
+ */
+
+/**
+ * Mengatur visual tombol saat proses asinkron berjalan
+ * @param {HTMLElement} btn - Elemen tombol yang ditekan
+ * @param {boolean} isLoading - Status loading
  */
 function setLoading(btn, isLoading) {
     if (isLoading) {
@@ -129,7 +148,8 @@ function setLoading(btn, isLoading) {
 }
 
 /**
- * Tab Switcher (Exposed to window for HTML access)
+ * Pengatur perpindahan antar form Login dan Daftar
+ * @param {string} type - 'login' atau 'signup'
  */
 window.switchTab = function(type) {
     const tabs = document.querySelectorAll('.tab-btn');
@@ -142,10 +162,10 @@ window.switchTab = function(type) {
     if (type === 'login') {
         tabs[0].classList.add('active');
         forms[0].classList.add('active');
-        desc.innerText = "Akses panel administrator sistem.";
+        desc.innerText = "Akses panel administrator sistem untuk manajemen operasional.";
     } else {
         tabs[1].classList.add('active');
         forms[1].classList.add('active');
-        desc.innerText = "Daftarkan identitas administrator baru.";
+        desc.innerText = "Daftarkan identitas administrator baru ke dalam sistem.";
     }
 }

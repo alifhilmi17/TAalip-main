@@ -1,14 +1,16 @@
 /* =========================================================
-   SISTEM ADMINISTRASI PETERNAKAN (ADMIN LOGIN STYLES)
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: adminlogin.css
-   Deskripsi: Mengatur visual halaman akses masuk administrator.
+   Deskripsi: Menata visual halaman gerbang masuk Administrator,
+   dengan tema gelap eksklusif dan efek glassmorphism.
    ========================================================= */
 
+/* ===== 1. VARIABEL & RESET DASAR ===== */
 :root {
-    --admin-primary: #1e293b;
-    --admin-accent: #38bdf8;
-    --admin-text: #f8fafc;
-    --admin-bg: #0f172a;
+    --admin-primary: #1e293b; /* Slate Dark */
+    --admin-accent: #38bdf8;  /* Sky Blue */
+    --admin-text: #f8fafc;    /* Pucat / Putih */
+    --admin-bg: #0f172a;      /* Navy Blue Kelam */
 }
 
 * {
@@ -26,10 +28,11 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    /* Gradasi radial untuk kedalaman visual background */
     background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
 }
 
-/* Background Animation */
+/* ===== 2. DEKORASI ORIENTASI (BLOBS) ===== */
 .bg-blobs {
     position: absolute;
     width: 100%;
@@ -54,6 +57,7 @@ body {
     100% { transform: translate(100px, 100px); }
 }
 
+/* ===== 3. KARTU PORTAL AUTENTIKASI ===== */
 .auth-container {
     width: 100%;
     max-width: 450px;
@@ -62,14 +66,15 @@ body {
 }
 
 .auth-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(20px);
+    background: rgba(30, 41, 59, 0.7); /* Background transparan (Glass) */
+    backdrop-filter: blur(20px);      /* Efek blur kaca */
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
     padding: 2.5rem;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
+/* Header di dalam Kartu */
 .card-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -91,6 +96,7 @@ body {
     font-size: 0.9rem;
 }
 
+/* ===== 4. NAVIGASI TAB (LOGIN/SIGNUP) ===== */
 .auth-tabs {
     display: flex;
     background: rgba(15, 23, 42, 0.5);
@@ -116,6 +122,7 @@ body {
     color: var(--admin-primary);
 }
 
+/* ===== 5. FORMULIR & INPUT ===== */
 .form-group {
     margin-bottom: 1.5rem;
 }
@@ -145,6 +152,7 @@ body {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
+/* Tombol Submit Utama */
 .auth-btn {
     width: 100%;
     background: var(--admin-accent);
@@ -171,6 +179,7 @@ body {
     pointer-events: none;
 }
 
+/* ===== 6. FOOTER & UTILITAS ===== */
 .footer-link {
     text-align: center;
     margin-top: 2rem;
@@ -183,7 +192,7 @@ body {
     font-weight: 600;
 }
 
-/* Toggle form display */
+/* Penanganan perpindahan tampilan form (Toggle logic) */
 .auth-form {
     display: none;
 }

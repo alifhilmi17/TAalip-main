@@ -1,3 +1,13 @@
+/**
+ * =========================================================
+ * SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+ * File: admin.js
+ * Deskripsi: Logika inti Dashboard Administrator. Mengelola
+ * sinkronisasi Firestore real-time, statistik global, 
+ * manajemen akun pengguna, dan audit logging.
+ * =========================================================
+ */
+
 import { 
     collection, 
     onSnapshot, 
@@ -10,45 +20,41 @@ import {
     updateDoc,
     doc,
     setDoc,
-    where
+    where,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { db } from "../../firebase.component/firebase-init.js";
+import { 
+    createUserWithEmailAndPassword,
+    getAuth
+} from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { db, auth } from "../../firebase.component/firebase-init.js";
 
 /**
- * =========================================================
- * SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
- * File: admin.js
- * Deskripsi: File ini menangani logika utama untuk halaman 
- * Admin Panel, termasuk pemuatan statistik global, ringkasan 
- * data terbaru (snapshot), dan pengelolaan log aktivitas sistem.
- * Terkoneksi langsung dengan Firebase Firestore.
- * =========================================================
+ * ===== 1. INISALISASI DASHBOARD =====
  */
-
-// Menjalankan inisialisasi saat struktur dokumen HTML selesai dimuat oleh browser
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Admin Panel Berhasil Dimuat - Firebase Mode.");
+    console.log("Admin Panel Berhasil Dimuat - Koneksi Firebase Aktif.");
     initAdminDashboard();
 });
 
 /**
- * Fungsi Utama Inisialisasi Dashboard Admin
+ * Fungsi Utama: Menghubungkan elemen UI dengan listener Firestore
  */
 function initAdminDashboard() {
-    // 1. Monitor Pengguna (Koleksi: user)
+    // A. Monitoring Pengguna (Koleksi: user)
     onSnapshot(collection(db, "user"), (snapshot) => {
         const userCount = snapshot.size;
         document.getElementById('stat-user').textContent = `${userCount} Orang`;
         
-        // Update badge pada bagian manajemen pengguna
         const userBadge = document.getElementById('user-count-badge');
-        if(userBadge) userBadge.textContent = `${userCount} Pengguna Terdaftar`;
+        if(userBadge) userBadge.textContent = `${userCount} Pengguna Terverifikasi`;
         
         const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderUserList(users);
     });
 
-    // 2. Monitor Populasi Ayam (Koleksi: populasi_ayam)
+    // B. Monitoring Populasi Ayam (Koleksi: populasi_ayam)
     onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
         let totalAyam = 0;
         let snapshotData = [];
@@ -60,10 +66,10 @@ function initAdminDashboard() {
         });
 
         document.getElementById('stat-admin-ayam').textContent = `${totalAyam.toLocaleString('id-ID')} Ekor`;
-        renderAyamSnapshot(snapshotData.slice(0, 5));
+        renderAyamSnapshot(snapshotData.slice(0, 5)); // Tampilkan top 5 batch
     });
 
-    // 3. Monitor Keuangan (Koleksi: keuangan)
+    // C. Monitoring Keuangan (Koleksi: keuangan)
     onSnapshot(collection(db, "keuangan"), (snapshot) => {
         let totalSaldo = 0;
         let trxData = [];
@@ -81,12 +87,12 @@ function initAdminDashboard() {
 
         document.getElementById('stat-admin-prediksi').textContent = `Rp ${totalSaldo.toLocaleString('id-ID')}`;
         
-        // Urutkan transaksi terbaru untuk tabel snapshot
+        // Sorting transaksi terbaru berdasarkan timestamp
         const latestTrx = trxData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
         renderKeuanganSnapshot(latestTrx);
     });
 
-    // 4. Monitor Log Sistem (Koleksi: activity_log)
+    // D. Monitoring Audit Log (Koleksi: activity_log)
     onSnapshot(query(
         collection(db, "activity_log"), 
         orderBy("waktu", "desc"), 
@@ -98,14 +104,19 @@ function initAdminDashboard() {
 }
 
 /**
- * Merender Tabel Manajemen Pengguna (Real-time)
+ * ===== 2. FUNGSI RENDERING UI =====
+ */
+
+/**
+ * Merender daftar manajemen akun pengguna
+ * @param {Array} users - List data pengguna dari Firestore
  */
 function renderUserList(users) {
     const userBody = document.getElementById('adminUserListBody');
     if (!userBody) return;
 
     if (users.length === 0) {
-        userBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Tidak ada pengguna terdaftar.</td></tr>`;
+        userBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Tidak ada data pengguna yang terdaftar di basis data.</td></tr>`;
     } else {
         userBody.innerHTML = users.map(user => {
             let dateStr = "-";
@@ -133,11 +144,13 @@ function renderUserList(users) {
                         </span>
                     </td>
                     <td>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="toggleAdminRole('${user.id}', '${user.role || 'user'}')" class="action-btn-small" style="background:${isAdmin ? '#64748b' : '#3b82f6'}; color:white; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; font-size:10px;">
+                        <div class="action-btns">
+                            <button onclick="toggleAdminRole('${user.id}', '${user.role || 'user'}')" 
+                                    class="action-btn-small ${isAdmin ? 'btn-demote' : 'btn-promote'}">
                                 ${isAdmin ? 'Demote' : 'Promote'}
                             </button>
-                            <button onclick="deleteUser('${user.id}', '${user.fullname || user.username}')" class="action-btn-small" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; font-size:10px;">
+                            <button onclick="deleteUser('${user.id}', '${user.fullname || user.username}')" 
+                                    class="action-btn-small btn-delete">
                                 Hapus
                             </button>
                         </div>
@@ -149,14 +162,14 @@ function renderUserList(users) {
 }
 
 /**
- * Merender Tabel Snapshot Batch Ayam
+ * Merender ringkasan populasi ayam
  */
 function renderAyamSnapshot(data) {
     const ayamBody = document.getElementById('adminAyamSnapshot');
     if (!ayamBody) return;
 
     if (data.length === 0) {
-        ayamBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Tidak ada data batch ayam.</td></tr>`;
+        ayamBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Data batch ayam tidak ditemukan.</td></tr>`;
     } else {
         ayamBody.innerHTML = data.map(item => `
             <tr>
@@ -169,6 +182,9 @@ function renderAyamSnapshot(data) {
     }
 }
 
+/**
+ * Helper: Memberikan indikator warna status
+ */
 function getStatusColor(status) {
     if (status === 'Panen') return '#3b82f6';
     if (status === 'Afkir') return '#ef4444';
@@ -176,14 +192,14 @@ function getStatusColor(status) {
 }
 
 /**
- * Merender Tabel Snapshot Keuangan
+ * Merender ringkasan mutasi kas terakhir
  */
 function renderKeuanganSnapshot(data) {
     const keuanganBody = document.getElementById('adminKeuanganSnapshot');
     if (!keuanganBody) return;
 
     if (data.length === 0) {
-        keuanganBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Tidak ada transaksi terbaru.</td></tr>`;
+        keuanganBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada riwayat transaksi finansial.</td></tr>`;
     } else {
         keuanganBody.innerHTML = data.map(item => `
             <tr>
@@ -196,6 +212,9 @@ function renderKeuanganSnapshot(data) {
     }
 }
 
+/**
+ * Helper: Format tanggal string ke regional ID
+ */
 function formatTanggal(tglString) {
     if (!tglString) return "-";
     const date = new Date(tglString);
@@ -203,14 +222,14 @@ function formatTanggal(tglString) {
 }
 
 /**
- * Merender Tabel Log Aktivitas Sistem
+ * Merender audit log sistem
  */
 function renderSystemLogs(logs) {
     const logBody = document.getElementById('systemLogBody');
     if (!logBody) return;
 
     if (logs.length === 0) {
-        logBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada log aktivitas terekam.</td></tr>`;
+        logBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada rekaman aktivitas sistem.</td></tr>`;
     } else {
         logBody.innerHTML = logs.map(log => `
             <tr>
@@ -224,14 +243,14 @@ function renderSystemLogs(logs) {
 }
 
 /**
- * Fungsi pembantu untuk mencatat aktivitas admin ke Firestore
- * @param {string} user - Nama pengguna yang melakukan aksi
- * @param {string} modul - Nama modul yang diakses
- * @param {string} aksi - Detail tindakan yang dilakukan
+ * ===== 3. FUNGSI LOGGING & AUDIT =====
+ */
+
+/**
+ * Mencatat aktivitas pengguna ke database (Activity Audit)
  */
 export async function logActivity(user, modul, aksi) {
     try {
-        // Menyimpan catatan ke koleksi khusus log aktivitas
         await addDoc(collection(db, "activity_log"), {
             user,
             modul,
@@ -239,136 +258,127 @@ export async function logActivity(user, modul, aksi) {
             waktu: new Date().toISOString()
         });
     } catch (err) {
-        console.error("Gagal mencatat log ke activity_log:", err);
+        console.error("Audit Logging Error:", err);
     }
 }
 
 /**
- * Fungsi Administratif: Menghapus Seluruh Log Aktivitas
+ * Menghapus seluruh riwayat log sistem (Hanya Super Admin)
  */
 window.clearLogs = async function() {
     Swal.fire({
-        title: 'Hapus Semua Log?',
-        text: "Seluruh riwayat aktivitas akan dihapus secara permanen dari database!",
+        title: 'Konfirmasi Penghapusan Log',
+        text: "Seluruh riwayat audit akan dimusnahkan secara permanen!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Bersihkan!',
-        cancelButtonText: 'Batal'
+        confirmButtonText: 'Ya, Bersihkan Seluruhnya!',
+        cancelButtonText: 'Batalkan'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                // Tampilkan loading karena proses bisa memakan waktu
                 Swal.fire({
-                    title: 'Membersihkan Log...',
+                    title: 'Memproses Pembersihan...',
                     allowOutsideClick: false,
                     didOpen: () => { Swal.showLoading(); }
                 });
 
-                // Ambil semua dokumen di koleksi activity_log
                 const querySnapshot = await getDocs(collection(db, "activity_log"));
-                
-                // Hapus satu per satu
                 const deletePromises = querySnapshot.docs.map(document => 
                     deleteDoc(doc(db, "activity_log", document.id))
                 );
                 
                 await Promise.all(deletePromises);
-
-                Swal.fire('Berhasil!', 'Seluruh log aktivitas telah dibersihkan.', 'success');
+                Swal.fire('Sukses!', 'Log database telah dikosongkan.', 'success');
                 
-                // Catat aksi pembersihan ini sebagai log pertama di koleksi baru
-                logActivity("Admin", "Sistem", "Membersihkan seluruh riwayat log aktivitas.");
+                logActivity("Admin", "Sistem", "Penghapusan total riwayat log aktivitas database.");
                 
             } catch (err) {
-                console.error("Gagal menghapus log:", err);
-                Swal.fire('Gagal', 'Terjadi kesalahan: ' + err.message, 'error');
+                console.error("Gagal Membersihkan Log:", err);
+                Swal.fire('Gagal', 'Sistem tidak dapat menghapus log: ' + err.message, 'error');
             }
         }
     });
 }
 
 /**
- * Sidebar Navigation Helpers
+ * ===== 4. MANAJEMEN OTORITAS PENGGUNA =====
  */
+
 /**
- * Fungsi Administratif: Menghapus Pengguna dari Database
+ * Menghapus akun pengguna dari database
  */
 window.deleteUser = async function(uid, name) {
     Swal.fire({
-        title: 'Konfirmasi Hapus',
-        text: `Apakah Anda yakin ingin menghapus pengguna "${name}" secara permanen?`,
+        title: 'Hapus Akun Pengguna?',
+        text: `Data "${name}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan!`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Hapus!',
+        confirmButtonText: 'Ya, Hapus Akun',
         cancelButtonText: 'Batal'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
                 await deleteDoc(doc(db, "user", uid));
-                Swal.fire('Berhasil', 'Pengguna telah dihapus dari sistem.', 'success');
-                logActivity("Admin", "User Management", `Menghapus user: ${name}`);
+                Swal.fire('Berhasil Terhapus', 'Akun telah dieliminasi dari sistem.', 'success');
+                logActivity("Admin", "Akses Pengguna", `Menghapus identitas user: ${name}`);
             } catch (err) {
-                Swal.fire('Gagal', 'Terjadi kesalahan: ' + err.message, 'error');
+                Swal.fire('Gagal', 'Terjadi kendala jaringan: ' + err.message, 'error');
             }
         }
     });
 }
 
 /**
- * Fungsi Administratif: Mengubah Role Pengguna
+ * Mengubah level otoritas akun (Admin vs User)
  */
 window.toggleAdminRole = async function(uid, currentRole) {
     const newRole = currentRole === 'admin' ? 'user' : 'admin';
-    const actionText = newRole === 'admin' ? 'Promote ke Admin' : 'Demote ke User Biasa';
+    const actionText = newRole === 'admin' ? 'Promosi ke Admin' : 'Demosi ke Pekerja';
 
     Swal.fire({
-        title: 'Ubah Role?',
-        text: `Apakah Anda ingin mengubah role pengguna ini menjadi ${newRole.toUpperCase()}?`,
+        title: 'Ubah Hak Akses?',
+        text: `Konfirmasi penguubahan otoritas akun menjadi: ${newRole.toUpperCase()}?`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#3b82f6',
-        confirmButtonText: 'Ya, Lanjutkan'
+        confirmButtonText: 'Ya, Update Role'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
-                // 1. Update role di koleksi 'user'
-                await updateDoc(doc(db, "user", uid), {
-                    role: newRole
-                });
+                // Tahap 1: Update metadata di koleksi user utama
+                await updateDoc(doc(db, "user", uid), { role: newRole });
                 
-                // 2. Update otoritas di koleksi 'admin' (Source of Truth untuk Login)
+                // Tahap 2: Sinkronisasi otoritas login di koleksi admin
                 const adminRef = doc(db, "admin", uid);
                 if (newRole === 'admin') {
-                    // Berikan akses admin
                     await setDoc(adminRef, {
                         role: 'admin',
                         promotedAt: new Date().toISOString(),
-                        type: 'auth_entry' // Pembeda dengan data log
+                        type: 'auth_entry'
                     });
                 } else {
-                    // Cabut akses admin (Hapus dari daftar otoritas)
-                    // Note: Jika koleksi admin juga dipakai untuk log, kita hanya boleh hapus jika ID-nya adalah UID.
-                    // Karena kita menggunakan setDoc(adminRef, ...) dengan ID=UID, aman untuk dihapus.
                     await deleteDoc(adminRef);
                 }
                 
-                await Swal.fire('Berhasil', `Role berhasil diubah menjadi ${newRole.toUpperCase()}.`, 'success');
-                
-                // 3. Catat log aktivitas (sebagai entitas log terpisah)
-                await logActivity("Admin", "User Management", `Mengubah role user (${uid}) menjadi ${newRole}`);
+                await Swal.fire('Otoritas Diperbarui', `Level akun kini menjadi ${newRole.toUpperCase()}.`, 'success');
+                await logActivity("Admin", "Akses Pengguna", `Update role (UID: ${uid}) menjadi ${newRole}`);
                 
             } catch (err) {
-                console.error("Gagal mengubah role:", err);
-                Swal.fire('Gagal', 'Terjadi kesalahan: ' + err.message, 'error');
+                console.error("Gagal sinkronisasi role:", err);
+                Swal.fire('Update Gagal', 'Kegagalan sinkronisasi cloud: ' + err.message, 'error');
             }
         }
     });
 }
 
 /**
- * Sidebar Navigation Helpers
+ * ===== 5. UI CONTROL & UTILITIES =====
+ */
+
+/**
+ * Pengatur visibilitas submenu sidebar
  */
 window.toggleSidebarMenu = function(id) {
     const menu = document.getElementById(id);
@@ -378,4 +388,168 @@ window.toggleSidebarMenu = function(id) {
     button.setAttribute('aria-expanded', !isExpanded);
     menu.setAttribute('aria-hidden', isExpanded);
     button.classList.toggle('active');
+}
+
+/**
+ * ===== 6. PENDAFTARAN AKUN MANAJEMEN =====
+ */
+
+/**
+ * Menampilkan portal pendaftaran petugas oleh Administrator
+ */
+window.openCreateAccountModal = function() {
+    Swal.fire({
+        title: 'Registrasi Identitas Baru',
+        html: `
+            <div class="swal-libas-container">
+                <div class="swal-libas-info">
+                    ℹ️ Pastikan alamat email aktif dan valid sebelum memproses registrasi.
+                </div>
+                
+                <div class="swal-libas-field">
+                    <label class="swal-libas-label">👤 Nama Lengkap</label>
+                    <div class="swal-libas-input-wrapper">
+                        <span class="swal-libas-icon">📝</span>
+                        <input id="swal-fullname" class="swal-libas-input" placeholder="Masukkan nama terang">
+                    </div>
+                </div>
+
+                <div class="swal-libas-field">
+                    <label class="swal-libas-label">🆔 Kode Username</label>
+                    <div class="swal-libas-input-wrapper">
+                        <span class="swal-libas-icon">@</span>
+                        <input id="swal-username" class="swal-libas-input" placeholder="username_pilihan">
+                    </div>
+                </div>
+
+                <div class="swal-libas-field">
+                    <label class="swal-libas-label">📧 Alamat Email</label>
+                    <div class="swal-libas-input-wrapper">
+                        <span class="swal-libas-icon">✉️</span>
+                        <input id="swal-email" type="email" class="swal-libas-input" placeholder="user@peternakan.com">
+                    </div>
+                </div>
+
+                <div class="swal-libas-field">
+                    <label class="swal-libas-label">🔑 Kata Sandi (Akses)</label>
+                    <div class="swal-libas-input-wrapper">
+                        <span class="swal-libas-icon">🔒</span>
+                        <input id="swal-password" type="password" class="swal-libas-input" placeholder="Minimal 6 karakter">
+                    </div>
+                </div>
+
+                <div class="swal-libas-field">
+                    <label class="swal-libas-label">🛡️ Penetapan Hak Akses</label>
+                    <div class="swal-libas-input-wrapper">
+                        <span class="swal-libas-icon">⭐</span>
+                        <select id="swal-role" class="swal-libas-select">
+                            <option value="user">User / Staff Operasional</option>
+                            <option value="admin">Administrator Otoritas</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `,
+        padding: '2rem',
+        customClass: {
+            title: 'swal-title-custom',
+            confirmButton: 'swal-confirm-custom',
+            cancelButton: 'swal-cancel-custom'
+        },
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Amankan Akun',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        preConfirm: () => {
+            const fullname = document.getElementById('swal-fullname').value;
+            const username = document.getElementById('swal-username').value;
+            const email = document.getElementById('swal-email').value;
+            const password = document.getElementById('swal-password').value;
+            const role = document.getElementById('swal-role').value;
+
+            if (!fullname || !username || !email || !password) {
+                Swal.showValidationMessage('Seluruh kolom data wajib diisi!');
+                return false;
+            }
+            if (password.length < 6) {
+                Swal.showValidationMessage('Sanitasi Password: Minimal 6 karakter!');
+                return false;
+            }
+
+            return { fullname, username, email, password, role };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            createNewUser(result.value);
+        }
+    });
+};
+
+/**
+ * Mengeksekusi pembuatan kredensial di cloud
+ */
+async function createNewUser(userData) {
+    const { fullname, username, email, password, role } = userData;
+
+    Swal.fire({
+        title: 'Sinkronisasi Cloud...',
+        text: 'Menghubungkan identitas baru ke server Firebase.',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const firebaseConfig = {
+            apiKey: "AIzaSyD265EEi0UE9wYNvOWKQ46huxpPTfZOcOE",
+            authDomain: "libas-db.firebaseapp.com",
+            projectId: "libas-db",
+            storageBucket: "libas-db.firebasestorage.app",
+            messagingSenderId: "918841790171",
+            appId: "1:918841790171:web:04ce25a5727fddbd78c6fe"
+        };
+
+        const tempApp = initializeApp(firebaseConfig, "TempRegistrationApp");
+        const tempAuth = getAuth(tempApp);
+
+        // 1. Registrasi Auth
+        const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
+        const uid = userCredential.user.uid;
+
+        // 2. Simpan Metadata User
+        await setDoc(doc(db, "user", uid), {
+            fullname,
+            username,
+            email,
+            role,
+            createdAt: serverTimestamp()
+        });
+
+        // 3. Update Otoritas jika level Admin
+        if (role === 'admin') {
+            await setDoc(doc(db, "admin", uid), {
+                role: 'admin',
+                promotedAt: new Date().toISOString(),
+                type: 'auth_entry'
+            });
+        }
+
+        await tempAuth.signOut();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Kredensial Selesai Dibuat',
+            text: `Identitas untuk ${fullname} (@${username}) telah diverifikasi sebagai level ${role.toUpperCase()}.`,
+        });
+
+        logActivity("Admin", "Akses Pengguna", `Inisialisasi akun baru: ${fullname} (${role})`);
+
+    } catch (error) {
+        console.error("Critical Cloud Error:", error);
+        let msg = error.message;
+        if (error.code === 'auth/email-already-in-use') msg = "Database: Email sudah teregistrasi sebelumnya!";
+        
+        Swal.fire('Cloud Sync Failed', msg, 'error');
+    }
 }

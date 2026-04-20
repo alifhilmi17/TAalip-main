@@ -2,101 +2,111 @@
 <html lang="id">
 
 <head>
-  <!-- ========================= META & TITLE ========================== -->
-  <!-- Pengaturan dasar halaman dan judul tab browser -->
+  <!-- =========================================================
+     SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+     File: admin.html
+     Deskripsi: Dashboard utama Administrator (Admin Panel).
+     Pusat kendali manajemen pengguna dan monitoring data global.
+     ========================================================= -->
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - Lintau Buo Administration System</title>
+  <title>Admin Panel - LIBAS System</title>
 
-  <!-- ========================= FONT & ANIMASI ========================== -->
-  <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+  <!-- ===== FONTS & ANIMATIONS ===== -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-  <!-- ========================= CSS KUSTOM ========================== -->
-  <!-- Memuat gaya desain spesifik. Menggunakan ulang dashboard css sebagai dasar -->
+  <!-- ===== CSS KUSTOM ===== -->
   <link rel="stylesheet" href="../../css/dashboardTAalip.css" />
   <link rel="stylesheet" href="admin.css" />
 
-  <!-- ========================= LIBRARY ========================== -->
-  <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
+  <!-- ===== LIBRARIES ===== -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
-    <!-- ========================= SIDEBAR ========================== -->
-  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-  <aside class="sidebar" aria-label="Sidebar Navigasi">
+
+  <!-- ===== SIDEBAR NAVIGASI ===== -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi Utama">
     <div class="sidebar-content">
 
-      <!-- ===== LOGO ===== -->
+      <!-- Logo Aplikasi -->
       <h2 class="logo">🐔 LIBAS</h2>
 
-      <!-- ===== NAVIGASI UTAMA ===== -->
+      <!-- Navigasi Menu -->
       <nav class="main-nav">
 
-        <!-- ===== MENU Dashboard ===== -->
-        <a href="../../dashboardTAalip.html"  title="Dashboard">🏠 Dashboard</a>
+        <!-- Dasar (User View) -->
+        <a href="../../dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-        <!-- ===== SUBMENU Data Ayam ===== -->
+        <!-- Master Data (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
           📊 Data Ayam <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-          <a href="../../dataAyamTAalip.html" >🐓 Data Ayam</a>
-          <a href="../../kesehatanayam.html" >Data Kesehatan Ayam</a>
+          <a href="../../dataAyamTAalip.html">🐓 Data Ayam</a>
+          <a href="../../kesehatanayam.html">Data Kesehatan Ayam</a>
         </div>
 
-        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <!-- Prediksi (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
           Rekomendasi Prediktif <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-          <a href="../../prediksihasil.html" > Prediksi Hasil </a>
+          <a href="../../prediksihasil.html"> Prediksi Hasil </a>
         </div>
 
-        <!-- ===== SUBMENU Produksi ===== -->
+        <!-- Produksi (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
           🥚 Produksi <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-          <a href="../../inputproduksi.html" >📝 Input Produksi Harian</a>
+          <a href="../../inputproduksi.html">📝 Input Produksi Harian</a>
         </div>
 
-        <!-- ===== SUBMENU Persediaan ===== -->
+        <!-- Persediaan (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
           📦 Persediaan <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-          <a href="../../stokpakan.html" >🥬 Stok Pakan</a>
+          <a href="../../stokpakan.html">🥬 Stok Pakan</a>
           <a href="#">⏰ Restock Reminder</a>
         </div>
 
-        <!-- ===== SUBMENU Keuangan ===== -->
+        <!-- Keuangan (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
           💵 Keuangan <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-          <a href="../../keuangan.html" >💰 Pemasukan & Pengeluaran</a>
+          <a href="../../keuangan.html">💰 Pemasukan & Pengeluaran</a>
         </div>
 
-        <!-- ===== SUBMENU Dokumen ===== -->
+        <!-- Dokumen (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
           📂 Dokumen <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-          <a href="../../dokumen.html" >📄 Pusat Dokumen</a>
+          <a href="../../dokumen.html">📄 Pusat Dokumen</a>
         </div>
 
-        <!-- ===== TOMBOL PINDAH KE TAMPILAN PENGGUNA ===== -->
-        <a href="../../dashboardTAalip.html" class="switch-mode-btn" title="Buka Tampilan Pengguna" style="margin-top: 1.5rem;">
+        <!-- MANAJEMEN PENGGUNA (FITUR KHUSUS ADMIN) -->
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+          <a href="#" onclick="openCreateAccountModal()"
+            style="background: rgba(16, 185, 129, 0.1); color: #10b981 !important; border-radius: 8px; padding: 10px 15px; display: block; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
+            ➕ Tambah Pengguna Baru
+          </a>
+        </div>
+
+        <!-- Switch Tampilan -->
+        <a href="../../dashboardTAalip.html" class="switch-mode-btn" title="Buka Tampilan Pengguna"
+          style="margin-top: 1.5rem;">
           🔄 Mode Pengguna
         </a>
       </nav>
 
-      <!-- ===== PROFIL PENGGUNA ===== -->
+      <!-- Profil Administrator di Sidebar -->
       <div class="sidebar-profile">
-        <img src="../../images/Screenshot.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <img src="../../images/Screenshot.png" alt="Foto Profil Admin" class="profile-pic" onclick="goToProfile()" />
         <div class="profile-name-container">
           <p class="profile-name"></p>
           <a href="../../editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
@@ -107,10 +117,10 @@
     </div>
   </aside>
 
-  <!-- ========================= KONTEN UTAMA ADMIN ========================== -->
+  <!-- ===== KONTEN UTAMA (MAIN CONTENT) ===== -->
   <main class="main-content">
 
-    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <!-- Header Mobile (Hanya muncul di layar kecil) -->
     <header class="mobile-header">
       <div class="mobile-logo">🛡️ Admin Panel</div>
       <button class="menu-toggle" onclick="document.querySelector('.sidebar').classList.toggle('active')"
@@ -120,90 +130,97 @@
     </header>
 
 
-    <!-- ===== KARTU SAMBUTAN ADMIN ===== -->
+    <!-- Section 1: Hero Banner Welcome -->
     <section class="welcome-card admin-welcome animate__animated animate__fadeInDown">
       <h2>Ringkasan Seluruh Sistem 🛡️</h2>
-      <p>Akses manajemen pengguna, pantau performa, dan sinkronisasi modul aplikasi peternakan.</p>
+      <p>Pusat kendali untuk memantau performa, manajemen akun, serta integrasi data peternakan Anda.</p>
     </section>
 
-    <!-- ===== KARTU STATISTIK GLOBAL (SUPER ADMIN) ===== -->
+    <!-- Section 2: Statistik Global Real-time -->
     <section class="quick-stats animate__animated animate__fadeInUp">
       <div class="stat-card">
         <div class="stat-icon">👥</div>
         <div class="stat-info">
-          <h4>Pengguna Aktif</h4>
-          <p id="stat-user">3 Orang</p>
+          <h4>Pengguna Terdaftar</h4>
+          <p id="stat-user">0 Orang</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🐓</div>
         <div class="stat-info">
-          <h4>Total Ayam Terpantau</h4>
+          <h4>Populasi Ayam</h4>
           <p id="stat-admin-ayam">- Ekor</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
-          <h4>Total Transaksi Global</h4>
+          <h4>Total Transaksi</h4>
           <p id="stat-admin-uang">- Transaksi</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">🏦</div>
         <div class="stat-info">
-          <h4>Saldo Keuangan Terkini</h4>
+          <h4>Saldo Finansial</h4>
           <p id="stat-admin-prediksi">Rp 0</p>
         </div>
       </div>
     </section>
 
-    <!-- ===== DAFTAR MODUL APLIKASI ===== -->
+    <!-- Section 3: Shortcut Modul Fitur -->
     <section class="modules-grid animate__animated animate__fadeInUp">
       <h3>🧩 Manajemen Modul Fitur</h3>
       <div class="module-cards">
 
-        <!-- Modul Ayam -->
+        <!-- Kartu Modul Ayam -->
         <div class="module-card">
           <div class="mod-icon">🐓</div>
           <h4>Modul Data Ayam</h4>
-          <p>Melihat dan menghapus data ayam, mortalitas, serta kandang.</p>
+          <p>Kelola metadata ternak, tingkat kematian, dan alokasi kandang.</p>
           <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
-        <!-- Modul Keuangan -->
+        <!-- Kartu Modul Keuangan -->
         <div class="module-card">
           <div class="mod-icon">💵</div>
           <h4>Modul Keuangan</h4>
-          <p>Memantau saldo akhir pakan, biaya operasional, dan arus kas harian.</p>
+          <p>Rekapitulasi biaya operasional, tagihan pakan, dan arus kas harian.</p>
           <a href="../../keuangan.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
-        <!-- Modul Prediksi -->
+        <!-- Kartu Modul Prediksi -->
         <div class="module-card">
           <div class="mod-icon">📈</div>
           <h4>Modul Prediksi</h4>
-          <p>Mengatur input variabel untuk engine machine learning produksi telur.</p>
+          <p>Monitoring parameter machine learning untuk estimasi produksi telur.</p>
           <a href="../../prediksihasil.html" class="mod-btn">Buka Aplikasi</a>
         </div>
 
-        <!-- UI Pengguna Utama -->
+        <!-- UI Tampilan Pengguna -->
         <div class="module-card">
           <div class="mod-icon">📱</div>
-          <h4>Dashboard Pengguna</h4>
-          <p>Preview antarmuka utama yang dilihat oleh pekerja kandang.</p>
+          <h4>Simulasi Dashboard</h4>
+          <p>Preview antarmuka yang diakses oleh petugas operasional kandang.</p>
           <a href="../../dashboardTAalip.html" class="mod-btn">Preview UI</a>
         </div>
 
       </div>
     </section>
 
-    <!-- ===== MANAJEMEN PENGGUNA (NEW) ===== -->
+    <!-- Section 4: Tabel Manajemen Pengguna -->
     <section class="user-management animate__animated animate__fadeInUp">
       <div class="management-card">
         <div class="card-header-flex">
-          <h3>👥 Manajemen Pengguna Terdaftar</h3>
-          <span class="badge" id="user-count-badge">0 Users</span>
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <h3>👥 Manajemen Pengguna Otoritas</h3>
+            <span class="badge" id="user-count-badge">0 Users</span>
+          </div>
+
+          <!-- Tombol Aksi Admin -->
+          <button class="create-account-btn" onclick="openCreateAccountModal()">
+            <span>➕</span> Buat Akun Baru
+          </button>
         </div>
         <div class="table-responsive">
           <table class="logs-table">
@@ -212,58 +229,60 @@
                 <th>Nama Lengkap</th>
                 <th>Username</th>
                 <th>Email</th>
-                <th>Tanggal Daftar</th>
-                <th>Role</th>
-                <th>Aksi</th>
+                <th>Tgl Bergabung</th>
+                <th>Hak Akses</th>
+                <th>Tindakan</th>
               </tr>
             </thead>
             <tbody id="adminUserListBody">
-              <!-- Diisi via admin.js -->
-              <tr><td colspan="5" style="text-align:center;">Memuat data pengguna...</td></tr>
+              <!-- Diisi secara dinamis melalui admin.js -->
+              <tr>
+                <td colspan="6" style="text-align:center;">Menghubungkan ke database...</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
     </section>
 
-    <!-- ===== SNAPSHOT DATA TERKINI ===== -->
+    <!-- Section 5: Snapshot Ringkasan Data -->
     <section class="office-admin animate__animated animate__fadeInUp" style="grid-template-columns: 1fr 1fr;">
 
-      <!-- Panel Ringkasan Ayam -->
+      <!-- Tabel Snapshot Batch Ayam -->
       <div class="schedule-card" style="align-self:stretch;">
-        <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">🐓 Snapshot Batch Ayam</h3>
+        <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">🐓 Ringkasan Batch Ternak</h3>
         <div class="schedule-content">
           <table class="logs-table">
             <thead>
               <tr>
-                <th>Batch</th>
-                <th>Jenis</th>
+                <th>Batch ID</th>
+                <th>Spesies</th>
                 <th>Status</th>
-                <th>Sisa Populasi</th>
+                <th>Sisa Stok</th>
               </tr>
             </thead>
             <tbody id="adminAyamSnapshot">
-              <!-- Diisi via admin.js -->
+              <!-- Diisi secara dinamis melalui admin.js -->
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- Panel Ringkasan Keuangan -->
+      <!-- Tabel Snapshot Keuangan -->
       <div class="schedule-card" style="align-self:stretch;">
-        <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">💵 5 Transaksi Terakhir</h3>
+        <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">💵 Mutasi Kas Terakhir</h3>
         <div class="schedule-content">
           <table class="logs-table">
             <thead>
               <tr>
-                <th>Tanggal</th>
+                <th>Hari/Tgl</th>
                 <th>Keterangan</th>
                 <th>Tipe</th>
                 <th>Nominal</th>
               </tr>
             </thead>
             <tbody id="adminKeuanganSnapshot">
-              <!-- Diisi via admin.js -->
+              <!-- Diisi secara dinamis melalui admin.js -->
             </tbody>
           </table>
         </div>
@@ -271,38 +290,44 @@
 
     </section>
 
-    <!-- ===== LOG SISTEM (MOCKUP ADMIN) ===== -->
+    <!-- Section 6: Audit Log Aktivitas -->
     <section class="system-logs animate__animated animate__fadeInUp">
       <div class="logs-container">
-        <h3>📋 Log Sistem & Aktivitas Pengguna (Terbaru)</h3>
+        <h3>📋 Log Keamanan & Aktivitas Operasional</h3>
         <table class="logs-table">
           <thead>
             <tr>
               <th>Waktu Aktual</th>
-              <th>User</th>
+              <th>Identitas User</th>
               <th>Modul Fitur</th>
-              <th>Detail Aksi</th>
+              <th>Deskripsi Tindakan</th>
             </tr>
           </thead>
           <tbody id="systemLogBody">
-            <!-- Data akan diisi via admin.js (dummy activity based on localstorage) -->
+            <!-- Diisi secara dinamis melalui admin.js -->
           </tbody>
         </table>
-        <button class="clear-logs-btn" onclick="clearLogs()">Hapus Log Sistem</button>
+        <button class="clear-logs-btn" onclick="clearLogs()">Hapus Riwayat Log</button>
       </div>
     </section>
 
   </main>
 
-  <!-- ========================= SCRIPT UTAMA ADMIN ========================== -->
-  <!-- Skrip Keamanan: Hanya Admin yang boleh masuk -->
+  <!-- ===== SKRIP INTEGRASI SISTEM ===== -->
+
+  <!-- Gatekeeper Keamanan: Verifikasi Level Otoritas -->
   <script type="module" src="../admin-gate.js"></script>
-  
-  <!-- Skrip Logika Dashboard Admin -->
+
+  <!-- Logika Bisnis & Sinkronisasi Data Firebase -->
   <script type="module" src="admin.js"></script>
-  
-  <!-- Skrip Sinkronasi Autentikasi Global -->
+
+  <!-- Pemantau Sesi Login Global -->
   <script type="module" src="../../firebase.component/auth-state.js"></script>
+
+  <!-- Floating Action Button (FAB) Akses Cepat -->
+  <button class="fab-add-user" onclick="openCreateAccountModal()" title="Cepat: Buat Akun Baru">
+    ➕
+  </button>
 </body>
 
 </html>

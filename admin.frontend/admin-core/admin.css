@@ -1,228 +1,226 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: admin.css
-   Deskripsi: Menata tampilan visual elemen-elemen khusus 
-   pada Halaman Panel Admin (Dashboard Administrator).
-========================================================= */
+   Deskripsi: Gaya visual eksklusif untuk Panel Administrator.
+   Mengatur layout dashboard, kartu statistik, dan manajemen tabel log.
+   ========================================================= */
 
-/* =========================================
-   1. KARTU SAMBUTAN ADMIN (Hero Banner)
-   ========================================= */
-/* Memberikan latar belakang gradien gelap elegan khas admin */
+/* ===== 1. BANNER SAMBUTAN (HERO) ===== */
+/* Efek gradasi gelap yang memberikan kesan premium dan otoritatif */
 .admin-welcome {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%); /* Transisi warna biru dongker gelap */
-  color: #f8fafc; /* Warna teks putih keabu-abuan agar kontras */
-  box-shadow: 0 8px 25px rgba(30, 41, 59, 0.2); /* Bayangan lembut untuk memberikan kedalaman (efek mengambang) */
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: #f8fafc;
+  box-shadow: 0 8px 25px rgba(30, 41, 59, 0.2);
 }
 
-/* Judul ucapan selamat datang di panel admin */
 .admin-welcome h2 {
-  color: #fff; /* Putih bersih untuk judul utama */
-  font-weight: 600; /* Ketebalan font sedang (Semi-bold) */
+  color: #fff;
+  font-weight: 600;
 }
 
-/* Teks paragraf pendukung di bawah judul */
 .admin-welcome p {
-  color: #cbd5e1; /* Warna teks agak redup agar tidak berebut fokus dengan judul */
+  color: #cbd5e1;
 }
 
-/* =========================================
-   2. PENYESUAIAN SIDEBAR UNTUK ADMIN
-   ========================================= */
-/* Mengubah warna latar sidebar menjadi lebih gelap khusus halaman admin */
+/* ===== 2. KUSTOMISASI SIDEBAR ADMIN ===== */
+/* Menggunakan skema warna yang lebih dalam untuk membedakan dengan view user */
 .sidebar {
-  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); /* Gradasi biru kelam agar terkesan kokoh / eksklusif */
-  border-right: 1px solid #334155; /* Garis pembatas tipis di kanan sidebar */
+  background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border-right: 1px solid #334155;
 }
 
-/* Warna logo aplikasi di sidebar admin */
 .sidebar .logo {
-  color: #38bdf8; /* Biru langit cerah (Cyan) */
+  color: #38bdf8;
 }
 
-/* Teks kecil pemanis di bawah logo */
 .sidebar .logo span {
-  color: #94a3b8; /* Teks abu-abu redup */
-  font-size: 0.85rem; /* Ukuran font diperkecil sedikit */
-  font-style: italic; /* Gaya huruf miring untuk estetika */
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-style: italic;
 }
 
-/* =========================================
-   3. GRID DAFTAR MODUL APLIKASI
-   ========================================= */
-/* Pembungkus luar barisan kartu modul */
+/* ===== 3. LAYOUT GRID & KONTAINER ===== */
 .modules-grid {
-  margin-top: 2rem; /* Jarak atas dari elemen sebelumnya */
-  margin-bottom: 2rem; /* Jarak bawah menuju elemen berikutnya */
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
-/* Judul bagian grid kartu modul */
 .modules-grid h3 {
-  font-size: 1.2rem; /* Ukuran font agak besar */
-  color: #1e293b; /* Warna font gelap kebiruan */
-  margin-bottom: 1rem; /* Jarak antara judul dan kartu */
-  font-weight: 600; /* Font semi-bold */
+  font-size: 1.2rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-/* Kontainer snapshot data (Ayam & Keuangan) */
 .office-admin {
   display: grid;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-/* Kontainer yang mengatur formasi kartu modul secara otomatis (Responsive Grid) */
 .module-cards {
-  display: grid; /* Menggunakan CSS Grid Layout */
-  /* Membuat kolom responsif: ukuran tiap kolom minimal 240px, maksimal selebar mungkin (1 fr) */
+  display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem; /* Jarak celah horizontal & vertikal antar kartu (Gutter) */
+  gap: 1.5rem;
 }
 
-/* =========================================
-   4. DESAIN KARTU MODUL INDIVIDU
-   ========================================= */
-/* Model fisik setiap kartu yang melambangkan satu modul */
+/* ===== 4. KARTU MODUL INDIVIDU ===== */
 .module-card {
-  background: #fff; /* Latar kartu berwarna putih bersih */
-  border-radius: 15px; /* Menumpulkan/melengkungkan sudut kartu */
-  padding: 1.5rem; /* Memberikan ruang napas di dalam kotak */
-  text-align: center; /* Meratakan ikon & teks ke tengah (Center align) */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* Bayangan sangat tipis untuk membedakan dari latar belakang */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transisi halus animasi pemuaian ukuran dan bayangan */
-  
-  /* Flexbox untuk kartu agar isinya elastis meregang mengisi bawah (agar tinggi kartu sejajar semua) */
+  background: #fff;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   justify-content: space-between; 
 }
 
-/* Animasi sederhana ketika kursor menyorot (Hover) kartu modul */
 .module-card:hover {
-  transform: translateY(-5px); /* Kartu seolah melayang mengambang naik 5 pixel */
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1); /* Bayangannya jadi sedikit lebih tebal layaknya benda terangkat nyata */
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-/* Ukuran ikon di dalam kartu (Biasanya emoji atau icon font) */
 .mod-icon {
-  font-size: 3rem; /* Besaran ikon yang sangat mencolok */
-  margin-bottom: 1rem; /* Mendorong teks judul ke bawah sedikit */
+  font-size: 3rem;
+  margin-bottom: 1rem;
 }
 
-/* Nama/Judul dari Modul pada kartu tsb */
 .module-card h4 {
-  font-size: 1.1rem; /* Teks berukuran 1.1x dari ukuran dasar */
-  color: #0f172a; /* Warna dark blue agar tegas terbaca */
+  font-size: 1.1rem;
+  color: #0f172a;
   margin-bottom: 0.5rem;
-  font-weight: 600; /* Tebal sedang */
+  font-weight: 600;
 }
 
-/* Deskripsi rincian apa isi modul tersebut */
 .module-card p {
-  font-size: 0.85rem; /* Huruf diperkecil */
-  color: #64748b; /* Abu-abu batu */
-  margin-bottom: 1.5rem; /* Batas jarak dengan tombol di bawahnya */
-  line-height: 1.5; /* Peregangan jarak per-baris teks agar nyaman dibaca (Ketinggian Garis) */
-  flex-grow: 1; /* Deskripsi ini yang akan merenggang jika teks sedikit, agar menekan tombol mentok ke bawah card terus! */
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  flex-grow: 1; /* Mendorong tombol ke dasar kartu */
 }
 
-/* Tombol Akses Modul ("Kelola Data", "Buka Keuangan" dll) */
+/* Tombol Akselerator Modul */
 .mod-btn {
-  display: inline-block; /* Agar padding dan margin berfungsi optimal pada link <a> */
-  background: #3b82f6; /* Warna Latar Biru Terang (Aksen) */
-  color: #fff; /* Teks Putih Terang */
-  text-decoration: none; /* Menghilangkan coretan garis bawah bawaan klik link biru HTML */
+  display: inline-block;
+  background: #3b82f6;
+  color: #fff;
+  text-decoration: none;
   font-weight: 500;
-  padding: 0.6rem 1.2rem; /* Ukuran rongga tombol (atas-bawah dan kiri-kanan) */
-  border-radius: 8px; /* Tumpul sudut tombol proporsional */
-  transition: background 0.3s; /* Lembut meregang bereaksi merubah warna kalau disentuh kursor */
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  transition: background 0.3s;
 }
 
-/* Perilaku tombol kelola pas kena hover */
 .mod-btn:hover {
-  background: #2563eb; /* Gradasi sedikit ke biru lenyap/lebih tua (Hover state blue darken) */
+  background: #2563eb;
 }
 
-/* =========================================
-   5. TABEL CATATAN LOG SISTEM 
-   ========================================= */
-/* Kotak pembungkus tabel log rekaman perbuatan aplikasi */
+/* ===== 5. MANAJEMEN TABEL & LOG ===== */
 .system-logs {
   background: #fff;
-  border-radius: 15px; /* Sama dengan kartu modul, bingkai bulat 15 piksel */
+  border-radius: 15px;
   padding: 1.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); /* Bayangan membumbung tipis */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   margin-bottom: 2rem;
 }
 
-/* Judul bagian riwayat Log */
 .system-logs h3 {
   font-size: 1.1rem;
   color: #1e293b;
   margin-bottom: 1rem;
   font-weight: 600;
-  
-  /* Hiasan pita penegas berwarna kuning senja/emas di sebelah kiri Judul log sistem */
   border-left: 4px solid #f59e0b; 
-  padding-left: 10px; /* Menyisihkan jarak judul spasi agar tidak lengket menempel ke pitanya */
+  padding-left: 10px;
 }
 
-/* Penata tampilan wadah Tabel Induk */
 .logs-table {
-  width: 100%; /* Memaksa menyebarkan tabel sepenuh-penuhnya melebarkan lebarnya 100% mengikuti kotak wadah ayahnya */
-  border-collapse: collapse; /* Menghilangkan jeda garis putih tebal kuno renggang antara sel cell. Sangat penting! (modern table) */
+  width: 100%;
+  border-collapse: collapse;
   margin-bottom: 1rem;
-  font-size: 0.9rem; /* Agak kecil layaknya data spreadsheet */
-  text-align: left; /* Teks tulisan merapat condong berbaris start sebelah kiri */
+  font-size: 0.9rem;
+  text-align: left;
 }
 
-/* Regulasi ruang kosong kolom Kepala (TH) dan Isi (TD) */
 .logs-table th, .logs-table td {
-  padding: 12px 15px; /* Rongga nyaman yang lumayan luas agar data tabel tidak kesesakan bertabrakan paha/pundak tumpang tindih */
-  border-bottom: 1px solid #f1f5f9; /* Membuat list daftar bergaris bawah keabu-abuan sebagai pembatas antarsusun baris vertikal */
+  padding: 12px 15px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
 }
 
-/* Gaya penekanan di Sabuk Baris Judul Tabel Kolom (TH) */
 .logs-table th {
-  background-color: #f8fafc; /* Latar pucat kusam keabuan (Slate Gray) supaya membedakan kepala dengan badan row contentnya */
-  color: #475569; /* Teks agak samar elegan sedikit */
-  font-weight: 600; /* Huruf sedikit ditebalkan */
-  text-transform: uppercase; /* Membesarkan semua huruf otomatis (KAPITAL LOGO) mencerminkan ketegasan kolom judul */
+  background-color: #f8fafc;
+  color: #475569;
+  font-weight: 600;
+  text-transform: uppercase;
   font-size: 0.8rem;
-  letter-spacing: 0.5px; /* Jarak kerenggangan pelan sesama aksara huruf menyempurnakan bentuk UPPERCASEnya */
+  letter-spacing: 0.5px;
 }
 
-/* Efek arsir abu-abu tipis bila salah satu data rekaman lewat (Sangat berharga untuk bantuan scanning tracking mata pimpinan/admin) */
 .logs-table tbody tr:hover {
-  background-color: #f1f5f9; /* Abu-abu kalem lembut merintih saat kursor numpang lewat */
+  background-color: #f1f5f9;
 }
 
-/* =========================================
-   6. TOMBOL HAPUS LOG
-   ========================================= */
-/* Tombol darurat warna dominan Merah membasmi Log aktivitas */
+/* ===== 6. TOMBOL AKSI & UTILITAS ===== */
+
+/* Tombol Pembersih Log */
 .clear-logs-btn {
-  background: #ef4444; /* Merah menyala menandakan bahaya / hapus data */
-  color: white; /* Lawanan kontras bersih putih teks "Bersihkan" */
-  border: none; /* Matikan garis border tepi pabrikan */
-  padding: 8px 16px; /* Bantalan rongga sedikit langsing dibanding tombol panel */
-  border-radius: 8px; /* Tepi melengkung elegan standar kita (8px) */
-  cursor: pointer; /* Saat menyentuh form, tunjukan tangan/jari telunjuk mendaulat tindakan klik siap dieksekusi (pointer icon) */
+  display: block;
+  margin: 1rem auto 0;
+  background: #ef4444; 
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
   font-weight: 500;
-  transition: background 0.3s ease; /* Animasikan memudar 0.3s lamanya warna solid */
+  transition: all 0.3s ease;
 }
 
-/* Sentuhan Merah Meradang jika Kursor Menyambar/Mengingini/Hover klik Tombol. */
 .clear-logs-btn:hover {
-  background: #dc2626; /* Warna merah ditarik lebih redup menjurus darah gelap. */
+  background: #dc2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
-/* =========================================
-   7. TOMBOL SWITCH MODE (USER VIEW)
-   ========================================= */
+/* Container & Tombol Aksi di Tabel (centered) */
+.action-btns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.action-btn-small {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn-small:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-promote { background-color: #3b82f6; }
+.btn-demote { background-color: #64748b; }
+.btn-delete { background-color: #ef4444; }
+
+/* ===== 7. SWITCH MODE & NAVIGATION ===== */
 .switch-mode-btn {
   display: block;
-  background: rgba(56, 189, 248, 0.1); /* Biru Cyan transparan */
+  background: rgba(56, 189, 248, 0.1);
   color: #38bdf8 !important;
   text-align: center;
   padding: 10px 15px;
@@ -243,9 +241,7 @@
   box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
 }
 
-/* =========================================
-   8. MANAJEMEN PENGGUNA (ADMIN ONLY)
-   ========================================= */
+/* ===== 8. MANAJEMEN PENGGUNA (CARD) ===== */
 .user-management {
   margin-top: 2rem;
   margin-bottom: 2rem;
@@ -288,9 +284,147 @@
   overflow-x: auto;
 }
 
-/* Modifikasi Snapshot Cards agar lebih matching dengan User Side */
+/* Snapshot Cards Header */
 .schedule-card h3 {
   padding: 1rem 1.5rem;
   font-size: 1rem;
   border-radius: 15px 15px 0 0;
+}
+
+/* Tombol Registrasi Akun */
+.create-account-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.create-account-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(16, 185, 129, 0.4);
+  filter: brightness(1.1);
+}
+
+/* Floating Action Button (FAB) */
+.fab-add-user {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+}
+
+.fab-add-user:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+}
+
+/* Mobile Responsive Tweaks */
+@media (max-width: 768px) {
+  .fab-add-user {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+}
+
+/* ===== 9. MODAL CUSTOM (SWEETALERT) ===== */
+.swal-libas-container {
+    text-align: left !important;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.swal-libas-info {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+    color: #1e40af;
+}
+
+.swal-libas-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.swal-libas-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.swal-libas-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.swal-libas-icon {
+    position: absolute;
+    left: 12px;
+    color: #94a3b8;
+    font-size: 1rem;
+}
+
+.swal-libas-input, .swal-libas-select {
+    width: 100% !important;
+    padding: 10px 10px 10px 35px !important;
+    margin: 0 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    font-family: inherit !important;
+    font-size: 0.9rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.swal-libas-input:focus, .swal-libas-select:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    outline: none;
+}
+
+/* Override Class SweetAlert Title */
+.swal-title-custom {
+    font-size: 1.5rem !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    padding-top: 1rem !important;
+}
+
+.swal-confirm-custom, .swal-cancel-custom {
+    padding: 10px 25px !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
 }
