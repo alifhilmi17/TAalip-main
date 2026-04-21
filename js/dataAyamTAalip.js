@@ -182,12 +182,18 @@ window.saveAyamData = async function(event) {
     try {
         if (docId === "") {
             // LOGIKA MODE TAMBAH BARU
-            // Membuat ID kustom otomatis (B-001, B-002, dst)
-            const customId = "B-" + String(dataAyam.length + 1).padStart(3, '0');
+            // ✅ FIX: Gunakan timestamp + counter aman (bukan length-based yang rawan duplikat)
+            // Format: B-YYYYMMDD-XXX (aman karena berbasis waktu)
+            const now = new Date();
+            const dateStr = now.getFullYear().toString() +
+                String(now.getMonth() + 1).padStart(2, '0') +
+                String(now.getDate()).padStart(2, '0');
+            const randomSuffix = String(Math.floor(Math.random() * 900) + 100); // 3 digit random
+            const customId = `B-${dateStr}-${randomSuffix}`;
             payload.customId = customId;
             payload.createdAt = new Date().toISOString();
             
-            await addDoc(ayamCollection, payload); // Simpan ke Firestore
+            await addDoc(ayamCollection, payload);
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',

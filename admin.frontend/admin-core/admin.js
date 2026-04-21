@@ -27,8 +27,32 @@ import {
     createUserWithEmailAndPassword,
     getAuth
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { db, auth } from "../../firebase.component/firebase-init.js";
+
+// ===== KONFIGURASI FIREBASE (untuk Secondary Instance) =====
+const firebaseConfig = {
+    apiKey: "AIzaSyD265EEi0UE9wYNvOWKQ46huxpPTfZOcOE",
+    authDomain: "libas-db.firebaseapp.com",
+    projectId: "libas-db",
+    storageBucket: "libas-db.firebasestorage.app",
+    messagingSenderId: "918841790171",
+    appId: "1:918841790171:web:04ce25a5727fddbd78c6fe"
+};
+
+// Referensi data admin yang sedang login (diisi oleh admin-gate.js via event)
+let currentAdminData = null;
+window.addEventListener('admin:verified', (e) => {
+    currentAdminData = e.detail;
+});
+
+// ===== MODULE-LEVEL STATE (untuk Charts & CRUD Snapshot) =====
+let ayamData = [];           // Semua data batch ayam
+let keuanganDataAdmin = [];  // Semua data transaksi keuangan
+let produksiDataAdmin = [];  // Semua data produksi harian
+let adminEggChartInstance  = null;
+let adminFinanceChartInstance = null;
+let currentAdminChartPeriod = 7;
 
 /**
  * ===== 1. INISALISASI DASHBOARD =====
@@ -65,8 +89,9 @@ function initAdminDashboard() {
             snapshotData.push({ id: doc.id, ...data });
         });
 
+        ayamData = snapshotData; // Simpan ke state global untuk CRUD
         document.getElementById('stat-admin-ayam').textContent = `${totalAyam.toLocaleString('id-ID')} Ekor`;
-        renderAyamSnapshot(snapshotData.slice(0, 5)); // Tampilkan top 5 batch
+        renderAyamSnapshot(snapshotData.slice(0, 8));
     });
 
     // C. Monitoring Keuangan (Koleksi: keuangan)
@@ -85,21 +110,67 @@ function initAdminDashboard() {
             trxData.push({ id: doc.id, ...data });
         });
 
+        keuanganDataAdmin = trxData; // Simpan ke state global untuk CRUD & charts
         document.getElementById('stat-admin-prediksi').textContent = `Rp ${totalSaldo.toLocaleString('id-ID')}`;
         
-        // Sorting transaksi terbaru berdasarkan timestamp
-        const latestTrx = trxData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 5);
+        const latestTrx = trxData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
         renderKeuanganSnapshot(latestTrx);
+        renderAdminCharts(); // Perbarui grafik keuangan
     });
 
     // D. Monitoring Audit Log (Koleksi: activity_log)
     onSnapshot(query(
         collection(db, "activity_log"), 
         orderBy("waktu", "desc"), 
-        limit(10)
+        limit(15)
     ), (snapshot) => {
         const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderSystemLogs(logs);
+    });
+
+    // E. Monitoring Batch Aktif (Koleksi: populasi_ayam)
+    onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
+        const batchAktif = snapshot.docs.filter(d => d.data().status === 'Aktif').length;
+        const elBatch = document.getElementById('stat-admin-batch');
+        if (elBatch) elBatch.textContent = `${batchAktif} Batch`;
+    });
+
+    // F. Monitoring Produksi Harian (Koleksi: produksi_harian) — juga untuk charts
+    onSnapshot(collection(db, "produksi_harian"), (snapshot) => {
+        produksiDataAdmin = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        const today = new Date().toISOString().split('T')[0];
+        const totalTelurHariIni = produksiDataAdmin
+            .filter(d => d.tanggal === today)
+            .reduce((sum, d) => sum + (parseInt(d.totalTelur) || 0), 0);
+        const elProduksi = document.getElementById('stat-admin-produksi');
+        if (elProduksi) elProduksi.textContent = `${totalTelurHariIni.toLocaleString('id-ID')} Butir`;
+        renderAdminCharts(); // Perbarui grafik produksi
+    });
+
+    // G. Monitoring Stok Pakan (Koleksi: stok_pakan)
+    onSnapshot(collection(db, "stok_pakan"), (snapshot) => {
+        let pakanMasuk = 0, pakanKeluar = 0;
+        snapshot.forEach(d => {
+            const data = d.data();
+            if (data.tipe === 'Masuk') pakanMasuk += (parseFloat(data.jumlah) || 0);
+            else pakanKeluar += (parseFloat(data.jumlah) || 0);
+        });
+        const elPakan = document.getElementById('stat-admin-pakan');
+        if (elPakan) elPakan.textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
+    });
+
+    // H. Monitoring Vaksinasi (Koleksi: vaksinasi_ayam)
+    onSnapshot(collection(db, "vaksinasi_ayam"), (snapshot) => {
+        const terjadwal = snapshot.docs.filter(d => d.data().status === 'Terjadwal').length;
+        const elVaksin = document.getElementById('stat-admin-vaksin');
+        if (elVaksin) elVaksin.textContent = `${terjadwal} Jadwal`;
+    });
+
+    // I. Monitoring Kesehatan - Total Mortalitas (Koleksi: kesehatan_ayam)
+    onSnapshot(collection(db, "kesehatan_ayam"), (snapshot) => {
+        const totalMati = snapshot.docs.reduce((sum, d) => sum + (parseInt(d.data().jmlMati) || 0), 0);
+        const elMortalitas = document.getElementById('stat-admin-mortalitas');
+        if (elMortalitas) elMortalitas.textContent = `${totalMati.toLocaleString('id-ID')} Ekor`;
     });
 }
 
@@ -149,7 +220,7 @@ function renderUserList(users) {
                                     class="action-btn-small ${isAdmin ? 'btn-demote' : 'btn-promote'}">
                                 ${isAdmin ? 'Demote' : 'Promote'}
                             </button>
-                            <button onclick="deleteUser('${user.id}', '${user.fullname || user.username}')" 
+                            <button onclick="deleteUserAccount('${user.id}', '${user.fullname || user.username}')" 
                                     class="action-btn-small btn-delete">
                                 Hapus
                             </button>
@@ -162,21 +233,25 @@ function renderUserList(users) {
 }
 
 /**
- * Merender ringkasan populasi ayam
+ * Merender ringkasan populasi ayam dengan tombol aksi CRUD
  */
 function renderAyamSnapshot(data) {
     const ayamBody = document.getElementById('adminAyamSnapshot');
     if (!ayamBody) return;
 
     if (data.length === 0) {
-        ayamBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Data batch ayam tidak ditemukan.</td></tr>`;
+        ayamBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Data batch ayam tidak ditemukan.</td></tr>`;
     } else {
         ayamBody.innerHTML = data.map(item => `
-            <tr>
-                <td>${item.customId || (item.id ? item.id.substring(0, 5) : '-')}</td>
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td><strong>${item.customId || item.id.substring(0, 8)}</strong></td>
                 <td>${item.jenis || '-'}</td>
-                <td><span class="status-badge" style="background:${getStatusColor(item.status)}; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">${item.status || 'AKTIF'}</span></td>
-                <td>${(parseInt(item.sisaAyam || 0)).toLocaleString('id-ID')}</td>
+                <td><span style="background:${getStatusColor(item.status)}; color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600;">${item.status || 'AKTIF'}</span></td>
+                <td><strong>${(parseInt(item.sisaAyam || 0)).toLocaleString('id-ID')}</strong></td>
+                <td style="text-align:center;">
+                    <button onclick="openAyamDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
+                </td>
             </tr>
         `).join('');
     }
@@ -192,21 +267,25 @@ function getStatusColor(status) {
 }
 
 /**
- * Merender ringkasan mutasi kas terakhir
+ * Merender ringkasan mutasi kas dengan tombol aksi CRUD
  */
 function renderKeuanganSnapshot(data) {
     const keuanganBody = document.getElementById('adminKeuanganSnapshot');
     if (!keuanganBody) return;
 
     if (data.length === 0) {
-        keuanganBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada riwayat transaksi finansial.</td></tr>`;
+        keuanganBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Belum ada riwayat transaksi finansial.</td></tr>`;
     } else {
         keuanganBody.innerHTML = data.map(item => `
-            <tr>
-                <td>${formatTanggal(item.tanggal)}</td>
-                <td>${item.deskripsi || '-'}</td>
-                <td style="color: ${item.tipe === 'pemasukan' ? '#10b981' : '#ef4444'}">${item.tipe.toUpperCase()}</td>
-                <td>Rp ${parseInt(item.jumlah || 0).toLocaleString('id-ID')}</td>
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
+                <td style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.deskripsi || '-'}</td>
+                <td><span style="color:${item.tipe === 'pemasukan' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.8rem;">${(item.tipe || '').toUpperCase()}</span></td>
+                <td style="font-weight:600;">Rp ${parseInt(item.jumlah || 0).toLocaleString('id-ID')}</td>
+                <td style="text-align:center;">
+                    <button onclick="openKeuanganDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
+                </td>
             </tr>
         `).join('');
     }
@@ -223,22 +302,40 @@ function formatTanggal(tglString) {
 
 /**
  * Merender audit log sistem
+ * Mendukung Firestore Timestamp object (dari serverTimestamp()) dan ISO string
  */
 function renderSystemLogs(logs) {
     const logBody = document.getElementById('systemLogBody');
     if (!logBody) return;
 
     if (logs.length === 0) {
-        logBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">Belum ada rekaman aktivitas sistem.</td></tr>`;
+        logBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Belum ada rekaman aktivitas sistem.</td></tr>`;
     } else {
-        logBody.innerHTML = logs.map(log => `
+        logBody.innerHTML = logs.map(log => {
+            // ✅ FIX: Handle Firestore Timestamp object (serverTimestamp()) & ISO string
+            let waktuStr = '-';
+            if (log.waktu) {
+                // Firestore Timestamp object memiliki method .toDate()
+                const dateObj = log.waktu.toDate ? log.waktu.toDate() : new Date(log.waktu);
+                const isValidDate = !isNaN(dateObj.getTime());
+                if (isValidDate) {
+                    waktuStr = dateObj.toLocaleString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+            }
+            return `
             <tr>
-                <td>${log.waktu ? new Date(log.waktu).toLocaleString('id-ID') : '-'}</td>
+                <td style="white-space:nowrap; font-size:0.82rem;">${waktuStr}</td>
                 <td><strong>${log.user || 'System'}</strong></td>
-                <td>${log.modul || '-'}</td>
-                <td>${log.aksi || '-'}</td>
-            </tr>
-        `).join('');
+                <td><span style="background:#e2e8f0; padding:2px 8px; border-radius:10px; font-size:0.75rem;">${log.modul || '-'}</span></td>
+                <td style="font-size:0.85rem;">${log.aksi || '-'}</td>
+            </tr>`;
+        }).join('');
     }
 }
 
@@ -255,7 +352,7 @@ export async function logActivity(user, modul, aksi) {
             user,
             modul,
             aksi,
-            waktu: new Date().toISOString()
+            waktu: serverTimestamp() // ✅ Menggunakan server timestamp untuk konsistensi timezone
         });
     } catch (err) {
         console.error("Audit Logging Error:", err);
@@ -266,39 +363,55 @@ export async function logActivity(user, modul, aksi) {
  * Menghapus seluruh riwayat log sistem (Hanya Super Admin)
  */
 window.clearLogs = async function() {
-    Swal.fire({
+    // Verifikasi level super_admin sebelum menghapus log
+    if (!currentAdminData || currentAdminData.type !== 'super_admin') {
+        Swal.fire({
+            icon: 'error',
+            title: 'Akses Ditolak',
+            text: 'Hanya Super Administrator yang dapat menghapus riwayat log sistem.'
+        });
+        return;
+    }
+
+    // Double-konfirmasi penghapusan permanen
+    const { value: konfirmasi } = await Swal.fire({
         title: 'Konfirmasi Penghapusan Log',
-        text: "Seluruh riwayat audit akan dimusnahkan secara permanen!",
+        html: `<p>Seluruh riwayat audit akan <strong>dimusnahkan secara permanen</strong>!</p>
+               <p>Ketik <strong>HAPUS</strong> untuk mengkonfirmasi:</p>`,
+        input: 'text',
+        inputPlaceholder: 'Ketik HAPUS',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Bersihkan Seluruhnya!',
-        cancelButtonText: 'Batalkan'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                Swal.fire({
-                    title: 'Memproses Pembersihan...',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
-                const querySnapshot = await getDocs(collection(db, "activity_log"));
-                const deletePromises = querySnapshot.docs.map(document => 
-                    deleteDoc(doc(db, "activity_log", document.id))
-                );
-                
-                await Promise.all(deletePromises);
-                Swal.fire('Sukses!', 'Log database telah dikosongkan.', 'success');
-                
-                logActivity("Admin", "Sistem", "Penghapusan total riwayat log aktivitas database.");
-                
-            } catch (err) {
-                console.error("Gagal Membersihkan Log:", err);
-                Swal.fire('Gagal', 'Sistem tidak dapat menghapus log: ' + err.message, 'error');
-            }
+        confirmButtonText: 'Hapus Selamanya',
+        cancelButtonText: 'Batal',
+        inputValidator: (value) => {
+            if (value !== 'HAPUS') return 'Ketik tepat: HAPUS (huruf kapital)';
         }
     });
+
+    if (konfirmasi === 'HAPUS') {
+        try {
+            Swal.fire({
+                title: 'Memproses Pembersihan...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            const querySnapshot = await getDocs(collection(db, "activity_log"));
+            const deletePromises = querySnapshot.docs.map(document => 
+                deleteDoc(doc(db, "activity_log", document.id))
+            );
+            
+            await Promise.all(deletePromises);
+            await Swal.fire('Sukses!', 'Log database telah dikosongkan.', 'success');
+            logActivity(currentAdminData.username || "Super Admin", "Sistem", "Penghapusan total riwayat log aktivitas database.");
+            
+        } catch (err) {
+            console.error("Gagal Membersihkan Log:", err);
+            Swal.fire('Gagal', 'Sistem tidak dapat menghapus log: ' + err.message, 'error');
+        }
+    }
 }
 
 /**
@@ -308,10 +421,11 @@ window.clearLogs = async function() {
 /**
  * Menghapus akun pengguna dari database
  */
-window.deleteUser = async function(uid, name) {
+window.deleteUserAccount = async function(uid, name) {
     Swal.fire({
         title: 'Hapus Akun Pengguna?',
-        text: `Data "${name}" akan dihapus permanen. Tindakan ini tidak dapat dibatalkan!`,
+        html: `<p>Akun <strong>${name}</strong> akan dinonaktifkan dan dihapus dari sistem.</p>
+               <p style="color:#ef4444; font-size:0.85rem;">⚠️ User tidak akan bisa login setelah ini.</p>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
@@ -320,11 +434,26 @@ window.deleteUser = async function(uid, name) {
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
+                // Tahap 1: Tandai akun sebagai disabled di Firestore
+                // (auth-state.js akan mendeteksi ini dan memaksa logout)
+                await updateDoc(doc(db, "user", uid), {
+                    disabled: true,
+                    disabledAt: serverTimestamp(),
+                    disabledBy: currentAdminData?.username || 'Admin'
+                });
+
+                // Tahap 2: Hapus dokumen user dari koleksi utama
                 await deleteDoc(doc(db, "user", uid));
-                Swal.fire('Berhasil Terhapus', 'Akun telah dieliminasi dari sistem.', 'success');
-                logActivity("Admin", "Akses Pengguna", `Menghapus identitas user: ${name}`);
+
+                // Tahap 3: Hapus entri admin jika user adalah admin
+                try {
+                    await deleteDoc(doc(db, "admin", uid));
+                } catch (_) { /* Bukan admin, abaikan */ }
+
+                Swal.fire('Berhasil Terhapus', 'Akun telah dihapus dari sistem. Session user tersebut akan otomatis berakhir.', 'success');
+                logActivity(currentAdminData?.username || "Admin", "Akses Pengguna", `Menghapus akun user: ${name} (UID: ${uid})`);
             } catch (err) {
-                Swal.fire('Gagal', 'Terjadi kendala jaringan: ' + err.message, 'error');
+                Swal.fire('Gagal', 'Terjadi kendala: ' + err.message, 'error');
             }
         }
     });
@@ -501,55 +630,419 @@ async function createNewUser(userData) {
     });
 
     try {
-        const firebaseConfig = {
-            apiKey: "AIzaSyD265EEi0UE9wYNvOWKQ46huxpPTfZOcOE",
-            authDomain: "libas-db.firebaseapp.com",
-            projectId: "libas-db",
-            storageBucket: "libas-db.firebasestorage.app",
-            messagingSenderId: "918841790171",
-            appId: "1:918841790171:web:04ce25a5727fddbd78c6fe"
-        };
-
-        const tempApp = initializeApp(firebaseConfig, "TempRegistrationApp");
+        // ✅ FIX: Reuse instance yang sudah ada agar tidak throw error jika dipanggil 2x
+        let tempApp;
+        const existingApps = getApps();
+        const existingSecondary = existingApps.find(a => a.name === "TempRegistrationApp");
+        if (existingSecondary) {
+            tempApp = existingSecondary;
+        } else {
+            tempApp = initializeApp(firebaseConfig, "TempRegistrationApp");
+        }
         const tempAuth = getAuth(tempApp);
 
-        // 1. Registrasi Auth
+        // 1. Validasi username tidak duplikat
+        const usernameCheck = await getDocs(query(
+            collection(db, "user"), where("username", "==", username)
+        ));
+        if (!usernameCheck.empty) {
+            Swal.fire('Gagal', 'Username sudah digunakan oleh akun lain!', 'error');
+            return;
+        }
+
+        // 2. Registrasi Auth via secondary instance
         const userCredential = await createUserWithEmailAndPassword(tempAuth, email, password);
         const uid = userCredential.user.uid;
 
-        // 2. Simpan Metadata User
+        // 3. Simpan Metadata User ke Firestore
         await setDoc(doc(db, "user", uid), {
             fullname,
             username,
             email,
             role,
+            disabled: false,
             createdAt: serverTimestamp()
         });
 
-        // 3. Update Otoritas jika level Admin
+        // 4. Update Otoritas jika level Admin
         if (role === 'admin') {
             await setDoc(doc(db, "admin", uid), {
+                uid,
+                fullname,
+                username,
+                email,
                 role: 'admin',
-                promotedAt: new Date().toISOString(),
-                type: 'auth_entry'
+                promotedAt: serverTimestamp(),
+                type: 'auth_entry',
+                createdBy: currentAdminData?.username || 'Admin'
             });
         }
 
+        // 5. Logout dari secondary instance agar tidak mengganggu sesi admin
         await tempAuth.signOut();
 
         Swal.fire({
             icon: 'success',
-            title: 'Kredensial Selesai Dibuat',
-            text: `Identitas untuk ${fullname} (@${username}) telah diverifikasi sebagai level ${role.toUpperCase()}.`,
+            title: 'Akun Berhasil Dibuat',
+            html: `Identitas <strong>${fullname}</strong> (@${username}) telah didaftarkan sebagai <strong>${role.toUpperCase()}</strong>.`,
         });
 
-        logActivity("Admin", "Akses Pengguna", `Inisialisasi akun baru: ${fullname} (${role})`);
+        logActivity(
+            currentAdminData?.username || "Admin",
+            "Akses Pengguna",
+            `Membuat akun baru: ${fullname} (@${username}) - Role: ${role.toUpperCase()}`
+        );
 
     } catch (error) {
         console.error("Critical Cloud Error:", error);
         let msg = error.message;
-        if (error.code === 'auth/email-already-in-use') msg = "Database: Email sudah teregistrasi sebelumnya!";
+        if (error.code === 'auth/email-already-in-use') msg = "Email sudah terdaftar di sistem!";
+        else if (error.code === 'auth/weak-password') msg = "Password terlalu lemah (min. 6 karakter).";
+        else if (error.code === 'auth/invalid-email') msg = "Format email tidak valid.";
         
-        Swal.fire('Cloud Sync Failed', msg, 'error');
+        Swal.fire('Gagal Membuat Akun', msg, 'error');
     }
 }
+
+/**
+ * ===== 7. GRAFIK ANALITIK ADMIN =====
+ */
+
+/**
+ * Inisialisasi semua grafik admin panel
+ */
+function renderAdminCharts() {
+    renderAdminEggChart(currentAdminChartPeriod);
+    renderAdminFinanceChart();
+}
+
+/**
+ * Ganti periode tampilan grafik produksi
+ */
+window.gantiPeriodeAdminChart = function(hari, btn) {
+    currentAdminChartPeriod = hari;
+    document.querySelectorAll('.admin-chart-filter').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderAdminEggChart(hari);
+};
+
+/**
+ * Merender grafik tren produksi telur (Line Chart)
+ */
+function renderAdminEggChart(nHari) {
+    const canvas = document.getElementById('adminEggChart');
+    if (!canvas) return;
+    if (adminEggChartInstance) adminEggChartInstance.destroy();
+
+    const grouped = {};
+    produksiDataAdmin.forEach(p => {
+        if (!grouped[p.tanggal]) grouped[p.tanggal] = { total: 0, baik: 0, cacat: 0 };
+        grouped[p.tanggal].total  += (parseInt(p.totalTelur) || 0);
+        grouped[p.tanggal].baik   += (parseInt(p.telurBaik)  || 0);
+        grouped[p.tanggal].cacat  += (parseInt(p.telurCacat) || 0);
+    });
+
+    const dates     = Object.keys(grouped).sort().slice(-nHari);
+    const labels    = dates.map(d => new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }));
+    const totalData = dates.map(d => grouped[d].total);
+    const baikData  = dates.map(d => grouped[d].baik);
+    const cacatData = dates.map(d => grouped[d].cacat);
+
+    // Update mini-stats chart
+    const sumTotal = totalData.reduce((s, v) => s + v, 0);
+    const elTotal  = document.getElementById('admin-chart-total');
+    const elBaik   = document.getElementById('admin-chart-baik');
+    const elCacat  = document.getElementById('admin-chart-cacat');
+    const elRata   = document.getElementById('admin-chart-rata');
+    if (elTotal) elTotal.textContent = sumTotal.toLocaleString('id-ID');
+    if (elBaik)  elBaik.textContent  = baikData.reduce((s, v) => s + v, 0).toLocaleString('id-ID');
+    if (elCacat) elCacat.textContent = cacatData.reduce((s, v) => s + v, 0).toLocaleString('id-ID');
+    if (elRata)  elRata.textContent  = Math.round(sumTotal / (totalData.length || 1)).toLocaleString('id-ID');
+
+    const emptyEl = document.getElementById('adminChartEmptyOverlay');
+    if (emptyEl) emptyEl.style.display = totalData.length ? 'none' : 'flex';
+
+    adminEggChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Total Telur',
+                    data: totalData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.12)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#10b981',
+                    pointRadius: 4
+                },
+                {
+                    label: 'Telur Baik',
+                    data: baikData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    tension: 0.4,
+                    pointRadius: 3,
+                    borderDash: [4, 4]
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
+        }
+    });
+}
+
+/**
+ * Merender grafik Pemasukan vs Pengeluaran per minggu (Bar Chart)
+ */
+function renderAdminFinanceChart() {
+    const canvas = document.getElementById('adminFinanceChart');
+    if (!canvas) return;
+    if (adminFinanceChartInstance) adminFinanceChartInstance.destroy();
+
+    const currentMonth = new Date().getMonth();
+    const currentYear  = new Date().getFullYear();
+    const incomeByWeek   = [0, 0, 0, 0];
+    const expenseByWeek  = [0, 0, 0, 0];
+
+    keuanganDataAdmin.forEach(trx => {
+        const d = new Date(trx.tanggal);
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            const week = Math.min(3, Math.floor((d.getDate() - 1) / 7));
+            if (trx.tipe === 'pemasukan') incomeByWeek[week]  += (trx.jumlah || 0);
+            else                           expenseByWeek[week] += (trx.jumlah || 0);
+        }
+    });
+
+    adminFinanceChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4+'],
+            datasets: [
+                { label: 'Pemasukan', data: incomeByWeek,  backgroundColor: 'rgba(16,185,129,0.8)', borderRadius: 6 },
+                { label: 'Pengeluaran', data: expenseByWeek, backgroundColor: 'rgba(239,68,68,0.8)',   borderRadius: 6 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+            scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
+        }
+    });
+}
+
+/**
+ * ===== 8. CRUD POPUP: SNAPSHOT BATCH AYAM =====
+ */
+
+/**
+ * Membuka popup detail & edit data batch ayam
+ * @param {string} id - Firestore document ID
+ */
+window.openAyamDetail = function(id) {
+    const ayam = ayamData.find(a => a.id === id);
+    if (!ayam) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+
+    Swal.fire({
+        title: `🐓 Batch ${ayam.customId || id.slice(0, 8)}`,
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <div>
+                    <label style="${labelStyle}">Tanggal Masuk</label>
+                    <input id="ea-tglMasuk" type="date" value="${ayam.tglMasuk || ''}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Jenis Ayam</label>
+                    <input id="ea-jenis" value="${ayam.jenis || ''}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Jumlah Awal</label>
+                    <input id="ea-jumlahAwal" type="number" value="${ayam.jumlahAwal || 0}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Sisa Ayam</label>
+                    <input id="ea-sisaAyam" type="number" value="${ayam.sisaAyam || 0}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Kandang</label>
+                    <input id="ea-kandang" value="${ayam.kandang || ''}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Status</label>
+                    <select id="ea-status" style="${inputStyle}">
+                        <option value="Aktif"  ${ayam.status === 'Aktif'  ? 'selected' : ''}>Aktif</option>
+                        <option value="Panen"  ${ayam.status === 'Panen'  ? 'selected' : ''}>Panen</option>
+                        <option value="Afkir"  ${ayam.status === 'Afkir'  ? 'selected' : ''}>Afkir</option>
+                    </select>
+                </div>
+              </div>
+              <p style="margin-top:14px; font-size:0.75rem; color:#94a3b8;">
+                Dibuat: ${ayam.createdAt ? new Date(ayam.createdAt).toLocaleString('id-ID') : '-'} &nbsp;|&nbsp;
+                ID Dokumen: <code style="background:#f1f5f9; padding:1px 5px; border-radius:4px;">${id}</code>
+              </p>
+            </div>`,
+        width: '580px',
+        showDenyButton:   true,
+        showCancelButton: true,
+        confirmButtonText: '💾 Simpan Perubahan',
+        denyButtonText:    '🗑️ Hapus Batch',
+        cancelButtonText:  'Tutup',
+        confirmButtonColor: '#10b981',
+        denyButtonColor:    '#ef4444',
+        focusConfirm: false,
+        preConfirm: () => {
+            const jumlahAwal = parseInt(document.getElementById('ea-jumlahAwal').value) || 0;
+            const sisaAyam   = parseInt(document.getElementById('ea-sisaAyam').value)   || 0;
+            if (sisaAyam > jumlahAwal) {
+                Swal.showValidationMessage('Sisa ayam tidak boleh melebihi jumlah awal!');
+                return false;
+            }
+            return {
+                tglMasuk:   document.getElementById('ea-tglMasuk').value,
+                jenis:      document.getElementById('ea-jenis').value,
+                jumlahAwal, sisaAyam,
+                kandang:    document.getElementById('ea-kandang').value,
+                status:     document.getElementById('ea-status').value
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await updateDoc(doc(db, "populasi_ayam", id), {
+                    ...result.value,
+                    updatedAt: serverTimestamp()
+                });
+                Swal.fire({ icon:'success', title:'Berhasil Diperbarui', timer:1500, showConfirmButton:false });
+                logActivity(currentAdminData?.username || 'Admin', 'Data Ayam', `Edit batch ${ayam.customId} via Admin Panel`);
+            } catch (err) {
+                Swal.fire('Gagal', err.message, 'error');
+            }
+        } else if (result.isDenied) {
+            const konfirm = await Swal.fire({
+                title: `Hapus Batch ${ayam.customId}?`,
+                text: 'Data batch ini akan dihapus secara permanen!',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal'
+            });
+            if (konfirm.isConfirmed) {
+                await deleteDoc(doc(db, "populasi_ayam", id));
+                Swal.fire({ icon:'success', title:'Terhapus', timer:1200, showConfirmButton:false });
+                logActivity(currentAdminData?.username || 'Admin', 'Data Ayam', `Hapus batch ${ayam.customId} via Admin Panel`);
+            }
+        }
+    });
+};
+
+/**
+ * ===== 9. CRUD POPUP: SNAPSHOT KEUANGAN =====
+ */
+
+/**
+ * Membuka popup detail & edit transaksi keuangan
+ * @param {string} id - Firestore document ID
+ */
+window.openKeuanganDetail = function(id) {
+    const trx = keuanganDataAdmin.find(t => t.id === id);
+    if (!trx) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+    const typeColor  = trx.tipe === 'pemasukan' ? '#10b981' : '#ef4444';
+
+    Swal.fire({
+        title: `💵 Detail Transaksi`,
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+              <div style="background:${typeColor}18; border-left:4px solid ${typeColor}; padding:10px 14px; border-radius:8px; margin-bottom:16px;">
+                  <strong style="color:${typeColor}; font-size:1.1rem;">
+                      ${trx.tipe === 'pemasukan' ? '↑ PEMASUKAN' : '↓ PENGELUARAN'}
+                  </strong>
+                  &nbsp; Rp ${parseInt(trx.jumlah || 0).toLocaleString('id-ID')}
+              </div>
+              <div style="display:grid; gap:12px;">
+                <div>
+                    <label style="${labelStyle}">Tanggal</label>
+                    <input id="ek-tanggal" type="date" value="${trx.tanggal || ''}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Tipe Transaksi</label>
+                    <select id="ek-tipe" style="${inputStyle}">
+                        <option value="pemasukan"   ${trx.tipe === 'pemasukan'   ? 'selected' : ''}>Pemasukan</option>
+                        <option value="pengeluaran" ${trx.tipe === 'pengeluaran' ? 'selected' : ''}>Pengeluaran</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="${labelStyle}">Deskripsi</label>
+                    <input id="ek-deskripsi" value="${trx.deskripsi || ''}" style="${inputStyle}">
+                </div>
+                <div>
+                    <label style="${labelStyle}">Jumlah (Rp)</label>
+                    <input id="ek-jumlah" type="number" value="${trx.jumlah || 0}" style="${inputStyle}">
+                </div>
+              </div>
+              <p style="margin-top:14px; font-size:0.75rem; color:#94a3b8;">
+                  Dibuat: ${trx.createdAt ? new Date(trx.createdAt).toLocaleString('id-ID') : '-'}
+              </p>
+            </div>`,
+        width: '500px',
+        showDenyButton:   true,
+        showCancelButton: true,
+        confirmButtonText: '💾 Simpan',
+        denyButtonText:    '🗑️ Hapus',
+        cancelButtonText:  'Tutup',
+        confirmButtonColor: '#3b82f6',
+        denyButtonColor:    '#ef4444',
+        focusConfirm: false,
+        preConfirm: () => {
+            const jumlah = parseFloat(document.getElementById('ek-jumlah').value) || 0;
+            if (jumlah <= 0) {
+                Swal.showValidationMessage('Jumlah harus lebih dari 0!');
+                return false;
+            }
+            return {
+                tanggal:   document.getElementById('ek-tanggal').value,
+                tipe:      document.getElementById('ek-tipe').value,
+                deskripsi: document.getElementById('ek-deskripsi').value,
+                jumlah
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                await updateDoc(doc(db, "keuangan", id), {
+                    ...result.value,
+                    updatedAt: serverTimestamp()
+                });
+                Swal.fire({ icon:'success', title:'Transaksi Diperbarui', timer:1500, showConfirmButton:false });
+                logActivity(currentAdminData?.username || 'Admin', 'Keuangan', `Edit transaksi "${trx.deskripsi}" via Admin Panel`);
+            } catch (err) {
+                Swal.fire('Gagal', err.message, 'error');
+            }
+        } else if (result.isDenied) {
+            const konfirm = await Swal.fire({
+                title: 'Hapus Transaksi?',
+                text: `"${trx.deskripsi}" akan dihapus secara permanen!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Ya, Hapus!'
+            });
+            if (konfirm.isConfirmed) {
+                await deleteDoc(doc(db, "keuangan", id));
+                Swal.fire({ icon:'success', title:'Terhapus', timer:1200, showConfirmButton:false });
+                logActivity(currentAdminData?.username || 'Admin', 'Keuangan', `Hapus transaksi "${trx.deskripsi}" via Admin Panel`);
+            }
+        }
+    });
+};

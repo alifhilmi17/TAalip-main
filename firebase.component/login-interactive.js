@@ -166,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Setelah berhasil masuk, jalankan animasi sejenak lalu alihkan berdasarkan role
                 setTimeout(() => {
                     if (userRole === 'admin') {
-                        window.location.href = 'admin.html';
+                        window.location.href = 'admin.frontend/admin-core/admin.html';
                     } else {
                         window.location.href = 'dashboardTAalip.html';
                     }

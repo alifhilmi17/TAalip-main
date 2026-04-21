@@ -42,6 +42,9 @@ onAuthStateChanged(auth, async (user) => {
             const adminData = adminSnap.data();
             console.log("Akses Diterima: Selamat datang, Administrator!");
             
+            // ✅ Kirim data admin ke modul lain via Custom Event
+            window.dispatchEvent(new CustomEvent('admin:verified', { detail: adminData }));
+
             // Dokumentasikan akses masuk ke Log Aktivitas Global
             logActivity(adminData.username || user.email, "Otentikasi", "Login ke Panel Admin Berhasil");
             

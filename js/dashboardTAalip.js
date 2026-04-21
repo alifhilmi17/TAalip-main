@@ -45,7 +45,8 @@ let state = {
     produksi: [],
     keuangan: [],
     ayam: [],
-    pakan: []
+    pakan: [],
+    kesehatan: [] // ✅ Tambah state untuk data kesehatan mortalitas
 };
 
 let eggChartInstance = null;
@@ -94,7 +95,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // G. Data Pakan: Mendengarkan aliran masuk dan keluar pakan
     onSnapshot(collection(db, "stok_pakan"), (snap) => {
         state.pakan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates(); // Perbarui sisa stok pakan
+        updateDashboardAggregates();
+    });
+
+    // H. Data Kesehatan: Mendengarkan data mortalitas dari koleksi kesehatan_ayam
+    onSnapshot(collection(db, "kesehatan_ayam"), (snap) => {
+        state.kesehatan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateDashboardAggregates();
     });
 });
 
@@ -301,8 +308,10 @@ function updateDashboardAggregates() {
     });
     document.getElementById('stat-pakan').textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
 
-    // mortalitas dummy or extract from kesehatan if needed
-    document.getElementById('stat-mortalitas').textContent = `0 Ekor`;
+    // 5. Stats Mortalitas (dari data kesehatan nyata)
+    const totalMortalitas = state.kesehatan.reduce((sum, item) => sum + (parseInt(item.jmlMati) || 0), 0);
+    const elMortalitas = document.getElementById('stat-mortalitas');
+    if (elMortalitas) elMortalitas.textContent = `${totalMortalitas.toLocaleString('id-ID')} Ekor`;
 
     // Charts
     renderEggChart(7);

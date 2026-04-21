@@ -168,6 +168,100 @@
       </div>
     </section>
 
+    <!-- ===== KARTU STATISTIK CEPAT ===== -->
+    <!-- Section 2b: Statistik Operasional Real-time -->
+    <section class="quick-stats animate__animated animate__fadeInUp" style="margin-top: -0.5rem;">
+      <div class="stat-card" style="border-top: 3px solid #10b981;">
+        <div class="stat-icon">🐣</div>
+        <div class="stat-info">
+          <h4>Batch Aktif</h4>
+          <p id="stat-admin-batch">- Batch</p>
+        </div>
+      </div>
+      <div class="stat-card" style="border-top: 3px solid #f59e0b;">
+        <div class="stat-icon">🥚</div>
+        <div class="stat-info">
+          <h4>Produksi Hari Ini</h4>
+          <p id="stat-admin-produksi">- Butir</p>
+        </div>
+      </div>
+      <div class="stat-card" style="border-top: 3px solid #6366f1;">
+        <div class="stat-icon">🌾</div>
+        <div class="stat-info">
+          <h4>Sisa Stok Pakan</h4>
+          <p id="stat-admin-pakan">- Kg</p>
+        </div>
+      </div>
+      <div class="stat-card" style="border-top: 3px solid #3b82f6;">
+        <div class="stat-icon">💉</div>
+        <div class="stat-info">
+          <h4>Vaksin Terjadwal</h4>
+          <p id="stat-admin-vaksin">- Jadwal</p>
+        </div>
+      </div>
+      <div class="stat-card" style="border-top: 3px solid #ef4444;">
+        <div class="stat-icon">📉</div>
+        <div class="stat-info">
+          <h4>Total Mortalitas</h4>
+          <p id="stat-admin-mortalitas">0 Ekor</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== GRAFIK ANALITIK ADMIN ===== -->
+    <!-- Section 2c: Tren Produksi & Keuangan Real-time -->
+    <section class="charts-section animate__animated animate__fadeInUp">
+
+      <!-- Grafik Tren Produksi Telur -->
+      <div class="chart-container chart-produksi-card">
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3>📈 Tren Produksi Telur</h3>
+            <span class="chart-subtitle">Analitik Admin</span>
+          </div>
+          <div class="chart-filter-group">
+            <button class="chart-filter-btn admin-chart-filter active" onclick="gantiPeriodeAdminChart(7, this)">7 Hari</button>
+            <button class="chart-filter-btn admin-chart-filter" onclick="gantiPeriodeAdminChart(14, this)">14 Hari</button>
+            <button class="chart-filter-btn admin-chart-filter" onclick="gantiPeriodeAdminChart(30, this)">30 Hari</button>
+          </div>
+        </div>
+        <!-- Mini statistik ringkasan -->
+        <div class="chart-mini-stats">
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(251,133,0,0.15);color:#fb8500">🥚</span>
+            <div><p class="mini-stat-label">Total Butir</p><p class="mini-stat-val" id="admin-chart-total">0</p></div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981">✅</span>
+            <div><p class="mini-stat-label">Telur Baik</p><p class="mini-stat-val" id="admin-chart-baik">0</p></div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444">❌</span>
+            <div><p class="mini-stat-label">Telur Cacat</p><p class="mini-stat-val" id="admin-chart-cacat">0</p></div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1">📊</span>
+            <div><p class="mini-stat-label">Rata-rata/Hari</p><p class="mini-stat-val" id="admin-chart-rata">0</p></div>
+          </div>
+        </div>
+        <div class="chart-canvas-wrapper">
+          <canvas id="adminEggChart"></canvas>
+          <div class="chart-empty-overlay" id="adminChartEmptyOverlay" style="display:flex;">
+            <span class="chart-empty-icon">🥚</span>
+            <p>Belum ada data produksi</p>
+            <small>Data akan muncul saat ada input produksi harian.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grafik Pemasukan vs Pengeluaran -->
+      <div class="chart-container">
+        <h3>📊 Pemasukan vs Pengeluaran <span style="font-weight:400; font-size:0.8rem; color:#94a3b8;">Bulan Ini</span></h3>
+        <canvas id="adminFinanceChart"></canvas>
+      </div>
+
+    </section>
+
     <!-- Section 3: Shortcut Modul Fitur -->
     <section class="modules-grid animate__animated animate__fadeInUp">
       <h3>🧩 Manajemen Modul Fitur</h3>
@@ -250,7 +344,9 @@
 
       <!-- Tabel Snapshot Batch Ayam -->
       <div class="schedule-card" style="align-self:stretch;">
-        <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">🐓 Ringkasan Batch Ternak</h3>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+          <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); flex:1; margin:0;">🐓 Ringkasan Batch Ternak</h3>
+        </div>
         <div class="schedule-content">
           <table class="logs-table">
             <thead>
@@ -259,6 +355,7 @@
                 <th>Spesies</th>
                 <th>Status</th>
                 <th>Sisa Stok</th>
+                <th style="text-align:center;">Aksi</th>
               </tr>
             </thead>
             <tbody id="adminAyamSnapshot">
@@ -270,7 +367,9 @@
 
       <!-- Tabel Snapshot Keuangan -->
       <div class="schedule-card" style="align-self:stretch;">
-        <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);">💵 Mutasi Kas Terakhir</h3>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+          <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); flex:1; margin:0;">💵 Mutasi Kas Terakhir</h3>
+        </div>
         <div class="schedule-content">
           <table class="logs-table">
             <thead>
@@ -279,6 +378,7 @@
                 <th>Keterangan</th>
                 <th>Tipe</th>
                 <th>Nominal</th>
+                <th style="text-align:center;">Aksi</th>
               </tr>
             </thead>
             <tbody id="adminKeuanganSnapshot">
@@ -318,16 +418,14 @@
   <!-- Gatekeeper Keamanan: Verifikasi Level Otoritas -->
   <script type="module" src="../admin-gate.js"></script>
 
+  <!-- Chart.js untuk grafik analitik -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
   <!-- Logika Bisnis & Sinkronisasi Data Firebase -->
   <script type="module" src="admin.js"></script>
 
   <!-- Pemantau Sesi Login Global -->
   <script type="module" src="../../firebase.component/auth-state.js"></script>
-
-  <!-- Floating Action Button (FAB) Akses Cepat -->
-  <button class="fab-add-user" onclick="openCreateAccountModal()" title="Cepat: Buat Akun Baru">
-    ➕
-  </button>
 </body>
 
 </html>
