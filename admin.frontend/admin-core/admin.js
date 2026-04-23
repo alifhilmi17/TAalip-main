@@ -388,7 +388,8 @@ function renderUserList(users) {
                 dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
             }
 
-            const isAdmin = user.role === 'admin';
+            const userRoleClean = (user.role || 'user').trim().toLowerCase();
+            const isAdmin = userRoleClean === 'admin' || userRoleClean === 'administrator' || userRoleClean === 'super_admin';
 
             return `
                 <tr class="animate__animated animate__fadeIn">
@@ -402,8 +403,13 @@ function renderUserList(users) {
                     <td>${user.email || '-'}</td>
                     <td>${dateStr}</td>
                     <td>
-                        <span class="badge-role" style="background:${isAdmin ? '#3b82f6' : '#94a3b8'}; color:white; padding:4px 10px; border-radius:20px; font-size:0.7rem; font-weight:600;">
-                            ${(user.role || 'user').toUpperCase()}
+                        <span class="badge-role" style="background: ${isAdmin ? 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)' : '#94a3b8'}; color:white; padding:5px 12px; border-radius:20px; font-size:0.65rem; font-weight:700; letter-spacing:0.5px; box-shadow: ${isAdmin ? '0 2px 5px rgba(59, 130, 246, 0.3)' : 'none'};">
+                            ${isAdmin ? '🛡️' : '👤'} ${(user.role || 'user').toUpperCase()}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="color: ${user.disabled ? '#ef4444' : '#10b981'}; font-weight: 700; font-size: 0.8rem;">
+                            ● ${user.disabled ? 'NONAKTIF' : 'AKTIF'}
                         </span>
                     </td>
                     <td>
@@ -1557,5 +1563,133 @@ window.sendResetEmail = async function(email) {
         } catch (err) {
             Swal.fire('Gagal', err.message, 'error');
         }
+    }
+};
+
+/**
+ * ===== 11. MANAJEMEN ROLE (PROMOTE/DEMOTE) =====
+ */
+
+/**
+ * Mengubah role pengguna antara Admin dan User
+ * @param {string} uid - ID Dokumen User
+ * @param {string} currentRole - Role saat ini ('admin' atau 'user')
+ */
+window.toggleAdminRole = async function(uid, currentRole) {
+    const roleLower = (currentRole || 'user').trim().toLowerCase();
+    const newRole = (roleLower === 'admin' || roleLower === 'administrator') ? 'user' : 'admin';
+    const actionText = newRole === 'admin' ? 'Naikkan ke Admin' : 'Turunkan ke User';
+    
+    const confirm = await Swal.fire({
+        title: `${actionText}?`,
+        text: `Apakah Anda yakin ingin mengubah hak akses pengguna ini menjadi ${newRole.toUpperCase()}?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Ubah Role',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#3b82f6'
+    });
+
+    if (confirm.isConfirmed) {
+        Swal.fire({ title: 'Memproses...', didOpen: () => { Swal.showLoading(); } });
+        
+        try {
+            // 1. Update di koleksi 'user'
+            await updateDoc(doc(db, "user", uid), {
+                role: newRole,
+                updatedAt: serverTimestamp()
+            });
+
+            // 2. Sinkronisasi dengan koleksi 'admin'
+            if (newRole === 'admin') {
+                // Jika naik jadi admin, ambil data user dulu
+                const userSnap = await getDoc(doc(db, "user", uid));
+                const userData = userSnap.data();
+                
+                // Tambahkan ke koleksi admin
+                await setDoc(doc(db, "admin", uid), {
+                    uid: uid,
+                    fullname: userData.fullname || 'Tanpa Nama',
+                    username: userData.username || 'user',
+                    email: userData.email,
+                    role: 'admin',
+                    promotedAt: serverTimestamp(),
+                    promotedBy: currentAdminData?.username || 'System'
+                });
+            } else {
+                // Jika turun jadi user, hapus dari koleksi admin
+                await deleteDoc(doc(db, "admin", uid));
+            }
+
+            Swal.fire('Berhasil', `Role pengguna telah diubah menjadi ${newRole.toUpperCase()}.`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "Akses Pengguna", `Ubah role user [${uid}] menjadi ${newRole.toUpperCase()}`);
+        } catch (err) {
+            Swal.fire('Gagal', err.message, 'error');
+        }
+    }
+};
+
+/**
+ * ===== 12. FITUR REKONSILIASI DATA (SYNC) =====
+ */
+
+/**
+ * Melakukan sinkronisasi antara koleksi 'admin' dan 'user'
+ * Berguna jika ada akun admin yang terdaftar di sistem otoritas tapi hilang dari daftar pengguna utama.
+ */
+window.syncAdminAccounts = async function() {
+    Swal.fire({
+        title: 'Sinkronisasi Data...',
+        text: 'Memeriksa konsistensi antara data Otoritas dan data Pengguna.',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        // 1. Ambil semua data dari koleksi admin
+        const adminSnap = await getDocs(collection(db, "admin"));
+        const allAdmins = adminSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        let fixedCount = 0;
+
+        // 2. Cek satu per satu di koleksi user
+        for (const admin of allAdmins) {
+            const userRef = doc(db, "user", admin.id);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                // DATA HILANG! Mari kita buatkan kembali entri di koleksi user
+                await setDoc(userRef, {
+                    fullname: admin.fullname || 'Admin System',
+                    username: admin.username || 'admin',
+                    email: admin.email || 'admin@peternakan.com',
+                    role: 'admin',
+                    disabled: false,
+                    createdAt: admin.promotedAt || serverTimestamp(),
+                    isSynced: true // Penanda bahwa data ini hasil sinkronisasi
+                });
+                fixedCount++;
+            }
+        }
+
+        if (fixedCount > 0) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sinkronisasi Berhasil',
+                text: `${fixedCount} akun admin yang tersembunyi telah berhasil dipulihkan ke daftar utama.`,
+                confirmButtonColor: '#10b981'
+            });
+            logActivity(currentAdminData?.username || "Admin", "Sistem", `Melakukan sinkronisasi data: ${fixedCount} akun dipulihkan.`);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Data Sudah Akurat',
+                text: 'Seluruh akun admin sudah tersinkronisasi dengan benar di daftar pengguna.',
+                confirmButtonColor: '#3b82f6'
+            });
+        }
+    } catch (err) {
+        console.error("Sync Error:", err);
+        Swal.fire('Gagal Sinkron', err.message, 'error');
     }
 };

@@ -20,7 +20,8 @@ import {
     where, 
     getDocs, 
     doc, 
-    setDoc 
+    setDoc,
+    serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { auth, db } from "../firebase.component/firebase-init.js";
 
@@ -104,7 +105,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: email,
                     role: 'admin',      // Level otoritas permanen
                     type: 'super_admin',
-                    createdAt: new Date().toISOString()
+                    createdAt: serverTimestamp()
+                });
+
+                // Langkah 3.5: Sinkronisasi otomatis ke Koleksi 'user' agar tampil di tabel Manajemen Pengguna
+                await setDoc(doc(db, "user", cred.user.uid), {
+                    fullname: fullname,
+                    username: username,
+                    email: email,
+                    role: 'admin',
+                    disabled: false,
+                    createdAt: serverTimestamp()
                 });
 
                 // Langkah 4: Logout paksa untuk verifikasi ulang via Login

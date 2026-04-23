@@ -53,8 +53,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (userData.fullname) {
                         displayNameResult = userData.fullname;
                     }
-                    // Tandai sebagai admin jika field role = 'admin'
-                    if (userData.role === 'admin') isAdminUser = true;
+                    // Tandai sebagai admin jika field role = 'admin' (Case-insensitive)
+                    const userRoleClean = (userData.role || 'user').trim().toLowerCase();
+                    if (userRoleClean === 'admin' || userRoleClean === 'administrator' || userRoleClean === 'super_admin') {
+                        isAdminUser = true;
+                    }
 
                 } else {
                     // === TAHAP 2: Cek koleksi 'admin' (untuk administrator) ===
@@ -98,6 +101,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error("Gagal verifikasi data user/admin: ", err);
             }
+
+            // Simpan status admin secara global untuk mempercepat proses logout
+            window.isLibasAdmin = isAdminUser;
 
             // Terapkan nama ke semua elemen .profile-name di sidebar
             profileNameElements.forEach(el => {
@@ -146,6 +152,26 @@ window.logoutUser = async function() {
  */
 async function executeLogout() {
     try {
+        // Ambil status admin dari cache global jika ada, jika tidak, verifikasi ulang
+        let isAdmin = window.isLibasAdmin === true;
+        const user = auth.currentUser;
+        
+        // Verifikasi fallback jika cache belum sempat terisi
+        if (!isAdmin && user) {
+            const adminDoc = await getDoc(doc(db, "admin", user.uid));
+            if (adminDoc.exists()) {
+                isAdmin = true;
+            } else {
+                const userDoc = await getDoc(doc(db, "user", user.uid));
+                if (userDoc.exists()) {
+                    const roleClean = (userDoc.data().role || 'user').trim().toLowerCase();
+                    if (roleClean === 'admin' || roleClean === 'administrator' || roleClean === 'super_admin') {
+                        isAdmin = true;
+                    }
+                }
+            }
+        }
+
         await signOut(auth);
         
         // Membersihkan cache lokal opsional
@@ -157,12 +183,12 @@ async function executeLogout() {
                 icon: 'success',
                 title: 'Berhasil Logout',
                 showConfirmButton: false,
-                timer: 1500
+                timer: 1200
             }).then(() => {
-                window.location.href = 'login.html';
+                redirectBasedOnRole(isAdmin);
             });
         } else {
-            window.location.href = 'login.html';
+            redirectBasedOnRole(isAdmin);
         }
     } catch (error) {
         console.error("Gagal logout:", error);
@@ -170,6 +196,37 @@ async function executeLogout() {
             Swal.fire('Gagal', 'Terjadi kesalahan saat logout: ' + error.message, 'error');
         } else {
             alert("Gagal melakukan logout: " + error.message);
+        }
+    }
+}
+
+/**
+ * Menentukan target pengalihan halaman berdasarkan ROLE akun yang logout
+ * @param {boolean} isAdmin - Status otoritas pengguna
+ */
+function redirectBasedOnRole(isAdmin) {
+    const isAdminCore = window.location.href.includes('admin-core');
+    const isAdminRoot = window.location.href.includes('admin.frontend') && !isAdminCore;
+
+    if (isAdmin) {
+        // Redirect untuk Administrator -> adminlogin.html
+        if (isAdminCore) {
+            window.location.href = '../adminlogin.html';
+        } else if (isAdminRoot) {
+            window.location.href = 'adminlogin.html';
+        } else {
+            // Dari halaman utama/user
+            window.location.href = 'admin.frontend/adminlogin.html';
+        }
+    } else {
+        // Redirect untuk Pengguna/Staf Biasa -> login.html
+        if (isAdminCore) {
+            window.location.href = '../../login.html';
+        } else if (isAdminRoot) {
+            window.location.href = '../login.html';
+        } else {
+            // Dari halaman utama/user
+            window.location.href = 'login.html';
         }
     }
 }

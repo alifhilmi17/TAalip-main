@@ -38,7 +38,7 @@
       <nav class="main-nav">
 
         <!-- Dasar (User View) -->
-        <a href="../../dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+        <a href="../../admin.frontend/admin-core/admin.html" title="Dashboard">🏠 Dashboard</a>
 
         <!-- Restockreminder (Submenu) -->
         <button class="has-submenu" onclick="toggleSidebarMenu('restockreminderSubmenu')" aria-expanded="false">
@@ -290,14 +290,18 @@
       <div class="management-card">
         <div class="card-header-flex">
           <div style="display: flex; align-items: center; gap: 15px;">
-            <h3>👥 Manajemen Pengguna Otoritas</h3>
+            <h3>👥 Manajemen Pengguna</h3>
             <span class="badge" id="user-count-badge">0 Users</span>
           </div>
 
-          <!-- Tombol Aksi Admin -->
-          <button class="create-account-btn" onclick="openCreateAccountModal()">
-            <span>➕</span> Buat Akun Baru
-          </button>
+          <div style="display: flex; gap: 10px;">
+            <button class="action-btn-small" onclick="syncAdminAccounts()" style="background: #6366f1; color: white; padding: 0 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px;" title="Perbaiki Akun Admin yang Hilang">
+              🔄 Sinkronkan
+            </button>
+            <button class="create-account-btn" onclick="openCreateAccountModal()">
+              <span>➕</span> Buat Akun Baru
+            </button>
+          </div>
         </div>
         <div class="table-responsive">
           <table class="logs-table">
@@ -308,6 +312,7 @@
                 <th>Email</th>
                 <th>Tgl Bergabung</th>
                 <th>Hak Akses</th>
+                <th>Status</th>
                 <th>Tindakan</th>
               </tr>
             </thead>
@@ -322,11 +327,11 @@
       </div>
     </section>
 
-    <!-- Section 5: Snapshot Ringkasan Data -->
+    <!-- Section 5: Ringkasan Data -->
     <section class="snapshot-management animate__animated animate__fadeInUp">
       <div class="management-card">
         <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
-          <h3 style="margin: 0;">📊 Snapshot Ringkasan Data</h3>
+          <h3 style="margin: 0;">📊 Ringkasan Data</h3>
           <span class="badge">6 Kategori Informasi</span>
         </div>
         
