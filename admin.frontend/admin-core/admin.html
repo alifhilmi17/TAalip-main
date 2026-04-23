@@ -32,6 +32,7 @@
 
       <!-- Logo Aplikasi -->
       <h2 class="logo">🐔 LIBAS</h2>
+      
 
       <!-- Navigasi Menu -->
       <nav class="main-nav">
@@ -39,54 +40,12 @@
         <!-- Dasar (User View) -->
         <a href="../../dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-        <!-- Master Data (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
-          📊 Data Ayam <span class="arrow">▸</span>
+        <!-- Restockreminder (Submenu) -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('restockreminderSubmenu')" aria-expanded="false">
+          Restock Reminder <span class="arrow">▸</span>
         </button>
-        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-          <a href="../../dataAyamTAalip.html">🐓 Data Ayam</a>
-          <a href="../../kesehatanayam.html">Data Kesehatan Ayam</a>
-        </div>
-
-        <!-- Prediksi (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
-          Rekomendasi Prediktif <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-          <a href="../../prediksihasil.html"> Prediksi Hasil </a>
-        </div>
-
-        <!-- Produksi (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
-          🥚 Produksi <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-          <a href="../../inputproduksi.html">📝 Input Produksi Harian</a>
-        </div>
-
-        <!-- Persediaan (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
-          📦 Persediaan <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-          <a href="../../stokpakan.html">🥬 Stok Pakan</a>
-          <a href="#">⏰ Restock Reminder</a>
-        </div>
-
-        <!-- Keuangan (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
-          💵 Keuangan <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-          <a href="../../keuangan.html">💰 Pemasukan & Pengeluaran</a>
-        </div>
-
-        <!-- Dokumen (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
-          📂 Dokumen <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-          <a href="../../dokumen.html">📄 Pusat Dokumen</a>
+        <div class="submenu" id="restockreminderSubmenu" aria-hidden="true">
+          <a href="../../restockreminder.html">⏰ Restock Reminder</a>
         </div>
 
         <!-- MANAJEMEN PENGGUNA (FITUR KHUSUS ADMIN) -->
@@ -153,6 +112,34 @@
         </div>
       </div>
       <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info">
+          <h4>Batch Ternak Aktif</h4>
+          <p id="stat-admin-batch">0 Batch</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🥚</div>
+        <div class="stat-info">
+          <h4>Total Telur Hari Ini</h4>
+          <p id="stat-admin-produksi">0 Butir</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📉</div>
+        <div class="stat-info">
+          <h4>Mortalitas Total</h4>
+          <p id="stat-admin-mortalitas">0 Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🥬</div>
+        <div class="stat-info">
+          <h4>Sisa Stok Pakan</h4>
+          <p id="stat-admin-pakan">0 Kg</p>
+        </div>
+      </div>
+      <div class="stat-card">
         <div class="stat-icon">💰</div>
         <div class="stat-info">
           <h4>Total Transaksi</h4>
@@ -164,46 +151,6 @@
         <div class="stat-info">
           <h4>Saldo Finansial</h4>
           <p id="stat-admin-prediksi">Rp 0</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===== KARTU STATISTIK CEPAT ===== -->
-    <!-- Section 2b: Statistik Operasional Real-time -->
-    <section class="quick-stats animate__animated animate__fadeInUp" style="margin-top: -0.5rem;">
-      <div class="stat-card" style="border-top: 3px solid #10b981;">
-        <div class="stat-icon">🐣</div>
-        <div class="stat-info">
-          <h4>Batch Aktif</h4>
-          <p id="stat-admin-batch">- Batch</p>
-        </div>
-      </div>
-      <div class="stat-card" style="border-top: 3px solid #f59e0b;">
-        <div class="stat-icon">🥚</div>
-        <div class="stat-info">
-          <h4>Produksi Hari Ini</h4>
-          <p id="stat-admin-produksi">- Butir</p>
-        </div>
-      </div>
-      <div class="stat-card" style="border-top: 3px solid #6366f1;">
-        <div class="stat-icon">🌾</div>
-        <div class="stat-info">
-          <h4>Sisa Stok Pakan</h4>
-          <p id="stat-admin-pakan">- Kg</p>
-        </div>
-      </div>
-      <div class="stat-card" style="border-top: 3px solid #3b82f6;">
-        <div class="stat-icon">💉</div>
-        <div class="stat-info">
-          <h4>Vaksin Terjadwal</h4>
-          <p id="stat-admin-vaksin">- Jadwal</p>
-        </div>
-      </div>
-      <div class="stat-card" style="border-top: 3px solid #ef4444;">
-        <div class="stat-icon">📉</div>
-        <div class="stat-info">
-          <h4>Total Mortalitas</h4>
-          <p id="stat-admin-mortalitas">0 Ekor</p>
         </div>
       </div>
     </section>
@@ -264,46 +211,82 @@
 
     <!-- Section 3: Shortcut Modul Fitur -->
     <section class="modules-grid animate__animated animate__fadeInUp">
-      <h3>🧩 Manajemen Modul Fitur</h3>
-      <div class="module-cards">
-
-        <!-- Kartu Modul Ayam -->
-        <div class="module-card">
-          <div class="mod-icon">🐓</div>
-          <h4>Modul Data Ayam</h4>
-          <p>Kelola metadata ternak, tingkat kematian, dan alokasi kandang.</p>
-          <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Aplikasi</a>
+      <div class="management-card">
+        <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
+          <h3 style="margin: 0;">🧩 Manajemen Modul Fitur</h3>
+          <span class="badge">8 Modul Aktif</span>
         </div>
+        
+        <div class="module-cards">
+          <!-- 1. Modul Data Ayam -->
+          <div class="module-card">
+            <div class="mod-icon">🐓</div>
+            <h4>Data Ayam</h4>
+            <p>Kelola populasi, batch ternak, dan mutasi kandang secara real-time.</p>
+            <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Modul</a>
+          </div>
 
-        <!-- Kartu Modul Keuangan -->
-        <div class="module-card">
-          <div class="mod-icon">💵</div>
-          <h4>Modul Keuangan</h4>
-          <p>Rekapitulasi biaya operasional, tagihan pakan, dan arus kas harian.</p>
-          <a href="../../keuangan.html" class="mod-btn">Buka Aplikasi</a>
+          <!-- 2. Modul Kesehatan -->
+          <div class="module-card">
+            <div class="mod-icon">🩺</div>
+            <h4>Kesehatan</h4>
+            <p>Pantau status medis, jadwal vaksinasi, dan riwayat pengobatan ayam.</p>
+            <a href="../../kesehatanayam.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 3. Modul Prediksi -->
+          <div class="module-card">
+            <div class="mod-icon">📈</div>
+            <h4>Prediksi Hasil</h4>
+            <p>Estimasi produksi telur masa depan dengan analisis machine learning.</p>
+            <a href="../../prediksihasil.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 4. Modul Produksi -->
+          <div class="module-card">
+            <div class="mod-icon">🥚</div>
+            <h4>Produksi Harian</h4>
+            <p>Catat hasil panen telur harian dan pantau produktivitas kawanan.</p>
+            <a href="../../inputproduksi.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 5. Modul Persediaan -->
+          <div class="module-card">
+            <div class="mod-icon">🥬</div>
+            <h4>Stok Pakan</h4>
+            <p>Manajemen logistik pakan, suplemen, dan pengingat restock otomatis.</p>
+            <a href="../../stokpakan.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 6. Modul Keuangan -->
+          <div class="module-card">
+            <div class="mod-icon">💵</div>
+            <h4>Keuangan</h4>
+            <p>Rekapitulasi pemasukan, pengeluaran, dan arus kas operasional.</p>
+            <a href="../../keuangan.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 7. Modul Dokumen -->
+          <div class="module-card">
+            <div class="mod-icon">📄</div>
+            <h4>Pusat Dokumen</h4>
+            <p>Arsip digital untuk laporan ekspor, sertifikat, dan data historis.</p>
+            <a href="../../dokumen.html" class="mod-btn">Buka Modul</a>
+          </div>
+
+          <!-- 8. Simulasi Dashboard -->
+          <div class="module-card">
+            <div class="mod-icon">📱</div>
+            <h4>Preview User</h4>
+            <p>Simulasi antarmuka aplikasi yang diakses oleh staf operasional.</p>
+            <a href="../../dashboardTAalip.html" class="mod-btn">Buka Preview</a>
+          </div>
         </div>
-
-        <!-- Kartu Modul Prediksi -->
-        <div class="module-card">
-          <div class="mod-icon">📈</div>
-          <h4>Modul Prediksi</h4>
-          <p>Monitoring parameter machine learning untuk estimasi produksi telur.</p>
-          <a href="../../prediksihasil.html" class="mod-btn">Buka Aplikasi</a>
-        </div>
-
-        <!-- UI Tampilan Pengguna -->
-        <div class="module-card">
-          <div class="mod-icon">📱</div>
-          <h4>Simulasi Dashboard</h4>
-          <p>Preview antarmuka yang diakses oleh petugas operasional kandang.</p>
-          <a href="../../dashboardTAalip.html" class="mod-btn">Preview UI</a>
-        </div>
-
       </div>
     </section>
 
     <!-- Section 4: Tabel Manajemen Pengguna -->
-    <section class="user-management animate__animated animate__fadeInUp">
+    <section id="userManagementSection" class="user-management animate__animated animate__fadeInUp">
       <div class="management-card">
         <div class="card-header-flex">
           <div style="display: flex; align-items: center; gap: 15px;">
@@ -340,76 +323,261 @@
     </section>
 
     <!-- Section 5: Snapshot Ringkasan Data -->
-    <section class="office-admin animate__animated animate__fadeInUp" style="grid-template-columns: 1fr 1fr;">
-
-      <!-- Tabel Snapshot Batch Ayam -->
-      <div class="schedule-card" style="align-self:stretch;">
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-          <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); flex:1; margin:0;">🐓 Ringkasan Batch Ternak</h3>
+    <section class="snapshot-management animate__animated animate__fadeInUp">
+      <div class="management-card">
+        <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
+          <h3 style="margin: 0;">📊 Snapshot Ringkasan Data</h3>
+          <span class="badge">6 Kategori Informasi</span>
         </div>
-        <div class="schedule-content">
+        
+        <div class="office-admin" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+          <!-- Tabel Snapshot Batch Ayam -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); flex:1; margin:0;">🐓 Ringkasan Batch Ternak</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Batch ID</th>
+                    <th>Spesies</th>
+                    <th>Status</th>
+                    <th>Sisa Stok</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminAyamSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabel Snapshot Keuangan -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); flex:1; margin:0;">💵 Mutasi Kas Terakhir</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Hari/Tgl</th>
+                    <th>Keterangan</th>
+                    <th>Tipe</th>
+                    <th>Nominal</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminKeuanganSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabel Snapshot Produksi -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #fb8500 0%, #ffb703 100%); flex:1; margin:0;">🥚 Produksi Telur Terakhir</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Total</th>
+                    <th>Baik</th>
+                    <th>Cacat</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminProduksiSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabel Snapshot Stok Pakan -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); flex:1; margin:0;">🥬 Logistik & Stok Pakan</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Barang</th>
+                    <th>Tipe</th>
+                    <th>Jumlah</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminPakanSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabel Snapshot Kesehatan -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); flex:1; margin:0;">🩺 Laporan Kesehatan & Mortalitas</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Batch</th>
+                    <th>Mati</th>
+                    <th>Sebab</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminKesehatanSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabel Snapshot Vaksinasi -->
+          <div class="schedule-card" style="align-self:stretch;">
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
+              <h3 style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); flex:1; margin:0;">💉 Jadwal Vaksinasi Terdekat</h3>
+            </div>
+            <div class="schedule-content">
+              <table class="logs-table">
+                <thead>
+                  <tr>
+                    <th>Tanggal</th>
+                    <th>Vaksin</th>
+                    <th>Batch</th>
+                    <th>Status</th>
+                    <th style="text-align:center;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="adminVaksinSnapshot">
+                  <!-- Diisi secara dinamis melalui admin.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 6: Manajemen Operasional (Aktivitas, Pengumuman, Jadwal) -->
+    <section class="operational-management animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
+      <div class="management-card">
+        <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 2rem; padding-bottom: 1.5rem;">
+          <h3 style="margin: 0;">📅 Manajemen Operasional Peternakan</h3>
+          <span class="badge">Aktivitas & Komunikasi</span>
+        </div>
+
+        <div class="office-admin" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
+          
+          <!-- Aktivitas Harian -->
+          <div class="manage-card">
+            <h3 style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🧺 Aktivitas Harian</h3>
+            <div class="schedule-content">
+              <ul id="adminActivityList" class="activity-list" style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
+                <!-- Diisi via admin.js -->
+              </ul>
+              <form id="adminAddActivityForm" class="add-form" style="margin-top: 1.5rem; display: flex; gap: 8px;">
+                <input type="text" id="adminActivityInput" placeholder="Tambah aktivitas harian..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <button type="submit" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Pengumuman Sistem -->
+          <div class="reminder-card">
+            <h3 style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">📢 Pengumuman</h3>
+            <div class="schedule-content">
+              <ul id="adminAnnouncementList" class="activity-list" style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
+                <!-- Diisi via admin.js -->
+              </ul>
+              <form id="adminAddAnnouncementForm" class="add-form" style="margin-top: 1.5rem; display: flex; gap: 8px;">
+                <input type="text" id="adminAnnouncementInput" placeholder="Ketik pengumuman baru..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <button type="submit" style="background: #ff9966; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕</button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Jadwal Kegiatan -->
+          <div class="schedule-card" style="grid-column: span 1;">
+            <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">📆 Jadwal Agenda Peternakan</h3>
+            <div class="schedule-content">
+              <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                <table class="logs-table" id="adminScheduleTable">
+                  <thead>
+                    <tr>
+                      <th>Tgl/Waktu</th>
+                      <th>Kegiatan</th>
+                      <th>Tempat</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Diisi via admin.js -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                <p style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.8rem;">➕ TAMBAH AGENDA BARU</p>
+                <form id="adminAddScheduleForm" class="add-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                  <input type="text" id="adminTgl" placeholder="Tgl (cth: 25 Okt)" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
+                  <input type="time" id="adminWaktu" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
+                  <input type="text" id="adminAgenda" placeholder="Nama Kegiatan" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
+                  <input type="text" id="adminTempat" placeholder="Lokasi" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
+                  <button type="submit" style="grid-column: span 2; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 5px;">Simpan Agenda Baru</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 7: Audit Log Aktivitas -->
+    <section class="system-logs animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
+      <div class="management-card">
+        <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 1.5rem; padding-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 15px;">
+            <h3 style="margin: 0;">📋 Log Keamanan & Aktivitas Operasional</h3>
+            <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">Audit Trail</span>
+          </div>
+        </div>
+        
+        <div class="table-responsive">
           <table class="logs-table">
             <thead>
               <tr>
-                <th>Batch ID</th>
-                <th>Spesies</th>
-                <th>Status</th>
-                <th>Sisa Stok</th>
-                <th style="text-align:center;">Aksi</th>
+                <th>Waktu Aktual</th>
+                <th>Identitas User</th>
+                <th>Modul Fitur</th>
+                <th>Deskripsi Tindakan</th>
               </tr>
             </thead>
-            <tbody id="adminAyamSnapshot">
+            <tbody id="systemLogBody">
               <!-- Diisi secara dinamis melalui admin.js -->
             </tbody>
           </table>
         </div>
-      </div>
-
-      <!-- Tabel Snapshot Keuangan -->
-      <div class="schedule-card" style="align-self:stretch;">
-        <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-          <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); flex:1; margin:0;">💵 Mutasi Kas Terakhir</h3>
-        </div>
-        <div class="schedule-content">
-          <table class="logs-table">
-            <thead>
-              <tr>
-                <th>Hari/Tgl</th>
-                <th>Keterangan</th>
-                <th>Tipe</th>
-                <th>Nominal</th>
-                <th style="text-align:center;">Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="adminKeuanganSnapshot">
-              <!-- Diisi secara dinamis melalui admin.js -->
-            </tbody>
-          </table>
+        <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
+          <button class="clear-logs-btn" onclick="clearLogs()" style="margin: 0;">Hapus Riwayat Log</button>
         </div>
       </div>
-
     </section>
 
-    <!-- Section 6: Audit Log Aktivitas -->
-    <section class="system-logs animate__animated animate__fadeInUp">
-      <div class="logs-container">
-        <h3>📋 Log Keamanan & Aktivitas Operasional</h3>
-        <table class="logs-table">
-          <thead>
-            <tr>
-              <th>Waktu Aktual</th>
-              <th>Identitas User</th>
-              <th>Modul Fitur</th>
-              <th>Deskripsi Tindakan</th>
-            </tr>
-          </thead>
-          <tbody id="systemLogBody">
-            <!-- Diisi secara dinamis melalui admin.js -->
-          </tbody>
-        </table>
-        <button class="clear-logs-btn" onclick="clearLogs()">Hapus Riwayat Log</button>
-      </div>
-    </section>
 
   </main>
 

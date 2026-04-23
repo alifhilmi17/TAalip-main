@@ -15,6 +15,7 @@ import {
     orderBy, 
     limit,
     getDocs,
+    getDoc,
     addDoc,
     deleteDoc,
     updateDoc,
@@ -25,6 +26,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { 
     createUserWithEmailAndPassword,
+    sendPasswordResetEmail,
     getAuth
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
@@ -63,115 +65,305 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /**
- * Fungsi Utama: Menghubungkan elemen UI dengan listener Firestore
+ * Fungsi Utama: Menghubungkan antarmuka pengguna (UI) dengan data real-time dari Firestore.
+ * Fungsi ini memantau berbagai koleksi data dan memperbarui tampilan dashboard secara otomatis.
  */
 function initAdminDashboard() {
+    // =========================================================
     // A. Monitoring Pengguna (Koleksi: user)
+    // =========================================================
+    // Memantau penambahan, penghapusan, atau perubahan data pengguna.
     onSnapshot(collection(db, "user"), (snapshot) => {
+        // Menghitung total jumlah pengguna yang terdaftar
         const userCount = snapshot.size;
+        
+        // Memperbarui teks pada elemen statistik pengguna di dashboard
         document.getElementById('stat-user').textContent = `${userCount} Orang`;
         
+        // Memperbarui badge jumlah pengguna pada bagian manajemen
         const userBadge = document.getElementById('user-count-badge');
         if(userBadge) userBadge.textContent = `${userCount} Pengguna Terverifikasi`;
         
+        // Mengambil semua data dokumen pengguna ke dalam bentuk array objek
         const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // Memanggil fungsi untuk merender ulang tabel daftar pengguna
         renderUserList(users);
     });
 
+    // =========================================================
     // B. Monitoring Populasi Ayam (Koleksi: populasi_ayam)
+    // =========================================================
+    // Memantau jumlah ayam secara keseluruhan di peternakan.
     onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
-        let totalAyam = 0;
-        let snapshotData = [];
+        let totalAyam = 0; // Variabel untuk menyimpan total akumulasi ayam
+        let snapshotData = []; // Array untuk menyimpan detail setiap batch ayam
         
+        // Melakukan perulangan pada setiap dokumen batch ayam
         snapshot.forEach(doc => {
             const data = doc.data();
+            // Menambahkan sisa ayam dari setiap batch ke total keseluruhan
             totalAyam += parseInt(data.sisaAyam || 0);
             snapshotData.push({ id: doc.id, ...data });
         });
 
-        ayamData = snapshotData; // Simpan ke state global untuk CRUD
+        // Menyimpan data ke variabel global agar dapat diakses untuk fungsi CRUD/Edit
+        ayamData = snapshotData; 
+        
+        // Memperbarui tampilan total ayam di dashboard
         document.getElementById('stat-admin-ayam').textContent = `${totalAyam.toLocaleString('id-ID')} Ekor`;
+        
+        // Merender tabel ringkasan (hanya mengambil 8 data terbaru)
         renderAyamSnapshot(snapshotData.slice(0, 8));
     });
 
+    // =========================================================
     // C. Monitoring Keuangan (Koleksi: keuangan)
+    // =========================================================
+    // Memantau arus kas untuk menghitung saldo dan menampilkan riwayat transaksi.
     onSnapshot(collection(db, "keuangan"), (snapshot) => {
-        let totalSaldo = 0;
-        let trxData = [];
+        let totalSaldo = 0; // Variabel untuk menyimpan saldo akhir
+        let trxData = []; // Array untuk menyimpan data riwayat transaksi
         
+        // Menghitung pemasukan dan pengeluaran dari setiap dokumen transaksi
         snapshot.forEach(doc => {
             const data = doc.data();
             const jumlah = parseFloat(data.jumlah || 0);
+            
             if (data.tipe === 'pemasukan') {
-                totalSaldo += jumlah;
+                totalSaldo += jumlah; // Jika pemasukan, saldo bertambah
             } else {
-                totalSaldo -= jumlah;
+                totalSaldo -= jumlah; // Jika pengeluaran, saldo berkurang
             }
             trxData.push({ id: doc.id, ...data });
         });
 
-        keuanganDataAdmin = trxData; // Simpan ke state global untuk CRUD & charts
+        // Menyimpan data ke variabel global untuk grafik dan fitur edit/detail
+        keuanganDataAdmin = trxData; 
+        
+        // Memperbarui tampilan saldo akhir di dashboard
         document.getElementById('stat-admin-prediksi').textContent = `Rp ${totalSaldo.toLocaleString('id-ID')}`;
         
+        // Memperbarui tampilan jumlah total transaksi
+        const elUang = document.getElementById('stat-admin-uang');
+        if (elUang) elUang.textContent = `${trxData.length.toLocaleString('id-ID')} Transaksi`;
+        
+        // Mengurutkan transaksi dari yang terbaru dan merender 8 data pertama ke tabel ringkasan
         const latestTrx = trxData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
         renderKeuanganSnapshot(latestTrx);
-        renderAdminCharts(); // Perbarui grafik keuangan
+        
+        // Memperbarui ulang grafik keuangan agar sesuai dengan data terbaru
+        renderAdminCharts(); 
     });
 
+    // =========================================================
     // D. Monitoring Audit Log (Koleksi: activity_log)
+    // =========================================================
+    // Mengambil 5 aktivitas terbaru dari sistem untuk ditampilkan di tabel log.
     onSnapshot(query(
         collection(db, "activity_log"), 
-        orderBy("waktu", "desc"), 
-        limit(15)
+        orderBy("waktu", "desc"),  // Mengurutkan berdasarkan waktu terbaru
+        limit(5) // Hanya mengambil 5 data teratas
     ), (snapshot) => {
         const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderSystemLogs(logs);
+        renderSystemLogs(logs); // Merender ke tabel audit
     });
 
+    // =========================================================
     // E. Monitoring Batch Aktif (Koleksi: populasi_ayam)
+    // =========================================================
+    // Menghitung berapa banyak batch ternak yang saat ini masih "Aktif"
     onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
+        // Menyaring data yang memiliki status 'Aktif' dan menghitung jumlahnya
         const batchAktif = snapshot.docs.filter(d => d.data().status === 'Aktif').length;
         const elBatch = document.getElementById('stat-admin-batch');
         if (elBatch) elBatch.textContent = `${batchAktif} Batch`;
     });
 
-    // F. Monitoring Produksi Harian (Koleksi: produksi_harian) — juga untuk charts
+    // =========================================================
+    // F. Monitoring Produksi Harian (Koleksi: produksi_harian)
+    // =========================================================
+    // Memantau input produksi telur setiap hari dan memperbarui grafik analitik.
     onSnapshot(collection(db, "produksi_harian"), (snapshot) => {
+        // Mengambil semua data produksi ke variabel global
         produksiDataAdmin = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Menentukan tanggal hari ini dengan format YYYY-MM-DD
         const today = new Date().toISOString().split('T')[0];
+        
+        // Menjumlahkan total telur yang diproduksi khusus untuk hari ini
         const totalTelurHariIni = produksiDataAdmin
             .filter(d => d.tanggal === today)
             .reduce((sum, d) => sum + (parseInt(d.totalTelur) || 0), 0);
+            
+        // Memperbarui UI untuk statistik telur hari ini
         const elProduksi = document.getElementById('stat-admin-produksi');
         if (elProduksi) elProduksi.textContent = `${totalTelurHariIni.toLocaleString('id-ID')} Butir`;
-        renderAdminCharts(); // Perbarui grafik produksi
+        
+        // Mengurutkan dan merender 8 data produksi terbaru ke tabel ringkasan
+        const latestProduksi = [...produksiDataAdmin].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
+        renderProduksiSnapshot(latestProduksi);
+        
+        // Memperbarui grafik analitik produksi dengan data terbaru
+        renderAdminCharts(); 
     });
 
+    // =========================================================
     // G. Monitoring Stok Pakan (Koleksi: stok_pakan)
+    // =========================================================
+    // Menghitung sisa stok pakan berdasarkan selisih barang masuk dan keluar.
     onSnapshot(collection(db, "stok_pakan"), (snapshot) => {
         let pakanMasuk = 0, pakanKeluar = 0;
+        let pakanList = [];
+        
         snapshot.forEach(d => {
             const data = d.data();
+            // Memisahkan perhitungan antara pakan yang masuk dan yang digunakan (keluar)
             if (data.tipe === 'Masuk') pakanMasuk += (parseFloat(data.jumlah) || 0);
             else pakanKeluar += (parseFloat(data.jumlah) || 0);
+            pakanList.push({ id: d.id, ...data });
         });
+        
+        // Memperbarui UI sisa pakan (Masuk dikurangi Keluar)
         const elPakan = document.getElementById('stat-admin-pakan');
         if (elPakan) elPakan.textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
+
+        // Mengurutkan dan merender 8 data riwayat pakan terbaru
+        const latestPakan = pakanList.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
+        renderPakanSnapshot(latestPakan);
     });
 
+    // =========================================================
     // H. Monitoring Vaksinasi (Koleksi: vaksinasi_ayam)
+    // =========================================================
+    // Memantau jadwal vaksinasi yang belum selesai (terjadwal)
     onSnapshot(collection(db, "vaksinasi_ayam"), (snapshot) => {
-        const terjadwal = snapshot.docs.filter(d => d.data().status === 'Terjadwal').length;
+        const vaccineData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Menghitung jumlah vaksinasi yang statusnya masih 'Terjadwal'
+        const terjadwal = vaccineData.filter(d => d.status === 'Terjadwal').length;
         const elVaksin = document.getElementById('stat-admin-vaksin');
         if (elVaksin) elVaksin.textContent = `${terjadwal} Jadwal`;
+
+        // Mengurutkan dan merender 8 jadwal vaksinasi terdekat/terbaru
+        const sortedVaksin = vaccineData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
+        renderVaksinSnapshot(sortedVaksin);
     });
 
-    // I. Monitoring Kesehatan - Total Mortalitas (Koleksi: kesehatan_ayam)
+    // =========================================================
+    // I. Monitoring Kesehatan & Mortalitas (Koleksi: kesehatan_ayam)
+    // =========================================================
+    // Menghitung total kematian ayam (mortalitas) secara keseluruhan.
     onSnapshot(collection(db, "kesehatan_ayam"), (snapshot) => {
-        const totalMati = snapshot.docs.reduce((sum, d) => sum + (parseInt(d.data().jmlMati) || 0), 0);
+        const healthData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Menjumlahkan semua nilai jmlMati dari dokumen kesehatan
+        const totalMati = healthData.reduce((sum, d) => sum + (parseInt(d.jmlMati) || 0), 0);
         const elMortalitas = document.getElementById('stat-admin-mortalitas');
         if (elMortalitas) elMortalitas.textContent = `${totalMati.toLocaleString('id-ID')} Ekor`;
+
+        // Mengurutkan dan merender 8 riwayat mortalitas terbaru
+        const latestHealth = healthData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
+        renderKesehatanSnapshot(latestHealth);
     });
+
+    // =========================================================
+    // J. Monitoring Aktivitas Harian (Koleksi: daily_activities)
+    // =========================================================
+    // Mengambil dan merender daftar ceklis tugas harian secara real-time.
+    onSnapshot(query(collection(db, "daily_activities"), orderBy("createdAt", "desc")), (snapshot) => {
+        const activities = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAdminActivities(activities);
+    });
+
+    // =========================================================
+    // K. Monitoring Pengumuman (Koleksi: announcements)
+    // =========================================================
+    // Mengambil pesan pengumuman sistem (broadcast) secara real-time.
+    onSnapshot(query(collection(db, "announcements"), orderBy("createdAt", "desc")), (snapshot) => {
+        const announcements = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAdminAnnouncements(announcements);
+    });
+
+    // =========================================================
+    // L. Monitoring Jadwal Agenda (Koleksi: schedules)
+    // =========================================================
+    // Mengambil daftar kegiatan peternakan yang akan datang.
+    onSnapshot(query(collection(db, "schedules"), orderBy("createdAt", "desc")), (snapshot) => {
+        const schedules = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderAdminSchedules(schedules);
+    });
+
+    // =========================================================
+    // M. SETUP FORM LISTENERS (MANAJEMEN OPERASIONAL)
+    // =========================================================
+    // Mengatur fungsi saat tombol submit ditekan pada form-form di dashboard admin.
+    
+    // 1. Form Aktivitas Harian
+    const activityForm = document.getElementById('adminAddActivityForm');
+    if (activityForm) {
+        activityForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Mencegah reload halaman
+            const input = document.getElementById('adminActivityInput');
+            if (!input.value.trim()) return; // Memastikan input tidak kosong
+            
+            try {
+                // Menambahkan data baru ke Firestore
+                await addDoc(collection(db, "daily_activities"), {
+                    text: input.value.trim(),
+                    completed: false, // Status awal selalu belum selesai
+                    createdAt: new Date().toISOString()
+                });
+                
+                // Mencatat aksi ini ke dalam audit log keamanan
+                logActivity(currentAdminData?.username || "Admin", "Operasional", `Menambah aktivitas: ${input.value.trim()}`);
+                input.value = ""; // Mengosongkan form input
+            } catch (err) { console.error(err); }
+        });
+    }
+
+    // 2. Form Pengumuman Sistem
+    const announcementForm = document.getElementById('adminAddAnnouncementForm');
+    if (announcementForm) {
+        announcementForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('adminAnnouncementInput');
+            if (!input.value.trim()) return;
+            
+            try {
+                await addDoc(collection(db, "announcements"), {
+                    text: input.value.trim(),
+                    read: false, // Status awal selalu belum dibaca oleh user
+                    createdAt: new Date().toISOString()
+                });
+                logActivity(currentAdminData?.username || "Admin", "Operasional", `Menambah pengumuman: ${input.value.trim()}`);
+                input.value = "";
+            } catch (err) { console.error(err); }
+        });
+    }
+
+    // 3. Form Penjadwalan Agenda
+    const scheduleForm = document.getElementById('adminAddScheduleForm');
+    if (scheduleForm) {
+        scheduleForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Menyiapkan paket data jadwal dari form input
+            const payload = {
+                tanggal: document.getElementById('adminTgl').value,
+                waktu: document.getElementById('adminWaktu').value,
+                agenda: document.getElementById('adminAgenda').value,
+                ruangan: document.getElementById('adminTempat').value,
+                createdAt: new Date().toISOString()
+            };
+            
+            try {
+                await addDoc(collection(db, "schedules"), payload);
+                logActivity(currentAdminData?.username || "Admin", "Operasional", `Menambah jadwal agenda: ${payload.agenda}`);
+                scheduleForm.reset(); // Mengosongkan seluruh form jadwal
+                Swal.fire("Berhasil", "Agenda kegiatan telah dijadwalkan!", "success"); // Notifikasi sukses
+            } catch (err) { Swal.fire("Error", err.message, "error"); } // Notifikasi jika gagal
+        });
+    }
 }
 
 /**
@@ -216,6 +408,10 @@ function renderUserList(users) {
                     </td>
                     <td>
                         <div class="action-btns">
+                            <button onclick="openEditUserModal('${user.id}')" 
+                                    class="action-btn-small" style="background-color: #f59e0b;" title="Edit Data Akun">
+                                Edit
+                            </button>
                             <button onclick="toggleAdminRole('${user.id}', '${user.role || 'user'}')" 
                                     class="action-btn-small ${isAdmin ? 'btn-demote' : 'btn-promote'}">
                                 ${isAdmin ? 'Demote' : 'Promote'}
@@ -301,6 +497,106 @@ function formatTanggal(tglString) {
 }
 
 /**
+ * Merender ringkasan produksi harian
+ */
+function renderProduksiSnapshot(data) {
+    const body = document.getElementById('adminProduksiSnapshot');
+    if (!body) return;
+
+    if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Belum ada data produksi telur.</td></tr>`;
+    } else {
+        body.innerHTML = data.map(item => `
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
+                <td><strong>${parseInt(item.totalTelur || 0).toLocaleString('id-ID')}</strong></td>
+                <td style="color:#10b981;">${parseInt(item.telurBaik || 0).toLocaleString('id-ID')}</td>
+                <td style="color:#ef4444;">${parseInt(item.telurCacat || 0).toLocaleString('id-ID')}</td>
+                <td style="text-align:center;">
+                    <button onclick="window.location.href='../../inputproduksi.html'" 
+                        style="background:#fb8500; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Lihat</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+/**
+ * Merender ringkasan logistik pakan
+ */
+function renderPakanSnapshot(data) {
+    const body = document.getElementById('adminPakanSnapshot');
+    if (!body) return;
+
+    if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Tidak ada aktivitas logistik pakan.</td></tr>`;
+    } else {
+        body.innerHTML = data.map(item => `
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
+                <td>${item.namaBarang || '-'}</td>
+                <td><span style="color:${item.tipe === 'Masuk' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.8rem;">${(item.tipe || '').toUpperCase()}</span></td>
+                <td><strong>${item.jumlah} ${item.satuan || 'Kg'}</strong></td>
+                <td style="text-align:center;">
+                    <button onclick="window.location.href='../../stokpakan.html'" 
+                        style="background:#6366f1; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Cek</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+/**
+ * Merender ringkasan kesehatan ayam
+ */
+function renderKesehatanSnapshot(data) {
+    const body = document.getElementById('adminKesehatanSnapshot');
+    if (!body) return;
+
+    if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Kondisi kesehatan kawanan terpantau aman.</td></tr>`;
+    } else {
+        body.innerHTML = data.map(item => `
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
+                <td><code>${item.batchId || '-'}</code></td>
+                <td style="color:#ef4444; font-weight:700;">${item.jmlMati || 0} Ekor</td>
+                <td style="font-size:0.8rem;">${item.sebab || '-'}</td>
+                <td style="text-align:center;">
+                    <button onclick="window.location.href='../../kesehatanayam.html'" 
+                        style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Detail</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+/**
+ * Merender ringkasan jadwal vaksinasi
+ */
+function renderVaksinSnapshot(data) {
+    const body = document.getElementById('adminVaksinSnapshot');
+    if (!body) return;
+
+    if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8;">Belum ada jadwal vaksinasi yang diinput.</td></tr>`;
+    } else {
+        body.innerHTML = data.map(item => `
+            <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
+                <td><strong>${item.namaVaksin || '-'}</strong></td>
+                <td><code>${item.batchId || '-'}</code></td>
+                <td><span style="background:${item.status === 'Selesai' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600;">${(item.status || 'Terjadwal').toUpperCase()}</span></td>
+                <td style="text-align:center;">
+                    <button onclick="window.location.href='../../kesehatanayam.html'" 
+                        style="background:#8b5cf6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Cek</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+}
+
+/**
  * Merender audit log sistem
  * Mendukung Firestore Timestamp object (dari serverTimestamp()) dan ISO string
  */
@@ -338,6 +634,83 @@ function renderSystemLogs(logs) {
         }).join('');
     }
 }
+
+/**
+ * Merender daftar aktivitas harian di panel admin
+ */
+function renderAdminActivities(activities) {
+    const list = document.getElementById("adminActivityList");
+    if (!list) return;
+    list.innerHTML = activities.map(item => `
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #f1f5f9; background:${item.completed ? '#f8fafc' : 'transparent'}; opacity:${item.completed ? '0.6' : '1'};">
+            <span style="flex:1; font-size:0.9rem; ${item.completed ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b;'}">${item.text}</span>
+            <div style="display:flex; gap:5px;">
+                <button onclick="toggleAdminActivity('${item.id}', ${item.completed})" style="background:${item.completed ? '#64748b' : '#10b981'}; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">${item.completed ? '↩' : '✔'}</button>
+                <button onclick="deleteAdminActivity('${item.id}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">✕</button>
+            </div>
+        </li>
+    `).join('');
+}
+
+/**
+ * Merender daftar pengumuman di panel admin
+ */
+function renderAdminAnnouncements(announcements) {
+    const list = document.getElementById("adminAnnouncementList");
+    if (!list) return;
+    list.innerHTML = announcements.map(item => `
+        <li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #f1f5f9; background:${item.read ? '#f8fafc' : 'transparent'};">
+            <span style="flex:1; font-size:0.85rem; ${item.read ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b;'}">${item.text}</span>
+            <div style="display:flex; gap:5px;">
+                <button onclick="toggleAdminAnnouncement('${item.id}', ${item.read})" style="background:${item.read ? '#64748b' : '#ef4444'}; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">${item.read ? '↩' : '✔'}</button>
+                <button onclick="deleteAdminAnnouncement('${item.id}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">✕</button>
+            </div>
+        </li>
+    `).join('');
+}
+
+/**
+ * Merender daftar jadwal kegiatan di panel admin
+ */
+function renderAdminSchedules(schedules) {
+    const tbody = document.querySelector("#adminScheduleTable tbody");
+    if (!tbody) return;
+    tbody.innerHTML = schedules.map(item => `
+        <tr>
+            <td style="font-size:0.75rem;">${item.tanggal}<br><small>${item.waktu}</small></td>
+            <td style="font-size:0.85rem; font-weight:600;">${item.agenda}</td>
+            <td style="font-size:0.8rem; color:#64748b;">${item.ruangan}</td>
+            <td>
+                <button onclick="deleteAdminSchedule('${item.id}')" style="background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); padding:4px 8px; border-radius:4px; cursor:pointer;">🗑</button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ===== FUNGSI AKSI MANAJEMEN OPERASIONAL =====
+
+window.toggleAdminActivity = async function(id, currentStatus) {
+    await updateDoc(doc(db, "daily_activities", id), { completed: !currentStatus });
+};
+
+window.deleteAdminActivity = async function(id) {
+    const res = await Swal.fire({ title: 'Hapus Aktivitas?', icon: 'warning', showCancelButton: true });
+    if (res.isConfirmed) await deleteDoc(doc(db, "daily_activities", id));
+};
+
+window.toggleAdminAnnouncement = async function(id, currentStatus) {
+    await updateDoc(doc(db, "announcements", id), { read: !currentStatus });
+};
+
+window.deleteAdminAnnouncement = async function(id) {
+    const res = await Swal.fire({ title: 'Hapus Pengumuman?', icon: 'warning', showCancelButton: true });
+    if (res.isConfirmed) await deleteDoc(doc(db, "announcements", id));
+};
+
+window.deleteAdminSchedule = async function(id) {
+    const res = await Swal.fire({ title: 'Hapus Agenda Jadwal?', icon: 'warning', showCancelButton: true });
+    if (res.isConfirmed) await deleteDoc(doc(db, "schedules", id));
+};
 
 /**
  * ===== 3. FUNGSI LOGGING & AUDIT =====
@@ -587,7 +960,7 @@ window.openCreateAccountModal = function() {
         },
         focusConfirm: false,
         showCancelButton: true,
-        confirmButtonText: 'Amankan Akun',
+        confirmButtonText: 'Buat Akun',
         cancelButtonText: 'Batal',
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#94a3b8',
@@ -1045,4 +1418,144 @@ window.openKeuanganDetail = function(id) {
             }
         }
     });
+};
+
+/**
+ * ===== 10. EDIT AKUN PENGGUNA =====
+ */
+
+/**
+ * Membuka modal untuk mengedit informasi akun pengguna
+ * @param {string} uid - ID Dokumen User di Firestore
+ */
+window.openEditUserModal = async function(uid) {
+    // Mencari data user dari state lokal (opsional, atau ambil langsung dari Firestore)
+    // Untuk keakuratan, kita ambil data terbaru dari Firestore
+    Swal.fire({
+        title: 'Memuat Data...',
+        didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+        const userSnap = await getDoc(doc(db, "user", uid));
+        if (!userSnap.exists()) {
+            Swal.fire('Error', 'Data pengguna tidak ditemukan!', 'error');
+            return;
+        }
+        const user = userSnap.data();
+
+        Swal.fire({
+            title: 'Edit Profil Pengguna',
+            html: `
+                <div class="swal-libas-container">
+                    <div class="swal-libas-field">
+                        <label class="swal-libas-label">👤 Nama Lengkap</label>
+                        <div class="swal-libas-input-wrapper">
+                            <span class="swal-libas-icon">📝</span>
+                            <input id="edit-fullname" class="swal-libas-input" value="${user.fullname || ''}" placeholder="Nama Terang">
+                        </div>
+                    </div>
+                    <div class="swal-libas-field">
+                        <label class="swal-libas-label">🆔 Username</label>
+                        <div class="swal-libas-input-wrapper">
+                            <span class="swal-libas-icon">@</span>
+                            <input id="edit-username" class="swal-libas-input" value="${user.username || ''}" placeholder="username">
+                        </div>
+                    </div>
+                    <div class="swal-libas-field">
+                        <label class="swal-libas-label">📧 Email</label>
+                        <div class="swal-libas-input-wrapper">
+                            <span class="swal-libas-icon">✉️</span>
+                            <input id="edit-email" type="email" class="swal-libas-input" value="${user.email || ''}" placeholder="email@peternakan.com">
+                        </div>
+                    </div>
+                    <div class="swal-libas-field">
+                        <label class="swal-libas-label">🛡️ Status Akses</label>
+                        <div class="swal-libas-input-wrapper">
+                            <span class="swal-libas-icon">🔒</span>
+                            <select id="edit-status" class="swal-libas-select">
+                                <option value="false" ${user.disabled === false ? 'selected' : ''}>Aktif (Bisa Login)</option>
+                                <option value="true" ${user.disabled === true ? 'selected' : ''}>Nonaktif (Blokir Akses)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="swal-libas-field" style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                        <label class="swal-libas-label" style="color: #ef4444;">🔑 Keamanan Akun</label>
+                        <button type="button" onclick="sendResetEmail('${user.email}')" 
+                                style="background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; padding: 8px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-weight: 600; width: 100%; transition: all 0.2s;">
+                            📧 Kirim Email Reset Password
+                        </button>
+                        <p style="font-size: 0.7rem; color: #94a3b8; margin-top: 5px;">*Link pembuatan password baru akan dikirim ke email pengguna.</p>
+                    </div>
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Simpan Perubahan',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#10b981',
+            preConfirm: () => {
+                const fullname = document.getElementById('edit-fullname').value;
+                const username = document.getElementById('edit-username').value;
+                const email = document.getElementById('edit-email').value;
+                const disabled = document.getElementById('edit-status').value === 'true';
+
+                if (!fullname || !username || !email) {
+                    Swal.showValidationMessage('Nama, Username, dan Email wajib diisi!');
+                    return false;
+                }
+                return { fullname, username, email, disabled };
+            }
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                try {
+                    await updateDoc(doc(db, "user", uid), {
+                        ...result.value,
+                        updatedAt: serverTimestamp()
+                    });
+                    
+                    // Jika user adalah admin, update juga koleksi admin
+                    if (user.role === 'admin') {
+                        await updateDoc(doc(db, "admin", uid), {
+                            fullname: result.value.fullname,
+                            username: result.value.username,
+                            email: result.value.email
+                        });
+                    }
+
+                    Swal.fire('Berhasil', 'Informasi akun telah diperbarui.', 'success');
+                    logActivity(currentAdminData?.username || "Admin", "Akses Pengguna", `Update data akun: ${result.value.fullname} (@${result.value.username})`);
+                } catch (err) {
+                    Swal.fire('Gagal Update', err.message, 'error');
+                }
+            }
+        });
+    } catch (err) {
+        Swal.fire('Error', 'Gagal memuat data: ' + err.message, 'error');
+    }
+};
+
+/**
+ * Mengirimkan email reset password kepada pengguna
+ * @param {string} email - Alamat email pengguna
+ */
+window.sendResetEmail = async function(email) {
+    const confirm = await Swal.fire({
+        title: 'Kirim Reset Password?',
+        text: `Tautan untuk membuat password baru akan dikirim ke ${email}.`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Kirim Email',
+        cancelButtonText: 'Batal'
+    });
+
+    if (confirm.isConfirmed) {
+        Swal.fire({ title: 'Mengirim...', didOpen: () => { Swal.showLoading(); } });
+        try {
+            await sendPasswordResetEmail(auth, email);
+            Swal.fire('Terkirim!', 'Email instruksi reset password telah dikirim.', 'success');
+            logActivity(currentAdminData?.username || "Admin", "Keamanan", `Kirim reset password ke: ${email}`);
+        } catch (err) {
+            Swal.fire('Gagal', err.message, 'error');
+        }
+    }
 };

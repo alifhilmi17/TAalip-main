@@ -264,58 +264,71 @@ window.deleteAnnouncementItem = async function(id) {
     await deleteDoc(doc(db, "announcements", id));
 };
 
-// =========================================
-// 7. AGGREGATES, STATS & CHARTS
-// =========================================
+// =========================================================
+// 7. AGGREGATES, STATS & CHARTS (LOGIKA PERHITUNGAN)
+// =========================================================
 /**
- * Menghitung dan memperbarui seluruh angka ringkasan (Statistik) di Dashboard
+ * Menghitung dan memperbarui seluruh angka ringkasan (Statistik) di Dashboard.
+ * Fungsi ini dipanggil setiap kali ada perubahan data (real-time) dari Firestore.
  */
 function updateDashboardAggregates() {
+    // Mengambil tanggal hari ini dengan format YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0];
     
-    // 1. Stats Produksi
+    // 1. Perhitungan Statistik Produksi Telur (Hanya Hari Ini)
+    // Menyaring data produksi yang tanggalnya sama dengan hari ini
     const prodToday = state.produksi.filter(p => p.tanggal === today);
+    // Menjumlahkan total telur dari hasil saringan tersebut
     const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
+    // Memperbarui tampilan di UI
     document.getElementById('stat-telur').textContent = `${totalTelurToday.toLocaleString('id-ID')} Butir`;
 
-    // 2. Stats Ayam
+    // 2. Perhitungan Statistik Populasi Ayam Aktif
+    // Menyaring batch ayam yang statusnya masih 'Aktif' dan menjumlahkan sisa ekornya
     const totalAyamAktif = state.ayam.filter(a => a.status === 'Aktif')
                                      .reduce((s, v) => s + (parseInt(v.sisaAyam) || 0), 0);
     document.getElementById('stat-ayam').textContent = `${totalAyamAktif.toLocaleString('id-ID')} Ekor`;
 
-    // 3. Stats Keuangan (Bulan ini)
+    // 3. Perhitungan Statistik Keuangan (Khusus Pemasukan Bulan Ini)
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     let incomeBulanIni = 0;
     let incomeGlobal = 0, expenseGlobal = 0;
     
+    // Mengecek setiap transaksi keuangan
     state.keuangan.forEach(trx => {
         const d = new Date(trx.tanggal);
+        // Menghitung total akumulasi global (semua waktu)
         if (trx.tipe === 'pemasukan') incomeGlobal += trx.jumlah;
         else expenseGlobal += trx.jumlah;
 
+        // Memfilter hanya transaksi pemasukan yang terjadi pada bulan & tahun ini
         if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
             if (trx.tipe === 'pemasukan') incomeBulanIni += trx.jumlah;
         }
     });
+    // Menampilkan pemasukan bulan ini ke dashboard
     document.getElementById('stat-pendapatan').textContent = `Rp ${incomeBulanIni.toLocaleString('id-ID')}`;
 
-    // 4. Stats Pakan
+    // 4. Perhitungan Statistik Sisa Pakan
     let pakanMasuk = 0, pakanKeluar = 0;
+    // Menjumlahkan total pakan yang dibeli (Masuk) dan yang digunakan (Keluar)
     state.pakan.forEach(p => {
         if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
         else pakanKeluar += p.jumlah;
     });
+    // Sisa pakan adalah selisih antara pakan masuk dan pakan keluar
     document.getElementById('stat-pakan').textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
 
-    // 5. Stats Mortalitas (dari data kesehatan nyata)
+    // 5. Perhitungan Statistik Mortalitas (Kematian Ayam)
+    // Menjumlahkan seluruh data kematian (jmlMati) dari log kesehatan
     const totalMortalitas = state.kesehatan.reduce((sum, item) => sum + (parseInt(item.jmlMati) || 0), 0);
     const elMortalitas = document.getElementById('stat-mortalitas');
     if (elMortalitas) elMortalitas.textContent = `${totalMortalitas.toLocaleString('id-ID')} Ekor`;
 
-    // Charts
-    renderEggChart(7);
-    renderFinanceChart();
+    // 6. Memperbarui Grafik Analitik Visual
+    renderEggChart(7); // Render grafik produksi 7 hari terakhir
+    renderFinanceChart(); // Render grafik keuangan bulanan
 }
 
 /** 
