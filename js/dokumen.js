@@ -3,14 +3,19 @@
    File: dokumen.js
    Deskripsi: Logika halaman Pusat Dokumen & Laporan (FIRESTORE).
    Mempusatkan seluruh data dari semua modul untuk pratinjau, 
-   ekspor CSV, dan cetak laporan secara real-time.
+   ekspor file excel, dan cetak laporan secara real-time.
 ========================================================= */
 
 import { 
     collection, 
     onSnapshot, 
     query, 
-    orderBy 
+    orderBy,
+    addDoc,
+    serverTimestamp,
+    limit,
+    getDocs,
+    writeBatch
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { db } from "../firebase.component/firebase-init.js";
 
@@ -44,7 +49,7 @@ function tampilkanTanggalHariIni() {
 // =========================================
 document.addEventListener('DOMContentLoaded', () => {
     tampilkanTanggalHariIni();
-    tambahLog('📂 Halaman Pusat Dokumen dibuka', '📂');
+    tambahLog(' Halaman Pusat Dokumen dibuka', '📂');
 
     // Listener Produksi
     onSnapshot(query(collection(db, "produksi_harian"), orderBy("tanggal", "desc")), (snap) => {
@@ -86,6 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
     onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc")), (snap) => {
         state.prediksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         perbaruiUI();
+    });
+
+    // Listener Aktivitas Ekspor (Log)
+    onSnapshot(query(collection(db, "aktivitas_ekspor"), orderBy("tanggal", "desc"), limit(25)), (snap) => {
+        const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        perbaruiLogUI(logs);
     });
 
     // Auto open submenu Dokumen di Sidebar
@@ -251,58 +262,42 @@ function formatTanggalPreview(tgl) {
  * Mengekspor data modul tertentu ke dalam format file CSV (.csv)
  * @param {string} modul - Nama modul (produksi, pakan, keuangan, dll)
  */
-window.eksporCSV = function(modul) {
-    const data = state[modul];
-    if (!data || data.length === 0) {
-        Swal.fire('Info', `Data laporan ${modul} masih kosong.`, 'info');
-        return;
-    }
-
-    // Menambah Byte Order Mark (BOM) agar Excel dapat membaca karakter spesial/tanda baca dengan benar
-    const csvContent = '\uFEFF' + buatKontenCSV(modul, data);
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `laporan_${modul}_${new Date().toISOString().split('T')[0]}.csv`;
-    link.click(); // Trigger download
-    
-    tambahLog(`📥 Ekspor CSV: ${modul} (${data.length} entri)`, '📥');
-};
-
-function buatKontenCSV(modul, data) {
-    let header = '';
-    let baris = [];
-    const sanitize = (v) => String(v || '').replace(/,/g, ';').replace(/\n/g, ' ');
+/**
+ * Helper untuk menyiapkan struktur data (Header & Baris) yang akan digunakan oleh Excel
+ */
+function ambilDataTabel(modul, data) {
+    let headers = [];
+    let rows = [];
+    const sanitize = (v) => v === undefined || v === null ? '' : String(v);
 
     switch (modul) {
         case 'produksi':
-            header = 'ID,Tanggal,Batch,Jenis Telur,Kandang,Baik,Cacat,Total';
-            baris = data.map(d => [d.id, d.tanggal, d.batchLabel, d.jenisTelur, d.kandang, d.telurBaik, d.telurCacat, d.totalTelur].map(sanitize).join(','));
+            headers = ['ID', 'Tanggal', 'Batch', 'Jenis Telur', 'Kandang', 'Baik', 'Cacat', 'Total'];
+            rows = data.map(d => [d.id, d.tanggal, d.batchLabel, d.jenisTelur, d.kandang, d.telurBaik, d.telurCacat, d.totalTelur].map(sanitize));
             break;
         case 'pakan':
-            header = 'ID,Tanggal,Tipe,Jenis,Jumlah(Kg),Keterangan';
-            baris = data.map(d => [d.id, d.tanggal, d.tipe, d.jenis, d.jumlah, d.keterangan].map(sanitize).join(','));
+            headers = ['ID', 'Tanggal', 'Tipe', 'Jenis', 'Jumlah(Kg)', 'Keterangan'];
+            rows = data.map(d => [d.id, d.tanggal, d.tipe, d.jenis, d.jumlah, d.keterangan].map(sanitize));
             break;
         case 'keuangan':
-            header = 'ID,Tanggal,Tipe,Deskripsi,Jumlah(Rp)';
-            baris = data.map(d => [d.id, d.tanggal, d.tipe, d.deskripsi, d.jumlah].map(sanitize).join(','));
+            headers = ['ID', 'Tanggal', 'Tipe', 'Deskripsi', 'Jumlah(Rp)'];
+            rows = data.map(d => [d.id, d.tanggal, d.tipe, d.deskripsi, d.jumlah].map(sanitize));
             break;
         case 'ayam':
-            header = 'ID,CustomID,Tgl Masuk,Jenis,Jumlah Awal,Sisa Ayam,Kandang,Status';
-            baris = data.map(d => [d.id, d.customId, d.tglMasuk, d.jenis, d.jumlahAwal, d.sisaAyam, d.kandang, d.status].map(sanitize).join(','));
+            headers = ['ID', 'CustomID', 'Tgl Masuk', 'Jenis', 'Jumlah Awal', 'Sisa Ayam', 'Kandang', 'Status'];
+            rows = data.map(d => [d.id, d.customId, d.tglMasuk, d.jenis, d.jumlahAwal, d.sisaAyam, d.kandang, d.status].map(sanitize));
             break;
         case 'kesehatan':
-            header = 'ID,Tanggal,Batch,Kandang,Gejala,Jml Sakit,Jml Mati,Penanganan,Status';
-            baris = data.map(d => [d.id, d.tanggal, d.batchName, d.kandang, d.gejala, d.jmlSakit, d.jmlMati, d.penanganan, d.status].map(sanitize).join(','));
+            headers = ['ID', 'Tanggal', 'Batch', 'Kandang', 'Gejala', 'Jml Sakit', 'Jml Mati', 'Penanganan', 'Status'];
+            rows = data.map(d => [d.id, d.tanggal, d.batchName, d.kandang, d.gejala, d.jmlSakit, d.jmlMati, d.penanganan, d.status].map(sanitize));
             break;
         case 'vaksinasi':
-            header = 'ID,Tanggal,Batch,Kandang,Jenis Vaksin,Metode,Status,Catatan';
-            baris = data.map(d => [d.id, d.tanggal, d.batchName, d.kandang, d.jenis, d.metode, d.status, d.catatan].map(sanitize).join(','));
+            headers = ['ID', 'Tanggal', 'Batch', 'Kandang', 'Jenis Vaksin', 'Metode', 'Status', 'Catatan'];
+            rows = data.map(d => [d.id, d.tanggal, d.batchName, d.kandang, d.jenis, d.metode, d.status, d.catatan].map(sanitize));
             break;
         case 'prediksi':
-            header = 'ID,Tanggal Analisis,Batch/Populasi,Periode MA,Populasi (Ekor),Prediksi Produksi (Kg),Prediksi Produksi (Butir),Estimasi Pendapatan (Rp),Biaya Pakan (Rp),Proyeksi Laba (Rp),Status Keuangan,Rekomendasi Utama';
-            baris = data.map(d => [
+            headers = ['ID', 'Tanggal Analisis', 'Batch/Populasi', 'Periode MA', 'Populasi (Ekor)', 'Prediksi Produksi (Kg)', 'Prediksi Produksi (Butir)', 'Estimasi Pendapatan (Rp)', 'Biaya Pakan (Rp)', 'Proyeksi Laba (Rp)', 'Status Keuangan', 'Rekomendasi Utama'];
+            rows = data.map(d => [
                 d.id,
                 new Date(d.tanggal).toLocaleString('id-ID'),
                 d.batchLabel || '-',
@@ -315,11 +310,92 @@ function buatKontenCSV(modul, data) {
                 Math.round(d.keuntungan || 0),
                 (d.keuntungan || 0) >= 0 ? 'UNTUNG' : 'RUGI',
                 d.rekomendasiUtama || '-'
-            ].map(sanitize).join(','));
+            ].map(sanitize));
             break;
     }
-    return [header, ...baris].join('\n');
+    return { headers, rows };
 }
+
+window.eksporCSV = async function(modul) {
+    const data = state[modul];
+    if (!data || data.length === 0) {
+        Swal.fire('Info', `Data laporan ${modul} masih kosong.`, 'info');
+        return;
+    }
+
+    const { headers, rows } = ambilDataTabel(modul, data);
+    
+    // Inisialisasi Workbook ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(modul.toUpperCase());
+
+    // 1. Set Kolom dan Header
+    worksheet.columns = headers.map(h => ({
+        header: h,
+        key: h,
+        width: 15
+    }));
+
+    // 2. Tambah Data Baris
+    worksheet.addRows(rows);
+
+    // 3. Styling Header (Baris 1)
+    const headerRow = worksheet.getRow(1);
+    headerRow.height = 25;
+    headerRow.eachCell((cell) => {
+        cell.font = { name: 'Segoe UI', family: 4, size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FF6366F1' } // Indigo Blue
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+        };
+    });
+
+    // 4. Styling Baris Data & Auto-Width
+    worksheet.eachRow((row, rowNumber) => {
+        if (rowNumber > 1) {
+            row.eachCell((cell) => {
+                cell.font = { name: 'Segoe UI', size: 10 };
+                cell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+                cell.border = {
+                    top: { style: 'thin' },
+                    left: { style: 'thin' },
+                    bottom: { style: 'thin' },
+                    right: { style: 'thin' }
+                };
+            });
+        }
+    });
+
+    // 5. Kalkulasi Lebar Kolom Otomatis yang Presisi
+    worksheet.columns.forEach(column => {
+        let maxLen = 0;
+        column.eachCell({ includeEmpty: true }, (cell) => {
+            const cellLen = cell.value ? cell.value.toString().length : 10;
+            if (cellLen > maxLen) maxLen = cellLen;
+        });
+        column.width = maxLen < 12 ? 12 : maxLen + 5;
+    });
+
+    // 6. Export file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `laporan_${modul}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+    
+    tambahLog(` Ekspor Excel: ${modul} (${data.length} entri)`, '📥');
+};
 
 // =========================================
 // 5. CETAK LAPORAN
@@ -429,7 +505,7 @@ window.eksporSemuaCSV = function() {
         title: 'Pusat Unduhan Massal',
         html: `
             <div style="text-align: left; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-top: 15px;">
-                <p style="margin-bottom: 12px; font-size: 0.85rem; color: #64748b;">Sistem telah menyiapkan <b>${modules.length} file CSV</b> terpisah dari seluruh data modul peternakan Anda:</p>
+                <p style="margin-bottom: 12px; font-size: 0.85rem; color: #64748b;">Sistem telah menyiapkan <b>${modules.length} file </b> terpisah dari seluruh data modul peternakan Anda:</p>
                 <div style="max-height: 250px; overflow-y: auto;">
                     ${listHtml}
                 </div>
@@ -440,7 +516,7 @@ window.eksporSemuaCSV = function() {
         `,
         icon: 'info',
         showCancelButton: true,
-        confirmButtonText: '🚀 Unduh Semua File',
+        confirmButtonText: '🚀 Unduh Semua File Excel',
         cancelButtonText: 'Batal',
         confirmButtonColor: '#6366f1',
         cancelButtonColor: '#64748b',
@@ -457,7 +533,7 @@ window.eksporSemuaCSV = function() {
             // Notifikasi proses dimulai
             Swal.fire({
                 title: 'Proses Dimulai',
-                text: 'Mengekspor data ke format CSV. Silahkan cek folder Download Anda.',
+                text: 'Mengekspor data ke format Excel (.xlsx). Silahkan cek folder Download Anda.',
                 icon: 'success',
                 timer: 2000,
                 showConfirmButton: false
@@ -466,21 +542,105 @@ window.eksporSemuaCSV = function() {
     });
 };
 
-function tambahLog(teks, ikon = '📄') {
-    const logList = document.getElementById('logList');
-    if (!logList) return;
-    const elKosong = logList.querySelector('.log-empty');
-    if (elKosong) elKosong.remove();
-
-    const li = document.createElement('li');
-    const waktu = new Date().toLocaleTimeString('id-ID');
-    li.innerHTML = `<span class="log-icon">${ikon}</span><span class="log-text">${teks}</span><span class="log-time">${waktu}</span>`;
-    logList.insertBefore(li, logList.firstChild);
+async function tambahLog(teks, ikon = '📄') {
+    try {
+        await addDoc(collection(db, "aktivitas_ekspor"), {
+            teks: teks,
+            ikon: ikon,
+            tanggal: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Gagal menyimpan log ke Firestore:", error);
+    }
 }
 
-window.bersihkanLog = function() {
-    const list = document.getElementById('logList');
-    if(list) list.innerHTML = '<li class="log-empty">Belum ada aktivitas ekspor pada sesi ini.</li>';
+/**
+ * Memperbarui tampilan daftar log di UI berdasarkan data dari Firestore
+ */
+function perbaruiLogUI(logs) {
+    const logList = document.getElementById('logList');
+    if (!logList) return;
+
+    if (logs.length === 0) {
+        logList.innerHTML = '<li class="log-empty">Tidak ada riwayat aktivitas yang ditemukan.</li>';
+        return;
+    }
+
+    logList.innerHTML = logs.map(log => {
+        // Handle firestore timestamp atau Date object
+        const tgl = log.tanggal ? log.tanggal.toDate() : new Date();
+        const waktu = tgl.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const tglStr = tgl.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+        
+        return `
+            <li>
+                <span class="log-icon">${log.ikon || '📄'}</span>
+                <span class="log-text">${log.teks}</span>
+                <span class="log-time">${tglStr} ${waktu}</span>
+            </li>`;
+    }).join('');
+}
+
+window.bersihkanLog = async function() {
+    // 1. Cek Otoritas (Hanya Admin yang bisa menghapus)
+    if (!window.isLibasAdmin) {
+        Swal.fire({
+            title: 'Akses Dibatasi',
+            text: 'Maaf, hanya Administrator yang memiliki izin untuk menghapus riwayat aktivitas ekspor secara permanen.',
+            icon: 'error',
+            confirmButtonColor: '#ef4444'
+        });
+        return;
+    }
+
+    // 2. Konfirmasi Penghapusan
+    Swal.fire({
+        title: 'Hapus Semua Riwayat?',
+        text: 'Seluruh riwayat aktivitas ekspor akan dihapus secara permanen dari database. Tindakan ini tidak dapat dibatalkan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, Hapus Permanen',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#64748b'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                tambahLog('🗑️ Sedang membersihkan seluruh riwayat aktivitas...', '⏳');
+                
+                // Ambil semua dokumen di collection aktivitas_ekspor
+                const colRef = collection(db, "aktivitas_ekspor");
+                const snapshot = await getDocs(colRef);
+                
+                if (snapshot.empty) {
+                    Swal.fire('Info', 'Riwayat sudah kosong.', 'info');
+                    return;
+                }
+
+                // Gunakan writeBatch untuk menghapus massal (maks 500 per batch)
+                const batch = writeBatch(db);
+                snapshot.docs.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+
+                Swal.fire({
+                    title: 'Berhasil',
+                    text: 'Seluruh riwayat aktivitas ekspor telah dibersihkan.',
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                tambahLog('✅ Riwayat aktivitas telah dibersihkan oleh Administrator', '🛡️');
+
+            } catch (error) {
+                console.error("Gagal menghapus riwayat:", error);
+                Swal.fire('Gagal', 'Terjadi kesalahan saat mencoba menghapus riwayat.', 'error');
+            }
+        }
+    });
 };
 
 window.toggleSidebarMenu = function(id) {
@@ -503,12 +663,195 @@ window.toggleSidebarMenu = function(id) {
     }
 };
 
-window.eksporGabunganCSV = function() {
-    Swal.fire('Fitur', 'Fitur Ekspor Gabungan sedang dalam pengembangan.', 'info');
+window.eksporGabunganCSV = async function() {
+    const modules = [
+        { id: 'produksi', name: 'Produksi' },
+        { id: 'pakan', name: 'Pakan' },
+        { id: 'keuangan', name: 'Keuangan' },
+        { id: 'ayam', name: 'Ayam' },
+        { id: 'kesehatan', name: 'Kesehatan' },
+        { id: 'vaksinasi', name: 'Vaksinasi' },
+        { id: 'prediksi', name: 'Prediksi' }
+    ];
+
+    const workbook = new ExcelJS.Workbook();
+    let hasData = false;
+
+    for (const m of modules) {
+        const data = state[m.id];
+        if (data && data.length > 0) {
+            hasData = true;
+            const worksheet = workbook.addWorksheet(m.name);
+            const { headers, rows } = ambilDataTabel(m.id, data);
+
+            worksheet.columns = headers.map(h => ({ header: h, key: h }));
+            worksheet.addRows(rows);
+
+            // Styling Header
+            const headerRow = worksheet.getRow(1);
+            headerRow.height = 25;
+            headerRow.eachCell((cell) => {
+                cell.font = { name: 'Segoe UI', bold: true, color: { argb: 'FFFFFFFF' } };
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6366F1' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.border = {
+                    top: { style: 'thin' }, left: { style: 'thin' },
+                    bottom: { style: 'thin' }, right: { style: 'thin' }
+                };
+            });
+
+            // Styling Baris & Auto-width
+            worksheet.eachRow((row, rowNumber) => {
+                row.eachCell((cell) => {
+                    cell.border = {
+                        top: { style: 'thin' }, left: { style: 'thin' },
+                        bottom: { style: 'thin' }, right: { style: 'thin' }
+                    };
+                    if (rowNumber > 1) cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                });
+            });
+
+            worksheet.columns.forEach(column => {
+                let maxLen = 0;
+                column.eachCell({ includeEmpty: true }, (cell) => {
+                    const cellLen = cell.value ? cell.value.toString().length : 10;
+                    if (cellLen > maxLen) maxLen = cellLen;
+                });
+                column.width = maxLen < 12 ? 12 : maxLen + 5;
+            });
+        }
+    }
+
+    if (!hasData) {
+        Swal.fire('Info', 'Seluruh data modul masih kosong, tidak ada yang bisa diekspor.', 'info');
+        return;
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `Laporan_Gabungan_LIBAS_${new Date().toISOString().split('T')[0]}.xlsx`;
+    anchor.click();
+    window.URL.revokeObjectURL(url);
+    
+    tambahLog(' Ekspor Excel Gabungan berhasil dilakukan', '📋');
+    
+    Swal.fire({
+        title: 'Berhasil!',
+        text: 'Laporan Excel premium (styled) telah diunduh.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false
+    });
 };
 
 window.cetakLaporanTerpadu = function() {
-    Swal.fire('Fitur', 'Fitur Cetak Terpadu sedang dalam pengembangan.', 'info');
+    const modules = [
+        { id: 'produksi', name: 'Produksi Harian' },
+        { id: 'pakan', name: 'Stok Pakan' },
+        { id: 'keuangan', name: 'Keuangan' },
+        { id: 'ayam', name: 'Data Ayam / Populasi' },
+        { id: 'kesehatan', name: 'Kesehatan Ayam' },
+        { id: 'vaksinasi', name: 'Jadwal Vaksinasi' },
+        { id: 'prediksi', name: 'Hasil Prediksi MA' }
+    ];
+
+    let hasData = false;
+    let combinedHTML = `
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <title>Laporan Terpadu - LIBAS</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1e293b; line-height: 1.5; }
+                .header-area { text-align: center; margin-bottom: 30px; border-bottom: 3px solid #6366f1; padding-bottom: 20px; }
+                h1 { margin: 0; color: #1e293b; font-size: 24px; text-transform: uppercase; letter-spacing: 1px; }
+                .meta-info { margin-top: 10px; font-size: 14px; color: #64748b; }
+                .section { margin-bottom: 40px; page-break-inside: avoid; }
+                h2 { background: #f1f5f9; color: #334155; padding: 10px 15px; border-left: 5px solid #6366f1; font-size: 18px; margin-bottom: 15px; border-radius: 0 4px 4px 0; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+                th { background-color: #f8fafc; color: #475569; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border: 1px solid #e2e8f0; padding: 12px 8px; }
+                td { border: 1px solid #e2e8f0; padding: 10px 8px; font-size: 11px; color: #334155; }
+                tr:nth-child(even) { background-color: #fdfdfd; }
+                .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+                @media print {
+                    body { padding: 0; }
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="header-area">
+                <h1>Laporan Terpadu Administrasi Peternakan</h1>
+                <div class="meta-info">Sistem LIBAS | Dicetak pada: ${new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' })}</div>
+            </div>
+    `;
+
+    modules.forEach(m => {
+        const data = state[m.id];
+        if (data && data.length > 0) {
+            hasData = true;
+            combinedHTML += `<div class="section"><h2>📊 ${m.name}</h2>`;
+            
+            let headers = [];
+            let tableRows = '';
+            
+            if(m.id === 'produksi') {
+                headers = ['Tanggal', 'Batch', 'Jenis Telur', 'Baik', 'Cacat', 'Total'];
+                tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.batchLabel}</td><td>${d.jenisTelur}</td><td align="right">${d.telurBaik}</td><td align="right">${d.telurCacat}</td><td align="right"><b>${d.totalTelur}</b></td></tr>`).join('');
+            } else if(m.id === 'pakan') {
+                headers = ['Tanggal', 'Tipe', 'Jenis Pakan', 'Jumlah', 'Keterangan'];
+                tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.tipe}</td><td>${d.jenis}</td><td align="right">${d.jumlah} Kg</td><td>${d.keterangan || '-'}</td></tr>`).join('');
+            } else if(m.id === 'keuangan') {
+                headers = ['Tanggal', 'Tipe', 'Deskripsi', 'Jumlah'];
+                tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.tipe}</td><td>${d.deskripsi}</td><td align="right">Rp ${Number(d.jumlah).toLocaleString('id-ID')}</td></tr>`).join('');
+            } else if(m.id === 'ayam') {
+                headers = ['Batch', 'Tgl Masuk', 'Jenis', 'Jumlah Awal', 'Sisa', 'Status'];
+                tableRows = data.map(d => `<tr><td>${d.customId || d.id.substring(0,8)}</td><td>${d.tglMasuk}</td><td>${d.jenis}</td><td align="right">${d.jumlahAwal}</td><td align="right"><b>${d.sisaAyam}</b></td><td>${d.status}</td></tr>`).join('');
+            } else if(m.id === 'kesehatan') {
+                headers = ['Tanggal', 'Batch', 'Gejala', 'Sakit', 'Mati', 'Status'];
+                tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.batchName}</td><td>${d.gejala}</td><td align="right">${d.jmlSakit}</td><td align="right">${d.jmlMati}</td><td>${d.status}</td></tr>`).join('');
+            } else if(m.id === 'vaksinasi') {
+                headers = ['Tanggal', 'Batch', 'Vaksin', 'Metode', 'Status'];
+                tableRows = data.map(d => `<tr><td>${d.tanggal}</td><td>${d.batchName}</td><td>${d.jenis}</td><td>${d.metode}</td><td>${d.status}</td></tr>`).join('');
+            } else if(m.id === 'prediksi') {
+                headers = ['Tanggal', 'Periode', 'Populasi', 'Prediksi (Kg)', 'Laba (Rp)', 'Status'];
+                tableRows = data.map(d => {
+                    const tgl = new Date(d.tanggal).toLocaleDateString('id-ID');
+                    const status = (d.keuntungan || 0) >= 0 ? 'UNTUNG' : 'RUGI';
+                    return `<tr><td>${tgl}</td><td>MA-${d.periodeMA}</td><td align="right">${d.populasi}</td><td align="right">${d.prediksiBesokKg.toFixed(2)}</td><td align="right">Rp ${Math.round(d.keuntungan).toLocaleString('id-ID')}</td><td>${status}</td></tr>`;
+                }).join('');
+            }
+            
+            combinedHTML += `<table><thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${tableRows}</tbody></table></div>`;
+        }
+    });
+
+    combinedHTML += `
+            <div class="footer">
+                <p>© ${new Date().getFullYear()} LIBAS Administration System - Laporan Terpadu Digital</p>
+                <p>Dokumen ini dihasilkan secara otomatis dari data Firestore</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    if (!hasData) {
+        Swal.fire('Info', 'Seluruh data modul masih kosong.', 'info');
+        return;
+    }
+
+    const win = window.open('', '_blank');
+    win.document.write(combinedHTML);
+    win.document.close();
+    
+    // Tunggu sejenak agar browser merender HTML sebelum memicu cetak
+    setTimeout(() => {
+        win.print();
+        tambahLog('🖨️ Cetak Laporan Terpadu berhasil dilakukan', '🖨️');
+    }, 500);
 };
 
 // =========================================
