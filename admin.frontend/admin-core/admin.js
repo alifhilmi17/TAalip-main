@@ -886,6 +886,39 @@ window.toggleAdminRole = async function(uid, currentRole) {
  */
 
 /**
+ * Toggle Mobile Sidebar dengan Overlay
+ */
+window.toggleMobileSidebar = function() {
+    const sidebar = document.querySelector('.sidebar');
+    const body = document.body;
+    
+    sidebar.classList.toggle('active');
+    body.classList.toggle('sidebar-open');
+    
+    // Tutup sidebar saat overlay diklik
+    if (body.classList.contains('sidebar-open')) {
+        const overlay = document.querySelector('body::before');
+        if (overlay) {
+            document.addEventListener('click', closeSidebarOnOverlayClick);
+        }
+    }
+}
+
+/**
+ * Tutup sidebar saat overlay diklik
+ */
+function closeSidebarOnOverlayClick(e) {
+    const sidebar = document.querySelector('.sidebar');
+    const menuToggle = document.querySelector('.menu-toggle');
+    
+    if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+        sidebar.classList.remove('active');
+        document.body.classList.remove('sidebar-open');
+        document.removeEventListener('click', closeSidebarOnOverlayClick);
+    }
+}
+
+/**
  * Pengatur visibilitas submenu sidebar
  */
 window.toggleSidebarMenu = function(id) {
