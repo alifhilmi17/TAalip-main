@@ -137,43 +137,70 @@ body.sidebar-open::before {
   margin-bottom: 2rem;
 }
 
-/* ===== 4. QUICK STATS (STATISTIK RINGKAS) ===== */
+/* ===== 4. QUICK STATS (STATISTIK GLOBAL) ===== */
 .quick-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1.25rem;
   margin-bottom: 2.5rem;
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1400px) {
+  .quick-stats { grid-template-columns: repeat(5, 1fr); }
+}
+
+@media (min-width: 1100px) and (max-width: 1399px) {
   .quick-stats { grid-template-columns: repeat(4, 1fr); }
 }
 
 .stat-card {
   background: var(--bg-white);
-  border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  border-radius: 16px;
+  padding: 1.25rem 1.25rem 1.2rem;
   display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  transition: var(--transition-normal);
+  flex-direction: column;
+  gap: 0.6rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  border: 1px solid var(--border-color) !important;
+  border-left: 1px solid var(--border-color) !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   position: relative;
   overflow: hidden;
 }
 
+/* Override border-left-color dari dashboardTAalip.css agar tidak tampil di admin */
+.stat-card:nth-child(1),
+.stat-card:nth-child(2),
+.stat-card:nth-child(3),
+.stat-card:nth-child(4),
+.stat-card:nth-child(5),
+.stat-card:nth-child(6),
+.stat-card:nth-child(7),
+.stat-card:nth-child(8),
+.stat-card:nth-child(9),
+.stat-card:nth-child(10) {
+  border-left-color: var(--border-color) !important;
+}
+
+/* Override stat-icon background dari dashboardTAalip.css */
+.stat-card:nth-child(1) .stat-icon,
+.stat-card:nth-child(2) .stat-icon,
+.stat-card:nth-child(3) .stat-icon,
+.stat-card:nth-child(4) .stat-icon,
+.stat-card:nth-child(5) .stat-icon {
+  background: var(--bg-light) !important;
+}
+
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--border-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
 }
 
 .stat-card .stat-icon {
-  width: 60px;
-  height: 60px;
-  font-size: 1.75rem;
-  border-radius: 16px;
+  width: 46px;
+  height: 46px;
+  font-size: 1.4rem;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,49 +209,36 @@ body.sidebar-open::before {
 }
 
 .stat-card:hover .stat-icon {
-  transform: scale(1.1);
+  transform: scale(1.12) rotate(-4deg);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .stat-info h4 {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.25rem;
+  letter-spacing: 0.6px;
+  margin: 0;
   font-weight: 600;
 }
 
 .stat-info p {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: var(--text-main);
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
-
-/* Aksen Warna Stat Card */
-.stat-card:nth-child(1) { border-left: 4px solid var(--accent-blue); }
-.stat-card:nth-child(1) .stat-icon { background: rgba(59, 130, 246, 0.1); }
-
-.stat-card:nth-child(2) { border-left: 4px solid var(--accent-green); }
-.stat-card:nth-child(2) .stat-icon { background: rgba(16, 185, 129, 0.1); }
-
-.stat-card:nth-child(3) { border-left: 4px solid var(--accent-indigo); }
-.stat-card:nth-child(3) .stat-icon { background: rgba(99, 102, 241, 0.1); }
-
-.stat-card:nth-child(4) { border-left: 4px solid var(--accent-orange); }
-.stat-card:nth-child(4) .stat-icon { background: rgba(251, 133, 0, 0.1); }
-
-.stat-card:nth-child(5) { border-left: 4px solid var(--accent-red); }
-.stat-card:nth-child(5) .stat-icon { background: rgba(239, 68, 68, 0.1); }
-
-.stat-card:nth-child(6) { border-left: 4px solid var(--accent-purple); }
-.stat-card:nth-child(6) .stat-icon { background: rgba(139, 92, 246, 0.1); }
-
-.stat-card:nth-child(7) { border-left: 4px solid var(--accent-amber); }
-.stat-card:nth-child(7) .stat-icon { background: rgba(245, 158, 11, 0.1); }
-
-.stat-card:nth-child(8) { border-left: 4px solid var(--accent-pink); }
-.stat-card:nth-child(8) .stat-icon { background: rgba(236, 72, 153, 0.1); }
+/* === Stat card icon - neutral (no per-card colors) === */
+.stat-card .stat-icon {
+  background: var(--bg-light);
+}
 
 /* ===== 5. KARTU MODUL FITUR (SHORTCUT) ===== */
 .module-cards {
@@ -430,6 +444,58 @@ canvas {
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--border-color);
+}
+
+/* ===== 8. SISTEM TABS SNAPSHOT ===== */
+.snapshot-tabs-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+}
+
+.tab-btn {
+  background: var(--bg-light);
+  border: 1px solid var(--border-color);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.tab-btn:hover {
+  background: var(--bg-slate);
+  color: var(--accent-slate);
+  border-color: var(--accent-slate);
+}
+
+.tab-btn.active {
+  color: #fff;
+}
+.tab-btn.btn-tab-ayam.active { background: #10b981; border-color: #10b981; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+.tab-btn.btn-tab-keuangan.active { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
+.tab-btn.btn-tab-produksi.active { background: #fb8500; border-color: #fb8500; box-shadow: 0 4px 10px rgba(251, 133, 0, 0.3); }
+.tab-btn.btn-tab-pakan.active { background: #6366f1; border-color: #6366f1; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+.tab-btn.btn-tab-kesehatan.active { background: #ef4444; border-color: #ef4444; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); }
+.tab-btn.btn-tab-vaksin.active { background: #8b5cf6; border-color: #8b5cf6; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3); }
+
+.tab-pane {
+  display: none;
+  animation: fadeInTab 0.4s ease;
+}
+
+.tab-pane.active {
+  display: block;
+}
+
+@keyframes fadeInTab {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .card-header-flex h3 {
@@ -1339,4 +1405,23 @@ canvas {
   .create-account-btn:hover {
     transform: translateY(-1px);
   }
+}
+
+/* ===== 9. SKELETON LOADING ===== */
+.skeleton-cell {
+  height: 16px;
+  background: var(--bg-light);
+  border-radius: 4px;
+  margin: 4px 0;
+  animation: pulse-bg 1.5s infinite;
+}
+
+.skeleton-row td {
+  padding: 12px 15px;
+}
+
+@keyframes pulse-bg {
+  0% { background-color: #f1f5f9; }
+  50% { background-color: #e2e8f0; }
+  100% { background-color: #f1f5f9; }
 }

@@ -52,6 +52,9 @@ window.addEventListener('admin:verified', (e) => {
 let ayamData = [];           // Semua data batch ayam
 let keuanganDataAdmin = [];  // Semua data transaksi keuangan
 let produksiDataAdmin = [];  // Semua data produksi harian
+let pakanDataAdmin = [];     // Semua data logistik pakan
+let kesehatanDataAdmin = []; // Semua data kesehatan ayam
+let vaksinDataAdmin = [];    // Semua data jadwal vaksinasi
 let adminEggChartInstance  = null;
 let adminFinanceChartInstance = null;
 let currentAdminChartPeriod = 7;
@@ -97,6 +100,7 @@ function initAdminDashboard() {
     // Memantau jumlah ayam secara keseluruhan di peternakan.
     onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
         let totalAyam = 0; // Variabel untuk menyimpan total akumulasi ayam
+        let totalAfkir = 0; // Total ayam afkir
         let snapshotData = []; // Array untuk menyimpan detail setiap batch ayam
         
         // Melakukan perulangan pada setiap dokumen batch ayam
@@ -104,6 +108,7 @@ function initAdminDashboard() {
             const data = doc.data();
             // Menambahkan sisa ayam dari setiap batch ke total keseluruhan
             totalAyam += parseInt(data.sisaAyam || 0);
+            if (data.status === 'Afkir') totalAfkir += parseInt(data.sisaAyam || 0);
             snapshotData.push({ id: doc.id, ...data });
         });
 
@@ -112,6 +117,9 @@ function initAdminDashboard() {
         
         // Memperbarui tampilan total ayam di dashboard
         document.getElementById('stat-admin-ayam').textContent = `${totalAyam.toLocaleString('id-ID')} Ekor`;
+        
+        const elAfkir = document.getElementById('stat-admin-afkir');
+        if (elAfkir) elAfkir.textContent = `${totalAfkir.toLocaleString('id-ID')} Ekor`;
         
         // Merender tabel ringkasan (hanya mengambil 8 data terbaru)
         renderAyamSnapshot(snapshotData.slice(0, 8));
@@ -196,9 +204,15 @@ function initAdminDashboard() {
             .filter(d => d.tanggal === today)
             .reduce((sum, d) => sum + (parseInt(d.totalTelur) || 0), 0);
             
+        // Menjumlahkan total telur cacat secara keseluruhan
+        const totalCacat = produksiDataAdmin.reduce((sum, d) => sum + (parseInt(d.telurCacat) || 0), 0);
+            
         // Memperbarui UI untuk statistik telur hari ini
         const elProduksi = document.getElementById('stat-admin-produksi');
         if (elProduksi) elProduksi.textContent = `${totalTelurHariIni.toLocaleString('id-ID')} Butir`;
+        
+        const elCacat = document.getElementById('stat-admin-cacat');
+        if (elCacat) elCacat.textContent = `${totalCacat.toLocaleString('id-ID')} Butir`;
         
         // Mengurutkan dan merender 8 data produksi terbaru ke tabel ringkasan
         const latestProduksi = [...produksiDataAdmin].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
@@ -224,6 +238,8 @@ function initAdminDashboard() {
             pakanList.push({ id: d.id, ...data });
         });
         
+        pakanDataAdmin = pakanList; // Simpan untuk referensi pop up
+        
         // Memperbarui UI sisa pakan (Masuk dikurangi Keluar)
         const elPakan = document.getElementById('stat-admin-pakan');
         if (elPakan) elPakan.textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
@@ -239,6 +255,7 @@ function initAdminDashboard() {
     // Memantau jadwal vaksinasi yang belum selesai (terjadwal)
     onSnapshot(collection(db, "vaksinasi_ayam"), (snapshot) => {
         const vaccineData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        vaksinDataAdmin = vaccineData; // Simpan untuk referensi pop up
         
         // Menghitung jumlah vaksinasi yang statusnya masih 'Terjadwal'
         const terjadwal = vaccineData.filter(d => d.status === 'Terjadwal').length;
@@ -256,6 +273,7 @@ function initAdminDashboard() {
     // Menghitung total kematian ayam (mortalitas) secara keseluruhan.
     onSnapshot(collection(db, "kesehatan_ayam"), (snapshot) => {
         const healthData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        kesehatanDataAdmin = healthData; // Simpan untuk referensi pop up
         
         // Menjumlahkan semua nilai jmlMati dari dokumen kesehatan
         const totalMati = healthData.reduce((sum, d) => sum + (parseInt(d.jmlMati) || 0), 0);
@@ -499,7 +517,7 @@ function renderKeuanganSnapshot(data) {
 function formatTanggal(tglString) {
     if (!tglString) return "-";
     const date = new Date(tglString);
-    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric'});
 }
 
 /**
@@ -519,8 +537,8 @@ function renderProduksiSnapshot(data) {
                 <td style="color:#10b981;">${parseInt(item.telurBaik || 0).toLocaleString('id-ID')}</td>
                 <td style="color:#ef4444;">${parseInt(item.telurCacat || 0).toLocaleString('id-ID')}</td>
                 <td style="text-align:center;">
-                    <button onclick="window.location.href='../../inputproduksi.html'" 
-                        style="background:#fb8500; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Lihat</button>
+                    <button onclick="openProduksiDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
                 </td>
             </tr>
         `).join('');
@@ -544,8 +562,8 @@ function renderPakanSnapshot(data) {
                 <td><span style="color:${item.tipe === 'Masuk' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.8rem;">${(item.tipe || '').toUpperCase()}</span></td>
                 <td><strong>${item.jumlah} ${item.satuan || 'Kg'}</strong></td>
                 <td style="text-align:center;">
-                    <button onclick="window.location.href='../../stokpakan.html'" 
-                        style="background:#6366f1; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Cek</button>
+                    <button onclick="openPakanDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
                 </td>
             </tr>
         `).join('');
@@ -565,12 +583,12 @@ function renderKesehatanSnapshot(data) {
         body.innerHTML = data.map(item => `
             <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                 <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
-                <td><code>${item.batchId || '-'}</code></td>
+                <td><code>${item.customId || item.batchName || (item.batchId ? item.batchId.substring(0, 8) : '-')}</code></td>
                 <td style="color:#ef4444; font-weight:700;">${item.jmlMati || 0} Ekor</td>
                 <td style="font-size:0.8rem;">${item.sebab || '-'}</td>
                 <td style="text-align:center;">
-                    <button onclick="window.location.href='../../kesehatanayam.html'" 
-                        style="background:#ef4444; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Detail</button>
+                    <button onclick="openKesehatanDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
                 </td>
             </tr>
         `).join('');
@@ -591,11 +609,11 @@ function renderVaksinSnapshot(data) {
             <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
                 <td style="font-size:0.82rem;">${formatTanggal(item.tanggal)}</td>
                 <td><strong>${item.namaVaksin || '-'}</strong></td>
-                <td><code>${item.batchId || '-'}</code></td>
+                <td><code>${item.customId || item.batchName || (item.batchId ? item.batchId.substring(0, 8) : '-')}</code></td>
                 <td><span style="background:${item.status === 'Selesai' ? '#10b981' : '#f59e0b'}; color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600;">${(item.status || 'Terjadwal').toUpperCase()}</span></td>
                 <td style="text-align:center;">
-                    <button onclick="window.location.href='../../kesehatanayam.html'" 
-                        style="background:#8b5cf6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">Cek</button>
+                    <button onclick="openVaksinDetail('${item.id}')" 
+                        style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
                 </td>
             </tr>
         `).join('');
@@ -1327,15 +1345,28 @@ window.openAyamDetail = function(id) {
         }
     }).then(async (result) => {
         if (result.isConfirmed) {
-            try {
-                await updateDoc(doc(db, "populasi_ayam", id), {
-                    ...result.value,
-                    updatedAt: serverTimestamp()
-                });
-                Swal.fire({ icon:'success', title:'Berhasil Diperbarui', timer:1500, showConfirmButton:false });
-                logActivity(currentAdminData?.username || 'Admin', 'Data Ayam', `Edit batch ${ayam.customId} via Admin Panel`);
-            } catch (err) {
-                Swal.fire('Gagal', err.message, 'error');
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan data batch ayam yang Anda ubah sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                try {
+                    await updateDoc(doc(db, "populasi_ayam", id), {
+                        ...result.value,
+                        updatedAt: serverTimestamp()
+                    });
+                    Swal.fire({ icon:'success', title:'Berhasil Diperbarui', timer:1500, showConfirmButton:false });
+                    logActivity(currentAdminData?.username || 'Admin', 'Data Ayam', `Edit batch ${ayam.customId} via Admin Panel`);
+                } catch (err) {
+                    Swal.fire('Gagal', err.message, 'error');
+                }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openAyamDetail(id);
             }
         } else if (result.isDenied) {
             const konfirm = await Swal.fire({
@@ -1431,15 +1462,28 @@ window.openKeuanganDetail = function(id) {
         }
     }).then(async (result) => {
         if (result.isConfirmed) {
-            try {
-                await updateDoc(doc(db, "keuangan", id), {
-                    ...result.value,
-                    updatedAt: serverTimestamp()
-                });
-                Swal.fire({ icon:'success', title:'Transaksi Diperbarui', timer:1500, showConfirmButton:false });
-                logActivity(currentAdminData?.username || 'Admin', 'Keuangan', `Edit transaksi "${trx.deskripsi}" via Admin Panel`);
-            } catch (err) {
-                Swal.fire('Gagal', err.message, 'error');
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan data transaksi keuangan yang Anda ubah sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                try {
+                    await updateDoc(doc(db, "keuangan", id), {
+                        ...result.value,
+                        updatedAt: serverTimestamp()
+                    });
+                    Swal.fire({ icon:'success', title:'Transaksi Diperbarui', timer:1500, showConfirmButton:false });
+                    logActivity(currentAdminData?.username || 'Admin', 'Keuangan', `Edit transaksi "${trx.deskripsi}" via Admin Panel`);
+                } catch (err) {
+                    Swal.fire('Gagal', err.message, 'error');
+                }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openKeuanganDetail(id);
             }
         } else if (result.isDenied) {
             const konfirm = await Swal.fire({
@@ -1458,7 +1502,6 @@ window.openKeuanganDetail = function(id) {
         }
     });
 };
-
 /**
  * ===== 10. EDIT AKUN PENGGUNA =====
  */
@@ -1725,4 +1768,367 @@ window.syncAdminAccounts = async function() {
         console.error("Sync Error:", err);
         Swal.fire('Gagal Sinkron', err.message, 'error');
     }
+};
+
+/**
+ * ===== 13. CRUD POPUP: SNAPSHOT LAINNYA =====
+ */
+
+window.openProduksiDetail = function(id) {
+    const data = produksiDataAdmin.find(d => d.id === id);
+    if (!data) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+    
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+
+    Swal.fire({
+        title: '🥚 Detail Produksi',
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+                <div style="background:#fb850018; border-left:4px solid #fb8500; padding:10px 14px; border-radius:8px; margin-bottom:16px;">
+                    <strong style="color:#fb8500; font-size:1.1rem;">TOTAL: ${parseInt(data.totalTelur || 0).toLocaleString('id-ID')} Butir</strong>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label style="${labelStyle}">Tanggal</label>
+                        <input id="ep-tanggal" type="date" value="${data.tanggal || ''}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Telur Baik</label>
+                        <input id="ep-baik" type="number" value="${data.telurBaik || 0}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Telur Cacat</label>
+                        <input id="ep-cacat" type="number" value="${data.telurCacat || 0}" style="${inputStyle}">
+                    </div>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: '💾 Simpan',
+        denyButtonText: '🗑️ Hapus',
+        cancelButtonText: 'Tutup',
+        confirmButtonColor: '#10b981',
+        denyButtonColor: '#ef4444',
+        focusConfirm: false,
+        preConfirm: () => {
+            const telurBaik = parseInt(document.getElementById('ep-baik').value) || 0;
+            const telurCacat = parseInt(document.getElementById('ep-cacat').value) || 0;
+            return {
+                tanggal: document.getElementById('ep-tanggal').value,
+                telurBaik: telurBaik,
+                telurCacat: telurCacat,
+                totalTelur: telurBaik + telurCacat
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            // Konfirmasi sebelum menyimpan
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan data produksi yang Anda masukkan sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+                try {
+                    await updateDoc(doc(db, "produksi_harian", id), { ...result.value, updatedAt: serverTimestamp() });
+                    Swal.fire('Tersimpan!', 'Data produksi berhasil diperbarui.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openProduksiDetail(id);
+            }
+        } else if (result.isDenied) {
+            const confirm = await Swal.fire({
+                title: 'Hapus Data?', text: 'Data produksi ini akan dihapus permanen!', icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!'
+            });
+            if (confirm.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "produksi_harian", id));
+                    Swal.fire('Terhapus!', 'Data produksi telah dihapus.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            }
+        }
+    });
+};
+
+window.openPakanDetail = function(id) {
+    const data = pakanDataAdmin.find(d => d.id === id);
+    if (!data) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+    
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+    const typeColor = data.tipe === 'Masuk' ? '#10b981' : '#ef4444';
+
+    Swal.fire({
+        title: '🥬 Detail Stok Pakan',
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+                <div style="background:${typeColor}18; border-left:4px solid ${typeColor}; padding:10px 14px; border-radius:8px; margin-bottom:16px;">
+                    <strong style="color:${typeColor}; font-size:1.1rem;">${(data.tipe || '').toUpperCase()}</strong>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label style="${labelStyle}">Tanggal</label>
+                        <input id="ek-tanggal" type="date" value="${data.tanggal || ''}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Barang/Pakan</label>
+                        <input id="ek-barang" value="${data.namaBarang || ''}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Jumlah</label>
+                        <input id="ek-jumlah" type="number" value="${data.jumlah || 0}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Tipe</label>
+                        <select id="ek-tipe" style="${inputStyle}">
+                            <option value="Masuk" ${data.tipe === 'Masuk' ? 'selected' : ''}>Masuk</option>
+                            <option value="Keluar" ${data.tipe === 'Keluar' ? 'selected' : ''}>Keluar</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `,
+        width: '500px',
+        showDenyButton: true, showCancelButton: true,
+        confirmButtonText: '💾 Simpan', denyButtonText: '🗑️ Hapus', cancelButtonText: 'Tutup',
+        confirmButtonColor: '#10b981', denyButtonColor: '#ef4444', focusConfirm: false,
+        preConfirm: () => {
+            return {
+                tanggal: document.getElementById('ek-tanggal').value,
+                namaBarang: document.getElementById('ek-barang').value,
+                jumlah: parseFloat(document.getElementById('ek-jumlah').value) || 0,
+                tipe: document.getElementById('ek-tipe').value
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan data stok pakan yang Anda masukkan sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+                try {
+                    await updateDoc(doc(db, "stok_pakan", id), { ...result.value, updatedAt: serverTimestamp() });
+                    Swal.fire('Tersimpan!', 'Data stok pakan berhasil diperbarui.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openPakanDetail(id);
+            }
+        } else if (result.isDenied) {
+            const confirm = await Swal.fire({ title: 'Hapus Data?', text: 'Data akan dihapus permanen!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!' });
+            if (confirm.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "stok_pakan", id));
+                    Swal.fire('Terhapus!', 'Data stok pakan dihapus.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            }
+        }
+    });
+};
+
+window.openKesehatanDetail = function(id) {
+    const data = kesehatanDataAdmin.find(d => d.id === id);
+    if (!data) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+    
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+
+    Swal.fire({
+        title: '🩺 Detail Kesehatan',
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label style="${labelStyle}">Tanggal</label>
+                        <input id="eh-tanggal" type="date" value="${data.tanggal || ''}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Jml Kematian (Ekor)</label>
+                        <input id="eh-mati" type="number" value="${data.jmlMati || 0}" style="${inputStyle}">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="${labelStyle}">Penyebab/Gejala</label>
+                        <input id="eh-sebab" value="${data.sebab || ''}" style="${inputStyle}">
+                    </div>
+                </div>
+            </div>
+        `,
+        width: '500px', showDenyButton: true, showCancelButton: true,
+        confirmButtonText: '💾 Simpan', denyButtonText: '🗑️ Hapus', cancelButtonText: 'Tutup',
+        confirmButtonColor: '#10b981', denyButtonColor: '#ef4444', focusConfirm: false,
+        preConfirm: () => {
+            return {
+                tanggal: document.getElementById('eh-tanggal').value,
+                jmlMati: parseInt(document.getElementById('eh-mati').value) || 0,
+                sebab: document.getElementById('eh-sebab').value
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan data laporan kesehatan yang Anda masukkan sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+                try {
+                    await updateDoc(doc(db, "kesehatan_ayam", id), { ...result.value, updatedAt: serverTimestamp() });
+                    Swal.fire('Tersimpan!', 'Laporan kesehatan berhasil diperbarui.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openKesehatanDetail(id);
+            }
+        } else if (result.isDenied) {
+            const confirm = await Swal.fire({ title: 'Hapus Data?', text: 'Data laporan kesehatan akan dihapus permanen!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!' });
+            if (confirm.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "kesehatan_ayam", id));
+                    Swal.fire('Terhapus!', 'Data dihapus.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            }
+        }
+    });
+};
+
+window.openVaksinDetail = function(id) {
+    const data = vaksinDataAdmin.find(d => d.id === id);
+    if (!data) { Swal.fire('Error', 'Data tidak ditemukan.', 'error'); return; }
+    
+    const inputStyle = 'width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:0.88rem; outline:none; box-sizing:border-box;';
+    const labelStyle = 'font-weight:600; color:#64748b; font-size:0.75rem; display:block; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.05em;';
+
+    Swal.fire({
+        title: '💉 Jadwal Vaksinasi',
+        html: `
+            <div style="text-align:left; font-size:0.9rem;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label style="${labelStyle}">Tanggal</label>
+                        <input id="ev-tanggal" type="date" value="${data.tanggal || ''}" style="${inputStyle}">
+                    </div>
+                    <div>
+                        <label style="${labelStyle}">Nama Vaksin</label>
+                        <input id="ev-nama" value="${data.namaVaksin || ''}" style="${inputStyle}">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="${labelStyle}">Status Vaksinasi</label>
+                        <select id="ev-status" style="${inputStyle}">
+                            <option value="Terjadwal" ${data.status === 'Terjadwal' ? 'selected' : ''}>Terjadwal</option>
+                            <option value="Selesai" ${data.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        `,
+        width: '500px', showDenyButton: true, showCancelButton: true,
+        confirmButtonText: '💾 Simpan', denyButtonText: '🗑️ Hapus', cancelButtonText: 'Tutup',
+        confirmButtonColor: '#10b981', denyButtonColor: '#ef4444', focusConfirm: false,
+        preConfirm: () => {
+            return {
+                tanggal: document.getElementById('ev-tanggal').value,
+                namaVaksin: document.getElementById('ev-nama').value,
+                status: document.getElementById('ev-status').value
+            };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            const konfirmasi = await Swal.fire({
+                title: 'Simpan Perubahan?',
+                text: 'Pastikan jadwal vaksinasi yang Anda masukkan sudah benar.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Koreksi Lagi',
+                confirmButtonColor: '#10b981'
+            });
+            if (konfirmasi.isConfirmed) {
+                Swal.fire({ title: 'Menyimpan...', didOpen: () => { Swal.showLoading(); } });
+                try {
+                    await updateDoc(doc(db, "vaksinasi_ayam", id), { ...result.value, updatedAt: serverTimestamp() });
+                    Swal.fire('Tersimpan!', 'Jadwal vaksinasi berhasil diperbarui.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            } else if (konfirmasi.dismiss === Swal.DismissReason.cancel) {
+                window.openVaksinDetail(id);
+            }
+        } else if (result.isDenied) {
+            const confirm = await Swal.fire({ title: 'Hapus Data?', text: 'Jadwal ini akan dihapus permanen!', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus!' });
+            if (confirm.isConfirmed) {
+                try {
+                    await deleteDoc(doc(db, "vaksinasi_ayam", id));
+                    Swal.fire('Terhapus!', 'Data dihapus.', 'success');
+                } catch (err) { Swal.fire('Error', err.message, 'error'); }
+            }
+        }
+    });
+};
+
+/**
+ * ===== 14. SISTEM TABS SNAPSHOT =====
+ */
+window.openSnapshotTab = function(evt, tabName) {
+    // Sembunyikan semua tab content
+    const tabPanes = document.getElementsByClassName("tab-pane");
+    for (let i = 0; i < tabPanes.length; i++) {
+        tabPanes[i].style.display = "none";
+        tabPanes[i].classList.remove("active");
+    }
+
+    // Hapus class 'active' dari semua tombol
+    const tabBtns = document.getElementsByClassName("tab-btn");
+    for (let i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].classList.remove("active");
+    }
+
+    // Tampilkan tab yang dipilih
+    const selectedTab = document.getElementById(tabName);
+    if (selectedTab) {
+        selectedTab.style.display = "block";
+        selectedTab.classList.add("active");
+    }
+
+    // Tambahkan class 'active' pada tombol yang diklik
+    if (evt && evt.currentTarget) {
+        evt.currentTarget.classList.add("active");
+    }
+};
+
+/**
+ * ===== 15. FITUR LIVE SEARCH =====
+ */
+window.filterUserList = function() {
+    const input = document.getElementById("searchUserInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#adminUserListBody tr:not(.skeleton-row)");
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+};
+
+window.filterLogList = function() {
+    const input = document.getElementById("searchLogInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#systemLogBody tr:not(.skeleton-row)");
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
 };

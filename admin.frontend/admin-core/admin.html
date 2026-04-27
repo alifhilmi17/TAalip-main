@@ -1,604 +1,1197 @@
-<!DOCTYPE html>
+<!-- =========================================================
+SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+File: admin.html
+Deskripsi: Dashboard utama Administrator (Admin Panel).
+Pusat kendali manajemen pengguna dan monitoring data global.
+========================================================= -->
+
+<!doctype html>
 <html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - LIBAS System</title>
 
-<head>
-  <!-- =========================================================
-     SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
-     File: admin.html
-     Deskripsi: Dashboard utama Administrator (Admin Panel).
-     Pusat kendali manajemen pengguna dan monitoring data global.
-     ========================================================= -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel - LIBAS System</title>
+    <!-- ===== FONTS & ANIMATIONS ===== -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
 
-  <!-- ===== FONTS & ANIMATIONS ===== -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- ===== CSS KUSTOM ===== -->
+    <link rel="stylesheet" href="../../css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="admin.css" />
 
-  <!-- ===== CSS KUSTOM ===== -->
-  <link rel="stylesheet" href="../../css/dashboardTAalip.css" />
-  <link rel="stylesheet" href="admin.css" />
+    <!-- ===== LIBRARIES ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  </head>
 
-  <!-- ===== LIBRARIES ===== -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-</head>
+  <body>
+    <!-- ===== SIDEBAR NAVIGASI ===== -->
+    <aside class="sidebar" aria-label="Sidebar Navigasi Utama">
+      <div class="sidebar-content">
+        <!-- Logo Aplikasi -->
+        <h2 class="logo">🐔 LIBAS</h2>
 
-<body>
+        <!-- Navigasi Menu -->
+        <nav class="main-nav">
+          <!-- Dasar (User View) -->
+          <a href="../../admin.frontend/admin-core/admin.html" title="Dashboard"
+            >🏠 Dashboard</a
+          >
 
-  <!-- ===== SIDEBAR NAVIGASI ===== -->
-  <aside class="sidebar" aria-label="Sidebar Navigasi Utama">
-    <div class="sidebar-content">
+          <!-- Restockreminder (Submenu) -->
+          <button
+            class="has-submenu"
+            onclick="toggleSidebarMenu('restockreminderSubmenu')"
+            aria-expanded="false"
+          >
+            Restock Reminder <span class="arrow">▸</span>
+          </button>
+          <div class="submenu" id="restockreminderSubmenu" aria-hidden="true">
+            <a href="../../restockreminder.html">⏰ Restock Reminder</a>
+          </div>
 
-      <!-- Logo Aplikasi -->
-      <h2 class="logo">🐔 LIBAS</h2>
-      
+          <!-- MANAJEMEN PENGGUNA (FITUR KHUSUS ADMIN) -->
+          <div
+            style="
+              margin-top: 1rem;
+              padding-top: 1rem;
+              border-top: 1px solid rgba(255, 255, 255, 0.1);
+            "
+          >
+            <a
+              href="#"
+              onclick="openCreateAccountModal()"
+              style="
+                background: rgba(16, 185, 129, 0.1);
+                color: #10b981 !important;
+                border-radius: 8px;
+                padding: 10px 15px;
+                display: block;
+                text-decoration: none;
+                font-weight: 600;
+                font-size: 0.9rem;
+              "
+            >
+              ➕ Tambah Pengguna Baru
+            </a>
+          </div>
 
-      <!-- Navigasi Menu -->
-      <nav class="main-nav">
-
-        <!-- Dasar (User View) -->
-        <a href="../../admin.frontend/admin-core/admin.html" title="Dashboard">🏠 Dashboard</a>
-
-        <!-- Restockreminder (Submenu) -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('restockreminderSubmenu')" aria-expanded="false">
-          Restock Reminder <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="restockreminderSubmenu" aria-hidden="true">
-          <a href="../../restockreminder.html">⏰ Restock Reminder</a>
-        </div>
-
-        <!-- MANAJEMEN PENGGUNA (FITUR KHUSUS ADMIN) -->
-        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
-          <a href="#" onclick="openCreateAccountModal()"
-            style="background: rgba(16, 185, 129, 0.1); color: #10b981 !important; border-radius: 8px; padding: 10px 15px; display: block; text-decoration: none; font-weight: 600; font-size: 0.9rem;">
-            ➕ Tambah Pengguna Baru
+          <!-- Switch Tampilan -->
+          <a
+            href="../../dashboardTAalip.html"
+            class="switch-mode-btn"
+            title="Buka Tampilan Pengguna"
+            style="margin-top: 1.5rem"
+          >
+            🔄 Mode Pengguna
           </a>
-        </div>
+        </nav>
 
-        <!-- Switch Tampilan -->
-        <a href="../../dashboardTAalip.html" class="switch-mode-btn" title="Buka Tampilan Pengguna"
-          style="margin-top: 1.5rem;">
-          🔄 Mode Pengguna
-        </a>
-      </nav>
-
-      <!-- Profil Administrator di Sidebar -->
-      <div class="sidebar-profile">
-        <img src="../../images/Screenshot.png" alt="Foto Profil Admin" class="profile-pic" onclick="goToProfile()" />
-        <div class="profile-name-container">
-          <p class="profile-name"></p>
-          <a href="../../editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
-        </div>
-        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
-      </div>
-
-    </div>
-  </aside>
-
-  <!-- ===== KONTEN UTAMA (MAIN CONTENT) ===== -->
-  <main class="main-content">
-
-    <!-- Header Mobile (Hanya muncul di layar kecil) -->
-    <header class="mobile-header">
-      <div class="mobile-logo">🛡️ Admin Panel</div>
-      <button class="menu-toggle" onclick="toggleMobileSidebar()"
-        aria-label="Toggle Sidebar">
-        ☰
-      </button>
-    </header>
-
-
-    <!-- Section 1: Hero Banner Welcome -->
-    <section class="welcome-card admin-welcome animate__animated animate__fadeInDown">
-      <h2>Ringkasan Seluruh Sistem 🛡️</h2>
-      <p>Pusat kendali untuk memantau performa, manajemen akun, serta integrasi data peternakan Anda.</p>
-    </section>
-
-    <!-- Section 2: Statistik Global Real-time -->
-    <section class="quick-stats animate__animated animate__fadeInUp">
-      <div class="stat-card">
-        <div class="stat-icon">👥</div>
-        <div class="stat-info">
-          <h4>Pengguna Terdaftar</h4>
-          <p id="stat-user">0 Orang</p>
+        <!-- Profil Administrator di Sidebar -->
+        <div class="sidebar-profile">
+          <img
+            src="../../images/Screenshot.png"
+            alt="Foto Profil Admin"
+            class="profile-pic"
+            onclick="goToProfile()"
+          />
+          <div class="profile-name-container">
+            <p class="profile-name"></p>
+            <a
+              href="../../editProfileTAalip.html"
+              class="edit-profile-icon"
+              title="Edit Profil"
+              >&#x270E;</a
+            >
+          </div>
+          <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon">🐓</div>
-        <div class="stat-info">
-          <h4>Populasi Ayam</h4>
-          <p id="stat-admin-ayam">- Ekor</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-info">
-          <h4>Batch Ternak Aktif</h4>
-          <p id="stat-admin-batch">0 Batch</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🥚</div>
-        <div class="stat-info">
-          <h4>Total Telur Hari Ini</h4>
-          <p id="stat-admin-produksi">0 Butir</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">📉</div>
-        <div class="stat-info">
-          <h4>Mortalitas Total</h4>
-          <p id="stat-admin-mortalitas">0 Ekor</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🥬</div>
-        <div class="stat-info">
-          <h4>Sisa Stok Pakan</h4>
-          <p id="stat-admin-pakan">0 Kg</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-info">
-          <h4>Total Transaksi</h4>
-          <p id="stat-admin-uang">- Transaksi</p>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🏦</div>
-        <div class="stat-info">
-          <h4>Saldo Finansial</h4>
-          <p id="stat-admin-prediksi">Rp 0</p>
-        </div>
-      </div>
-    </section>
+    </aside>
 
-    <!-- ===== GRAFIK ANALITIK ADMIN ===== -->
-    <!-- Section 2c: Tren Produksi & Keuangan Real-time -->
-    <section class="charts-section animate__animated animate__fadeInUp">
+    <!-- ===== KONTEN UTAMA (MAIN CONTENT) ===== -->
+    <main class="main-content">
+      <!-- Header Mobile (Hanya muncul di layar kecil) -->
+      <header class="mobile-header">
+        <div class="mobile-logo">🛡️ Admin Panel</div>
+        <button
+          class="menu-toggle"
+          onclick="toggleMobileSidebar()"
+          aria-label="Toggle Sidebar"
+        >
+          ☰
+        </button>
+      </header>
 
-      <!-- Grafik Tren Produksi Telur -->
-      <div class="chart-container chart-produksi-card">
-        <div class="chart-header">
-          <div class="chart-title-group">
-            <h3>📈 Tren Produksi Telur</h3>
-            <span class="chart-subtitle">Analitik Admin</span>
-          </div>
-          <div class="chart-filter-group">
-            <button class="chart-filter-btn admin-chart-filter active" onclick="gantiPeriodeAdminChart(7, this)">7 Hari</button>
-            <button class="chart-filter-btn admin-chart-filter" onclick="gantiPeriodeAdminChart(14, this)">14 Hari</button>
-            <button class="chart-filter-btn admin-chart-filter" onclick="gantiPeriodeAdminChart(30, this)">30 Hari</button>
+      <!-- Section 1: Hero Banner Welcome -->
+      <section
+        class="welcome-card admin-welcome animate__animated animate__fadeInDown"
+      >
+        <h2>Ringkasan Seluruh Sistem 🛡️</h2>
+        <p>
+          Pusat kendali untuk memantau performa, manajemen akun, serta integrasi
+          data peternakan Anda.
+        </p>
+      </section>
+
+      <!-- Section 2: Statistik Global -->
+      <section class="quick-stats animate__animated animate__fadeInUp">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-info">
+            <h4>Pengguna Terdaftar</h4>
+            <p id="stat-user">0 Orang</p>
           </div>
         </div>
-        <!-- Mini statistik ringkasan -->
-        <div class="chart-mini-stats">
-          <div class="mini-stat">
-            <span class="mini-stat-icon" style="background:rgba(251,133,0,0.15);color:#fb8500">🥚</span>
-            <div><p class="mini-stat-label">Total Butir</p><p class="mini-stat-val" id="admin-chart-total">0</p></div>
-          </div>
-          <div class="mini-stat">
-            <span class="mini-stat-icon" style="background:rgba(16,185,129,0.15);color:#10b981">✅</span>
-            <div><p class="mini-stat-label">Telur Baik</p><p class="mini-stat-val" id="admin-chart-baik">0</p></div>
-          </div>
-          <div class="mini-stat">
-            <span class="mini-stat-icon" style="background:rgba(239,68,68,0.15);color:#ef4444">❌</span>
-            <div><p class="mini-stat-label">Telur Cacat</p><p class="mini-stat-val" id="admin-chart-cacat">0</p></div>
-          </div>
-          <div class="mini-stat">
-            <span class="mini-stat-icon" style="background:rgba(99,102,241,0.15);color:#6366f1">📊</span>
-            <div><p class="mini-stat-label">Rata-rata/Hari</p><p class="mini-stat-val" id="admin-chart-rata">0</p></div>
+        <div class="stat-card">
+          <div class="stat-icon">🐓</div>
+          <div class="stat-info">
+            <h4>Populasi Ayam</h4>
+            <p id="stat-admin-ayam">- Ekor</p>
           </div>
         </div>
-        <div class="chart-canvas-wrapper">
-          <canvas id="adminEggChart"></canvas>
-          <div class="chart-empty-overlay" id="adminChartEmptyOverlay" style="display:flex;">
-            <span class="chart-empty-icon">🥚</span>
-            <p>Belum ada data produksi</p>
-            <small>Data akan muncul saat ada input produksi harian.</small>
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <h4>Batch Ternak Aktif</h4>
+            <p id="stat-admin-batch">0 Batch</p>
           </div>
         </div>
-      </div>
-
-      <!-- Grafik Pemasukan vs Pengeluaran -->
-      <div class="chart-container">
-        <h3>📊 Pemasukan vs Pengeluaran <span style="font-weight:400; font-size:0.8rem; color:#94a3b8;">Bulan Ini</span></h3>
-        <canvas id="adminFinanceChart"></canvas>
-      </div>
-
-    </section>
-
-    <!-- Section 3: Shortcut Modul Fitur -->
-    <section class="modules-grid animate__animated animate__fadeInUp">
-      <div class="management-card">
-        <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
-          <h3 style="margin: 0;">🧩 Manajemen Modul Fitur</h3>
-          <span class="badge">8 Modul Aktif</span>
-        </div>
-        
-        <div class="module-cards">
-          <!-- 1. Modul Data Ayam -->
-          <div class="module-card">
-            <div class="mod-icon">🐓</div>
-            <h4>Data Ayam</h4>
-            <p>Kelola populasi, batch ternak, dan mutasi kandang secara real-time.</p>
-            <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 2. Modul Kesehatan -->
-          <div class="module-card">
-            <div class="mod-icon">🩺</div>
-            <h4>Kesehatan</h4>
-            <p>Pantau status medis, jadwal vaksinasi, dan riwayat pengobatan ayam.</p>
-            <a href="../../kesehatanayam.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 3. Modul Prediksi -->
-          <div class="module-card">
-            <div class="mod-icon">📈</div>
-            <h4>Prediksi Hasil</h4>
-            <p>Estimasi produksi telur masa depan dengan analisis machine learning.</p>
-            <a href="../../prediksihasil.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 4. Modul Produksi -->
-          <div class="module-card">
-            <div class="mod-icon">🥚</div>
-            <h4>Produksi Harian</h4>
-            <p>Catat hasil panen telur harian dan pantau produktivitas kawanan.</p>
-            <a href="../../inputproduksi.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 5. Modul Persediaan -->
-          <div class="module-card">
-            <div class="mod-icon">🥬</div>
-            <h4>Stok Pakan</h4>
-            <p>Manajemen logistik pakan, suplemen, dan pengingat restock otomatis.</p>
-            <a href="../../stokpakan.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 6. Modul Keuangan -->
-          <div class="module-card">
-            <div class="mod-icon">💵</div>
-            <h4>Keuangan</h4>
-            <p>Rekapitulasi pemasukan, pengeluaran, dan arus kas operasional.</p>
-            <a href="../../keuangan.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 7. Modul Dokumen -->
-          <div class="module-card">
-            <div class="mod-icon">📄</div>
-            <h4>Pusat Dokumen</h4>
-            <p>Arsip digital untuk laporan ekspor, sertifikat, dan data historis.</p>
-            <a href="../../dokumen.html" class="mod-btn">Buka Modul</a>
-          </div>
-
-          <!-- 8. Simulasi Dashboard -->
-          <div class="module-card">
-            <div class="mod-icon">📱</div>
-            <h4>Preview User</h4>
-            <p>Simulasi antarmuka aplikasi yang diakses oleh staf operasional.</p>
-            <a href="../../dashboardTAalip.html" class="mod-btn">Buka Preview</a>
+        <div class="stat-card">
+          <div class="stat-icon">🥚</div>
+          <div class="stat-info">
+            <h4>Total Telur Hari Ini</h4>
+            <p id="stat-admin-produksi">0 Butir</p>
           </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Section 4: Tabel Manajemen Pengguna -->
-    <section id="userManagementSection" class="user-management animate__animated animate__fadeInUp">
-      <div class="management-card">
-        <div class="card-header-flex">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <h3>👥 Manajemen Pengguna</h3>
-            <span class="badge" id="user-count-badge">0 Users</span>
-          </div>
-
-          <div style="display: flex; gap: 10px;">
-            <button class="action-btn-small" onclick="syncAdminAccounts()" style="background: #6366f1; color: white; padding: 0 15px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px;" title="Perbaiki Akun Admin yang Hilang">
-              🔄 Sinkronkan
-            </button>
-            <button class="create-account-btn" onclick="openCreateAccountModal()">
-              <span>➕</span> Buat Akun Baru
-            </button>
+        <div class="stat-card">
+          <div class="stat-icon">📉</div>
+          <div class="stat-info">
+            <h4>Mortalitas Total</h4>
+            <p id="stat-admin-mortalitas">0 Ekor</p>
           </div>
         </div>
-        <div class="table-responsive">
-          <table class="logs-table">
-            <thead>
-              <tr>
-                <th>Nama Lengkap</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Tgl Bergabung</th>
-                <th>Hak Akses</th>
-                <th>Status</th>
-                <th>Tindakan</th>
-              </tr>
-            </thead>
-            <tbody id="adminUserListBody">
-              <!-- Diisi secara dinamis melalui admin.js -->
-              <tr>
-                <td colspan="6" style="text-align:center;">Menghubungkan ke database...</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="stat-card">
+          <div class="stat-icon">🥬</div>
+          <div class="stat-info">
+            <h4>Sisa Stok Pakan</h4>
+            <p id="stat-admin-pakan">0 Kg</p>
+          </div>
         </div>
-      </div>
-    </section>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <h4>Total Transaksi</h4>
+            <p id="stat-admin-uang">- Transaksi</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏦</div>
+          <div class="stat-info">
+            <h4>Saldo Finansial</h4>
+            <p id="stat-admin-prediksi">Rp 0</p>
+          </div>
+        </div>
+        <!-- Card Telur Tidak Panen (akumulasi telur cacat) -->
+        <div class="stat-card">
+          <div class="stat-icon">❌</div>
+          <div class="stat-info">
+            <h4>Telur Tidak Panen</h4>
+            <p id="stat-admin-cacat">0 Butir</p>
+          </div>
+        </div>
+        <!-- Card Ayam Afkir (sisa ayam dengan status Afkir) -->
+        <div class="stat-card">
+          <div class="stat-icon">🍗</div>
+          <div class="stat-info">
+            <h4>Status Afkir</h4>
+            <p id="stat-admin-afkir">0 Ekor</p>
+          </div>
+        </div>
+      </section>
 
-    <!-- Section 5: Ringkasan Data -->
-    <section class="snapshot-management animate__animated animate__fadeInUp">
-      <div class="management-card">
-        <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
-          <h3 style="margin: 0;">📊 Ringkasan Data</h3>
-          <span class="badge">6 Kategori Informasi</span>
-        </div>
-        
-        <div class="office-admin" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
-          <!-- Tabel Snapshot Batch Ayam -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%); flex:1; margin:0;">🐓 Ringkasan Batch Ternak</h3>
+      <!-- ===== GRAFIK ANALITIK ADMIN ===== -->
+      <!-- Section 2c: Tren Produksi & Keuangan Real-time -->
+      <section class="charts-section animate__animated animate__fadeInUp">
+        <!-- Grafik Tren Produksi Telur -->
+        <div class="chart-container chart-produksi-card">
+          <div class="chart-header">
+            <div class="chart-title-group">
+              <h3>📈 Tren Produksi Telur</h3>
+              <span class="chart-subtitle">Analitik Admin</span>
             </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Batch ID</th>
-                    <th>Spesies</th>
-                    <th>Status</th>
-                    <th>Sisa Stok</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminAyamSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
+            <div class="chart-filter-group">
+              <button
+                class="chart-filter-btn admin-chart-filter active"
+                onclick="gantiPeriodeAdminChart(7, this)"
+              >
+                7 Hari
+              </button>
+              <button
+                class="chart-filter-btn admin-chart-filter"
+                onclick="gantiPeriodeAdminChart(14, this)"
+              >
+                14 Hari
+              </button>
+              <button
+                class="chart-filter-btn admin-chart-filter"
+                onclick="gantiPeriodeAdminChart(30, this)"
+              >
+                30 Hari
+              </button>
             </div>
           </div>
-
-          <!-- Tabel Snapshot Keuangan -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%); flex:1; margin:0;">💵 Mutasi Kas Terakhir</h3>
-            </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Hari/Tgl</th>
-                    <th>Keterangan</th>
-                    <th>Tipe</th>
-                    <th>Nominal</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminKeuanganSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tabel Snapshot Produksi -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #fb8500 0%, #ffb703 100%); flex:1; margin:0;">🥚 Produksi Telur Terakhir</h3>
-            </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Tanggal</th>
-                    <th>Total</th>
-                    <th>Baik</th>
-                    <th>Cacat</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminProduksiSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tabel Snapshot Stok Pakan -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); flex:1; margin:0;">🥬 Logistik & Stok Pakan</h3>
-            </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Tanggal</th>
-                    <th>Barang</th>
-                    <th>Tipe</th>
-                    <th>Jumlah</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminPakanSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tabel Snapshot Kesehatan -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); flex:1; margin:0;">🩺 Laporan Kesehatan & Mortalitas</h3>
-            </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Tanggal</th>
-                    <th>Batch</th>
-                    <th>Mati</th>
-                    <th>Sebab</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminKesehatanSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Tabel Snapshot Vaksinasi -->
-          <div class="schedule-card" style="align-self:stretch;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:0;">
-              <h3 style="background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%); flex:1; margin:0;">💉 Jadwal Vaksinasi Terdekat</h3>
-            </div>
-            <div class="schedule-content">
-              <table class="logs-table">
-                <thead>
-                  <tr>
-                    <th>Tanggal</th>
-                    <th>Vaksin</th>
-                    <th>Batch</th>
-                    <th>Status</th>
-                    <th style="text-align:center;">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody id="adminVaksinSnapshot">
-                  <!-- Diisi secara dinamis melalui admin.js -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 6: Manajemen Operasional (Aktivitas, Pengumuman, Jadwal) -->
-    <section class="operational-management animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
-      <div class="management-card">
-        <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 2rem; padding-bottom: 1.5rem;">
-          <h3 style="margin: 0;">📅 Manajemen Operasional Peternakan</h3>
-          <span class="badge">Aktivitas & Komunikasi</span>
-        </div>
-
-        <div class="office-admin" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem;">
-          
-          <!-- Aktivitas Harian -->
-          <div class="manage-card">
-            <h3 style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">🧺 Aktivitas Harian</h3>
-            <div class="schedule-content">
-              <ul id="adminActivityList" class="activity-list" style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
-                <!-- Diisi via admin.js -->
-              </ul>
-              <form id="adminAddActivityForm" class="add-form" style="margin-top: 1.5rem; display: flex; gap: 8px;">
-                <input type="text" id="adminActivityInput" placeholder="Tambah aktivitas harian..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <button type="submit" style="background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- Pengumuman Sistem -->
-          <div class="reminder-card">
-            <h3 style="background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);">📢 Pengumuman</h3>
-            <div class="schedule-content">
-              <ul id="adminAnnouncementList" class="activity-list" style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto;">
-                <!-- Diisi via admin.js -->
-              </ul>
-              <form id="adminAddAnnouncementForm" class="add-form" style="margin-top: 1.5rem; display: flex; gap: 8px;">
-                <input type="text" id="adminAnnouncementInput" placeholder="Ketik pengumuman baru..." required style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
-                <button type="submit" style="background: #ff9966; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-weight: 600;">➕</button>
-              </form>
-            </div>
-          </div>
-
-          <!-- Jadwal Kegiatan -->
-          <div class="schedule-card" style="grid-column: span 1;">
-            <h3 style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">📆 Jadwal Agenda Peternakan</h3>
-            <div class="schedule-content">
-              <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                <table class="logs-table" id="adminScheduleTable">
-                  <thead>
-                    <tr>
-                      <th>Tgl/Waktu</th>
-                      <th>Kegiatan</th>
-                      <th>Tempat</th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <!-- Diisi via admin.js -->
-                  </tbody>
-                </table>
+          <!-- Mini statistik ringkasan -->
+          <div class="chart-mini-stats">
+            <div class="mini-stat">
+              <span
+                class="mini-stat-icon"
+                style="background: rgba(251, 133, 0, 0.15); color: #fb8500"
+                >🥚</span
+              >
+              <div>
+                <p class="mini-stat-label">Total Butir</p>
+                <p class="mini-stat-val" id="admin-chart-total">0</p>
               </div>
-              
-              <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-                <p style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.8rem;">➕ TAMBAH AGENDA BARU</p>
-                <form id="adminAddScheduleForm" class="add-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                  <input type="text" id="adminTgl" placeholder="Tgl (cth: 25 Okt)" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
-                  <input type="time" id="adminWaktu" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
-                  <input type="text" id="adminAgenda" placeholder="Nama Kegiatan" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
-                  <input type="text" id="adminTempat" placeholder="Lokasi" required style="padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 0.85rem;">
-                  <button type="submit" style="grid-column: span 2; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-top: 5px;">Simpan Agenda Baru</button>
+            </div>
+            <div class="mini-stat">
+              <span
+                class="mini-stat-icon"
+                style="background: rgba(16, 185, 129, 0.15); color: #10b981"
+                >✅</span
+              >
+              <div>
+                <p class="mini-stat-label">Telur Baik</p>
+                <p class="mini-stat-val" id="admin-chart-baik">0</p>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span
+                class="mini-stat-icon"
+                style="background: rgba(239, 68, 68, 0.15); color: #ef4444"
+                >❌</span
+              >
+              <div>
+                <p class="mini-stat-label">Telur Cacat</p>
+                <p class="mini-stat-val" id="admin-chart-cacat">0</p>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span
+                class="mini-stat-icon"
+                style="background: rgba(99, 102, 241, 0.15); color: #6366f1"
+                >📊</span
+              >
+              <div>
+                <p class="mini-stat-label">Rata-rata/Hari</p>
+                <p class="mini-stat-val" id="admin-chart-rata">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="chart-canvas-wrapper">
+            <canvas id="adminEggChart"></canvas>
+            <div
+              class="chart-empty-overlay"
+              id="adminChartEmptyOverlay"
+              style="display: flex"
+            >
+              <span class="chart-empty-icon">🥚</span>
+              <p>Belum ada data produksi</p>
+              <small>Data akan muncul saat ada input produksi harian.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grafik Pemasukan vs Pengeluaran -->
+        <div class="chart-container">
+          <h3>
+            📊 Pemasukan vs Pengeluaran
+            <span style="font-weight: 400; font-size: 0.8rem; color: #94a3b8"
+              >Bulan Ini</span
+            >
+          </h3>
+          <canvas id="adminFinanceChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Section 3: Shortcut Modul Fitur -->
+      <section class="modules-grid animate__animated animate__fadeInUp">
+        <div class="management-card">
+          <div
+            class="card-header-flex"
+            style="border-bottom: none; margin-bottom: 2rem"
+          >
+            <h3 style="margin: 0">🧩 Manajemen Modul Fitur</h3>
+            <span class="badge">8 Modul Aktif</span>
+          </div>
+
+          <div class="module-cards">
+            <!-- 1. Modul Data Ayam -->
+            <div class="module-card">
+              <div class="mod-icon">🐓</div>
+              <h4>Data Ayam</h4>
+              <p>
+                Kelola populasi, batch ternak, dan mutasi kandang secara
+                real-time.
+              </p>
+              <a href="../../dataAyamTAalip.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 2. Modul Kesehatan -->
+            <div class="module-card">
+              <div class="mod-icon">🩺</div>
+              <h4>Kesehatan</h4>
+              <p>
+                Pantau status medis, jadwal vaksinasi, dan riwayat pengobatan
+                ayam.
+              </p>
+              <a href="../../kesehatanayam.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 3. Modul Prediksi -->
+            <div class="module-card">
+              <div class="mod-icon">📈</div>
+              <h4>Prediksi Hasil</h4>
+              <p>
+                Estimasi produksi telur masa depan dengan analisis machine
+                learning.
+              </p>
+              <a href="../../prediksihasil.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 4. Modul Produksi -->
+            <div class="module-card">
+              <div class="mod-icon">🥚</div>
+              <h4>Produksi Harian</h4>
+              <p>
+                Catat hasil panen telur harian dan pantau produktivitas kawanan.
+              </p>
+              <a href="../../inputproduksi.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 5. Modul Persediaan -->
+            <div class="module-card">
+              <div class="mod-icon">🥬</div>
+              <h4>Stok Pakan</h4>
+              <p>
+                Manajemen logistik pakan, suplemen, dan pengingat restock
+                otomatis.
+              </p>
+              <a href="../../stokpakan.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 6. Modul Keuangan -->
+            <div class="module-card">
+              <div class="mod-icon">💵</div>
+              <h4>Keuangan</h4>
+              <p>
+                Rekapitulasi pemasukan, pengeluaran, dan arus kas operasional.
+              </p>
+              <a href="../../keuangan.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 7. Modul Dokumen -->
+            <div class="module-card">
+              <div class="mod-icon">📄</div>
+              <h4>Pusat Dokumen</h4>
+              <p>
+                Arsip digital untuk laporan ekspor, sertifikat, dan data
+                historis.
+              </p>
+              <a href="../../dokumen.html" class="mod-btn">Buka Modul</a>
+            </div>
+
+            <!-- 8. Simulasi Dashboard -->
+            <div class="module-card">
+              <div class="mod-icon">📱</div>
+              <h4>Preview User</h4>
+              <p>
+                Simulasi antarmuka aplikasi yang diakses oleh staf operasional.
+              </p>
+              <a href="../../dashboardTAalip.html" class="mod-btn"
+                >Buka Preview</a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 4: Tabel Manajemen Pengguna -->
+      <section
+        id="userManagementSection"
+        class="user-management animate__animated animate__fadeInUp"
+      >
+        <div class="management-card">
+          <div class="card-header-flex">
+            <div style="display: flex; align-items: center; gap: 15px">
+              <h3>👥 Manajemen Pengguna</h3>
+              <span class="badge" id="user-count-badge">0 Users</span>
+            </div>
+
+            <div style="display: flex; gap: 10px">
+              <button
+                class="action-btn-small"
+                onclick="syncAdminAccounts()"
+                style="
+                  background: #6366f1;
+                  color: white;
+                  padding: 0 15px;
+                  border-radius: 8px;
+                  border: none;
+                  font-weight: 600;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  gap: 5px;
+                "
+                title="Perbaiki Akun Admin yang Hilang"
+              >
+                🔄 Sinkronkan
+              </button>
+              <input
+                type="text"
+                id="searchUserInput"
+                onkeyup="filterUserList()"
+                placeholder="🔍 Cari pengguna..."
+                style="
+                  padding: 8px 12px;
+                  border: 1px solid #e2e8f0;
+                  border-radius: 20px;
+                  font-size: 0.85rem;
+                  outline: none;
+                  width: 200px;
+                "
+              />
+              <button
+                class="create-account-btn"
+                onclick="openCreateAccountModal()"
+              >
+                <span>➕</span> Buat Akun Baru
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>Nama Lengkap</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Tgl Bergabung</th>
+                  <th>Hak Akses</th>
+                  <th>Status</th>
+                  <th>Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="adminUserListBody">
+                <tr class="skeleton-row">
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                  <td><div class="skeleton-cell"></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 5: Ringkasan Data Peternakan Ayam -->
+      <section class="snapshot-management animate__animated animate__fadeInUp">
+        <div class="management-card">
+          <div
+            class="card-header-flex"
+            style="border-bottom: none; margin-bottom: 2rem"
+          >
+            <h3 style="margin: 0">📊 Ringkasan Data Peternakan Ayam</h3>
+            <span class="badge">6 Kategori Informasi</span>
+          </div>
+
+          <div class="snapshot-tabs-header">
+            <button
+              class="tab-btn btn-tab-ayam active"
+              onclick="openSnapshotTab(event, 'tabAyam')"
+            >
+              🐓 Batch Ternak
+            </button>
+            <button
+              class="tab-btn btn-tab-keuangan"
+              onclick="openSnapshotTab(event, 'tabKeuangan')"
+            >
+              💵 Mutasi Kas
+            </button>
+            <button
+              class="tab-btn btn-tab-produksi"
+              onclick="openSnapshotTab(event, 'tabProduksi')"
+            >
+              🥚 Produksi Telur
+            </button>
+            <button
+              class="tab-btn btn-tab-pakan"
+              onclick="openSnapshotTab(event, 'tabPakan')"
+            >
+              🥬 Stok Pakan
+            </button>
+            <button
+              class="tab-btn btn-tab-kesehatan"
+              onclick="openSnapshotTab(event, 'tabKesehatan')"
+            >
+              🩺 Kesehatan
+            </button>
+            <button
+              class="tab-btn btn-tab-vaksin"
+              onclick="openSnapshotTab(event, 'tabVaksin')"
+            >
+              💉 Vaksinasi
+            </button>
+          </div>
+
+          <div class="snapshot-tabs-content">
+            <!-- Tab Ayam -->
+            <div id="tabAyam" class="tab-pane active">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #10b981 0%,
+                      #34d399 100%
+                    );
+                  "
+                >
+                  🐓 Ringkasan Batch Ternak
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Batch ID</th>
+                          <th>Spesies</th>
+                          <th>Status</th>
+                          <th>Sisa Stok</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminAyamSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Keuangan -->
+            <div id="tabKeuangan" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #3b82f6 0%,
+                      #60a5fa 100%
+                    );
+                  "
+                >
+                  💵 Riwayat Keuangan
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Keterangan</th>
+                          <th>Tipe</th>
+                          <th>Nominal</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminKeuanganSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Produksi -->
+            <div id="tabProduksi" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #fb8500 0%,
+                      #ffb703 100%
+                    );
+                  "
+                >
+                  🥚 Produksi Telur Terakhir
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Total</th>
+                          <th>Baik</th>
+                          <th>Cacat</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminProduksiSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Pakan -->
+            <div id="tabPakan" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #6366f1 0%,
+                      #818cf8 100%
+                    );
+                  "
+                >
+                  🥬 Logistik & Stok Pakan
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Barang</th>
+                          <th>Tipe</th>
+                          <th>Jumlah</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminPakanSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Kesehatan -->
+            <div id="tabKesehatan" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #ef4444 0%,
+                      #f87171 100%
+                    );
+                  "
+                >
+                  🩺 Laporan Kesehatan & Mortalitas
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Batch</th>
+                          <th>Mati</th>
+                          <th>Sebab</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminKesehatanSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Vaksinasi -->
+            <div id="tabVaksin" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #8b5cf6 0%,
+                      #a78bfa 100%
+                    );
+                  "
+                >
+                  💉 Jadwal Vaksinasi Terdekat
+                </h3>
+                <div class="schedule-content">
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal</th>
+                          <th>Vaksin</th>
+                          <th>Batch</th>
+                          <th>Status</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminVaksinSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="5"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: Manajemen Operasional (Aktivitas, Pengumuman, Jadwal) -->
+      <section
+        class="operational-management animate__animated animate__fadeInUp"
+        style="margin-top: 2.5rem"
+      >
+        <div class="management-card">
+          <div
+            class="card-header-flex"
+            style="
+              border-bottom: 1px solid #f1f5f9;
+              margin-bottom: 2rem;
+              padding-bottom: 1.5rem;
+            "
+          >
+            <h3 style="margin: 0">📅 Manajemen Operasional Peternakan</h3>
+            <span class="badge">Aktivitas & Komunikasi</span>
+          </div>
+
+          <div
+            class="office-admin"
+            style="
+              grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+              gap: 2.5rem;
+            "
+          >
+            <!-- Aktivitas Harian -->
+            <div class="manage-card">
+              <h3
+                style="
+                  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                "
+              >
+                🧺 Aktivitas Harian
+              </h3>
+              <div class="schedule-content">
+                <ul
+                  id="adminActivityList"
+                  class="activity-list"
+                  style="
+                    list-style: none;
+                    padding: 0;
+                    max-height: 300px;
+                    overflow-y: auto;
+                  "
+                >
+                  <!-- Diisi via admin.js -->
+                </ul>
+                <form
+                  id="adminAddActivityForm"
+                  class="add-form"
+                  style="margin-top: 1.5rem; display: flex; gap: 8px"
+                >
+                  <input
+                    type="text"
+                    id="adminActivityInput"
+                    placeholder="Tambah aktivitas harian..."
+                    required
+                    style="
+                      flex: 1;
+                      padding: 8px 12px;
+                      border: 1px solid #e2e8f0;
+                      border-radius: 8px;
+                    "
+                  />
+                  <button
+                    type="submit"
+                    style="
+                      background: #10b981;
+                      color: white;
+                      border: none;
+                      padding: 8px 15px;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 600;
+                    "
+                  >
+                    ➕
+                  </button>
                 </form>
               </div>
             </div>
+
+            <!-- Pengumuman Sistem -->
+            <div class="reminder-card">
+              <h3
+                style="
+                  background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%);
+                "
+              >
+                📢 Pengumuman
+              </h3>
+              <div class="schedule-content">
+                <ul
+                  id="adminAnnouncementList"
+                  class="activity-list"
+                  style="
+                    list-style: none;
+                    padding: 0;
+                    max-height: 300px;
+                    overflow-y: auto;
+                  "
+                >
+                  <!-- Diisi via admin.js -->
+                </ul>
+                <form
+                  id="adminAddAnnouncementForm"
+                  class="add-form"
+                  style="margin-top: 1.5rem; display: flex; gap: 8px"
+                >
+                  <input
+                    type="text"
+                    id="adminAnnouncementInput"
+                    placeholder="Ketik pengumuman baru..."
+                    required
+                    style="
+                      flex: 1;
+                      padding: 8px 12px;
+                      border: 1px solid #e2e8f0;
+                      border-radius: 8px;
+                    "
+                  />
+                  <button
+                    type="submit"
+                    style="
+                      background: #ff9966;
+                      color: white;
+                      border: none;
+                      padding: 8px 15px;
+                      border-radius: 8px;
+                      cursor: pointer;
+                      font-weight: 600;
+                    "
+                  >
+                    ➕
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Jadwal Kegiatan -->
+            <div class="schedule-card" style="grid-column: span 1">
+              <h3
+                style="
+                  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+                "
+              >
+                📆 Jadwal Agenda Peternakan
+              </h3>
+              <div class="schedule-content">
+                <div
+                  class="table-responsive"
+                  style="max-height: 300px; overflow-y: auto"
+                >
+                  <table class="logs-table" id="adminScheduleTable">
+                    <thead>
+                      <tr>
+                        <th>Tgl/Waktu</th>
+                        <th>Kegiatan</th>
+                        <th>Tempat</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Diisi via admin.js -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <div
+                  style="
+                    margin-top: 1.5rem;
+                    padding-top: 1rem;
+                    border-top: 1px solid #f1f5f9;
+                  "
+                >
+                  <p
+                    style="
+                      font-size: 0.8rem;
+                      font-weight: 700;
+                      color: #64748b;
+                      margin-bottom: 0.8rem;
+                    "
+                  >
+                    ➕ TAMBAH AGENDA BARU
+                  </p>
+                  <form
+                    id="adminAddScheduleForm"
+                    class="add-form"
+                    style="
+                      display: grid;
+                      grid-template-columns: 1fr 1fr;
+                      gap: 8px;
+                    "
+                  >
+                    <input
+                      type="text"
+                      id="adminTgl"
+                      placeholder="Tgl (cth: 25 Okt)"
+                      required
+                      style="
+                        padding: 8px;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                    <input
+                      type="time"
+                      id="adminWaktu"
+                      required
+                      style="
+                        padding: 8px;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                    <input
+                      type="text"
+                      id="adminAgenda"
+                      placeholder="Nama Kegiatan"
+                      required
+                      style="
+                        padding: 8px;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                    <input
+                      type="text"
+                      id="adminTempat"
+                      placeholder="Lokasi"
+                      required
+                      style="
+                        padding: 8px;
+                        border: 1px solid #e2e8f0;
+                        border-radius: 6px;
+                        font-size: 0.85rem;
+                      "
+                    />
+                    <button
+                      type="submit"
+                      style="
+                        grid-column: span 2;
+                        background: #3b82f6;
+                        color: white;
+                        border: none;
+                        padding: 10px;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-weight: 600;
+                        margin-top: 5px;
+                      "
+                    >
+                      Simpan Agenda Baru
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 7: Audit Log Aktivitas -->
+      <section
+        class="system-logs animate__animated animate__fadeInUp"
+        style="margin-top: 2.5rem"
+      >
+        <div class="management-card">
+          <div
+            class="card-header-flex"
+            style="
+              border-bottom: 1px solid #f1f5f9;
+              margin-bottom: 1.5rem;
+              padding-bottom: 1rem;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 15px">
+              <h3 style="margin: 0">📋 Log Keamanan & Aktivitas Operasional</h3>
+              <span
+                class="badge"
+                style="
+                  background: #fff7ed;
+                  color: #c2410c;
+                  border: 1px solid #ffedd5;
+                "
+                >Audit Trail</span
+              >
+            </div>
+            <input
+              type="text"
+              id="searchLogInput"
+              onkeyup="filterLogList()"
+              placeholder="🔍 Cari aktivitas atau user..."
+              style="
+                padding: 8px 12px;
+                border: 1px solid #e2e8f0;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                outline: none;
+                width: 250px;
+              "
+            />
           </div>
 
-        </div>
-      </div>
-    </section>
-
-    <!-- Section 7: Audit Log Aktivitas -->
-    <section class="system-logs animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
-      <div class="management-card">
-        <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 1.5rem; padding-bottom: 1rem;">
-          <div style="display: flex; align-items: center; gap: 15px;">
-            <h3 style="margin: 0;">📋 Log Keamanan & Aktivitas Operasional</h3>
-            <span class="badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5;">Audit Trail</span>
+          <div class="table-responsive">
+            <table class="logs-table">
+              <thead>
+                <tr>
+                  <th>Waktu Aktual</th>
+                  <th>Identitas User</th>
+                  <th>Modul Fitur</th>
+                  <th>Deskripsi Tindakan</th>
+                </tr>
+              </thead>
+              <tbody id="systemLogBody">
+                <tr class="skeleton-row">
+                  <td colspan="4"><div class="skeleton-cell"></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td colspan="4"><div class="skeleton-cell"></div></td>
+                </tr>
+                <tr class="skeleton-row">
+                  <td colspan="4"><div class="skeleton-cell"></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div
+            style="display: flex; justify-content: center; margin-top: 1.5rem"
+          >
+            <button
+              class="clear-logs-btn"
+              onclick="clearLogs()"
+              style="margin: 0"
+            >
+              Hapus Riwayat Log
+            </button>
           </div>
         </div>
-        
-        <div class="table-responsive">
-          <table class="logs-table">
-            <thead>
-              <tr>
-                <th>Waktu Aktual</th>
-                <th>Identitas User</th>
-                <th>Modul Fitur</th>
-                <th>Deskripsi Tindakan</th>
-              </tr>
-            </thead>
-            <tbody id="systemLogBody">
-              <!-- Diisi secara dinamis melalui admin.js -->
-            </tbody>
-          </table>
-        </div>
-        <div style="display: flex; justify-content: center; margin-top: 1.5rem;">
-          <button class="clear-logs-btn" onclick="clearLogs()" style="margin: 0;">Hapus Riwayat Log</button>
-        </div>
-      </div>
-    </section>
+      </section>
+    </main>
 
+    <!-- ===== SKRIP INTEGRASI SISTEM ===== -->
 
-  </main>
+    <!-- Gatekeeper Keamanan: Verifikasi Level Otoritas -->
+    <script type="module" src="../admin-gate.js"></script>
 
-  <!-- ===== SKRIP INTEGRASI SISTEM ===== -->
+    <!-- Chart.js untuk grafik analitik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-  <!-- Gatekeeper Keamanan: Verifikasi Level Otoritas -->
-  <script type="module" src="../admin-gate.js"></script>
+    <!-- Logika Bisnis & Sinkronisasi Data Firebase -->
+    <script type="module" src="admin.js"></script>
 
-  <!-- Chart.js untuk grafik analitik -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Logika Bisnis & Sinkronisasi Data Firebase -->
-  <script type="module" src="admin.js"></script>
-
-  <!-- Pemantau Sesi Login Global -->
-  <script type="module" src="../../firebase.component/auth-state.js"></script>
-</body>
-
+    <!-- Pemantau Sesi Login Global -->
+    <script type="module" src="../../firebase.component/auth-state.js"></script>
+  </body>
 </html>
