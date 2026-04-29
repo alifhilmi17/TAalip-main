@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Tools - LIBAS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .tool-card h3 {
+            color: #1e293b;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .tool-card p {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .badge-setup {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-docs {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-security {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-app {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+
+        .docs-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .docs-section h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .docs-list {
+            list-style: none;
+        }
+
+        .docs-list li {
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .docs-list li:last-child {
+            border-bottom: none;
+        }
+
+        .docs-list a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 600;
+            flex: 1;
+            transition: color 0.3s;
+        }
+
+        .docs-list a:hover {
+            color: #2563eb;
+        }
+
+        .doc-icon {
+            font-size: 1.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-ready {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 50px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Firebase Tools Dashboard</h1>
+            <p>Pusat Kontrol Setup dan Dokumentasi Firebase LIBAS</p>
+        </div>
+
+        <div class="tools-grid">
+            <!-- Setup Collections Tool -->
+            <a href="setup-firebase.html" class="tool-card">
+                <div class="tool-icon">🚀</div>
+                <h3>Setup Collections</h3>
+                <p>Inisialisasi dan buat collections Firestore dengan data contoh. Tool interaktif untuk setup database.</p>
+                <span class="tool-badge badge-setup">Setup Tool</span>
+            </a>
+
+            <!-- Input Produksi App -->
+            <a href="inputproduksi.html" class="tool-card">
+                <div class="tool-icon">📝</div>
+                <h3>Input Produksi</h3>
+                <p>Aplikasi utama untuk mencatat produksi telur harian, termasuk data ayam yang tidak bertelur.</p>
+                <span class="tool-badge badge-app">Main App</span>
+            </a>
+
+            <!-- Firebase Console -->
+            <a href="https://console.firebase.google.com/project/libas-db/firestore" target="_blank" class="tool-card">
+                <div class="tool-icon">🔥</div>
+                <h3>Firebase Console</h3>
+                <p>Akses langsung ke Firebase Console untuk melihat data, rules, dan monitoring project.</p>
+                <span class="tool-badge badge-security">External Link</span>
+            </a>
+
+            <!-- Dashboard -->
+            <a href="dashboardTAalip.html" class="tool-card">
+                <div class="tool-icon">📊</div>
+                <h3>Dashboard</h3>
+                <p>Halaman utama aplikasi LIBAS dengan overview semua data peternakan.</p>
+                <span class="tool-badge badge-app">Main App</span>
+            </a>
+        </div>
+
+        <div class="docs-section">
+            <h2>📚 Dokumentasi</h2>
+            <ul class="docs-list">
+                <li>
+                    <span class="doc-icon">📖</span>
+                    <a href="FIREBASE-SETUP-SUMMARY.md" target="_blank">
+                        <span class="status-indicator status-ready"></span>
+                        Firebase Setup Summary
+                    </a>
+                    <span style="color: #64748b; font-size: 0.85rem;">Ringkasan lengkap</span>
+                </li>
+                <li>
+                    <span class="doc-icon">📘</span>
+                    <a href="SETUP-FIREBASE-README.md" target="_blank">
+                        <span class="status-indicator status-ready"></span>
+                        Setup Collections Guide
+                    </a>
+                    <span style="color: #64748b; font-size: 0.85rem;">Panduan setup</span>
+                </li>
+                <li>
+                    <span class="doc-icon">🔐</span>
+                    <a href="deploy-firestore-rules.md" target="_blank">
+                        <span class="status-indicator status-ready"></span>
+                        Deploy Firestore Rules
+                    </a>
+                    <span style="color: #64748b; font-size: 0.85rem;">Panduan keamanan</span>
+                </li>
+                <li>
+                    <span class="doc-icon">⚙️</span>
+                    <a href="firestore.rules" target="_blank">
+                        <span class="status-indicator status-ready"></span>
+                        Firestore Rules File
+                    </a>
+                    <span style="color: #64748b; font-size: 0.85rem;">File konfigurasi</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            <p>🐔 Sistem Administrasi Peternakan LIBAS</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">Version 1.0.0 • April 2026</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-check Firebase connection status
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const { db } = await import('./firebase.component/firebase-init.js');
+                console.log('✅ Firebase connected successfully!');
+                console.log('📊 Database:', db);
+            } catch (error) {
+                console.error('❌ Firebase connection error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

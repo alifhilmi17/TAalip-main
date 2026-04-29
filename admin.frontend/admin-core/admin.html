@@ -142,6 +142,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
 
       <!-- Section 2: Statistik Global -->
       <section class="quick-stats animate__animated animate__fadeInUp">
+        <!-- BARIS 1: Statistik Utama -->
         <div class="stat-card">
           <div class="stat-icon">👥</div>
           <div class="stat-info">
@@ -154,6 +155,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
           <div class="stat-info">
             <h4>Populasi Ayam</h4>
             <p id="stat-admin-ayam">- Ekor</p>
+            <p id="stat-admin-ayam-sakit-inline" style="font-size: 0.75rem; color: #f59e0b; margin-top: 5px; font-weight: 600; display: none;"></p>
           </div>
         </div>
         <div class="stat-card">
@@ -164,19 +166,38 @@ Pusat kendali manajemen pengguna dan monitoring data global.
           </div>
         </div>
         <div class="stat-card">
+          <div class="stat-icon">🍗</div>
+          <div class="stat-info">
+            <h4>Status Afkir</h4>
+            <p id="stat-admin-afkir">0 Ekor</p>
+          </div>
+        </div>
+
+        <!-- BARIS 2: Statistik Produksi -->
+        <div class="stat-card">
           <div class="stat-icon">🥚</div>
           <div class="stat-info">
             <h4>Total Telur Hari Ini</h4>
             <p id="stat-admin-produksi">0 Butir</p>
+            <p id="stat-admin-telur-cacat-inline" style="font-size: 0.85rem; color: #ef4444; margin-top: 5px; font-weight: 600; display: none;"></p>
           </div>
         </div>
         <div class="stat-card">
-          <div class="stat-icon">📉</div>
+          <div class="stat-icon">❌</div>
+          <div class="stat-info">
+            <h4>Ayam Tidak Bertelur</h4>
+            <p id="stat-admin-tidak-bertelur">0 Ekor</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💀</div>
           <div class="stat-info">
             <h4>Mortalitas Total</h4>
             <p id="stat-admin-mortalitas">0 Ekor</p>
           </div>
         </div>
+
+        <!-- BARIS 3: Statistik Operasional -->
         <div class="stat-card">
           <div class="stat-icon">🥬</div>
           <div class="stat-info">
@@ -198,23 +219,12 @@ Pusat kendali manajemen pengguna dan monitoring data global.
             <p id="stat-admin-prediksi">Rp 0</p>
           </div>
         </div>
-        <!-- Card Telur Tidak Panen (akumulasi telur cacat) -->
-        <div class="stat-card">
-          <div class="stat-icon">❌</div>
-          <div class="stat-info">
-            <h4>Telur Tidak Panen</h4>
-            <p id="stat-admin-cacat">0 Butir</p>
-          </div>
-        </div>
-        <!-- Card Ayam Afkir (sisa ayam dengan status Afkir) -->
-        <div class="stat-card">
-          <div class="stat-icon">🍗</div>
-          <div class="stat-info">
-            <h4>Status Afkir</h4>
-            <p id="stat-admin-afkir">0 Ekor</p>
-          </div>
-        </div>
       </section>
+
+      <!-- ===== FITUR BARU: Info Ayam Sakit (Alert) ===== -->
+      <div id="stat-admin-ayam-sakit" class="admin-ayam-sakit-info" style="display: none; margin: 1rem 2rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; font-weight: 600; color: #92400e;">
+        <!-- Diisi oleh JavaScript -->
+      </div>
 
       <!-- ===== GRAFIK ANALITIK ADMIN ===== -->
       <!-- Section 2c: Tren Produksi & Keuangan Real-time -->
@@ -317,6 +327,171 @@ Pusat kendali manajemen pengguna dan monitoring data global.
             >
           </h3>
           <canvas id="adminFinanceChart"></canvas>
+        </div>
+      </section>
+
+      <!-- ===== FASE 3: SYSTEM HEALTH INDICATORS (ADMIN ONLY) ===== -->
+      <section class="system-health-admin animate__animated animate__fadeInUp" style="margin: 2rem 0;">
+        <div class="management-card">
+          <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.5rem;">🔧</span>
+              Status Kesehatan Sistem
+            </h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div id="admin-system-health-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);"></div>
+              <span id="admin-system-health-status" style="font-weight: 600; color: #10b981;">Sistem Berjalan Normal</span>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">📊</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">SYNC</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Sinkronisasi Data</p>
+              <p id="admin-system-sync-status" style="margin: 5px 0 0 0; font-size: 1.2rem; font-weight: 700;">🟢 Normal</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">🔄</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">LIVE</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Update Terakhir</p>
+              <p id="admin-system-last-update" style="margin: 5px 0 0 0; font-size: 1.2rem; font-weight: 700;">-</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">⚠️</span>
+                <span id="admin-warnings-badge" style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">0</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Peringatan Aktif</p>
+              <p id="admin-system-warnings-count" style="margin: 5px 0 0 0; font-size: 1.2rem; font-weight: 700;">0 Issues</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">📈</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">PERF</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Performa Sistem</p>
+              <p id="admin-system-performance" style="margin: 5px 0 0 0; font-size: 1.2rem; font-weight: 700;">Optimal</p>
+            </div>
+          </div>
+          
+          <!-- System Health Details -->
+          <div id="admin-system-details" style="margin-top: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #3b82f6; display: none;">
+            <h4 style="margin: 0 0 1rem 0; color: #1e40af; font-size: 1rem;">📋 Detail Status Sistem</h4>
+            <div id="admin-system-details-content" style="font-size: 0.9rem; color: #475569;">
+              <!-- Diisi via JavaScript -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== FASE 3: COMPREHENSIVE FEED STOCK MANAGEMENT (ADMIN ONLY) ===== -->
+      <section class="feed-management-admin animate__animated animate__fadeInUp" style="margin: 2rem 0;">
+        <div class="management-card">
+          <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.5rem;">🥬</span>
+              Manajemen Stok Pakan
+            </h3>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div id="admin-feed-status-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+              <span id="admin-feed-status-text" style="font-weight: 600; color: #10b981;">Stok Aman</span>
+            </div>
+          </div>
+          
+          <!-- Feed Stock Overview -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">📦</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">CURRENT</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Stok Saat Ini</p>
+              <p id="admin-feed-current" style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">0 Kg</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">📈</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">USAGE</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Konsumsi Harian</p>
+              <p id="admin-feed-daily-usage" style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">~10 Kg/hari</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">⏰</span>
+                <span id="admin-feed-urgency-badge" style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">NORMAL</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Estimasi Habis</p>
+              <p id="admin-feed-estimated" style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">- Hari</p>
+            </div>
+            
+            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 1.5rem; border-radius: 12px; color: white; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.5rem;">💰</span>
+                <span style="background: rgba(255,255,255,0.2); padding: 4px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">VALUE</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Nilai Stok</p>
+              <p id="admin-feed-value" style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">Rp 0</p>
+            </div>
+          </div>
+          
+          <!-- Feed Stock Actions -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <button onclick="openFeedStockDetail()" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; padding: 1rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.2rem;">📊</span>
+                <span style="font-weight: 700;">Analisis Stok Detail</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Lihat riwayat, tren, dan proyeksi</p>
+            </button>
+            
+            <button onclick="openFeedPurchaseRecommendation()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.2rem;">🛒</span>
+                <span style="font-weight: 700;">Rekomendasi Pembelian</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Optimasi jumlah dan waktu beli</p>
+            </button>
+            
+            <button onclick="openFeedAlertSettings()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1rem; border-radius: 10px; border: none; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.2rem;">⚙️</span>
+                <span style="font-weight: 700;">Pengaturan Alert</span>
+              </div>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Konfigurasi threshold dan notifikasi</p>
+            </button>
+          </div>
+          
+          <!-- Feed Stock Alerts for Admin -->
+          <div id="admin-feed-alerts" style="display: none;">
+            <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.2rem;">🚨</span>
+                <h4 style="margin: 0; color: #dc2626; font-size: 1rem;">Peringatan Stok Pakan</h4>
+              </div>
+              <div id="admin-feed-alert-content" style="color: #7f1d1d; font-size: 0.9rem;">
+                <!-- Diisi via JavaScript -->
+              </div>
+              <div style="margin-top: 1rem; display: flex; gap: 10px;">
+                <button onclick="quickActionStokPakan()" style="background: #ef4444; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                  🥬 Kelola Stok Sekarang
+                </button>
+                <button onclick="dismissAdminFeedAlert()" style="background: #6b7280; color: white; padding: 8px 16px; border-radius: 6px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+                  Tutup Alert
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -545,7 +720,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
               class="tab-btn btn-tab-keuangan"
               onclick="openSnapshotTab(event, 'tabKeuangan')"
             >
-              💵 Mutasi Kas
+              💵 Riwayat Keuangan
             </button>
             <button
               class="tab-btn btn-tab-produksi"
@@ -596,7 +771,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
                           <th>Batch ID</th>
                           <th>Spesies</th>
                           <th>Status</th>
-                          <th>Sisa Stok</th>
+                          <th>Sisa Populasi</th>
                           <th style="text-align: center">Aksi</th>
                         </tr>
                       </thead>

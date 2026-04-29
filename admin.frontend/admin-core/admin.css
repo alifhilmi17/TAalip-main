@@ -1425,3 +1425,227 @@ canvas {
   50% { background-color: #e2e8f0; }
   100% { background-color: #f1f5f9; }
 }
+
+
+/* =========================================================
+   FITUR BARU: STYLING UNTUK INFO AYAM SAKIT
+   ========================================================= */
+.admin-ayam-sakit-info {
+  animation: slideInDown 0.5s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-ayam-sakit-info.status-normal {
+  background: #d1fae5;
+  border-left-color: #10b981;
+  color: #065f46;
+}
+
+.admin-ayam-sakit-info.status-waspada {
+  background: #fef3c7;
+  border-left-color: #f59e0b;
+  color: #92400e;
+}
+
+.admin-ayam-sakit-info.status-kritis {
+  background: #fee2e2;
+  border-left-color: #ef4444;
+  color: #991b1b;
+  animation: pulse 2s infinite;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+/* =========================================================
+   ✅ FASE 3: ADMIN SYSTEM HEALTH INDICATORS
+========================================================= */
+.system-health-admin {
+    animation-delay: 0.3s;
+}
+
+.system-health-admin .management-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #e2e8f0;
+}
+
+.system-health-admin h3 {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+#admin-system-health-indicator {
+    animation: adminPulse 2s infinite;
+}
+
+@keyframes adminPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* System Health Cards */
+.system-health-admin > div > div:last-child > div {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.system-health-admin > div > div:last-child > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.system-health-admin > div > div:last-child > div::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.system-health-admin > div > div:last-child > div:hover::before {
+    left: 100%;
+}
+
+/* System Details Section */
+#admin-system-details {
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 500px;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .system-health-admin > div > div:last-child {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .system-health-admin .card-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+/* =========================================================
+   ✅ FASE 3: ADMIN FEED STOCK MANAGEMENT
+========================================================= */
+.feed-management-admin {
+    animation-delay: 0.4s;
+}
+
+.feed-management-admin .management-card {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 1px solid #e2e8f0;
+}
+
+.feed-management-admin h3 {
+    color: #1e293b;
+    font-weight: 700;
+}
+
+/* Feed Stock Cards */
+.feed-management-admin > div > div:nth-child(2) > div {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feed-management-admin > div > div:nth-child(2) > div:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* Feed Action Buttons */
+.feed-management-admin button {
+    transition: all 0.3s ease;
+}
+
+.feed-management-admin button:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.feed-management-admin button:active {
+    transform: translateY(0) !important;
+}
+
+/* Feed Alerts */
+#admin-feed-alerts {
+    animation: slideDown 0.3s ease;
+}
+
+#admin-feed-alerts button {
+    transition: all 0.2s ease;
+}
+
+#admin-feed-alerts button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Status Indicator Animation */
+#admin-feed-status-indicator {
+    animation: feedPulse 3s infinite;
+}
+
+@keyframes feedPulse {
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.8; 
+        transform: scale(1.1);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .feed-management-admin > div > div:nth-child(2),
+    .feed-management-admin > div > div:nth-child(3) {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .feed-management-admin .card-header-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}

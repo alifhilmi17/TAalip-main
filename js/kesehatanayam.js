@@ -184,27 +184,28 @@ window.closeKesehatanModal = function() {
     document.getElementById('kesehatanModal').classList.remove('show');
 };
 
-/**
- * Menyimpan data kesehatan ke koleksi Firestore "kesehatan_ayam"
- */
 window.saveKesehatan = async function(e) {
     e.preventDefault();
     const id = document.getElementById('kesehatanId').value;
     const batchSelect = document.getElementById('kesBatch');
     const batchId = batchSelect.value;
     const batchText = batchSelect.options[batchSelect.selectedIndex].text;
-    
+    const status = document.getElementById('kesStatus').value;
+    const jmlSakit = parseInt(document.getElementById('kesJmlSakit').value) || 0;
+    // Simpan jmlMati sesuai input manual pengguna (tidak di-override)
+    const jmlMati = parseInt(document.getElementById('kesJmlMati').value) || 0;
+
     // Membentuk paket data kesehatan
     const payload = {
         tanggal: document.getElementById('kesTanggal').value,
         batchId: batchId,
         batchName: batchText,
         kandang: document.getElementById('kesKandang').value,
-        jmlSakit: parseInt(document.getElementById('kesJmlSakit').value) || 0,
-        jmlMati: parseInt(document.getElementById('kesJmlMati').value) || 0,
+        jmlSakit: jmlSakit,
+        jmlMati: jmlMati,
         gejala: document.getElementById('kesGejala').value,
         penanganan: document.getElementById('kesPenanganan').value,
-        status: document.getElementById('kesStatus').value,
+        status: status,
         updatedAt: new Date().toISOString()
     };
 
@@ -428,13 +429,24 @@ function updateStats() {
     const elVaksin = document.getElementById('statVaksinMendatang');
 
     if (elSakit) {
-        const sakit = dataKesehatan.filter(x => x.status === "Dalam Perawatan")
-            .reduce((sum, item) => sum + (item.jmlSakit || 0), 0);
-        elSakit.innerText = `${sakit} Ekor`;
+        // Hitung ayam yang masih aktif dalam perawatan
+        const sakit = dataKesehatan
+            .filter(x => x.status === "Dalam Perawatan")
+            .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+        elSakit.innerText = `${sakit.toLocaleString('id-ID')} Ekor`;
     }
     if (elMati) {
-        const mati = dataKesehatan.reduce((sum, item) => sum + (item.jmlMati || 0), 0);
-        elMati.innerText = `${mati} Ekor`;
+        // Aturan kematian:
+        // "Mati Semua" = ayam sakit (jmlSakit) + yang sudah mati sebelumnya (jmlMati)
+        // Contoh: 15 sakit + 5 mati = 20 total kematian
+        // Status lain   = hanya jmlMati yang tercatat manual
+        const mati = dataKesehatan.reduce((sum, item) => {
+            if (item.status === 'Mati Semua') {
+                return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
+            }
+            return sum + (parseInt(item.jmlMati) || 0);
+        }, 0);
+        elMati.innerText = `${mati.toLocaleString('id-ID')} Ekor`;
     }
     if (elVaksin) {
         const terjadwal = dataVaksin.filter(x => x.status === "Terjadwal").length;

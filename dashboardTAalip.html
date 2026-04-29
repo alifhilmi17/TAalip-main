@@ -178,14 +178,15 @@
         </p>
       </section>
 
-      <!-- ===== KARTU STATISTIK CEPAT ===== -->
-      <!-- ===== KARTU STATISTIK Total Telur Harian ===== -->
+      <!-- ===== 1. KARTU STATISTIK CEPAT (Paling penting untuk melihat kondisi kandang saat ini) ===== -->
       <section class="quick-stats animate__animated animate__fadeInUp">
+        <!-- ===== KARTU STATISTIK Total Telur Harian ===== -->
         <div class="stat-card">
           <div class="stat-icon">🥚</div>
           <div class="stat-info">
             <h4>Total Telur Hari Ini</h4>
             <p id="stat-telur">- Butir</p>
+            <p id="stat-telur-cacat-inline" style="font-size: 0.85rem; color: #ef4444; margin-top: 5px; font-weight: 600; display: none;"></p>
           </div>
         </div>
         <!-- ===== KARTU STATISTIK Total Ayam ===== -->
@@ -194,22 +195,26 @@
           <div class="stat-info">
             <h4>Total Ayam Aktif</h4>
             <p id="stat-ayam">- Ekor</p>
+            <p id="stat-ayam-sakit" style="font-size: 0.85rem; color: #f59e0b; margin-top: 5px; font-weight: 600; display: none;"></p>
           </div>
         </div>
         <!-- ===== KARTU STATISTIK Mortalitas Hari Ini ===== -->
         <div class="stat-card">
-          <div class="stat-icon">📉</div>
+          <div class="stat-icon">💀</div>
           <div class="stat-info">
             <h4>Mortalitas Hari Ini</h4>
             <p id="stat-mortalitas">- Ekor</p>
           </div>
         </div>
         <!-- ===== KARTU STATISTIK Stok Pakan ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">🌾</div>
+        <div class="stat-card" id="stat-card-pakan">
+          <div class="stat-icon" id="stat-pakan-icon">🌾</div>
           <div class="stat-info">
             <h4>Stok Pakan Tersisa</h4>
             <p id="stat-pakan">- Kg</p>
+            <p id="stat-pakan-alert" style="display: none; margin-top: 5px; font-size: 0.8rem; font-weight: 600; color: #ef4444;">
+              ⚠️ Stok rendah, segera restock
+            </p>
           </div>
         </div>
         <!-- ===== KARTU STATISTIK Pendapatan Bulan Ini ===== -->
@@ -220,9 +225,33 @@
             <p id="stat-pendapatan">Rp -</p>
           </div>
         </div>
+        <!-- ===== KARTU STATISTIK Status Afkir ===== -->
+        <div class="stat-card">
+          <div class="stat-icon">🍗</div>
+          <div class="stat-info">
+            <h4>Status Afkir</h4>
+            <p id="stat-afkir">- Ekor</p>
+          </div>
+        </div>
+        <!-- ===== KARTU STATISTIK Ayam Tidak Bertelur ===== -->
+        <div class="stat-card">
+          <div class="stat-icon">❌</div>
+          <div class="stat-info">
+            <h4>Ayam Tidak Bertelur</h4>
+            <p id="stat-ayam-tidak-bertelur">- Ekor</p>
+          </div>
+        </div>
+        <!-- ===== KARTU STATISTIK Batch Aktif ===== -->
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <h4>Total Batch Aktif</h4>
+            <p id="stat-batch-aktif">- Batch</p>
+          </div>
+        </div>
       </section>
 
-      <!-- ===== BAGIAN GRAFIK ===== -->
+      <!-- ===== 2. GRAFIK ANALITIK (Untuk memonitor tren) ===== -->
       <section class="charts-section animate__animated animate__fadeInUp">
         <!-- ===== GRAFIK PRODUKSI (PREMIUM CARD) ===== -->
         <div class="chart-container chart-produksi-card">
@@ -233,71 +262,37 @@
               <span class="chart-subtitle">7 Hari Terakhir</span>
             </div>
             <div class="chart-filter-group">
-              <button
-                class="chart-filter-btn active"
-                id="filter7h"
-                onclick="gantiPeriodeGrafik(7, this)"
-              >
-                7 Hari
-              </button>
-              <button
-                class="chart-filter-btn"
-                id="filter14h"
-                onclick="gantiPeriodeGrafik(14, this)"
-              >
-                14 Hari
-              </button>
-              <button
-                class="chart-filter-btn"
-                id="filter30h"
-                onclick="gantiPeriodeGrafik(30, this)"
-              >
-                30 Hari
-              </button>
+              <button class="chart-filter-btn active" id="filter7h" onclick="gantiPeriodeGrafik(7, this)">7 Hari</button>
+              <button class="chart-filter-btn" id="filter14h" onclick="gantiPeriodeGrafik(14, this)">14 Hari</button>
+              <button class="chart-filter-btn" id="filter30h" onclick="gantiPeriodeGrafik(30, this)">30 Hari</button>
             </div>
           </div>
 
           <!-- Mini statistik ringkasan di atas grafik -->
           <div class="chart-mini-stats">
             <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(251, 133, 0, 0.15); color: #fb8500"
-                >🥚</span
-              >
+              <span class="mini-stat-icon" style="background: rgba(251, 133, 0, 0.15); color: #fb8500">🥚</span>
               <div>
                 <p class="mini-stat-label">Total Butir</p>
                 <p class="mini-stat-val" id="chart-stat-total">0</p>
               </div>
             </div>
             <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(16, 185, 129, 0.15); color: #10b981"
-                >✅</span
-              >
+              <span class="mini-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981">✅</span>
               <div>
                 <p class="mini-stat-label">Telur Baik</p>
                 <p class="mini-stat-val" id="chart-stat-baik">0</p>
               </div>
             </div>
             <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(239, 68, 68, 0.15); color: #ef4444"
-                >❌</span
-              >
+              <span class="mini-stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444">❌</span>
               <div>
                 <p class="mini-stat-label">Telur Cacat</p>
                 <p class="mini-stat-val" id="chart-stat-cacat">0</p>
               </div>
             </div>
             <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(99, 102, 241, 0.15); color: #6366f1"
-                >📊</span
-              >
+              <span class="mini-stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1">📊</span>
               <div>
                 <p class="mini-stat-label">Rata-rata/Hari</p>
                 <p class="mini-stat-val" id="chart-stat-rata">0</p>
@@ -324,7 +319,147 @@
         </div>
       </section>
 
-      <!-- ===== BAGIAN UTAMA ADMIN ===== -->
+      <!-- ===== 3. QUICK ACTIONS (Operasi Harian Petugas) ===== -->
+      <section class="quick-actions-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
+        <div class="quick-actions-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 2rem;">⚡</span>
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Aksi Cepat</h3>
+                <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Operasi harian dalam satu klik</p>
+              </div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <button onclick="quickActionInputProduksi()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🥚 Input Produksi</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Catat hasil telur hari ini</p>
+            </button>
+            <button onclick="quickActionStokPakan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🥬 Kelola Pakan</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Update stok pakan</p>
+            </button>
+            <button onclick="quickActionKeuangan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">💰 Catat Transaksi</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Input pemasukan/pengeluaran</p>
+            </button>
+            <button onclick="quickActionKesehatan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🩺 Cek Kesehatan</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Monitor kondisi ayam</p>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 4. JADWAL VAKSINASI (Prioritas operasional kesehatan) ===== -->
+      <section class="vaccination-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
+        <div class="vaccination-card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 2rem;">💉</span>
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Jadwal Vaksinasi</h3>
+                <p id="vaccination-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Monitoring jadwal vaksin mendatang</p>
+              </div>
+            </div>
+            <button onclick="openVaccinationDetail()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+              Lihat Semua →
+            </button>
+          </div>
+          <div id="vaccination-content">
+            <!-- Diisi via JavaScript -->
+          </div>
+          <div id="vaccination-empty" style="text-align: center; padding: 2rem; display: none;">
+            <p style="margin: 0; opacity: 0.8;">Tidak ada jadwal vaksinasi mendatang. Semua vaksin sudah selesai.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 5. WIDGET PREDIKSI (Perencanaan & Insights) ===== -->
+      <section class="prediction-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
+        <div class="prediction-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 2rem;">🔮</span>
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Prediksi Terakhir</h3>
+                <p id="prediction-date" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">-</p>
+              </div>
+            </div>
+            <button onclick="openModalPrediksi()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+              Lihat Detail →
+            </button>
+          </div>
+          <div id="prediction-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
+                Prediksi Telur
+                <span title="Jumlah telur yang diprediksi besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+              </p>
+              <p id="prediction-eggs" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Produksi besok</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
+                Prediksi Pendapatan
+                <span title="Estimasi pendapatan dari penjualan telur besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+              </p>
+              <p id="prediction-income" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Dari penjualan telur</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
+                Akurasi Model
+                <span title="Tingkat kepercayaan prediksi" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+              </p>
+              <p id="prediction-accuracy" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Tingkat kepercayaan</p>
+            </div>
+          </div>
+          <div id="prediction-empty" style="text-align: center; padding: 2rem; display: none;">
+            <p style="margin: 0; opacity: 0.8;">Belum ada prediksi. Silakan buat prediksi di halaman Prediksi Hasil.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 6. RINGKASAN KEUANGAN ===== -->
+      <section class="finance-summary-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
+        <div class="finance-summary-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 2rem;">💰</span>
+              <div>
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Ringkasan Keuangan Bulan Ini</h3>
+                <p id="finance-month" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">-</p>
+              </div>
+            </div>
+            <button onclick="openModalKeuangan()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+              Lihat Detail →
+            </button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💵 Pemasukan</p>
+              <p id="finance-income" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💸 Pengeluaran</p>
+              <p id="finance-expense" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💎 Saldo Bersih</p>
+              <p id="finance-balance" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
+              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">📊 Transaksi</p>
+              <p id="finance-transactions" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">0</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 7. AKTIVITAS HARIAN, PENGUMUMAN, JADWAL ===== -->
       <section class="office-admin">
         <!-- ===== AKTIVITAS HARIAN ===== -->
         <div class="manage-card animate__animated animate__fadeInUp">
@@ -417,6 +552,42 @@
     <!-- Memuat library Chart.js dan interaktivitas JavaScript khusus dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="js/dashboardTAalip.js"></script>
+
+    <!-- ===== MODAL DETAIL PREDIKSI ===== -->
+    <div id="modalPrediksiDetail" class="modal-overlay" style="display: none;">
+      <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 10px 10px 0 0;">
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 2rem;">🔮</span>
+            Detail Prediksi Terakhir
+          </h2>
+          <button onclick="closeModalPrediksi()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">×</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+          <div id="prediksiDetailContent">
+            <!-- Diisi via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MODAL DETAIL KEUANGAN ===== -->
+    <div id="modalKeuanganDetail" class="modal-overlay" style="display: none;">
+      <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 1.5rem; border-radius: 10px 10px 0 0;">
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 2rem;">💰</span>
+            Detail Keuangan Bulan Ini
+          </h2>
+          <button onclick="closeModalKeuangan()" style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.2); border: none; color: white; font-size: 1.5rem; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">×</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+          <div id="keuanganDetailContent">
+            <!-- Diisi via JavaScript -->
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Skrip Utama Sinkronasi Autentikasi -->
     <script type="module" src="firebase.component/auth-state.js"></script>

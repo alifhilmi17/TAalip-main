@@ -24,7 +24,9 @@ import { db } from "../firebase.component/firebase-init.js";
 // 1. DEKLARASI STATE (DATA AWAL)
 // =========================================
 let dataAyam = [];
+let dataKesehatan = [];
 const ayamCollection = collection(db, "populasi_ayam");
+const kesehatanCollection = collection(db, "kesehatan_ayam");
 
 // =========================================
 // 2. MODUL UTILITAS
@@ -44,7 +46,7 @@ function formatTanggal(tglString) {
 // 3. INISIALISASI PROGRAM & REAL-TIME LISTENER
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Listener Real-time dari Firestore
+    // Listener Real-time dari Firestore untuk Data Ayam
     const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
     
     onSnapshot(q, (snapshot) => {
@@ -59,32 +61,64 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Firestore Error: ", error);
         Swal.fire("Error", "Gagal memuat data dari database: " + error.message, "error");
     });
+
+    // Listener Real-time dari Firestore untuk Data Kesehatan (untuk hitung ayam sakit)
+    onSnapshot(kesehatanCollection, (snapshot) => {
+        dataKesehatan = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        
+        updateQuickStats();
+    }, (error) => {
+        console.error("Firestore Error (Kesehatan): ", error);
+    });
 });
 
 /**
  * Memperbarui nilai angka-angka pada Kartu Info Statistik di atas tabel.
+ * @param {Array} filteredData - Data yang sudah difilter (opsional)
  */
-function updateQuickStats() {
+function updateQuickStats(filteredData = null) {
+    const dataToCalculate = filteredData || dataAyam;
     let totalBatchAktif = 0;
-    let totalPopulasi = 0;
+    let totalSisaAyam = 0;
     let setKandang = new Set();
 
-    dataAyam.forEach(ayam => {
-        if (ayam.status === 'Aktif') {
+    dataToCalculate.forEach(ayam => {
+        const status = (ayam.status || "").trim().toLowerCase();
+        // Menghitung batch aktif dan populasi ayam yang masih ada di kandang
+        if (status === 'aktif') {
             totalBatchAktif++;
-            totalPopulasi += parseInt(ayam.sisaAyam) || 0;
+            totalSisaAyam += parseInt(ayam.sisaAyam) || 0;
             if (ayam.kandang) {
                 setKandang.add(ayam.kandang);
             }
         }
     });
 
+    // Hitung total ayam sakit (Dalam Perawatan) dari data kesehatan
+    const ayamSakit = dataKesehatan.filter(x => x.status === "Dalam Perawatan")
+                                   .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+    
+    // Total Populasi Ayam Aktif Sehat = Sisa Ayam - Ayam Sakit
+    const totalPopulasiSehat = totalSisaAyam - ayamSakit;
+
     const elTotalBatch = document.getElementById('totalBatch');
     const elTotalPopulasi = document.getElementById('totalPopulasi');
     const elKandangTerisi = document.getElementById('kandangTerisi');
 
     if (elTotalBatch) elTotalBatch.innerText = totalBatchAktif;
-    if (elTotalPopulasi) elTotalPopulasi.innerText = totalPopulasi.toLocaleString('id-ID') + ' Ekor';
+    
+    // Tampilkan total populasi sehat (sudah dikurangi ayam sakit)
+    if (elTotalPopulasi) {
+        let displayText = totalPopulasiSehat.toLocaleString('id-ID') + ' Ekor';
+        if (ayamSakit > 0) {
+            displayText += ` (${ayamSakit.toLocaleString('id-ID')} Sakit)`;
+        }
+        elTotalPopulasi.innerText = displayText;
+    }
+    
     if (elKandangTerisi) elKandangTerisi.innerText = setKandang.size + ' Kandang';
 }
 
@@ -107,9 +141,13 @@ function renderTable() {
         emptyState.style.display = "none";
 
         dataAyam.forEach((ayam) => {
-            let badgeClass = "badge-aktif";
-            if (ayam.status === 'Panen') badgeClass = "badge-panen";
-            else if (ayam.status === 'Afkir') badgeClass = "badge-afkir";
+            // Normalisasi status untuk penentuan class badge
+            const statusNormal = (ayam.status || "").trim().toLowerCase();
+            let badgeClass = "badge-default"; // Class cadangan jika status tidak dikenal
+            
+            if (statusNormal === 'aktif') badgeClass = "badge-aktif";
+            else if (statusNormal === 'panen') badgeClass = "badge-panen";
+            else if (statusNormal === 'afkir') badgeClass = "badge-afkir";
 
             const row = document.createElement("tr");
             row.innerHTML = `
@@ -143,6 +181,17 @@ window.openAyamModal = function() {
     form.reset(); // Bersihkan formulir
     document.getElementById('ayamId').value = ""; // Pastikan ID kosong (Mode Tambah)
     document.getElementById('modalTitle').innerText = "Tambah Batch Ayam";
+    
+    // Otomatisasi sisaAyam agar mengikuti jumlahAwal saat pertama kali diinput
+    const inputAwal = document.getElementById('jumlahAwal');
+    const inputSisa = document.getElementById('sisaAyam');
+    
+    inputAwal.addEventListener('input', () => {
+        if (document.getElementById('ayamId').value === "") { // Hanya saat tambah baru
+            inputSisa.value = inputAwal.value;
+        }
+    });
+
     modal.classList.add('show'); // Tampilkan modal dengan class CSS
 };
 
@@ -269,15 +318,27 @@ window.deleteAyam = function(id) {
 
 /**
  * Fitur pencarian cepat di tabel (Client-side filtering)
+ * Juga memperbarui kartu statistik agar sesuai dengan data yang tampil
  */
 window.searchTable = function() {
     const input = document.getElementById("searchAyam").value.toLowerCase();
     const rows = document.querySelectorAll("#ayamTableBody tr");
+    
+    // Simpan data yang cocok dengan pencarian untuk update stats
+    const filteredResults = [];
 
-    rows.forEach(row => {
+    rows.forEach((row, index) => {
         const textContent = row.innerText.toLowerCase();
-        row.style.display = textContent.includes(input) ? "" : "none"; // Sembunyikan jika tidak cocok
+        const isMatch = textContent.includes(input);
+        row.style.display = isMatch ? "" : "none";
+        
+        if (isMatch) {
+            filteredResults.push(dataAyam[index]);
+        }
     });
+
+    // Update kartu statistik berdasarkan hasil pencarian
+    updateQuickStats(filteredResults);
 };
 
 /**

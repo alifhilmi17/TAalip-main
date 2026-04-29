@@ -59,6 +59,10 @@ let adminEggChartInstance  = null;
 let adminFinanceChartInstance = null;
 let currentAdminChartPeriod = 7;
 
+// State untuk tracking total sisa ayam dan ayam sakit
+let cachedTotalSisaAyam = 0;
+let cachedAyamSakit = 0;
+
 /**
  * ===== 1. INISALISASI DASHBOARD =====
  */
@@ -99,7 +103,7 @@ function initAdminDashboard() {
     // =========================================================
     // Memantau jumlah ayam secara keseluruhan di peternakan.
     onSnapshot(collection(db, "populasi_ayam"), (snapshot) => {
-        let totalAyam = 0; // Variabel untuk menyimpan total akumulasi ayam
+        let totalSisaAyam = 0; // Variabel untuk menyimpan total sisa ayam
         let totalAfkir = 0; // Total ayam afkir
         let snapshotData = []; // Array untuk menyimpan detail setiap batch ayam
         
@@ -107,7 +111,7 @@ function initAdminDashboard() {
         snapshot.forEach(doc => {
             const data = doc.data();
             // Menambahkan sisa ayam dari setiap batch ke total keseluruhan
-            totalAyam += parseInt(data.sisaAyam || 0);
+            totalSisaAyam += parseInt(data.sisaAyam || 0);
             if (data.status === 'Afkir') totalAfkir += parseInt(data.sisaAyam || 0);
             snapshotData.push({ id: doc.id, ...data });
         });
@@ -115,8 +119,9 @@ function initAdminDashboard() {
         // Menyimpan data ke variabel global agar dapat diakses untuk fungsi CRUD/Edit
         ayamData = snapshotData; 
         
-        // Memperbarui tampilan total ayam di dashboard
-        document.getElementById('stat-admin-ayam').textContent = `${totalAyam.toLocaleString('id-ID')} Ekor`;
+        // Hitung ayam sakit dari data kesehatan (akan diupdate saat listener kesehatan berjalan)
+        // Untuk sementara tampilkan total sisa ayam dulu
+        updateTotalAyamAktif(totalSisaAyam);
         
         const elAfkir = document.getElementById('stat-admin-afkir');
         if (elAfkir) elAfkir.textContent = `${totalAfkir.toLocaleString('id-ID')} Ekor`;
@@ -196,23 +201,52 @@ function initAdminDashboard() {
         // Mengambil semua data produksi ke variabel global
         produksiDataAdmin = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         
-        // Menentukan tanggal hari ini dengan format YYYY-MM-DD
-        const today = new Date().toISOString().split('T')[0];
+        // Menentukan tanggal hari ini dengan format YYYY-MM-DD (timezone lokal)
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+        
+        console.log('🔍 DEBUG Admin - Tanggal hari ini:', todayStr);
+        console.log('🔍 DEBUG Admin - Total data produksi:', produksiDataAdmin.length);
         
         // Menjumlahkan total telur yang diproduksi khusus untuk hari ini
         const totalTelurHariIni = produksiDataAdmin
-            .filter(d => d.tanggal === today)
+            .filter(d => {
+                console.log('🔍 DEBUG Admin - Data tanggal:', d.tanggal, 'vs', todayStr, '=', d.tanggal === todayStr);
+                return d.tanggal === todayStr;
+            })
             .reduce((sum, d) => sum + (parseInt(d.totalTelur) || 0), 0);
-            
-        // Menjumlahkan total telur cacat secara keseluruhan
-        const totalCacat = produksiDataAdmin.reduce((sum, d) => sum + (parseInt(d.telurCacat) || 0), 0);
+        
+        console.log('🔍 DEBUG Admin - Total telur hari ini:', totalTelurHariIni);
+        
+        // Menjumlahkan total telur cacat khusus untuk hari ini
+        const totalTelurCacatHariIni = produksiDataAdmin
+            .filter(d => d.tanggal === todayStr)
+            .reduce((sum, d) => sum + (parseInt(d.telurCacat) || 0), 0);
+        
+        // ✅ FITUR BARU: Menjumlahkan total ayam tidak bertelur
+        const totalTidakBertelur = produksiDataAdmin.reduce((sum, d) => sum + (parseInt(d.ayamTidakBertelur) || 0), 0);
             
         // Memperbarui UI untuk statistik telur hari ini
         const elProduksi = document.getElementById('stat-admin-produksi');
         if (elProduksi) elProduksi.textContent = `${totalTelurHariIni.toLocaleString('id-ID')} Butir`;
         
-        const elCacat = document.getElementById('stat-admin-cacat');
-        if (elCacat) elCacat.textContent = `${totalCacat.toLocaleString('id-ID')} Butir`;
+        // Tampilkan info telur cacat hari ini di bawah Total Telur Hari Ini
+        const elTelurCacatInline = document.getElementById('stat-admin-telur-cacat-inline');
+        if (elTelurCacatInline) {
+            if (totalTelurCacatHariIni > 0) {
+                elTelurCacatInline.textContent = `${totalTelurCacatHariIni.toLocaleString('id-ID')} Butir Telur Cacat`;
+                elTelurCacatInline.style.display = 'block';
+            } else {
+                elTelurCacatInline.style.display = 'none';
+            }
+        }
+        
+        // ✅ FITUR BARU: Update card Ayam Tidak Bertelur
+        const elTidakBertelur = document.getElementById('stat-admin-tidak-bertelur');
+        if (elTidakBertelur) elTidakBertelur.textContent = `${totalTidakBertelur.toLocaleString('id-ID')} Ekor`;
         
         // Mengurutkan dan merender 8 data produksi terbaru ke tabel ringkasan
         const latestProduksi = [...produksiDataAdmin].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
@@ -275,10 +309,28 @@ function initAdminDashboard() {
         const healthData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
         kesehatanDataAdmin = healthData; // Simpan untuk referensi pop up
         
-        // Menjumlahkan semua nilai jmlMati dari dokumen kesehatan
-        const totalMati = healthData.reduce((sum, d) => sum + (parseInt(d.jmlMati) || 0), 0);
+        // ✅ LOGIKA MORTALITAS YANG BENAR (Sinkron dengan Dashboard Petugas)
+        // Aturan: "Mati Semua" = jmlSakit + jmlMati (semua yang sakit mati + yang sudah mati sebelumnya)
+        // Status lain → gunakan jmlMati saja yang tercatat manual
+        const totalMati = healthData.reduce((sum, item) => {
+            if (item.status === 'Mati Semua') {
+                return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
+            }
+            return sum + (parseInt(item.jmlMati) || 0);
+        }, 0);
+        
         const elMortalitas = document.getElementById('stat-admin-mortalitas');
         if (elMortalitas) elMortalitas.textContent = `${totalMati.toLocaleString('id-ID')} Ekor`;
+
+        // Hitung total ayam sakit (Dalam Perawatan)
+        const ayamSakit = healthData.filter(x => x.status === "Dalam Perawatan")
+                                    .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+        
+        // Update total ayam aktif dengan mengurangi ayam sakit
+        updateTotalAyamAktifWithSick(ayamSakit);
+        
+        // Update card info ayam sakit di Admin Panel
+        updateAyamSakitInfo(ayamSakit);
 
         // Mengurutkan dan merender 8 riwayat mortalitas terbaru
         const latestHealth = healthData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).slice(0, 8);
@@ -387,6 +439,64 @@ function initAdminDashboard() {
 /**
  * ===== 2. FUNGSI RENDERING UI =====
  */
+
+/**
+ * Helper: Update Total Ayam Aktif (dipanggil saat data populasi berubah)
+ */
+function updateTotalAyamAktif(totalSisaAyam) {
+    cachedTotalSisaAyam = totalSisaAyam;
+    const totalAyamAktifSehat = cachedTotalSisaAyam - cachedAyamSakit;
+    document.getElementById('stat-admin-ayam').textContent = `${totalAyamAktifSehat.toLocaleString('id-ID')} Ekor`;
+}
+
+/**
+ * Helper: Update Total Ayam Aktif dengan data ayam sakit (dipanggil saat data kesehatan berubah)
+ */
+function updateTotalAyamAktifWithSick(ayamSakit) {
+    cachedAyamSakit = ayamSakit;
+    const totalAyamAktifSehat = cachedTotalSisaAyam - cachedAyamSakit;
+    document.getElementById('stat-admin-ayam').textContent = `${totalAyamAktifSehat.toLocaleString('id-ID')} Ekor`;
+    
+    // Update info inline di card Populasi Ayam
+    const elSakitInline = document.getElementById('stat-admin-ayam-sakit-inline');
+    if (elSakitInline && ayamSakit > 0) {
+        elSakitInline.textContent = `${ayamSakit.toLocaleString('id-ID')} Ekor Sakit / Dirawat`;
+        elSakitInline.style.display = 'block';
+    } else if (elSakitInline) {
+        elSakitInline.style.display = 'none';
+    }
+}
+
+/**
+ * Helper: Update Info Ayam Sakit di Admin Panel
+ */
+function updateAyamSakitInfo(ayamSakit) {
+    const elSakit = document.getElementById('stat-admin-ayam-sakit');
+    if (elSakit) {
+        if (ayamSakit > 0) {
+            const persentase = cachedTotalSisaAyam > 0 ? ((ayamSakit / cachedTotalSisaAyam) * 100).toFixed(1) : 0;
+            let statusClass = 'status-normal';
+            let statusIcon = '🟢';
+            let statusText = 'Normal';
+            
+            if (persentase >= 5) {
+                statusClass = 'status-kritis';
+                statusIcon = '🔴';
+                statusText = 'KRITIS';
+            } else if (persentase >= 3) {
+                statusClass = 'status-waspada';
+                statusIcon = '🟡';
+                statusText = 'Waspada';
+            }
+            
+            elSakit.innerHTML = `${statusIcon} ${ayamSakit.toLocaleString('id-ID')} Ekor Sakit (${persentase}%) - ${statusText}`;
+            elSakit.style.display = 'block';
+            elSakit.className = `admin-ayam-sakit-info ${statusClass}`;
+        } else {
+            elSakit.style.display = 'none';
+        }
+    }
+}
 
 /**
  * Merender daftar manajemen akun pengguna
@@ -2132,3 +2242,515 @@ window.filterLogList = function() {
         row.style.display = text.includes(input) ? "" : "none";
     });
 };
+// =========================================================
+// ✅ FASE 3: SYSTEM HEALTH INDICATORS (ADMIN ONLY)
+// =========================================================
+
+let adminSystemHealthData = {
+    syncStatus: 'normal',
+    lastUpdate: new Date(),
+    warningsCount: 0,
+    performance: 'optimal',
+    details: []
+};
+
+/**
+ * Update System Health Indicators for Admin Panel
+ */
+function updateAdminSystemHealthIndicators() {
+    const statusEl = document.getElementById('admin-system-health-status');
+    const indicatorEl = document.getElementById('admin-system-health-indicator');
+    const syncEl = document.getElementById('admin-system-sync-status');
+    const updateEl = document.getElementById('admin-system-last-update');
+    const warningsEl = document.getElementById('admin-system-warnings-count');
+    const warningsBadgeEl = document.getElementById('admin-warnings-badge');
+    const performanceEl = document.getElementById('admin-system-performance');
+    const detailsEl = document.getElementById('admin-system-details');
+    const detailsContentEl = document.getElementById('admin-system-details-content');
+
+    if (!statusEl) return;
+
+    // Update last update time
+    adminSystemHealthData.lastUpdate = new Date();
+    
+    // Check system warnings and collect details
+    let warnings = 0;
+    let details = [];
+    
+    // Check feed stock
+    let pakanMasuk = 0, pakanKeluar = 0;
+    pakanDataAdmin.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    const sisaPakan = pakanMasuk - pakanKeluar;
+    if (sisaPakan < 50) {
+        warnings++;
+        details.push({
+            type: 'warning',
+            icon: '🥬',
+            title: 'Stok Pakan Kritis',
+            message: `Sisa pakan hanya ${sisaPakan.toLocaleString('id-ID')} Kg (< 50 Kg)`
+        });
+    } else if (sisaPakan < 100) {
+        details.push({
+            type: 'info',
+            icon: '🥬',
+            title: 'Stok Pakan Rendah',
+            message: `Sisa pakan ${sisaPakan.toLocaleString('id-ID')} Kg (< 100 Kg)`
+        });
+    }
+    
+    // Check sick chickens
+    const ayamSakit = kesehatanDataAdmin.filter(x => x.status === "Dalam Perawatan")
+                                        .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+    if (ayamSakit > 0) {
+        warnings++;
+        const persentase = cachedTotalSisaAyam > 0 ? ((ayamSakit / cachedTotalSisaAyam) * 100).toFixed(1) : 0;
+        details.push({
+            type: persentase >= 5 ? 'error' : 'warning',
+            icon: '🩺',
+            title: 'Ayam Sakit Terdeteksi',
+            message: `${ayamSakit.toLocaleString('id-ID')} ekor sakit (${persentase}% dari populasi)`
+        });
+    }
+    
+    // Check production today
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    const prodToday = produksiDataAdmin.filter(p => p.tanggal === todayStr);
+    if (prodToday.length === 0) {
+        warnings++;
+        details.push({
+            type: 'warning',
+            icon: '🥚',
+            title: 'Belum Ada Input Produksi',
+            message: `Belum ada data produksi untuk hari ini (${today.toLocaleDateString('id-ID')})`
+        });
+    }
+    
+    // Check user count (if very low)
+    const userCount = document.getElementById('stat-user')?.textContent || '0';
+    const userNum = parseInt(userCount.replace(/\D/g, ''));
+    if (userNum < 2) {
+        details.push({
+            type: 'info',
+            icon: '👥',
+            title: 'Pengguna Terbatas',
+            message: `Hanya ${userNum} pengguna terdaftar dalam sistem`
+        });
+    }
+    
+    // Check mortalitas rate
+    const totalMati = kesehatanDataAdmin.reduce((sum, item) => {
+        if (item.status === 'Mati Semua') {
+            return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
+        }
+        return sum + (parseInt(item.jmlMati) || 0);
+    }, 0);
+    
+    if (totalMati > 0 && cachedTotalSisaAyam > 0) {
+        const mortalityRate = (totalMati / (cachedTotalSisaAyam + totalMati)) * 100;
+        if (mortalityRate > 10) {
+            warnings++;
+            details.push({
+                type: 'error',
+                icon: '💀',
+                title: 'Tingkat Mortalitas Tinggi',
+                message: `Mortalitas ${mortalityRate.toFixed(1)}% (${totalMati} ekor dari ${cachedTotalSisaAyam + totalMati} total)`
+            });
+        } else if (mortalityRate > 5) {
+            details.push({
+                type: 'warning',
+                icon: '💀',
+                title: 'Mortalitas Perlu Perhatian',
+                message: `Mortalitas ${mortalityRate.toFixed(1)}% (${totalMati} ekor)`
+            });
+        }
+    }
+    
+    adminSystemHealthData.warningsCount = warnings;
+    adminSystemHealthData.details = details;
+    
+    // Determine overall status
+    let overallStatus = 'Sistem Berjalan Normal';
+    let indicatorColor = '#10b981';
+    let statusColor = '#10b981';
+    
+    if (warnings >= 3) {
+        overallStatus = 'Perlu Perhatian Segera';
+        indicatorColor = '#ef4444';
+        statusColor = '#ef4444';
+        adminSystemHealthData.performance = 'Perlu Perbaikan';
+    } else if (warnings >= 1) {
+        overallStatus = 'Ada Peringatan Aktif';
+        indicatorColor = '#f59e0b';
+        statusColor = '#f59e0b';
+        adminSystemHealthData.performance = 'Baik';
+    } else {
+        adminSystemHealthData.performance = 'Optimal';
+    }
+    
+    // Update UI
+    statusEl.textContent = overallStatus;
+    statusEl.style.color = statusColor;
+    indicatorEl.style.background = indicatorColor;
+    indicatorEl.style.boxShadow = `0 0 10px ${indicatorColor}50`;
+    
+    syncEl.textContent = '🟢 Normal';
+    updateEl.textContent = adminSystemHealthData.lastUpdate.toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+    warningsEl.textContent = warnings === 0 ? 'Tidak Ada' : `${warnings} Issues`;
+    warningsBadgeEl.textContent = warnings.toString();
+    warningsBadgeEl.style.background = warnings >= 3 ? '#ef4444' : warnings >= 1 ? '#f59e0b' : 'rgba(255,255,255,0.2)';
+    performanceEl.textContent = adminSystemHealthData.performance;
+    
+    // Update details section
+    if (details.length > 0) {
+        detailsEl.style.display = 'block';
+        detailsContentEl.innerHTML = details.map(detail => {
+            let bgColor = '#f1f5f9';
+            let borderColor = '#cbd5e1';
+            
+            if (detail.type === 'error') {
+                bgColor = '#fee2e2';
+                borderColor = '#ef4444';
+            } else if (detail.type === 'warning') {
+                bgColor = '#fef3c7';
+                borderColor = '#f59e0b';
+            } else if (detail.type === 'info') {
+                bgColor = '#dbeafe';
+                borderColor = '#3b82f6';
+            }
+            
+            return `
+                <div style="background: ${bgColor}; border-left: 3px solid ${borderColor}; padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 4px;">
+                    <div style="display: flex; align-items: start; gap: 0.5rem;">
+                        <span style="font-size: 1.2rem;">${detail.icon}</span>
+                        <div>
+                            <strong style="color: #1e293b; font-size: 0.9rem;">${detail.title}</strong>
+                            <p style="margin: 0.25rem 0 0 0; color: #475569; font-size: 0.85rem;">${detail.message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } else {
+        detailsEl.style.display = 'none';
+    }
+}
+
+// Add to existing initAdminDashboard function
+const originalInitAdminDashboard = initAdminDashboard;
+initAdminDashboard = function() {
+    originalInitAdminDashboard();
+    
+    // Update system health every 30 seconds
+    setInterval(updateAdminSystemHealthIndicators, 30000);
+    
+    // Initial update after 2 seconds to ensure data is loaded
+    setTimeout(updateAdminSystemHealthIndicators, 2000);
+};
+
+console.log("🔧 Admin System Health Indicators Loaded");
+// =========================================================
+// ✅ FASE 3: COMPREHENSIVE FEED STOCK MANAGEMENT (ADMIN)
+// =========================================================
+
+let adminFeedData = {
+    currentStock: 0,
+    dailyUsage: 10, // Default 10kg per day
+    estimatedDays: 0,
+    stockValue: 0,
+    pricePerKg: 5000, // Default Rp 5000 per kg
+    alerts: []
+};
+
+/**
+ * Update Admin Feed Stock Management
+ */
+function updateAdminFeedStockManagement() {
+    // Calculate current stock
+    let pakanMasuk = 0, pakanKeluar = 0;
+    pakanDataAdmin.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    
+    adminFeedData.currentStock = pakanMasuk - pakanKeluar;
+    
+    // Calculate daily usage based on recent data (last 7 days)
+    const last7Days = pakanDataAdmin
+        .filter(p => p.tipe === 'Keluar')
+        .filter(p => {
+            const date = new Date(p.tanggal);
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            return date >= weekAgo;
+        });
+    
+    if (last7Days.length > 0) {
+        const totalUsage = last7Days.reduce((sum, p) => sum + p.jumlah, 0);
+        adminFeedData.dailyUsage = Math.round(totalUsage / 7);
+    }
+    
+    // Calculate estimated days
+    adminFeedData.estimatedDays = adminFeedData.dailyUsage > 0 ? 
+        Math.floor(adminFeedData.currentStock / adminFeedData.dailyUsage) : 0;
+    
+    // Calculate stock value
+    adminFeedData.stockValue = adminFeedData.currentStock * adminFeedData.pricePerKg;
+    
+    // Update UI elements
+    updateAdminFeedUI();
+    checkAdminFeedAlerts();
+}
+
+/**
+ * Update Admin Feed UI Elements
+ */
+function updateAdminFeedUI() {
+    const currentEl = document.getElementById('admin-feed-current');
+    const usageEl = document.getElementById('admin-feed-daily-usage');
+    const estimatedEl = document.getElementById('admin-feed-estimated');
+    const valueEl = document.getElementById('admin-feed-value');
+    const statusEl = document.getElementById('admin-feed-status-text');
+    const indicatorEl = document.getElementById('admin-feed-status-indicator');
+    const urgencyBadgeEl = document.getElementById('admin-feed-urgency-badge');
+    
+    if (!currentEl) return;
+    
+    // Update values
+    currentEl.textContent = `${adminFeedData.currentStock.toLocaleString('id-ID')} Kg`;
+    usageEl.textContent = `~${adminFeedData.dailyUsage} Kg/hari`;
+    estimatedEl.textContent = `${adminFeedData.estimatedDays} Hari`;
+    valueEl.textContent = `Rp ${adminFeedData.stockValue.toLocaleString('id-ID')}`;
+    
+    // Determine status and colors
+    let status = 'Stok Aman';
+    let statusColor = '#10b981';
+    let urgencyText = 'NORMAL';
+    let urgencyColor = 'rgba(255,255,255,0.2)';
+    
+    if (adminFeedData.estimatedDays <= 2) {
+        status = 'KRITIS!';
+        statusColor = '#ef4444';
+        urgencyText = 'KRITIS';
+        urgencyColor = '#ef4444';
+    } else if (adminFeedData.estimatedDays <= 5) {
+        status = 'Stok Rendah';
+        statusColor = '#f59e0b';
+        urgencyText = 'RENDAH';
+        urgencyColor = '#f59e0b';
+    } else if (adminFeedData.estimatedDays <= 10) {
+        status = 'Perlu Perhatian';
+        statusColor = '#f59e0b';
+        urgencyText = 'WATCH';
+        urgencyColor = '#f59e0b';
+    }
+    
+    // Update status
+    statusEl.textContent = status;
+    statusEl.style.color = statusColor;
+    indicatorEl.style.background = statusColor;
+    urgencyBadgeEl.textContent = urgencyText;
+    urgencyBadgeEl.style.background = urgencyColor;
+}
+
+/**
+ * Check and show admin feed alerts
+ */
+function checkAdminFeedAlerts() {
+    const alertsEl = document.getElementById('admin-feed-alerts');
+    const contentEl = document.getElementById('admin-feed-alert-content');
+    
+    if (!alertsEl || !contentEl) return;
+    
+    adminFeedData.alerts = [];
+    
+    // Critical stock alert
+    if (adminFeedData.currentStock <= 20) {
+        adminFeedData.alerts.push({
+            level: 'critical',
+            title: 'Stok Pakan Kritis',
+            message: `Hanya tersisa ${adminFeedData.currentStock} Kg pakan. Sistem akan kehabisan dalam ${adminFeedData.estimatedDays} hari.`,
+            action: 'Beli pakan segera untuk mencegah gangguan operasional.'
+        });
+    } else if (adminFeedData.currentStock <= 50) {
+        adminFeedData.alerts.push({
+            level: 'warning',
+            title: 'Stok Pakan Rendah',
+            message: `Stok pakan tersisa ${adminFeedData.currentStock} Kg (${adminFeedData.estimatedDays} hari).`,
+            action: 'Rencanakan pembelian pakan dalam 2-3 hari ke depan.'
+        });
+    } else if (adminFeedData.currentStock <= 100) {
+        adminFeedData.alerts.push({
+            level: 'info',
+            title: 'Monitoring Stok Pakan',
+            message: `Stok pakan ${adminFeedData.currentStock} Kg (${adminFeedData.estimatedDays} hari).`,
+            action: 'Persiapkan rencana pembelian untuk minggu depan.'
+        });
+    }
+    
+    // High consumption alert
+    if (adminFeedData.dailyUsage > 15) {
+        adminFeedData.alerts.push({
+            level: 'info',
+            title: 'Konsumsi Pakan Tinggi',
+            message: `Konsumsi harian mencapai ${adminFeedData.dailyUsage} Kg/hari (di atas rata-rata 10 Kg).`,
+            action: 'Periksa efisiensi pemberian pakan dan kondisi ayam.'
+        });
+    }
+    
+    // Show/hide alerts
+    if (adminFeedData.alerts.length > 0) {
+        alertsEl.style.display = 'block';
+        contentEl.innerHTML = adminFeedData.alerts.map(alert => `
+            <div style="margin-bottom: 1rem;">
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">${alert.title}</div>
+                <div style="margin-bottom: 0.5rem;">${alert.message}</div>
+                <div style="font-style: italic; font-size: 0.85rem;">💡 ${alert.action}</div>
+            </div>
+        `).join('');
+    } else {
+        alertsEl.style.display = 'none';
+    }
+}
+
+/**
+ * Admin Feed Management Actions
+ */
+window.openFeedStockDetail = function() {
+    Swal.fire({
+        title: '📊 Analisis Stok Pakan Detail',
+        html: `
+            <div style="text-align: left;">
+                <h4>📈 Ringkasan Stok</h4>
+                <ul>
+                    <li><strong>Stok Saat Ini:</strong> ${adminFeedData.currentStock.toLocaleString('id-ID')} Kg</li>
+                    <li><strong>Konsumsi Harian:</strong> ${adminFeedData.dailyUsage} Kg/hari</li>
+                    <li><strong>Estimasi Habis:</strong> ${adminFeedData.estimatedDays} hari</li>
+                    <li><strong>Nilai Stok:</strong> Rp ${adminFeedData.stockValue.toLocaleString('id-ID')}</li>
+                </ul>
+                
+                <h4>📊 Rekomendasi</h4>
+                <ul>
+                    <li>Stok minimum yang disarankan: <strong>150 Kg</strong> (15 hari)</li>
+                    <li>Stok optimal: <strong>300 Kg</strong> (30 hari)</li>
+                    <li>Frekuensi pembelian ideal: <strong>Setiap 2 minggu</strong></li>
+                </ul>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+                    <strong>💡 Tips Manajemen:</strong><br>
+                    • Monitor konsumsi harian untuk deteksi anomali<br>
+                    • Beli dalam jumlah besar untuk efisiensi biaya<br>
+                    • Simpan di tempat kering dan aman dari hama
+                </div>
+            </div>
+        `,
+        confirmButtonText: 'Kelola Stok Pakan',
+        showCancelButton: true,
+        cancelButtonText: 'Tutup'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '../../stokpakan.html';
+        }
+    });
+};
+
+window.openFeedPurchaseRecommendation = function() {
+    const recommendedPurchase = Math.max(300 - adminFeedData.currentStock, 0);
+    const estimatedCost = recommendedPurchase * adminFeedData.pricePerKg;
+    
+    Swal.fire({
+        title: '🛒 Rekomendasi Pembelian Pakan',
+        html: `
+            <div style="text-align: left;">
+                <h4>📋 Analisis Kebutuhan</h4>
+                <ul>
+                    <li><strong>Stok Saat Ini:</strong> ${adminFeedData.currentStock.toLocaleString('id-ID')} Kg</li>
+                    <li><strong>Target Stok Optimal:</strong> 300 Kg</li>
+                    <li><strong>Kebutuhan Pembelian:</strong> <span style="color: #ef4444; font-weight: 700;">${recommendedPurchase.toLocaleString('id-ID')} Kg</span></li>
+                </ul>
+                
+                <h4>💰 Estimasi Biaya</h4>
+                <ul>
+                    <li><strong>Harga per Kg:</strong> Rp ${adminFeedData.pricePerKg.toLocaleString('id-ID')}</li>
+                    <li><strong>Total Estimasi:</strong> <span style="color: #10b981; font-weight: 700;">Rp ${estimatedCost.toLocaleString('id-ID')}</span></li>
+                </ul>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: ${recommendedPurchase > 0 ? '#fee2e2' : '#d1fae5'}; border-radius: 8px;">
+                    <strong>${recommendedPurchase > 0 ? '⚠️ Rekomendasi:' : '✅ Status:'}</strong><br>
+                    ${recommendedPurchase > 0 ? 
+                        `Segera beli ${recommendedPurchase} Kg pakan untuk mencapai stok optimal.` : 
+                        'Stok pakan sudah optimal, tidak perlu pembelian saat ini.'
+                    }
+                </div>
+            </div>
+        `,
+        confirmButtonText: recommendedPurchase > 0 ? 'Beli Pakan Sekarang' : 'Kelola Stok',
+        showCancelButton: true,
+        cancelButtonText: 'Tutup'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = '../../stokpakan.html';
+        }
+    });
+};
+
+window.openFeedAlertSettings = function() {
+    Swal.fire({
+        title: '⚙️ Pengaturan Alert Stok Pakan',
+        html: `
+            <div style="text-align: left;">
+                <h4>🚨 Threshold Alert</h4>
+                <ul>
+                    <li><strong>Alert Kritis:</strong> ≤ 20 Kg (2 hari)</li>
+                    <li><strong>Alert Peringatan:</strong> ≤ 50 Kg (5 hari)</li>
+                    <li><strong>Alert Info:</strong> ≤ 100 Kg (10 hari)</li>
+                </ul>
+                
+                <h4>📱 Notifikasi</h4>
+                <ul>
+                    <li>✅ Dashboard Alert (Aktif)</li>
+                    <li>✅ Admin Panel Alert (Aktif)</li>
+                    <li>⚠️ Email Notification (Belum Tersedia)</li>
+                    <li>⚠️ SMS Alert (Belum Tersedia)</li>
+                </ul>
+                
+                <div style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 8px;">
+                    <strong>💡 Pengaturan Saat Ini:</strong><br>
+                    • Konsumsi harian rata-rata: ${adminFeedData.dailyUsage} Kg<br>
+                    • Harga per Kg: Rp ${adminFeedData.pricePerKg.toLocaleString('id-ID')}<br>
+                    • Auto-update setiap 5 menit
+                </div>
+            </div>
+        `,
+        confirmButtonText: 'Simpan Pengaturan',
+        showCancelButton: true,
+        cancelButtonText: 'Tutup'
+    });
+};
+
+window.dismissAdminFeedAlert = function() {
+    const alertsEl = document.getElementById('admin-feed-alerts');
+    if (alertsEl) {
+        alertsEl.style.display = 'none';
+    }
+};
+
+// Add to existing initAdminDashboard function
+const originalInitAdminDashboard2 = initAdminDashboard;
+initAdminDashboard = function() {
+    originalInitAdminDashboard2();
+    
+    // Update feed management every 5 minutes
+    setInterval(updateAdminFeedStockManagement, 300000);
+    
+    // Initial update after 3 seconds to ensure data is loaded
+    setTimeout(updateAdminFeedStockManagement, 3000);
+};
+
+console.log("🥬 Admin Feed Stock Management Loaded");

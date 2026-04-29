@@ -137,12 +137,20 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="stat-icon">❌</div>
+                <div class="stat-icon">🍳</div>
                 <div class="stat-info">
                     <h4>Telur Cacat/Pecah</h4>
                     <p id="totalTelurCacat">0 Butir</p>
                 </div>
             </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">❌</div>
+            <div class="stat-info">
+                <h4>Ayam Tidak Bertelur</h4>
+                <p id="totalAyamTidakBertelur">0 Ekor</p>
+            </div>
+        </div>
         </section>
 
         <!-- Bagian Tabel Data: Menampilkan riwayat pencatatan harian yang bisa difilter -->
@@ -170,6 +178,7 @@
                                 <th>Telur Baik</th>
                                 <th>Telur Cacat</th>
                                 <th>Total Telur</th>
+                                <th>Ayam Tidak Bertelur</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -248,6 +257,11 @@
                 <div class="form-group">
                     <label for="telurCacat">Jumlah Telur Cacat/Pecah (Butir)</label>
                     <input type="number" id="telurCacat" min="0" required oninput="calculateTotal()">
+                </div>
+
+                <div class="form-group">
+                    <label for="ayamTidakBertelur">Jumlah Ayam Tidak Bertelur (Ekor)</label>
+                    <input type="number" id="ayamTidakBertelur" min="0"  placeholder="Catat jumlah ayam yang tidak menghasilkan telur hari ini">
                 </div>
 
                 <div class="form-group">

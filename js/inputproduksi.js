@@ -54,12 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
             loadBatchOptions(currentSelected);
         }
     });
-
-    // Set default filter ke hari ini
-    const today = new Date();
-    const localDateStr = today.toISOString().split('T')[0];
-    const filterEl = document.getElementById('filterTanggal');
-    if (filterEl) filterEl.value = localDateStr;
 });
 
 // =========================================
@@ -181,8 +175,11 @@ window.saveProduksiData = async function(event) {
     const batchEl = document.getElementById('batchProduksi');
     
     // Memberntuk objek data produksi
+    const tanggalValue = document.getElementById('tglProduksi').value;
+    console.log('🔍 DEBUG Input Produksi - Tanggal yang akan disimpan:', tanggalValue);
+    
     const payload = {
-        tanggal: document.getElementById('tglProduksi').value, 
+        tanggal: tanggalValue, 
         batchId: batchEl.value,
         batchLabel: batchEl.options[batchEl.selectedIndex].text,
         jenisTelur: document.getElementById('jenisTelurProduksi').value,
@@ -190,8 +187,11 @@ window.saveProduksiData = async function(event) {
         telurBaik: parseInt(document.getElementById('telurBaik').value) || 0,
         telurCacat: parseInt(document.getElementById('telurCacat').value) || 0,
         totalTelur: parseInt(document.getElementById('totalTelur').value) || 0,
+        ayamTidakBertelur: parseInt(document.getElementById('ayamTidakBertelur').value) || 0,
         updatedAt: new Date().toISOString()
     };
+    
+    console.log('🔍 DEBUG Input Produksi - Payload lengkap:', payload);
 
     try {
         if (idInput === "") {
@@ -219,6 +219,7 @@ window.editProduksi = function(id) {
         document.getElementById('telurBaik').value = prod.telurBaik;
         document.getElementById('telurCacat').value = prod.telurCacat;
         document.getElementById('totalTelur').value = prod.totalTelur;
+        document.getElementById('ayamTidakBertelur').value = prod.ayamTidakBertelur || 0;
         document.getElementById('jenisTelurProduksi').value = prod.jenisTelur;
         document.getElementById('kandangProduksi').value = prod.kandang;
         document.getElementById('kandangProduksiHidden').value = prod.kandang;
@@ -275,6 +276,7 @@ function renderTable() {
                 <td><span class="badge" style="background:#10b981;color:white;">${prod.telurBaik.toLocaleString('id-ID')}</span></td>
                 <td><span class="badge" style="background:#ef4444;color:white;">${prod.telurCacat.toLocaleString('id-ID')}</span></td>
                 <td><strong>${prod.totalTelur.toLocaleString('id-ID')}</strong></td>
+                <td><span class="badge" style="background:#8b5cf6;color:white;">${(prod.ayamTidakBertelur || 0).toLocaleString('id-ID')} Ekor</span></td>
                 <td>
                     <button class="btn-edit" onclick="editProduksi('${prod.id}')">✏️</button>
                     <button class="btn-delete" onclick="deleteProduksi('${prod.id}')">🗑️</button>
@@ -297,9 +299,18 @@ function updateQuickStats() {
         }
     });
 
+    // Update statistik ayam tidak bertelur
+    let tidakBertelur = 0;
+    dataProduksi.forEach(prod => {
+        if (!filterTgl || prod.tanggal === filterTgl) {
+            tidakBertelur += (prod.ayamTidakBertelur || 0);
+        }
+    });
+
     if(document.getElementById('totalTelurHariIni')) document.getElementById('totalTelurHariIni').innerText = total.toLocaleString('id-ID') + ' Butir';
     if(document.getElementById('totalTelurBaik')) document.getElementById('totalTelurBaik').innerText = baik.toLocaleString('id-ID') + ' Butir';
     if(document.getElementById('totalTelurCacat')) document.getElementById('totalTelurCacat').innerText = cacat.toLocaleString('id-ID') + ' Butir';
+    if(document.getElementById('totalAyamTidakBertelur')) document.getElementById('totalAyamTidakBertelur').innerText = tidakBertelur.toLocaleString('id-ID') + ' Ekor';
 }
 
 window.filterTable = function() {
@@ -314,9 +325,9 @@ window.resetFilter = function() {
 
 window.downloadLaporanCSV = function() {
     if (dataProduksi.length === 0) return;
-    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur\n";
+    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur,Ayam Tidak Bertelur\n";
     dataProduksi.forEach(p => {
-        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur}\n`;
+        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur},${p.ayamTidakBertelur || 0}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
