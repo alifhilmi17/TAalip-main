@@ -226,7 +226,7 @@ async function initAdminDashboard() {
     });
 
     // J. LISTENER AUDIT LOG (Section 7)
-    onSnapshot(query(collection(db, "activity_log"), orderBy("waktu", "desc"), limit(30)), (snap) => {
+    onSnapshot(query(collection(db, "activity_log"), orderBy("waktu", "desc"), limit(5)), (snap) => {
         renderSystemLogs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
@@ -283,7 +283,7 @@ onAuthStateChanged(auth, async (user) => {
 
 /**
  * ---------------------------------------------------------
- * SECTION 2: STATISTIK & ALERT
+ * C & D. Section 2: Statistik Global & Info Ayam Sakit
  * ---------------------------------------------------------
  */
 
@@ -324,7 +324,7 @@ function renderAdminAyamSakitAlert() {
 
 /**
  * ---------------------------------------------------------
- * SECTION 2C: GRAFIK ANALITIK ADMIN
+ * E. Section 2c: Grafik Analitik Admin
  * ---------------------------------------------------------
  */
 
@@ -439,7 +439,7 @@ function renderAdminFinanceChart() {
 
 /**
  * ---------------------------------------------------------
- * SECTION: SYSTEM HEALTH & FEED (FASE 3)
+ * F & G. Section: System Health & Feed Stock
  * ---------------------------------------------------------
  */
 
@@ -605,7 +605,7 @@ function checkAdminFeedAlerts() {
 
 /**
  * ---------------------------------------------------------
- * SECTION 4: TABEL MANAJEMEN PENGGUNA
+ * I. Section 4: Tabel Manajemen Pengguna
  * ---------------------------------------------------------
  */
 
@@ -654,7 +654,7 @@ function renderAdminUserList(users) {
 
 /**
  * ---------------------------------------------------------
- * SECTION 5: SNAPSHOT TABS (RINGKASAN DATA)
+ * J. Section 5: Ringkasan Data Peternakan Ayam (Snapshot Tabs)
  * ---------------------------------------------------------
  */
 
@@ -818,7 +818,7 @@ function hideRekomendasiAdmin() {
 
 /**
  * ---------------------------------------------------------
- * SECTION 6: MANAJEMEN OPERASIONAL
+ * K. Section 6: Manajemen Operasional
  * ---------------------------------------------------------
  */
 
@@ -878,7 +878,7 @@ function renderAdminSchedules(sch) {
 
 /**
  * ---------------------------------------------------------
- * SECTION 7: AUDIT LOG AKTIVITAS
+ * L. Section 7: Audit Log Aktivitas
  * ---------------------------------------------------------
  */
 
@@ -910,7 +910,7 @@ function renderSystemLogs(logs) {
 
 /**
  * ---------------------------------------------------------
- * GLOBAL / SIDEBAR ACTIONS
+ * PART 1 & A. NAVIGATION, SIDEBAR & HEADER MOBILE
  * ---------------------------------------------------------
  */
 
@@ -956,7 +956,7 @@ window.toggleSidebarMenu = function(id) {
 
 /**
  * ---------------------------------------------------------
- * SECTION 2C: CHART ACTIONS
+ * E. Section 2c: Grafik Analitik Admin
  * ---------------------------------------------------------
  */
 
@@ -969,7 +969,7 @@ window.gantiPeriodeAdminChart = function(hari, btn) {
 
 /**
  * ---------------------------------------------------------
- * FASE 3: HEALTH & FEED ACTIONS
+ * F & G. Section: System Health & Feed Stock
  * ---------------------------------------------------------
  */
 
@@ -1041,7 +1041,7 @@ window.quickActionStokPakan = () => { window.location.href = '../../stokpakan.ht
 
 /**
  * ---------------------------------------------------------
- * SECTION 4: USER MANAGEMENT ACTIONS
+ * I. Section 4: Tabel Manajemen Pengguna
  * ---------------------------------------------------------
  */
 
@@ -1252,7 +1252,7 @@ window.syncAdminAccounts = async function() {
 
 /**
  * ---------------------------------------------------------
- * SECTION 5: SNAPSHOT ACTIONS (DETAIL & EDIT)
+ * J. Section 5: Ringkasan Data Peternakan Ayam (Snapshot Tabs)
  * ---------------------------------------------------------
  */
 
@@ -1515,7 +1515,7 @@ window.openPrediksiDetail = async function(prediksiId) {
 
 /**
  * ---------------------------------------------------------
- * SECTION 6: OPERATIONAL ACTIONS
+ * K. Section 6: Manajemen Operasional
  * ---------------------------------------------------------
  */
 
@@ -1579,7 +1579,7 @@ window.deleteAdminSchedule = async (id) => { if ((await Swal.fire({title:'Hapus 
 
 /**
  * ---------------------------------------------------------
- * SECTION 7: SYSTEM LOG ACTIONS
+ * L. Section 7: Audit Log Aktivitas
  * ---------------------------------------------------------
  */
 

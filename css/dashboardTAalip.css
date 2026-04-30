@@ -1,3 +1,7 @@
+
+/* =========================================================
+   GLOBALS & BASE
+========================================================= */
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: dashboardTAalip.css
@@ -60,6 +64,10 @@ body {
     /* Izinkan menggulir manakala susunan menu terlalu panjang mentok paha layar bawah */
 }
 
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
 /* ===== Bagian Identitas Logo ===== */
 .sidebar .logo {
     font-size: 1.5rem;
@@ -374,6 +382,27 @@ body {
     color: #333;
 }
 
+
+/* =========================================================
+   1. LAYOUT & HEADER
+========================================================= */
+/* 1. LAYOUT & CONTAINERS */
+.admin-switch-container {
+    display: none;
+    margin-top: 1.5rem;
+}
+
+.alert-banner-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+
+/* =========================================================
+   WELCOME CARD
+========================================================= */
 /* ===== Kartu Kotak Sapaan Salam Penata Dashboard Atas ===== */
 .welcome-card {
     background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
@@ -514,6 +543,1042 @@ body {
     text-align: center;
 }
 
+
+/* =========================================================
+   ALERT BANNER
+========================================================= */
+/* Simple alert text - no complex styling */
+#stat-pakan-alert {
+    transition: opacity 0.2s ease;
+}
+
+/* Minimal responsive adjustment */
+@media (max-width: 768px) {
+    #stat-pakan-alert {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* =========================================================
+   ✅ FASE 3: DYNAMIC ALERT BANNER STYLES
+   Banner notifikasi dinamis yang muncul di atas dashboard
+   berdasarkan kondisi data real-time (pakan, kesehatan, vaksinasi)
+========================================================= */
+
+/* Wrapper container banner */
+#alertBannerContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Base banner */
+.alert-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1.1rem;
+    border-radius: 12px;
+    border-left: 5px solid transparent;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    animation: bannerSlideIn 0.35s ease;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+
+@keyframes bannerSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Ikon besar di kiri */
+.alert-banner-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    line-height: 1;
+}
+
+/* Teks body (title + pesan) */
+.alert-banner-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.alert-banner-body strong {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.alert-banner-body span {
+    font-size: 0.83rem;
+    opacity: 0.9;
+}
+
+/* Tombol aksi di kanan */
+.alert-banner-action {
+    flex-shrink: 0;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    background: rgba(0,0,0,0.1);
+    color: inherit;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+}
+
+.alert-banner-action:hover {
+    background: rgba(0,0,0,0.2);
+}
+
+/* Tombol tutup (×) */
+.alert-banner-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.5;
+    color: inherit;
+    line-height: 1;
+    padding: 0 0.2rem;
+    transition: opacity 0.2s;
+}
+
+.alert-banner-close:hover {
+    opacity: 1;
+}
+
+/* === Varian Warna Banner === */
+
+/* Danger — merah (stok kritis, mortalitas) */
+.alert-banner-danger {
+    background: #fef2f2;
+    border-left-color: #ef4444;
+    color: #7f1d1d;
+}
+
+.alert-banner-danger .alert-banner-action {
+    background: #ef4444;
+    color: #fff;
+}
+
+.alert-banner-danger .alert-banner-action:hover {
+    background: #dc2626;
+}
+
+/* Warning — kuning (stok rendah, ayam sakit) */
+.alert-banner-warning {
+    background: #fffbeb;
+    border-left-color: #f59e0b;
+    color: #78350f;
+}
+
+.alert-banner-warning .alert-banner-action {
+    background: #f59e0b;
+    color: #fff;
+}
+
+.alert-banner-warning .alert-banner-action:hover {
+    background: #d97706;
+}
+
+/* Info — biru (vaksinasi mendatang) */
+.alert-banner-info {
+    background: #eff6ff;
+    border-left-color: #3b82f6;
+    color: #1e3a5f;
+}
+
+.alert-banner-info .alert-banner-action {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.alert-banner-info .alert-banner-action:hover {
+    background: #2563eb;
+}
+
+/* Success — hijau (semua aman) */
+.alert-banner-success {
+    background: #f0fdf4;
+    border-left-color: #10b981;
+    color: #064e3b;
+}
+
+/* === Responsif === */
+@media (max-width: 600px) {
+    .alert-banner {
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .alert-banner-action {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* =========================================================
+   ✅ FASE 3: ACTIVITY PROGRESS BAR STYLES
+========================================================= */
+
+/* =========================================================
+   2. QUICK STATS
+========================================================= */
+/* 2. STAT CARDS UTILITIES */
+.stat-subtext-danger {
+    font-size: 0.85rem;
+    color: #ef4444;
+    margin-top: 5px;
+    font-weight: 600;
+    display: none;
+}
+
+.stat-subtext-warning {
+    font-size: 0.85rem;
+    color: #f59e0b;
+    margin-top: 5px;
+    font-weight: 600;
+    display: none;
+}
+
+.pakan-alert-text {
+    display: none;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ef4444;
+}
+
+
+/* =========================================================
+   CHARTS OLD
+========================================================= */
+/* =========================================================
+   📈 GRAFIK PRODUKSI PREMIUM - ENHANCED CHART STYLES
+   Tambahan gaya eksklusif untuk kartu grafik Tren Produksi Telur
+   yang lebih informatif, menarik, dan premium.
+========================================================= */
+
+/* === Kartu Chart Produksi Khusus (Override base chart-container) === */
+/* Memberikan padding lebih lapang dan border aksen atas berwarna emas */
+.chart-produksi-card {
+    padding: 0;
+    overflow: hidden;
+    /* Cegah dekorasi header meluber keluar radius */
+    border-top: 4px solid transparent;
+    background-image: linear-gradient(white, white),
+        linear-gradient(90deg, #fb8500, #ffb703);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    /* Teknik border gradien modern */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chart-produksi-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 35px rgba(251, 133, 0, 0.15);
+}
+
+/* === Header Grafik: Judul + Tombol Filter di satu baris === */
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.4rem 1.5rem 0.8rem;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+/* Grup teks judul */
+.chart-title-group h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.2rem 0;
+    text-align: left;
+}
+
+/* Subtitle periode di bawah judul */
+.chart-subtitle {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* === Grup Tombol Filter Periode (7/14/30 Hari) === */
+.chart-filter-group {
+    display: flex;
+    gap: 0.4rem;
+    background: #f1f5f9;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+/* Tombol dasar filter */
+.chart-filter-btn {
+    padding: 0.35rem 0.75rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Tombol filter yang sedang aktif dipilih */
+.chart-filter-btn.active {
+    background: linear-gradient(135deg, #fb8500 0%, #ffb703 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(251, 133, 0, 0.4);
+}
+
+.chart-filter-btn:hover:not(.active) {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+/* === Mini Statistik Ringkasan (4 Kotak Angka di Atas Grafik) === */
+.chart-mini-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    border-top: 1px solid #f1f5f9;
+    border-bottom: 1px solid #f1f5f9;
+    margin: 0;
+}
+
+/* Tiap kotak statistik kecil */
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 1rem;
+    border-right: 1px solid #f1f5f9;
+    transition: background 0.2s ease;
+}
+
+.mini-stat:last-child {
+    border-right: none;
+}
+
+.mini-stat:hover {
+    background: #fafafa;
+}
+
+/* Ikon kotak warna dalam mini-stat */
+.mini-stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Label kecil abu */
+.mini-stat-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+    margin: 0 0 0.15rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+
+/* Nilai angka besar */
+.mini-stat-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+    transition: all 0.3s ease;
+}
+
+/* === Wrapper Canvas + Empty Overlay === */
+.chart-canvas-wrapper {
+    position: relative;
+    padding: 1rem 1.2rem 1.2rem;
+}
+
+/* Overlay tampilan kosong jika belum ada data */
+.chart-empty-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    border-radius: 0 0 15px 15px;
+    z-index: 10;
+    text-align: center;
+    gap: 0.5rem;
+    /* Tersembunyi secara default, ditampilkan via JS jika data kosong */
+    display: none;
+}
+
+.chart-empty-icon {
+    font-size: 2.5rem;
+    animation: bobFloat 2.5s ease-in-out infinite;
+}
+
+.chart-empty-overlay p {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin: 0;
+}
+
+.chart-empty-overlay small {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+/* Animasi mengambang untuk ikon empty state */
+@keyframes bobFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* === Responsif untuk layar kecil === */
+@media (max-width: 768px) {
+    .chart-mini-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chart-header {
+        flex-direction: column;
+    }
+
+    .mini-stat {
+        padding: 0.7rem 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-mini-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chart-filter-group {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* =========================================================
+   🛡️ ADMIN BACK BUTTON (SPECIAL ACCESS)
+========================================================= */
+.admin-back-btn {
+    display: block;
+    background: rgba(15, 23, 42, 0.2);
+    color: #fff;
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 100%;
+}
+
+.admin-back-btn:hover {
+    background: #fff;
+    color: #ff7e5f;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: #fff;
+}
+
+
+
+/* =========================================================
+   3. ANALYTICS
+========================================================= */
+/* 3. ANALYTICS & CHARTS */
+.chart-mini-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.mini-stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.mini-stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.mini-stat-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+
+/* =========================================================
+   4. WIDGET CARDS
+========================================================= */
+/* 4. WIDGET CARDS (GRADIENTS & SHADOWS) */
+.widget-card {
+    border-radius: 20px;
+    padding: 1.5rem;
+    color: white !important;
+}
+
+.quick-actions-card {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3) !important;
+}
+
+.vaccination-card {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3) !important;
+}
+
+.prediction-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+}
+
+.finance-summary-card {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3) !important;
+}
+
+.widget-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.widget-card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white !important;
+}
+
+.widget-card-header p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    color: white !important;
+}
+
+.widget-btn-outline {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.widget-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateX(4px);
+}
+
+
+/* =========================================================
+   QUICK ACTIONS OLD
+========================================================= */
+/* Tombol persegi Quick Actions */
+.qa-square-btn {
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.75rem;
+    width: 100%;
+}
+
+.qa-square-btn:hover {
+    background: rgba(255,255,255,0.25);
+    transform: translateY(-2px);
+}
+
+/* Sub-kotak persegi untuk Prediksi & Keuangan */
+.widget-square-box {
+    padding: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 90px;
+    overflow: hidden;
+}
+
+.widget-square-box p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.widget-square-box p:last-child {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Responsif: Perbaikan untuk layar sedang dan kecil */
+@media (max-width: 1200px) {
+    .quick-actions-widget .qa-square-btn,
+    .prediction-widget .widget-square-box,
+    .finance-summary-widget .widget-square-box {
+        min-height: 85px;
+        padding: 0.7rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .quick-actions-widget .qa-square-btn,
+    .prediction-widget .widget-square-box,
+    .finance-summary-widget .widget-square-box {
+        min-height: 80px;
+        padding: 0.6rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.7rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .quick-actions-widget .qa-square-btn,
+    .prediction-widget .widget-square-box,
+    .finance-summary-widget .widget-square-box {
+        min-height: 75px;
+        padding: 0.6rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Di layar sangat kecil, buat grid 1 kolom untuk widget keuangan */
+    .finance-summary-card .widget-card-body > div {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .widget-square-box {
+        min-height: 70px;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .widget-card-header p {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Perbaikan khusus untuk finance summary widget */
+.finance-summary-card .widget-card-body > div {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+}
+
+/* Responsif grid keuangan untuk layar medium-small */
+@media (max-width: 900px) and (min-width: 769px) {
+    .finance-summary-card .widget-card-body > div {
+        gap: 0.6rem;
+    }
+    
+    .finance-summary-card .widget-square-box {
+        padding: 0.6rem;
+    }
+    
+    .finance-summary-card .widget-square-box p:first-child {
+        font-size: 0.7rem !important;
+    }
+    
+    .finance-summary-card .widget-square-box p:last-child {
+        font-size: 1rem !important;
+    }
+}
+
+/* =========================================================
+   ✅ WIDGETS ROW — LAYOUT 2 KOLOM SEJAJAR (seperti charts-section)
+   Baris 1: Quick Actions | Jadwal Vaksinasi
+   Baris 2: Widget Prediksi | Ringkasan Keuangan
+========================================================= */
+
+.widgets-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    align-items: stretch;
+}
+
+/* Responsif untuk tablet landscape */
+@media (max-width: 1024px) {
+    .widgets-row {
+        gap: 1rem;
+    }
+    
+    .widget-card {
+        padding: 1rem;
+    }
+}
+
+/* Card wrapper — tinggi TETAP untuk semua widget agar seragam */
+.widget-card {
+    border-radius: 15px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    height: 280px;
+    overflow: hidden;
+}
+
+/* Header baris atas: judul + tombol */
+.widget-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.widget-card-header > div:first-child {
+    flex: 1;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.widget-card-header > div:first-child h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.widget-card-header button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+/* Body konten bawah header — mengisi sisa ruang */
+.widget-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+}
+
+.widget-card-body > div {
+    flex: 1;
+}
+
+/* Tombol Quick Actions — ukuran lebih kecil dan compact */
+.qa-square-btn {
+    min-height: 50px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.4rem 0.3rem;
+    width: 100%;
+    gap: 0.2rem;
+}
+
+.qa-square-btn:hover {
+    transform: translateY(-2px);
+    background: rgba(255,255,255,0.25);
+}
+
+.qa-square-btn p {
+    margin: 0 !important;
+    line-height: 1.1;
+}
+
+/* Responsif: 1 kolom di layar kecil */
+@media (max-width: 768px) {
+    .widgets-row {
+        grid-template-columns: 1fr;
+    }
+
+    .widget-card {
+        height: auto;
+        min-height: 240px;
+    }
+    
+    .widget-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .widget-card-header button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .widget-card {
+        padding: 1rem;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .widget-card-header p {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-card-header span {
+        font-size: 1.5rem !important;
+    }
+    
+    .widget-card-header button {
+        font-size: 0.75rem !important;
+        padding: 6px 12px !important;
+    }
+}
+
+/* Perbaikan khusus untuk layar sangat kecil (< 400px) */
+@media (max-width: 400px) {
+    .widget-card-header {
+        gap: 0.75rem;
+    }
+    
+    .widget-card-header > div:first-child {
+        min-width: 150px;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 0.9rem !important;
+        line-height: 1.3;
+    }
+    
+    .widget-square-box {
+        padding: 0.5rem;
+        min-height: 65px;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.65rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 0.95rem !important;
+    }
+}
+
+
+/* =========================================================
+   5. QUICK ACTIONS
+========================================================= */
+/* 5. QUICK ACTION BUTTONS */
+.qa-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+}
+
+.qa-square-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.qa-square-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-2px);
+}
+
+.qa-square-btn p { margin: 0; color: white !important; }
+.qa-icon-large { font-size: 1.1rem; line-height: 1; }
+.qa-label-bold { font-size: 0.7rem; font-weight: 700; opacity: 0.95; }
+.qa-desc-small { font-size: 0.6rem; opacity: 0.75; }
+
+
+/* =========================================================
+   9. PREDIKSI WIDGET
+========================================================= */
+/* 9. PREDIKSI WIDGET GRID */
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+}
+
+.widget-square-box {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-icon-hint {
+    cursor: help;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* =========================================================
+   PROGRESS BARS OLD
+========================================================= */
+
+/* Animasi transisi progress bar */
+#activity-progress-bar {
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.4s ease;
+}
+
+/* =========================================================
+   ✅ KOTAK PERSEGI — QUICK ACTIONS & WIDGET SUB-CARDS
+   Memaksa semua sub-kotak di dalam widget menjadi persegi
+   menggunakan aspect-ratio: 1 dengan konten terpusat.
+========================================================= */
+
+
+/* =========================================================
+   6. PROGRESS BARS
+========================================================= */
+/* 6. PROGRESS BARS */
+.activity-progress-container {
+    padding: 0.8rem 1.2rem 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.progress-track {
+    background: #e2e8f0;
+    border-radius: 100px;
+    height: 6px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+
+/* =========================================================
+   OFFICE ADMIN
+========================================================= */
 /* ===== Formasi Kisi Layout Untuk Area Kelola Office Admin ===== */
 /* Menampung Aktivitas, Pengumuman, Agenda dll dalam formasi Tiga baris bersebelahan, Namun Kolom ke-3 (Agenda) ditarik lebarnya agak melar 1.5 kali lipat (1.5fr) */
 .office-admin {
@@ -1114,1183 +2179,10 @@ body {
    📱 SISTEM DESAIN RESPONSIF LAYAR FLEKSIBEL (TEKNIK RESPONSIVE WEB DESIGN) (MOBILE & TABLET SUPPORT)
 ======================================================== */
 
-/* --- Tuntunan Layar Komputer Tanggung Menengah (Laptop < 1200px) --- */
-@media (max-width: 1200px) {
-    .office-admin {
-        grid-template-columns: 1fr 1fr;
-        /* Menciutkan formasi dari asalnya 3 baris sejajar memanjang, turun direm mendadak jadi 2 baris aja seiring lebar merungkut mengecil. (Dibuang sisa kekanan) */
-    }
-}
-
-/* --- Tuntunan Layar Ipad Tablet Berdiri Portrait (< 992px) --- */
-@media (max-width: 992px) {
-    .office-admin {
-        grid-template-columns: 1fr;
-        /* Pasrah menyerah hancurkan dinding pemisah kolom-kolom kesamping sejajar. Jadikan mereka menyusun membalok Tugu tunggal membentur atas bawah doang (Satu Baris Lurus)! Ini strategi anti pecah/ngelibek paling gahar untuk gawai nanggung! */
-    }
-}
-
-/* --- Tuntunan Khusus Layar Telapon Genggam HP Pintar (Mobile Screen < 768px) --- */
-@media (max-width: 768px) {
-
-    /* Merubah takdir nasib Pilar Navigasi Sidebar. Sembunyikan dan diasingkan tarik menjorok jauh ke Alam Seberang Kiri Kordinat Layar (-100%). Pagar gaib z-index sangat tinggi membumbung agar melampau tabrakan (Float over everything else)!! */
-    .sidebar {
-        transform: translateX(-100%);
-        z-index: 1000;
-    }
-
-    /* Mantra pamungkas sewaktu Tombol Garis Tiga Hamburger Bar ditekan/diaktifkan via JS. Sidebar akan meluncur Terbang balik lagi tampil Menampakkan Diri Sepanjang sedia kala (Kordinat 0 X!). */
-    .sidebar.active {
-        transform: translateX(0);
-    }
-
-    /* Melenyapkan beban pendorongan (margin) karena tiang sidebar aslinya sedang minggat gaib tersembunyi bersembunyi. Area Main memakan kekosongan ruang mencaplog kuasa lebarnya menabrak dinding utuh (Width 100% full!!) */
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 1rem;
-        /* Kurangi rongga dinding, sayang layar hp kecil kalo space terbuang mubazir kebesaran ketebalan padding. */
-    }
-
-    /* Memastikan sistem Office Administrasi tugu list harian hanya sebatang 1 baris */
-    .office-admin {
-        grid-template-columns: 1fr;
-    }
-
-    /* Mengekang Grid Kapsul Kilat Info Statistik Angka agar baris menyesuaikan otomatis numpuk tapi minimal mengecil seukuran 150 piksel saja gak boleh menciut memijah lgi. Cukup! */
-    .quick-stats {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-
-    /* Merombak Sapa Sambutan "Selamat Datang" biar membulat tengah tumpuk menetes warnanya tebal beda dikit bentuknya */
-    .welcome-card {
-        padding: 1.5rem;
-        text-align: center;
-        border-left: none;
-        /* Buang garis pembatas kuno */
-        border-top: 6px solid #ff7e5f;
-        /* Kasih sabuk pita tebal berona peach api oren melintang gagah di Atap Card nya!! */
-    }
-
-    /* Mencabut Nyabut Hiasan ornamen after di welcome card demi bersihnya layar hp. Pengorbanan estetika demi kemerdekaan fungsi luasan layar sempit. */
-    .welcome-card::after {
-        display: none;
-    }
-
-    /* Memenggal dan Mematahkan form ketikan masukan yg dulunya memanjang sejajar cantik... Dipaksa rela lurus melungsur sejajar vertikal bertumpuk seperti susunan bata. */
-    .manage-card form,
-    .reminder-card form,
-    .schedule-card form {
-        flex-direction: column;
-    }
-
-    /* Form pengetikan dan tombolnya rela memelototkan diri mencungkil memakan 100% kelonggaran baris tsb demi jempol HP besar. Nyaman dipencet jempol raksasa! */
-    .add-form input {
-        width: 100%;
-    }
-
-    .manage-card form button,
-    .reminder-card form button,
-    .schedule-card form button {
-        width: 100%;
-    }
-
-    /* Nah, barulah Sabuk Pengikat Bando Atasan Layar Pembuka Menu Muncul menampakkan dirinya di HP. Mengganti eksistensi Sidebar yang sedang dibungkam di relung kiri pojok alam tak kasat mata. */
-    .mobile-header {
-        display: flex;
-    }
-}
-
-/* --- Tuntunan Ujung Tombak Terakhir! Layar Paling Sempit SejagatRaya (HP iPhone jadul 5/SE Resolusi < 480px Super Tiny Tiny Screen) --- */
-@media (max-width: 480px) {
-
-    /* Terjunkan Barisan Grafik yang asalnya msh mendesak Berbelah bersisian. Remukan!! Semua Harus Lurus Bawah Numpuk demi kejelasan Data Grafik tidak menggembel kepotong burik layar sempit kecil banget! (1fr Single Stack) */
-    .charts-section {
-        grid-template-columns: 1fr;
-    }
-
-    .quick-stats {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .stat-card {
-        flex: 1 1 auto;
-        max-width: 100%;
-        padding: 1.25rem;
-    }
-
-    .welcome-card h2 {
-        font-size: 1.3rem;
-        /* Menciut kempeskan tulisan Judul Gede biar tak muntah membentur garis batas card! */
-    }
-}
-
 
 /* =========================================================
-   📈 GRAFIK PRODUKSI PREMIUM - ENHANCED CHART STYLES
-   Tambahan gaya eksklusif untuk kartu grafik Tren Produksi Telur
-   yang lebih informatif, menarik, dan premium.
+   ANNOUNCEMENTS REWRITE
 ========================================================= */
-
-/* === Kartu Chart Produksi Khusus (Override base chart-container) === */
-/* Memberikan padding lebih lapang dan border aksen atas berwarna emas */
-.chart-produksi-card {
-    padding: 0;
-    overflow: hidden;
-    /* Cegah dekorasi header meluber keluar radius */
-    border-top: 4px solid transparent;
-    background-image: linear-gradient(white, white),
-        linear-gradient(90deg, #fb8500, #ffb703);
-    background-origin: border-box;
-    background-clip: padding-box, border-box;
-    /* Teknik border gradien modern */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.chart-produksi-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(251, 133, 0, 0.15);
-}
-
-/* === Header Grafik: Judul + Tombol Filter di satu baris === */
-.chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 1.4rem 1.5rem 0.8rem;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-}
-
-/* Grup teks judul */
-.chart-title-group h3 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0 0 0.2rem 0;
-    text-align: left;
-}
-
-/* Subtitle periode di bawah judul */
-.chart-subtitle {
-    font-size: 0.78rem;
-    color: #94a3b8;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-}
-
-/* === Grup Tombol Filter Periode (7/14/30 Hari) === */
-.chart-filter-group {
-    display: flex;
-    gap: 0.4rem;
-    background: #f1f5f9;
-    border-radius: 10px;
-    padding: 4px;
-}
-
-/* Tombol dasar filter */
-.chart-filter-btn {
-    padding: 0.35rem 0.75rem;
-    border: none;
-    border-radius: 7px;
-    background: transparent;
-    color: #64748b;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    font-family: 'Poppins', sans-serif;
-}
-
-/* Tombol filter yang sedang aktif dipilih */
-.chart-filter-btn.active {
-    background: linear-gradient(135deg, #fb8500 0%, #ffb703 100%);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(251, 133, 0, 0.4);
-}
-
-.chart-filter-btn:hover:not(.active) {
-    background: #e2e8f0;
-    color: #334155;
-}
-
-/* === Mini Statistik Ringkasan (4 Kotak Angka di Atas Grafik) === */
-.chart-mini-stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0;
-    border-top: 1px solid #f1f5f9;
-    border-bottom: 1px solid #f1f5f9;
-    margin: 0;
-}
-
-/* Tiap kotak statistik kecil */
-.mini-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.85rem 1rem;
-    border-right: 1px solid #f1f5f9;
-    transition: background 0.2s ease;
-}
-
-.mini-stat:last-child {
-    border-right: none;
-}
-
-.mini-stat:hover {
-    background: #fafafa;
-}
-
-/* Ikon kotak warna dalam mini-stat */
-.mini-stat-icon {
-    width: 34px;
-    height: 34px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-}
-
-/* Label kecil abu */
-.mini-stat-label {
-    font-size: 0.7rem;
-    color: #94a3b8;
-    font-weight: 500;
-    margin: 0 0 0.15rem 0;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-    line-height: 1;
-}
-
-/* Nilai angka besar */
-.mini-stat-val {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-    line-height: 1.2;
-    transition: all 0.3s ease;
-}
-
-/* === Wrapper Canvas + Empty Overlay === */
-.chart-canvas-wrapper {
-    position: relative;
-    padding: 1rem 1.2rem 1.2rem;
-}
-
-/* Overlay tampilan kosong jika belum ada data */
-.chart-empty-overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(4px);
-    border-radius: 0 0 15px 15px;
-    z-index: 10;
-    text-align: center;
-    gap: 0.5rem;
-    /* Tersembunyi secara default, ditampilkan via JS jika data kosong */
-    display: none;
-}
-
-.chart-empty-icon {
-    font-size: 2.5rem;
-    animation: bobFloat 2.5s ease-in-out infinite;
-}
-
-.chart-empty-overlay p {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #475569;
-    margin: 0;
-}
-
-.chart-empty-overlay small {
-    font-size: 0.8rem;
-    color: #94a3b8;
-}
-
-/* Animasi mengambang untuk ikon empty state */
-@keyframes bobFloat {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-8px);
-    }
-}
-
-/* === Responsif untuk layar kecil === */
-@media (max-width: 768px) {
-    .chart-mini-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .chart-header {
-        flex-direction: column;
-    }
-
-    .mini-stat {
-        padding: 0.7rem 0.8rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .chart-mini-stats {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .chart-filter-group {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-/* =========================================================
-   🛡️ ADMIN BACK BUTTON (SPECIAL ACCESS)
-========================================================= */
-.admin-back-btn {
-    display: block;
-    background: rgba(15, 23, 42, 0.2);
-    color: #fff;
-    text-align: center;
-    padding: 10px 15px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.9rem;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    cursor: pointer;
-    width: 100%;
-}
-
-.admin-back-btn:hover {
-    background: #fff;
-    color: #ff7e5f;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    border-color: #fff;
-}
-
-
-/* =========================================================
-   MODAL OVERLAY & CONTENT (FASE 2)
-========================================================= */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    position: relative;
-    animation: slideUp 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-/* Responsive modal */
-@media (max-width: 768px) {
-    .modal-content {
-        max-width: 95% !important;
-        margin: 1rem;
-    }
-}
-/* =========================================================
-   ✅ FASE 3: QUICK ACTIONS WIDGET STYLING
-========================================================= */
-.quick-actions-widget {
-    animation-delay: 0.4s;
-}
-
-.quick-actions-card button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
-}
-
-.quick-actions-card button:active {
-    transform: translateY(0);
-}
-
-/* =========================================================
-   ✅ FASE 3: SYSTEM HEALTH INDICATORS STYLING
-========================================================= */
-.system-health-widget {
-    animation-delay: 0.5s;
-}
-
-.system-health-card {
-    position: relative;
-    overflow: hidden;
-}
-
-.system-health-card::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-    transform: rotate(45deg);
-    animation: shimmer 3s infinite;
-}
-
-@keyframes shimmer {
-    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-}
-
-#system-health-indicator {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-/* =========================================================
-   ✅ FASE 3: FEED STOCK ALERTS STYLING
-========================================================= */
-.feed-alerts-widget {
-    animation-delay: 0.6s;
-}
-
-.feed-alerts-card {
-    position: relative;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    animation: alertPulse 2s infinite;
-}
-
-@keyframes alertPulse {
-    0%, 100% { 
-        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
-        border-color: rgba(255, 255, 255, 0.3);
-    }
-    50% { 
-        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5);
-        border-color: rgba(255, 255, 255, 0.6);
-    }
-}
-
-.feed-alerts-card button:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
-    transform: translateY(-1px);
-}
-
-/* =========================================================
-   ✅ FASE 3: VACCINATION SCHEDULE WIDGET STYLING
-========================================================= */
-.vaccination-widget {
-    animation-delay: 0.7s;
-}
-
-.vaccination-card {
-    position: relative;
-}
-
-.vaccination-card::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
-    pointer-events: none;
-    border-radius: 15px;
-}
-
-#vaccination-content > div {
-    transition: all 0.3s ease;
-}
-
-#vaccination-content > div:hover {
-    transform: translateY(-3px);
-    background: rgba(255, 255, 255, 0.25) !important;
-}
-
-/* =========================================================
-   ✅ FASE 3: MODAL STYLING IMPROVEMENTS
-========================================================= */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.modal-content {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: slideUp 0.3s ease;
-    position: relative;
-}
-
-@keyframes slideUp {
-    from { 
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to { 
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-/* =========================================================
-   ✅ FASE 3: RESPONSIVE IMPROVEMENTS
-========================================================= */
-@media (max-width: 768px) {
-    .quick-actions-card,
-    .system-health-card,
-    .feed-alerts-card,
-    .vaccination-card {
-        margin: 1rem;
-        padding: 1rem;
-    }
-    
-    .quick-actions-card > div:last-child,
-    .system-health-card > div:last-child,
-    .feed-alerts-card > div:last-child {
-        grid-template-columns: 1fr;
-        gap: 0.75rem;
-    }
-    
-    .modal-content {
-        margin: 1rem;
-        max-width: calc(100% - 2rem);
-    }
-}
-
-/* =========================================================
-   ✅ FASE 3: ACCESSIBILITY IMPROVEMENTS
-========================================================= */
-.quick-actions-card button:focus,
-.feed-alerts-card button:focus,
-.vaccination-card button:focus {
-    outline: 2px solid rgba(255, 255, 255, 0.8);
-    outline-offset: 2px;
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-    .quick-actions-card,
-    .system-health-card,
-    .feed-alerts-card,
-    .vaccination-card {
-        border: 2px solid rgba(255, 255, 255, 0.8);
-    }
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-    .quick-actions-card button,
-    #vaccination-content > div,
-    .feed-alerts-card,
-    #system-health-indicator {
-        animation: none;
-        transition: none;
-    }
-    
-    .quick-actions-card button:hover,
-    #vaccination-content > div:hover {
-        transform: none;
-    }
-}
-
-/* =========================================================
-   ✅ FASE 3: PRINT STYLES
-========================================================= */
-@media print {
-    .quick-actions-widget,
-    .feed-alerts-widget {
-        display: none;
-    }
-    
-    .system-health-widget,
-    .vaccination-widget {
-        break-inside: avoid;
-        background: white !important;
-        color: black !important;
-        box-shadow: none !important;
-    }
-}
-/* =========================================================
-   ✅ FASE 3: SIMPLE FEED STOCK ALERT IN STAT CARD
-========================================================= */
-
-/* Simple alert text - no complex styling */
-#stat-pakan-alert {
-    transition: opacity 0.2s ease;
-}
-
-/* Minimal responsive adjustment */
-@media (max-width: 768px) {
-    #stat-pakan-alert {
-        font-size: 0.75rem !important;
-    }
-}
-
-/* =========================================================
-   ✅ FASE 3: DYNAMIC ALERT BANNER STYLES
-   Banner notifikasi dinamis yang muncul di atas dashboard
-   berdasarkan kondisi data real-time (pakan, kesehatan, vaksinasi)
-========================================================= */
-
-/* Wrapper container banner */
-#alertBannerContainer {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-bottom: 1.5rem;
-}
-
-/* Base banner */
-.alert-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    padding: 0.85rem 1.1rem;
-    border-radius: 12px;
-    border-left: 5px solid transparent;
-    font-size: 0.88rem;
-    line-height: 1.4;
-    animation: bannerSlideIn 0.35s ease;
-    position: relative;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-}
-
-@keyframes bannerSlideIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Ikon besar di kiri */
-.alert-banner-icon {
-    font-size: 1.4rem;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-/* Teks body (title + pesan) */
-.alert-banner-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-}
-
-.alert-banner-body strong {
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-
-.alert-banner-body span {
-    font-size: 0.83rem;
-    opacity: 0.9;
-}
-
-/* Tombol aksi di kanan */
-.alert-banner-action {
-    flex-shrink: 0;
-    padding: 0.4rem 0.9rem;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-decoration: none;
-    background: rgba(0,0,0,0.1);
-    color: inherit;
-    transition: background 0.2s ease;
-    white-space: nowrap;
-}
-
-.alert-banner-action:hover {
-    background: rgba(0,0,0,0.2);
-}
-
-/* Tombol tutup (×) */
-.alert-banner-close {
-    flex-shrink: 0;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    opacity: 0.5;
-    color: inherit;
-    line-height: 1;
-    padding: 0 0.2rem;
-    transition: opacity 0.2s;
-}
-
-.alert-banner-close:hover {
-    opacity: 1;
-}
-
-/* === Varian Warna Banner === */
-
-/* Danger — merah (stok kritis, mortalitas) */
-.alert-banner-danger {
-    background: #fef2f2;
-    border-left-color: #ef4444;
-    color: #7f1d1d;
-}
-
-.alert-banner-danger .alert-banner-action {
-    background: #ef4444;
-    color: #fff;
-}
-
-.alert-banner-danger .alert-banner-action:hover {
-    background: #dc2626;
-}
-
-/* Warning — kuning (stok rendah, ayam sakit) */
-.alert-banner-warning {
-    background: #fffbeb;
-    border-left-color: #f59e0b;
-    color: #78350f;
-}
-
-.alert-banner-warning .alert-banner-action {
-    background: #f59e0b;
-    color: #fff;
-}
-
-.alert-banner-warning .alert-banner-action:hover {
-    background: #d97706;
-}
-
-/* Info — biru (vaksinasi mendatang) */
-.alert-banner-info {
-    background: #eff6ff;
-    border-left-color: #3b82f6;
-    color: #1e3a5f;
-}
-
-.alert-banner-info .alert-banner-action {
-    background: #3b82f6;
-    color: #fff;
-}
-
-.alert-banner-info .alert-banner-action:hover {
-    background: #2563eb;
-}
-
-/* Success — hijau (semua aman) */
-.alert-banner-success {
-    background: #f0fdf4;
-    border-left-color: #10b981;
-    color: #064e3b;
-}
-
-/* === Responsif === */
-@media (max-width: 600px) {
-    .alert-banner {
-        flex-wrap: wrap;
-        gap: 0.6rem;
-    }
-
-    .alert-banner-action {
-        width: 100%;
-        text-align: center;
-    }
-}
-
-/* =========================================================
-   ✅ FASE 3: ACTIVITY PROGRESS BAR STYLES
-========================================================= */
-
-/* Animasi transisi progress bar */
-#activity-progress-bar {
-    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.4s ease;
-}
-
-/* =========================================================
-   ✅ KOTAK PERSEGI — QUICK ACTIONS & WIDGET SUB-CARDS
-   Memaksa semua sub-kotak di dalam widget menjadi persegi
-   menggunakan aspect-ratio: 1 dengan konten terpusat.
-========================================================= */
-
-/* Tombol persegi Quick Actions */
-.qa-square-btn {
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-    border: none;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0.75rem;
-    width: 100%;
-}
-
-.qa-square-btn:hover {
-    background: rgba(255,255,255,0.25);
-    transform: translateY(-2px);
-}
-
-/* Sub-kotak persegi untuk Prediksi & Keuangan */
-.widget-square-box {
-    padding: 0.85rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    min-height: 90px;
-    overflow: hidden;
-}
-
-.widget-square-box p {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    width: 100%;
-}
-
-.widget-square-box p:last-child {
-    white-space: normal;
-    word-break: break-word;
-}
-
-/* Responsif: Perbaikan untuk layar sedang dan kecil */
-@media (max-width: 1200px) {
-    .quick-actions-widget .qa-square-btn,
-    .prediction-widget .widget-square-box,
-    .finance-summary-widget .widget-square-box {
-        min-height: 85px;
-        padding: 0.7rem;
-    }
-    
-    .widget-square-box p:first-child {
-        font-size: 0.75rem !important;
-    }
-    
-    .widget-square-box p:last-child {
-        font-size: 1.1rem !important;
-    }
-}
-
-@media (max-width: 992px) {
-    .quick-actions-widget .qa-square-btn,
-    .prediction-widget .widget-square-box,
-    .finance-summary-widget .widget-square-box {
-        min-height: 80px;
-        padding: 0.6rem;
-    }
-    
-    .widget-square-box p:first-child {
-        font-size: 0.7rem !important;
-    }
-    
-    .widget-square-box p:last-child {
-        font-size: 1rem !important;
-    }
-}
-
-@media (max-width: 768px) {
-    .quick-actions-widget .qa-square-btn,
-    .prediction-widget .widget-square-box,
-    .finance-summary-widget .widget-square-box {
-        min-height: 75px;
-        padding: 0.6rem;
-    }
-    
-    .widget-square-box p:first-child {
-        font-size: 0.75rem !important;
-    }
-    
-    .widget-square-box p:last-child {
-        font-size: 1.2rem !important;
-    }
-}
-
-@media (max-width: 576px) {
-    /* Di layar sangat kecil, buat grid 1 kolom untuk widget keuangan */
-    .finance-summary-card .widget-card-body > div {
-        grid-template-columns: 1fr !important;
-    }
-    
-    .widget-square-box {
-        min-height: 70px;
-    }
-    
-    .widget-card-header h3 {
-        font-size: 1rem !important;
-    }
-    
-    .widget-card-header p {
-        font-size: 0.75rem !important;
-    }
-}
-
-/* Perbaikan khusus untuk finance summary widget */
-.finance-summary-card .widget-card-body > div {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.85rem;
-}
-
-/* Responsif grid keuangan untuk layar medium-small */
-@media (max-width: 900px) and (min-width: 769px) {
-    .finance-summary-card .widget-card-body > div {
-        gap: 0.6rem;
-    }
-    
-    .finance-summary-card .widget-square-box {
-        padding: 0.6rem;
-    }
-    
-    .finance-summary-card .widget-square-box p:first-child {
-        font-size: 0.7rem !important;
-    }
-    
-    .finance-summary-card .widget-square-box p:last-child {
-        font-size: 1rem !important;
-    }
-}
-
-/* =========================================================
-   ✅ WIDGETS ROW — LAYOUT 2 KOLOM SEJAJAR (seperti charts-section)
-   Baris 1: Quick Actions | Jadwal Vaksinasi
-   Baris 2: Widget Prediksi | Ringkasan Keuangan
-========================================================= */
-
-.widgets-row {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    align-items: stretch;
-}
-
-/* Responsif untuk tablet landscape */
-@media (max-width: 1024px) {
-    .widgets-row {
-        gap: 1rem;
-    }
-    
-    .widget-card {
-        padding: 1rem;
-    }
-}
-
-/* Card wrapper — tinggi TETAP untuk semua widget agar seragam */
-.widget-card {
-    border-radius: 15px;
-    padding: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    height: 280px;
-    overflow: hidden;
-}
-
-/* Header baris atas: judul + tombol */
-.widget-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.widget-card-header > div:first-child {
-    flex: 1;
-    min-width: 200px;
-    overflow: hidden;
-}
-
-.widget-card-header > div:first-child h3 {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.widget-card-header button {
-    flex-shrink: 0;
-    white-space: nowrap;
-    min-width: fit-content;
-}
-
-/* Body konten bawah header — mengisi sisa ruang */
-.widget-card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: stretch;
-}
-
-.widget-card-body > div {
-    flex: 1;
-}
-
-/* Tombol Quick Actions — ukuran lebih kecil dan compact */
-.qa-square-btn {
-    min-height: 50px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-    border: none;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 0.4rem 0.3rem;
-    width: 100%;
-    gap: 0.2rem;
-}
-
-.qa-square-btn:hover {
-    transform: translateY(-2px);
-    background: rgba(255,255,255,0.25);
-}
-
-.qa-square-btn p {
-    margin: 0 !important;
-    line-height: 1.1;
-}
-
-/* Responsif: 1 kolom di layar kecil */
-@media (max-width: 768px) {
-    .widgets-row {
-        grid-template-columns: 1fr;
-    }
-
-    .widget-card {
-        height: auto;
-        min-height: 240px;
-    }
-    
-    .widget-card-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .widget-card-header button {
-        width: 100%;
-        text-align: center;
-    }
-}
-
-@media (max-width: 576px) {
-    .widget-card {
-        padding: 1rem;
-    }
-    
-    .widget-card-header h3 {
-        font-size: 1rem !important;
-    }
-    
-    .widget-card-header p {
-        font-size: 0.75rem !important;
-    }
-    
-    .widget-card-header span {
-        font-size: 1.5rem !important;
-    }
-    
-    .widget-card-header button {
-        font-size: 0.75rem !important;
-        padding: 6px 12px !important;
-    }
-}
-
-/* Perbaikan khusus untuk layar sangat kecil (< 400px) */
-@media (max-width: 400px) {
-    .widget-card-header {
-        gap: 0.75rem;
-    }
-    
-    .widget-card-header > div:first-child {
-        min-width: 150px;
-    }
-    
-    .widget-card-header h3 {
-        font-size: 0.9rem !important;
-        line-height: 1.3;
-    }
-    
-    .widget-square-box {
-        padding: 0.5rem;
-        min-height: 65px;
-    }
-    
-    .widget-square-box p:first-child {
-        font-size: 0.65rem !important;
-    }
-    
-    .widget-square-box p:last-child {
-        font-size: 0.95rem !important;
-    }
-}
-
 /* =========================================================
    📢 SISTEM PENGUMUMAN — ROLE-BASED (COMPLETE REWRITE)
    Gaya untuk kartu pengumuman dengan override total style lama
@@ -2597,211 +2489,10 @@ ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
    Memindahkan semua inline styles ke dalam class terstruktur
 ========================================================= */
 
-/* 1. LAYOUT & CONTAINERS */
-.admin-switch-container {
-    display: none;
-    margin-top: 1.5rem;
-}
 
-.alert-banner-container {
-    margin-bottom: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
-/* 2. STAT CARDS UTILITIES */
-.stat-subtext-danger {
-    font-size: 0.85rem;
-    color: #ef4444;
-    margin-top: 5px;
-    font-weight: 600;
-    display: none;
-}
-
-.stat-subtext-warning {
-    font-size: 0.85rem;
-    color: #f59e0b;
-    margin-top: 5px;
-    font-weight: 600;
-    display: none;
-}
-
-.pakan-alert-text {
-    display: none;
-    margin-top: 5px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #ef4444;
-}
-
-/* 3. ANALYTICS & CHARTS */
-.chart-mini-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.mini-stat {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    background: #f8fafc;
-    border-radius: 12px;
-}
-
-.mini-stat-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-}
-
-.mini-stat-label {
-    font-size: 0.75rem;
-    color: #64748b;
-    margin: 0;
-}
-
-.mini-stat-val {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin: 0;
-}
-
-/* 4. WIDGET CARDS (GRADIENTS & SHADOWS) */
-.widget-card {
-    border-radius: 20px;
-    padding: 1.5rem;
-    color: white !important;
-}
-
-.quick-actions-card {
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
-    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3) !important;
-}
-
-.vaccination-card {
-    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
-    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3) !important;
-}
-
-.prediction-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
-}
-
-.finance-summary-card {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3) !important;
-}
-
-.widget-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-}
-
-.widget-card-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: white !important;
-}
-
-.widget-card-header p {
-    margin: 0;
-    font-size: 0.85rem;
-    opacity: 0.9;
-    color: white !important;
-}
-
-.widget-btn-outline {
-    background: rgba(255, 255, 255, 0.2) !important;
-    color: white !important;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    flex-shrink: 0;
-}
-
-.widget-btn-outline:hover {
-    background: rgba(255, 255, 255, 0.3) !important;
-    transform: translateX(4px);
-}
-
-/* 5. QUICK ACTION BUTTONS */
-.qa-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.6rem;
-}
-
-.qa-square-btn {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: none !important;
-    padding: 1rem !important;
-    border-radius: 12px !important;
-    color: white !important;
-    cursor: pointer !important;
-    transition: all 0.3s !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-align: center;
-}
-
-.qa-square-btn:hover {
-    background: rgba(255, 255, 255, 0.25) !important;
-    transform: translateY(-2px);
-}
-
-.qa-square-btn p { margin: 0; color: white !important; }
-.qa-icon-large { font-size: 1.1rem; line-height: 1; }
-.qa-label-bold { font-size: 0.7rem; font-weight: 700; opacity: 0.95; }
-.qa-desc-small { font-size: 0.6rem; opacity: 0.75; }
-
-/* 6. PROGRESS BARS */
-.activity-progress-container {
-    padding: 0.8rem 1.2rem 0;
-    background: #f8f9fa;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.progress-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.4rem;
-}
-
-.progress-track {
-    background: #e2e8f0;
-    border-radius: 100px;
-    height: 6px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #10b981, #34d399);
-    border-radius: 100px;
-    width: 0%;
-    transition: width 0.5s ease;
-}
-
+/* =========================================================
+   7. ANNOUNCEMENT BADGE
+========================================================= */
 /* 7. ANNOUNCEMENT BADGE */
 .announcement-badge {
     display: none;
@@ -2818,6 +2509,10 @@ ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
     font-style: italic;
 }
 
+
+/* =========================================================
+   8. MODALS
+========================================================= */
 /* 8. MODAL STYLES */
 .modal-overlay {
     position: fixed;
@@ -2884,32 +2579,417 @@ ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
     overflow-y: auto;
 }
 
-/* 9. PREDIKSI WIDGET GRID */
-.prediction-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.85rem;
-}
 
-.widget-square-box {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    backdrop-filter: blur(10px);
-    padding: 1rem;
+/* =========================================================
+   MODALS OLD & UTILITIES
+========================================================= */
+/* =========================================================
+   MODAL OVERLAY & CONTENT (FASE 2)
+========================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.info-icon-hint {
-    cursor: help;
-    font-size: 0.75rem;
-    background: rgba(255, 255, 255, 0.2);
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: inline-flex;
     align-items: center;
     justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
 }
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Responsive modal */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95% !important;
+        margin: 1rem;
+    }
+}
+/* =========================================================
+   ✅ FASE 3: QUICK ACTIONS WIDGET STYLING
+========================================================= */
+.quick-actions-widget {
+    animation-delay: 0.4s;
+}
+
+.quick-actions-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
+}
+
+.quick-actions-card button:active {
+    transform: translateY(0);
+}
+
+/* =========================================================
+   ✅ FASE 3: SYSTEM HEALTH INDICATORS STYLING
+========================================================= */
+.system-health-widget {
+    animation-delay: 0.5s;
+}
+
+.system-health-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.system-health-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+    transform: rotate(45deg);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+#system-health-indicator {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* =========================================================
+   ✅ FASE 3: FEED STOCK ALERTS STYLING
+========================================================= */
+.feed-alerts-widget {
+    animation-delay: 0.6s;
+}
+
+.feed-alerts-card {
+    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    animation: alertPulse 2s infinite;
+}
+
+@keyframes alertPulse {
+    0%, 100% { 
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+    50% { 
+        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.5);
+        border-color: rgba(255, 255, 255, 0.6);
+    }
+}
+
+.feed-alerts-card button:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-1px);
+}
+
+/* =========================================================
+   ✅ FASE 3: VACCINATION SCHEDULE WIDGET STYLING
+========================================================= */
+.vaccination-widget {
+    animation-delay: 0.7s;
+}
+
+.vaccination-card {
+    position: relative;
+}
+
+.vaccination-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+    pointer-events: none;
+    border-radius: 15px;
+}
+
+#vaccination-content > div {
+    transition: all 0.3s ease;
+}
+
+#vaccination-content > div:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* =========================================================
+   ✅ FASE 3: MODAL STYLING IMPROVEMENTS
+========================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+    position: relative;
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* =========================================================
+   ✅ FASE 3: RESPONSIVE IMPROVEMENTS
+========================================================= */
+@media (max-width: 768px) {
+    .quick-actions-card,
+    .system-health-card,
+    .feed-alerts-card,
+    .vaccination-card {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .quick-actions-card > div:last-child,
+    .system-health-card > div:last-child,
+    .feed-alerts-card > div:last-child {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .modal-content {
+        margin: 1rem;
+        max-width: calc(100% - 2rem);
+    }
+}
+
+/* =========================================================
+   ✅ FASE 3: ACCESSIBILITY IMPROVEMENTS
+========================================================= */
+.quick-actions-card button:focus,
+.feed-alerts-card button:focus,
+.vaccination-card button:focus {
+    outline: 2px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .quick-actions-card,
+    .system-health-card,
+    .feed-alerts-card,
+    .vaccination-card {
+        border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .quick-actions-card button,
+    #vaccination-content > div,
+    .feed-alerts-card,
+    #system-health-indicator {
+        animation: none;
+        transition: none;
+    }
+    
+    .quick-actions-card button:hover,
+    #vaccination-content > div:hover {
+        transform: none;
+    }
+}
+
+/* =========================================================
+   ✅ FASE 3: PRINT STYLES
+========================================================= */
+@media print {
+    .quick-actions-widget,
+    .feed-alerts-widget {
+        display: none;
+    }
+    
+    .system-health-widget,
+    .vaccination-widget {
+        break-inside: avoid;
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+}
+/* =========================================================
+   ✅ FASE 3: SIMPLE FEED STOCK ALERT IN STAT CARD
+========================================================= */
+
+
+/* =========================================================
+   RESPONSIVE OLD
+========================================================= */
+/* --- Tuntunan Layar Komputer Tanggung Menengah (Laptop < 1200px) --- */
+@media (max-width: 1200px) {
+    .office-admin {
+        grid-template-columns: 1fr 1fr;
+        /* Menciutkan formasi dari asalnya 3 baris sejajar memanjang, turun direm mendadak jadi 2 baris aja seiring lebar merungkut mengecil. (Dibuang sisa kekanan) */
+    }
+}
+
+/* --- Tuntunan Layar Ipad Tablet Berdiri Portrait (< 992px) --- */
+@media (max-width: 992px) {
+    .office-admin {
+        grid-template-columns: 1fr;
+        /* Pasrah menyerah hancurkan dinding pemisah kolom-kolom kesamping sejajar. Jadikan mereka menyusun membalok Tugu tunggal membentur atas bawah doang (Satu Baris Lurus)! Ini strategi anti pecah/ngelibek paling gahar untuk gawai nanggung! */
+    }
+}
+
+/* --- Tuntunan Khusus Layar Telapon Genggam HP Pintar (Mobile Screen < 768px) --- */
+@media (max-width: 768px) {
+
+    /* Merubah takdir nasib Pilar Navigasi Sidebar. Sembunyikan dan diasingkan tarik menjorok jauh ke Alam Seberang Kiri Kordinat Layar (-100%). Pagar gaib z-index sangat tinggi membumbung agar melampau tabrakan (Float over everything else)!! */
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 1000;
+    }
+
+    /* Mantra pamungkas sewaktu Tombol Garis Tiga Hamburger Bar ditekan/diaktifkan via JS. Sidebar akan meluncur Terbang balik lagi tampil Menampakkan Diri Sepanjang sedia kala (Kordinat 0 X!). */
+    .sidebar.active {
+        transform: translateX(0);
+    }
+
+    /* Melenyapkan beban pendorongan (margin) karena tiang sidebar aslinya sedang minggat gaib tersembunyi bersembunyi. Area Main memakan kekosongan ruang mencaplog kuasa lebarnya menabrak dinding utuh (Width 100% full!!) */
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 1rem;
+        /* Kurangi rongga dinding, sayang layar hp kecil kalo space terbuang mubazir kebesaran ketebalan padding. */
+    }
+
+    /* Memastikan sistem Office Administrasi tugu list harian hanya sebatang 1 baris */
+    .office-admin {
+        grid-template-columns: 1fr;
+    }
+
+    /* Mengekang Grid Kapsul Kilat Info Statistik Angka agar baris menyesuaikan otomatis numpuk tapi minimal mengecil seukuran 150 piksel saja gak boleh menciut memijah lgi. Cukup! */
+    .quick-stats {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    /* Merombak Sapa Sambutan "Selamat Datang" biar membulat tengah tumpuk menetes warnanya tebal beda dikit bentuknya */
+    .welcome-card {
+        padding: 1.5rem;
+        text-align: center;
+        border-left: none;
+        /* Buang garis pembatas kuno */
+        border-top: 6px solid #ff7e5f;
+        /* Kasih sabuk pita tebal berona peach api oren melintang gagah di Atap Card nya!! */
+    }
+
+    /* Mencabut Nyabut Hiasan ornamen after di welcome card demi bersihnya layar hp. Pengorbanan estetika demi kemerdekaan fungsi luasan layar sempit. */
+    .welcome-card::after {
+        display: none;
+    }
+
+    /* Memenggal dan Mematahkan form ketikan masukan yg dulunya memanjang sejajar cantik... Dipaksa rela lurus melungsur sejajar vertikal bertumpuk seperti susunan bata. */
+    .manage-card form,
+    .reminder-card form,
+    .schedule-card form {
+        flex-direction: column;
+    }
+
+    /* Form pengetikan dan tombolnya rela memelototkan diri mencungkil memakan 100% kelonggaran baris tsb demi jempol HP besar. Nyaman dipencet jempol raksasa! */
+    .add-form input {
+        width: 100%;
+    }
+
+    .manage-card form button,
+    .reminder-card form button,
+    .schedule-card form button {
+        width: 100%;
+    }
+
+    /* Nah, barulah Sabuk Pengikat Bando Atasan Layar Pembuka Menu Muncul menampakkan dirinya di HP. Mengganti eksistensi Sidebar yang sedang dibungkam di relung kiri pojok alam tak kasat mata. */
+    .mobile-header {
+        display: flex;
+    }
+}
+
+/* --- Tuntunan Ujung Tombak Terakhir! Layar Paling Sempit SejagatRaya (HP iPhone jadul 5/SE Resolusi < 480px Super Tiny Tiny Screen) --- */
+@media (max-width: 480px) {
+
+    /* Terjunkan Barisan Grafik yang asalnya msh mendesak Berbelah bersisian. Remukan!! Semua Harus Lurus Bawah Numpuk demi kejelasan Data Grafik tidak menggembel kepotong burik layar sempit kecil banget! (1fr Single Stack) */
+    .charts-section {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .stat-card {
+        flex: 1 1 auto;
+        max-width: 100%;
+        padding: 1.25rem;
+    }
+
+    .welcome-card h2 {
+        font-size: 1.3rem;
+        /* Menciut kempeskan tulisan Judul Gede biar tak muntah membentur garis batas card! */
+    }
+}
+
 

@@ -37,8 +37,14 @@ window.toggleSidebarMenu = function(submenuId) {
     else parentButton.classList.remove("active-parent");
 };
 
+// =========================================================
+// 2. ✅ FASE 3: PROFILE NAVIGATION
+// =========================================================
+// goToProfile() sudah didefinisikan di firebase.component/auth-state.js
+// yang di-load di semua halaman — tidak perlu didefinisikan ulang di sini.
+
 // =========================================
-// 2. STATE GLOBAL (REAL-TIME DATA)
+// 3. STATE GLOBAL (REAL-TIME DATA)
 // =========================================
 let state = {
     schedules: [],
@@ -93,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =========================================
-// 3. INISIALISASI & LISTENERS
+// 4. INISIALISASI & LISTENERS
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
     // A. Schedules: Mendengarkan perubahan data jadwal secara real-time
@@ -151,59 +157,732 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// =========================================
-// 4. MODULE: SCHEDULE
-// =========================================
-/**
- * Merender daftar jadwal ke dalam tabel HTML
- */
-function renderSchedule() {
-    const tbody = document.querySelector("#scheduleTable tbody");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    state.schedules.forEach((item) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${item.tanggal}</td>
-            <td>${item.waktu}</td>
-            <td>${item.agenda}</td>
-            <td>${item.ruangan}</td>
-            <td>
-                <button class="delete-btn" onclick="deleteScheduleItem('${item.id}')">🗑</button>
-            </td>
-        `;
-        tbody.appendChild(tr);
+// =========================================================
+// 5. ✅ FASE 3: INITIALIZE ALL FASE 3 FEATURES
+// =========================================================
+
+// Add vaccination listener to existing DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+    // Add vaccination listener
+    onSnapshot(collection(db, "vaksinasi_ayam"), (snap) => {
+        state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderVaccinationWidget();
+        renderAlertBanners(); // Re-render banner saat data vaksinasi berubah
     });
+});
+
+// Update FASE 3 features when data changes
+function updateFase3Features() {
+    checkFeedStockAlerts();
+    renderVaccinationWidget();
+    renderAlertBanners();
 }
 
-const scheduleForm = document.getElementById("addScheduleForm");
-if (scheduleForm) {
-    scheduleForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const payload = {
-            tanggal: document.getElementById("tanggal").value,
-            waktu: document.getElementById("waktu").value,
-            agenda: document.getElementById("agenda").value,
-            ruangan: document.getElementById("ruangan").value,
-            createdAt: new Date().toISOString()
-        };
-        try {
-            await addDoc(collection(db, "schedules"), payload);
-            scheduleForm.reset();
-            Swal.fire("Berhasil", "Jadwal ditambahkan!", "success");
-        } catch (err) { Swal.fire("Error", err.message, "error"); }
-    });
-}
-
-window.deleteScheduleItem = async function(id) {
-    const result = await Swal.fire({ title: "Hapus?", showCancelButton: true });
-    if (result.isConfirmed) {
-        await deleteDoc(doc(db, "schedules", id));
-    }
+// Call FASE 3 updates in existing updateDashboardAggregates function
+const originalUpdateDashboardAggregates = updateDashboardAggregates;
+updateDashboardAggregates = function() {
+    originalUpdateDashboardAggregates();
+    updateFase3Features();
 };
 
+// Initialize FASE 3 features on page load
+document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+        updateFase3Features();
+    }, 1000);
+});
+
+console.log("🚀 FASE 3 Features Loaded: Quick Actions, Alert Banner, Feed Alerts, Vaccination Schedule, goToProfile fix, Activity Progress Bar");// =========================================================
+// 6. ✅ FASE 3: DYNAMIC ALERT BANNER
+// =========================================================
+
+/**
+ * Membangun dan menampilkan alert banner dinamis di atas dashboard.
+ * Banner muncul otomatis berdasarkan kondisi data real-time:
+ * - Stok pakan kritis / rendah
+ * - Ada ayam sakit / dalam perawatan
+ * - Mortalitas hari ini tinggi
+ * - Vaksinasi hari ini / besok
+ */
+function renderAlertBanners() {
+    const container = document.getElementById('alertBannerContainer');
+    if (!container) return;
+
+    const alerts = [];
+
+    // --- 1. Cek Stok Pakan ---
+    let pakanMasuk = 0, pakanKeluar = 0;
+    state.pakan.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    const sisaPakan = pakanMasuk - pakanKeluar;
+
+    if (sisaPakan <= 20) {
+        alerts.push({
+            level: 'danger',
+            icon: '🚨',
+            title: 'Stok Pakan Kritis!',
+            msg: `Sisa pakan hanya <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Segera lakukan pembelian pakan sekarang.`,
+            action: { label: 'Kelola Pakan →', href: 'stokpakan.html' }
+        });
+    } else if (sisaPakan <= 50) {
+        alerts.push({
+            level: 'warning',
+            icon: '⚠️',
+            title: 'Stok Pakan Rendah',
+            msg: `Sisa pakan <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Persiapkan restock sebelum habis.`,
+            action: { label: 'Lihat Stok →', href: 'stokpakan.html' }
+        });
+    }
+
+    // --- 2. Cek Ayam Sakit ---
+    const ayamSakit = state.kesehatan
+        .filter(x => x.status === "Dalam Perawatan")
+        .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+
+    if (ayamSakit > 0) {
+        alerts.push({
+            level: 'warning',
+            icon: '🩺',
+            title: 'Ada Ayam Dalam Perawatan',
+            msg: `<strong>${ayamSakit.toLocaleString('id-ID')} ekor</strong> ayam sedang dalam perawatan. Pantau kondisi kesehatan kandang.`,
+            action: { label: 'Cek Kesehatan →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- 3. Cek Mortalitas Hari Ini ---
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const mortalitasHariIni = state.kesehatan
+        .filter(x => x.tanggal === todayStr)
+        .reduce((sum, item) => {
+            if (item.status === 'Mati Semua') return sum + (parseInt(item.jmlSakit)||0) + (parseInt(item.jmlMati)||0);
+            return sum + (parseInt(item.jmlMati) || 0);
+        }, 0);
+
+    if (mortalitasHariIni > 0) {
+        alerts.push({
+            level: 'danger',
+            icon: '💀',
+            title: `Mortalitas Hari Ini: ${mortalitasHariIni} Ekor`,
+            msg: `Tercatat <strong>${mortalitasHariIni} ekor</strong> ayam mati hari ini. Periksa penyebab dan kondisi kandang segera.`,
+            action: { label: 'Lihat Data Kesehatan →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- 4. Cek Vaksinasi Hari Ini / Besok ---
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+
+    const vaksinHariIni = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === todayStr);
+    const vaksinBesok = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === tomorrowStr);
+
+    if (vaksinHariIni.length > 0) {
+        alerts.push({
+            level: 'info',
+            icon: '💉',
+            title: 'Jadwal Vaksinasi Hari Ini!',
+            msg: `Ada <strong>${vaksinHariIni.length} jadwal vaksinasi</strong> yang harus dilakukan hari ini. Jangan sampai terlewat.`,
+            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
+        });
+    } else if (vaksinBesok.length > 0) {
+        alerts.push({
+            level: 'info',
+            icon: '📅',
+            title: 'Vaksinasi Besok',
+            msg: `Ada <strong>${vaksinBesok.length} jadwal vaksinasi</strong> besok. Siapkan peralatan dan vaksin sekarang.`,
+            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- Render semua alert ---
+    container.innerHTML = '';
+
+    if (alerts.length === 0) {
+        // Semua kondisi aman — tampilkan banner hijau singkat
+        container.innerHTML = `
+            <div class="alert-banner alert-banner-success" role="alert">
+                <span class="alert-banner-icon">✅</span>
+                <div class="alert-banner-body">
+                    <strong>Semua kondisi kandang normal.</strong>
+                    <span>Tidak ada peringatan aktif saat ini.</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    alerts.forEach(alert => {
+        const div = document.createElement('div');
+        div.className = `alert-banner alert-banner-${alert.level}`;
+        div.setAttribute('role', 'alert');
+        div.innerHTML = `
+            <span class="alert-banner-icon">${alert.icon}</span>
+            <div class="alert-banner-body">
+                <strong>${alert.title}</strong>
+                <span>${alert.msg}</span>
+            </div>
+            ${alert.action ? `<a href="${alert.action.href}" class="alert-banner-action">${alert.action.label}</a>` : ''}
+            <button class="alert-banner-close" onclick="this.parentElement.remove()" title="Tutup">×</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// =========================================================
+// 7. AGGREGATES, STATS & CHARTS (LOGIKA PERHITUNGAN)
+// =========================================================
+/**
+ * Menghitung dan memperbarui seluruh angka ringkasan (Statistik) di Dashboard.
+ * Fungsi ini dipanggil setiap kali ada perubahan data (real-time) dari Firestore.
+ */
+function updateDashboardAggregates() {
+    // Mengambil tanggal hari ini dengan format YYYY-MM-DD (timezone lokal Indonesia)
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+    
+    console.log('🔍 DEBUG Dashboard - Tanggal hari ini:', todayStr);
+    console.log('🔍 DEBUG Dashboard - Total data produksi:', state.produksi.length);
+    
+    // 1. Perhitungan Statistik Produksi Telur (Hanya Hari Ini)
+    // Menyaring data produksi yang tanggalnya sama dengan hari ini
+    const prodToday = state.produksi.filter(p => {
+        console.log('🔍 DEBUG - Data tanggal:', p.tanggal, 'vs', todayStr, '=', p.tanggal === todayStr);
+        return p.tanggal === todayStr;
+    });
+    console.log('🔍 DEBUG Dashboard - Data hari ini:', prodToday.length);
+    
+    // Menjumlahkan total telur dari hasil saringan tersebut
+    const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
+    console.log('🔍 DEBUG Dashboard - Total telur hari ini:', totalTelurToday);
+    
+    // Menjumlahkan total telur cacat hari ini
+    const totalTelurCacatToday = prodToday.reduce((s, v) => s + (parseInt(v.telurCacat) || 0), 0);
+    
+    // Memperbarui tampilan di UI
+    document.getElementById('stat-telur').textContent = `${totalTelurToday.toLocaleString('id-ID')} Butir`;
+    
+    // Tampilkan info telur cacat hari ini di bawah Total Telur Hari Ini
+    const elTelurCacatInline = document.getElementById('stat-telur-cacat-inline');
+    if (elTelurCacatInline) {
+        if (totalTelurCacatToday > 0) {
+            elTelurCacatInline.textContent = `${totalTelurCacatToday.toLocaleString('id-ID')} Butir Telur Cacat`;
+            elTelurCacatInline.style.display = 'block';
+        } else {
+            elTelurCacatInline.style.display = 'none';
+        }
+    }
+
+    // 2. Perhitungan Statistik Populasi Ayam Aktif
+    // Menghitung total sisa ayam dari batch yang statusnya 'Aktif'
+    const totalSisaAyam = state.ayam.filter(a => a.status === 'Aktif')
+                                     .reduce((s, v) => s + (parseInt(v.sisaAyam) || 0), 0);
+    
+    // 2.b. Perhitungan Ayam Sakit (Dalam Perawatan)
+    const ayamSakit = state.kesehatan.filter(x => x.status === "Dalam Perawatan")
+                                     .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+    
+    // 2.c. Total Ayam Aktif Sehat = Sisa Ayam - Ayam Sakit
+    const totalAyamAktifSehat = totalSisaAyam - ayamSakit;
+    
+    // Update tampilan Total Ayam Aktif (sudah dikurangi ayam sakit)
+    document.getElementById('stat-ayam').textContent = `${totalAyamAktifSehat.toLocaleString('id-ID')} Ekor`;
+    
+    // Tampilkan info ayam sakit di bawah Total Ayam Aktif
+    const elSakit = document.getElementById('stat-ayam-sakit');
+    if (elSakit) {
+        if (ayamSakit > 0) {
+            elSakit.textContent = `${ayamSakit.toLocaleString('id-ID')} Ekor Sakit / Dirawat`;
+            elSakit.style.display = 'block';
+        } else {
+            elSakit.style.display = 'none';
+        }
+    }
+
+    // 3. Perhitungan Statistik Keuangan (Khusus Pemasukan Bulan Ini)
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    let incomeBulanIni = 0, expenseBulanIni = 0;
+    let incomeGlobal = 0, expenseGlobal = 0;
+    
+    // Mengecek setiap transaksi keuangan
+    state.keuangan.forEach(trx => {
+        const d = new Date(trx.tanggal);
+        // Menghitung total akumulasi global (semua waktu)
+        if (trx.tipe === 'pemasukan') incomeGlobal += trx.jumlah;
+        else expenseGlobal += trx.jumlah;
+
+        // Memfilter transaksi yang terjadi pada bulan & tahun ini
+        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+            if (trx.tipe === 'pemasukan') incomeBulanIni += trx.jumlah;
+            else expenseBulanIni += trx.jumlah;
+        }
+    });
+
+    // Menampilkan pendapatan & pengeluaran ke dashboard
+    const pendapatanEl = document.getElementById('stat-pendapatan');
+    const pengeluaranEl = document.getElementById('stat-pengeluaran');
+
+    if (pendapatanEl) {
+        if (incomeBulanIni === 0 && incomeGlobal > 0) {
+            pendapatanEl.textContent = `Rp ${incomeGlobal.toLocaleString('id-ID')}`;
+            pendapatanEl.previousElementSibling.textContent = "Total Pendapatan";
+        } else {
+            pendapatanEl.textContent = `Rp ${incomeBulanIni.toLocaleString('id-ID')}`;
+            pendapatanEl.previousElementSibling.textContent = "Pendapatan Bulan Ini";
+        }
+    }
+
+    if (pengeluaranEl) {
+        if (expenseBulanIni === 0 && expenseGlobal > 0) {
+            pengeluaranEl.textContent = `Rp ${expenseGlobal.toLocaleString('id-ID')}`;
+            pengeluaranEl.previousElementSibling.textContent = "Total Pengeluaran";
+        } else {
+            pengeluaranEl.textContent = `Rp ${expenseBulanIni.toLocaleString('id-ID')}`;
+            pengeluaranEl.previousElementSibling.textContent = "Pengeluaran Bulan Ini";
+        }
+    }
+
+    // 4. Perhitungan Statistik Sisa Pakan
+    let pakanMasuk = 0, pakanKeluar = 0;
+    // Menjumlahkan total pakan yang dibeli (Masuk) dan yang digunakan (Keluar)
+    state.pakan.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    // Sisa pakan adalah selisih antara pakan masuk dan pakan keluar
+    document.getElementById('stat-pakan').textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
+
+    // 5. Perhitungan Statistik Mortalitas (Kematian Ayam)
+    // Aturan: "Mati Semua" = jmlSakit + jmlMati (semua yg sakit mati + yg sudah mati sebelumnya)
+    // Contoh: 15 sakit + 5 sudah mati = 20 total kematian
+    // Status lain → gunakan jmlMati saja yang tercatat manual
+    const totalMortalitas = state.kesehatan.reduce((sum, item) => {
+        if (item.status === 'Mati Semua') {
+            return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
+        }
+        return sum + (parseInt(item.jmlMati) || 0);
+    }, 0);
+    const elMortalitas = document.getElementById('stat-mortalitas');
+    if (elMortalitas) elMortalitas.textContent = `${totalMortalitas.toLocaleString('id-ID')} Ekor`;
+
+    // 6. Perhitungan Statistik Afkir (Ayam yang sudah tidak produktif / dipensiunkan)
+    const totalAfkir = state.ayam.filter(a => a.status === 'Afkir')
+                                 .reduce((s, v) => s + (parseInt(v.sisaAyam) || parseInt(v.jumlahAwal) || 0), 0);
+    const elAfkir = document.getElementById('stat-afkir');
+    if (elAfkir) elAfkir.textContent = `${totalAfkir.toLocaleString('id-ID')} Ekor`;
+
+
+
+    // 8. ✅ FITUR BARU: Perhitungan Statistik Batch Aktif
+    const totalBatchAktif = state.ayam.filter(a => a.status === 'Aktif').length;
+    const elBatchAktif = document.getElementById('stat-batch-aktif');
+    if (elBatchAktif) elBatchAktif.textContent = `${totalBatchAktif} Batch`;
+
+    // 9. Memperbarui Grafik Analitik Visual
+    renderEggChart(7); // Render grafik produksi 7 hari terakhir
+    renderFinanceChart(); // Render grafik keuangan bulanan
+    
+    // ✅ FASE 2: Update widget ringkasan keuangan
+    renderFinanceSummaryWidget();
+}
+
+/** 
+ * CHART LOGIC (REUSED & ADAPTED)
+ */
+window.gantiPeriodeGrafik = function(hari, btn) {
+    document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderEggChart(hari);
+};
+
+/** 
+ * Merender Grafik Produksi Telur menggunakan Chart.js
+ * @param {number} nHari - Jumlah hari riwayat yang ingin ditampilkan
+ */
+function renderEggChart(nHari) {
+    const canvas = document.getElementById('eggProductionChart');
+    if (!canvas) return;
+    if (eggChartInstance) eggChartInstance.destroy();
+
+    // Group by date
+    const grouped = {};
+    state.produksi.forEach(p => {
+        if (!grouped[p.tanggal]) grouped[p.tanggal] = { total: 0, baik: 0, cacat: 0 };
+        grouped[p.tanggal].total += p.totalTelur;
+        grouped[p.tanggal].baik += p.telurBaik;
+        grouped[p.tanggal].cacat += p.telurCacat;
+    });
+
+    const dates = Object.keys(grouped).sort().slice(-nHari);
+    const labels = dates.map(d => {
+        const date = new Date(d);
+        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    });
+    const totalData = dates.map(d => grouped[d].total);
+    const baikData = dates.map(d => grouped[d].baik);
+    const cacatData = dates.map(d => grouped[d].cacat);
+
+    // Update mini-stats chart
+    const sumTotal = totalData.reduce((s, v) => s + v, 0);
+    document.getElementById('chart-stat-total').textContent = sumTotal.toLocaleString('id-ID');
+    document.getElementById('chart-stat-baik').textContent = baikData.reduce((s,v)=>s+v, 0).toLocaleString('id-ID');
+    document.getElementById('chart-stat-cacat').textContent = cacatData.reduce((s,v)=>s+v, 0).toLocaleString('id-ID');
+    document.getElementById('chart-stat-rata').textContent = Math.round(sumTotal / (totalData.length || 1)).toLocaleString('id-ID');
+    
+    document.getElementById('chartEmptyOverlay').style.display = totalData.length ? 'none' : 'flex';
+
+    eggChartInstance = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Total Telur',
+                data: totalData,
+                borderColor: '#fb8500',
+                backgroundColor: 'rgba(251, 133, 0, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+}
+
+/**
+ * Merender Grafik Perbandingan Keuangan (Mingguan)
+ */
+function renderFinanceChart() {
+    const canvas = document.getElementById('financeChart');
+    if (!canvas) return;
+    if (financeChartInstance) financeChartInstance.destroy();
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Gunakan logika bulan yang sama dengan widget summary
+    const hasDataBulanIni = state.keuangan.some(trx => {
+        const d = new Date(trx.tanggal);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    let targetMonth = currentMonth;
+    let targetYear = currentYear;
+
+    if (!hasDataBulanIni && state.keuangan.length > 0) {
+        const sorted = [...state.keuangan].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+        const latest = new Date(sorted[0].tanggal);
+        targetMonth = latest.getMonth();
+        targetYear = latest.getFullYear();
+    }
+
+    const incomeByWeek = [0, 0, 0, 0];
+    const expenseByWeek = [0, 0, 0, 0];
+
+    state.keuangan.forEach(trx => {
+        const d = new Date(trx.tanggal);
+        if (d.getMonth() === targetMonth && d.getFullYear() === targetYear) {
+            const week = Math.min(3, Math.floor((d.getDate() - 1) / 7));
+            if (trx.tipe === 'pemasukan') incomeByWeek[week] += trx.jumlah;
+            else expenseByWeek[week] += trx.jumlah;
+        }
+    });
+
+    financeChartInstance = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4+'],
+            datasets: [
+                { label: 'Pemasukan', data: incomeByWeek, backgroundColor: '#10b981' },
+                { label: 'Pengeluaran', data: expenseByWeek, backgroundColor: '#ef4444' }
+            ]
+        },
+        options: { responsive: true }
+    });
+}
+
+
+// =========================================================
+// 8. ✅ FASE 3: FEED STOCK ALERTS
+// =========================================================
+
+/**
+ * Update simple feed stock alert in stat card
+ */
+function checkFeedStockAlerts() {
+    let pakanMasuk = 0, pakanKeluar = 0;
+    state.pakan.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    
+    const sisaPakan = pakanMasuk - pakanKeluar;
+    
+    // Update simple feed alert
+    updateSimpleFeedAlert(sisaPakan);
+}
+
+/**
+ * Update simple feed stock alert - minimal approach
+ */
+function updateSimpleFeedAlert(sisaPakan) {
+    const alertEl = document.getElementById('stat-pakan-alert');
+    
+    if (!alertEl) return;
+    
+    // Show simple alert if stock is low (< 100kg)
+    if (sisaPakan < 100) {
+        alertEl.style.display = 'block';
+        
+        // Simple message based on urgency - no complex styling
+        if (sisaPakan <= 20) {
+            alertEl.textContent = '🚨 Stok kritis, beli sekarang!';
+            alertEl.style.color = '#dc2626';
+        } else if (sisaPakan <= 50) {
+            alertEl.textContent = '⚠️ Stok rendah, segera restock';
+            alertEl.style.color = '#f59e0b';
+        } else {
+            alertEl.textContent = '📢 Stok menipis, persiapkan restock';
+            alertEl.style.color = '#3b82f6';
+        }
+    } else {
+        alertEl.style.display = 'none';
+    }
+}
+
+// =========================================================
+// 9. ✅ FASE 3: QUICK ACTIONS FUNCTIONALITY
+// =========================================================
+
+/**
+ * Quick Action: Input Produksi
+ */
+window.quickActionInputProduksi = function() {
+    window.location.href = 'inputproduksi.html';
+};
+
+/**
+ * Quick Action: Kelola Stok Pakan
+ */
+window.quickActionStokPakan = function() {
+    window.location.href = 'stokpakan.html';
+};
+
+/**
+ * Quick Action: Catat Transaksi Keuangan
+ */
+window.quickActionKeuangan = function() {
+    window.location.href = 'keuangan.html';
+};
+
+/**
+ * Quick Action: Cek Kesehatan Ayam
+ */
+window.quickActionKesehatan = function() {
+    window.location.href = 'kesehatanayam.html';
+};
+
+// =========================================================
+// 10. ✅ FASE 3: VACCINATION SCHEDULE WIDGET
+// =========================================================
+
+/**
+ * Render vaccination schedule widget
+ */
+function renderVaccinationWidget() {
+    const contentEl = document.getElementById('vaccination-content');
+    const emptyEl = document.getElementById('vaccination-empty');
+    const subtitleEl = document.getElementById('vaccination-subtitle');
+    
+    if (!contentEl) return;
+    
+    // Get upcoming vaccinations (status: Terjadwal)
+    const upcomingVaccinations = state.vaksinasi ? 
+        state.vaksinasi.filter(v => v.status === 'Terjadwal')
+                       .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
+                       .slice(0, 3) : [];
+    
+    if (upcomingVaccinations.length === 0) {
+        contentEl.style.display = 'none';
+        emptyEl.style.display = 'block';
+        subtitleEl.textContent = 'Semua jadwal vaksin sudah selesai';
+    } else {
+        contentEl.style.display = 'grid';
+        emptyEl.style.display = 'none';
+        subtitleEl.textContent = `${upcomingVaccinations.length} jadwal mendatang`;
+        
+        contentEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
+        contentEl.style.gap = '1rem';
+        
+        contentEl.innerHTML = upcomingVaccinations.map(vaksin => {
+            const tanggal = new Date(vaksin.tanggal);
+            const today = new Date();
+            const diffDays = Math.ceil((tanggal - today) / (1000 * 60 * 60 * 24));
+            
+            let urgencyColor = '#06b6d4';
+            let urgencyText = `${diffDays} hari lagi`;
+            
+            if (diffDays <= 0) {
+                urgencyColor = '#ef4444';
+                urgencyText = 'HARI INI!';
+            } else if (diffDays <= 3) {
+                urgencyColor = '#f59e0b';
+                urgencyText = `${diffDays} hari lagi`;
+            }
+            
+            return `
+                <div style="background: rgba(255,255,255,0.15); aspect-ratio: 1; padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center;">
+                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
+                        💉 ${vaksin.jenisVaksin || 'Vaksin'}
+                        <span style="background: ${urgencyColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
+                            ${urgencyText}
+                        </span>
+                    </p>
+                    <p style="margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 700;">${vaksin.batchId || 'Batch'}</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">
+                        ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+/**
+ * Open vaccination detail page
+ */
+window.openVaccinationDetail = function() {
+    // For now, redirect to kesehatan ayam page
+    // In the future, this could open a dedicated vaccination management page
+    window.location.href = 'kesehatanayam.html';
+};
+
+// =========================================================
+// 11. ✅ FASE 2: WIDGET PREDIKSI TERAKHIR
+// =========================================================
+/**
+ * Merender widget prediksi terakhir di dashboard
+ */
+function renderPrediksiWidget() {
+    const prediksiContent = document.getElementById('prediction-content');
+    const prediksiEmpty = document.getElementById('prediction-empty');
+    const prediksiDate = document.getElementById('prediction-date');
+    const prediksiEggs = document.getElementById('prediction-eggs');
+    const prediksiIncome = document.getElementById('prediction-income');
+    const prediksiAccuracy = document.getElementById('prediction-accuracy');
+
+    if (!prediksiContent) return;
+
+    if (state.prediksi.length === 0) {
+        // Tidak ada prediksi
+        prediksiContent.style.display = 'none';
+        prediksiEmpty.style.display = 'block';
+    } else {
+        // Ada prediksi
+        const latest = state.prediksi[0];
+        prediksiContent.style.display = 'grid';
+        prediksiEmpty.style.display = 'none';
+
+        // Format tanggal (field: tanggal, bukan createdAt)
+        let dateStr = '-';
+        if (latest.tanggal) {
+            const dateObj = new Date(latest.tanggal);
+            dateStr = dateObj.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        prediksiDate.textContent = `Dibuat: ${dateStr}`;
+
+        // Tampilkan data prediksi (field: prediksiBesokButir, estimasiPendapatan)
+        prediksiEggs.textContent = `${(latest.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir`;
+        prediksiIncome.textContent = `Rp ${(latest.estimasiPendapatan || 0).toLocaleString('id-ID')}`;
+        
+        // Hitung akurasi berdasarkan keuntungan (jika untung = tinggi, rugi = rendah)
+        let akurasi = 0;
+        if (latest.keuntungan && latest.estimasiPendapatan) {
+            const rasio = (latest.keuntungan / latest.estimasiPendapatan) * 100;
+            akurasi = Math.max(0, Math.min(100, 50 + rasio)); // Scale 0-100
+        }
+        prediksiAccuracy.textContent = `${Math.round(akurasi)}%`;
+    }
+}
+
+
+// =========================================================
+// 12. ✅ FASE 2: WIDGET RINGKASAN KEUANGAN BULAN INI
+// =========================================================
+/**
+ * Merender widget ringkasan keuangan bulan ini
+ */
+function renderFinanceSummaryWidget() {
+    const financeMonth = document.getElementById('finance-month');
+    const financeIncome = document.getElementById('finance-income');
+    const financeExpense = document.getElementById('finance-expense');
+    const financeBalance = document.getElementById('finance-balance');
+    const financeTransactions = document.getElementById('finance-transactions');
+
+    if (!financeMonth) return;
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    // Cek apakah ada data di bulan ini
+    const dataBulanIni = state.keuangan.filter(trx => {
+        const d = new Date(trx.tanggal);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    // Fallback: Jika bulan ini kosong, cari bulan terbaru yang punya data
+    let targetMonth = currentMonth;
+    let targetYear = currentYear;
+    let finalData = dataBulanIni;
+
+    if (dataBulanIni.length === 0 && state.keuangan.length > 0) {
+        const sorted = [...state.keuangan].sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+        const latest = new Date(sorted[0].tanggal);
+        targetMonth = latest.getMonth();
+        targetYear = latest.getFullYear();
+        finalData = state.keuangan.filter(trx => {
+            const d = new Date(trx.tanggal);
+            return d.getMonth() === targetMonth && d.getFullYear() === targetYear;
+        });
+    }
+    
+    financeMonth.textContent = `${monthNames[targetMonth]} ${targetYear}${targetMonth !== currentMonth ? ' (Terakhir)' : ''}`;
+
+    let income = 0, expense = 0, trxCount = 0;
+
+    finalData.forEach(trx => {
+        trxCount++;
+        if (trx.tipe === 'pemasukan') {
+            income += trx.jumlah;
+        } else {
+            expense += trx.jumlah;
+        }
+    });
+
+    const balance = income - expense;
+
+    financeIncome.textContent = `Rp ${income.toLocaleString('id-ID')}`;
+    financeExpense.textContent = `Rp ${expense.toLocaleString('id-ID')}`;
+    financeBalance.textContent = `Rp ${balance.toLocaleString('id-ID')}`;
+    financeBalance.style.color = balance >= 0 ? '#fff' : '#fca5a5';
+    financeTransactions.textContent = `${trxCount} Transaksi`;
+}
+
+
 // =========================================
-// 5. MODULE: ACTIVITIES
+// 13. MODULE: ACTIVITIES
 // =========================================
 /**
  * Merender daftar aktivitas harian dalam bentuk list item interaktif
@@ -300,7 +979,7 @@ window.deleteActivityItem = async function(id) {
 };
 
 // =========================================
-// 6. MODULE: ANNOUNCEMENTS
+// 14. MODULE: ANNOUNCEMENTS
 // =========================================
 
 /**
@@ -534,347 +1213,59 @@ window.deleteAnnouncementItem = async function(id) {
     }
 };
 
-// =========================================================
-// 7. AGGREGATES, STATS & CHARTS (LOGIKA PERHITUNGAN)
-// =========================================================
+// =========================================
+// 15. MODULE: SCHEDULE
+// =========================================
 /**
- * Menghitung dan memperbarui seluruh angka ringkasan (Statistik) di Dashboard.
- * Fungsi ini dipanggil setiap kali ada perubahan data (real-time) dari Firestore.
+ * Merender daftar jadwal ke dalam tabel HTML
  */
-function updateDashboardAggregates() {
-    // Mengambil tanggal hari ini dengan format YYYY-MM-DD (timezone lokal Indonesia)
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
-    
-    console.log('🔍 DEBUG Dashboard - Tanggal hari ini:', todayStr);
-    console.log('🔍 DEBUG Dashboard - Total data produksi:', state.produksi.length);
-    
-    // 1. Perhitungan Statistik Produksi Telur (Hanya Hari Ini)
-    // Menyaring data produksi yang tanggalnya sama dengan hari ini
-    const prodToday = state.produksi.filter(p => {
-        console.log('🔍 DEBUG - Data tanggal:', p.tanggal, 'vs', todayStr, '=', p.tanggal === todayStr);
-        return p.tanggal === todayStr;
+function renderSchedule() {
+    const tbody = document.querySelector("#scheduleTable tbody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    state.schedules.forEach((item) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.tanggal}</td>
+            <td>${item.waktu}</td>
+            <td>${item.agenda}</td>
+            <td>${item.ruangan}</td>
+            <td>
+                <button class="delete-btn" onclick="deleteScheduleItem('${item.id}')">🗑</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
-    console.log('🔍 DEBUG Dashboard - Data hari ini:', prodToday.length);
-    
-    // Menjumlahkan total telur dari hasil saringan tersebut
-    const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
-    console.log('🔍 DEBUG Dashboard - Total telur hari ini:', totalTelurToday);
-    
-    // Menjumlahkan total telur cacat hari ini
-    const totalTelurCacatToday = prodToday.reduce((s, v) => s + (parseInt(v.telurCacat) || 0), 0);
-    
-    // Memperbarui tampilan di UI
-    document.getElementById('stat-telur').textContent = `${totalTelurToday.toLocaleString('id-ID')} Butir`;
-    
-    // Tampilkan info telur cacat hari ini di bawah Total Telur Hari Ini
-    const elTelurCacatInline = document.getElementById('stat-telur-cacat-inline');
-    if (elTelurCacatInline) {
-        if (totalTelurCacatToday > 0) {
-            elTelurCacatInline.textContent = `${totalTelurCacatToday.toLocaleString('id-ID')} Butir Telur Cacat`;
-            elTelurCacatInline.style.display = 'block';
-        } else {
-            elTelurCacatInline.style.display = 'none';
-        }
-    }
-
-    // 2. Perhitungan Statistik Populasi Ayam Aktif
-    // Menghitung total sisa ayam dari batch yang statusnya 'Aktif'
-    const totalSisaAyam = state.ayam.filter(a => a.status === 'Aktif')
-                                     .reduce((s, v) => s + (parseInt(v.sisaAyam) || 0), 0);
-    
-    // 2.b. Perhitungan Ayam Sakit (Dalam Perawatan)
-    const ayamSakit = state.kesehatan.filter(x => x.status === "Dalam Perawatan")
-                                     .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
-    
-    // 2.c. Total Ayam Aktif Sehat = Sisa Ayam - Ayam Sakit
-    const totalAyamAktifSehat = totalSisaAyam - ayamSakit;
-    
-    // Update tampilan Total Ayam Aktif (sudah dikurangi ayam sakit)
-    document.getElementById('stat-ayam').textContent = `${totalAyamAktifSehat.toLocaleString('id-ID')} Ekor`;
-    
-    // Tampilkan info ayam sakit di bawah Total Ayam Aktif
-    const elSakit = document.getElementById('stat-ayam-sakit');
-    if (elSakit) {
-        if (ayamSakit > 0) {
-            elSakit.textContent = `${ayamSakit.toLocaleString('id-ID')} Ekor Sakit / Dirawat`;
-            elSakit.style.display = 'block';
-        } else {
-            elSakit.style.display = 'none';
-        }
-    }
-
-    // 3. Perhitungan Statistik Keuangan (Khusus Pemasukan Bulan Ini)
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    let incomeBulanIni = 0;
-    let incomeGlobal = 0, expenseGlobal = 0;
-    
-    // Mengecek setiap transaksi keuangan
-    state.keuangan.forEach(trx => {
-        const d = new Date(trx.tanggal);
-        // Menghitung total akumulasi global (semua waktu)
-        if (trx.tipe === 'pemasukan') incomeGlobal += trx.jumlah;
-        else expenseGlobal += trx.jumlah;
-
-        // Memfilter hanya transaksi pemasukan yang terjadi pada bulan & tahun ini
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-            if (trx.tipe === 'pemasukan') incomeBulanIni += trx.jumlah;
-        }
-    });
-    // Menampilkan pemasukan bulan ini ke dashboard
-    document.getElementById('stat-pendapatan').textContent = `Rp ${incomeBulanIni.toLocaleString('id-ID')}`;
-
-    // 4. Perhitungan Statistik Sisa Pakan
-    let pakanMasuk = 0, pakanKeluar = 0;
-    // Menjumlahkan total pakan yang dibeli (Masuk) dan yang digunakan (Keluar)
-    state.pakan.forEach(p => {
-        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
-        else pakanKeluar += p.jumlah;
-    });
-    // Sisa pakan adalah selisih antara pakan masuk dan pakan keluar
-    document.getElementById('stat-pakan').textContent = `${(pakanMasuk - pakanKeluar).toLocaleString('id-ID')} Kg`;
-
-    // 5. Perhitungan Statistik Mortalitas (Kematian Ayam)
-    // Aturan: "Mati Semua" = jmlSakit + jmlMati (semua yg sakit mati + yg sudah mati sebelumnya)
-    // Contoh: 15 sakit + 5 sudah mati = 20 total kematian
-    // Status lain → gunakan jmlMati saja yang tercatat manual
-    const totalMortalitas = state.kesehatan.reduce((sum, item) => {
-        if (item.status === 'Mati Semua') {
-            return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
-        }
-        return sum + (parseInt(item.jmlMati) || 0);
-    }, 0);
-    const elMortalitas = document.getElementById('stat-mortalitas');
-    if (elMortalitas) elMortalitas.textContent = `${totalMortalitas.toLocaleString('id-ID')} Ekor`;
-
-    // 6. Perhitungan Statistik Afkir (Ayam yang sudah tidak produktif / dipensiunkan)
-    const totalAfkir = state.ayam.filter(a => a.status === 'Afkir')
-                                 .reduce((s, v) => s + (parseInt(v.sisaAyam) || parseInt(v.jumlahAwal) || 0), 0);
-    const elAfkir = document.getElementById('stat-afkir');
-    if (elAfkir) elAfkir.textContent = `${totalAfkir.toLocaleString('id-ID')} Ekor`;
-
-    // 7. ✅ FITUR BARU: Perhitungan Statistik Ayam Tidak Bertelur
-    const totalAyamTidakBertelur = state.produksi.reduce((s, v) => s + (parseInt(v.ayamTidakBertelur) || 0), 0);
-    const elAyamTidakBertelur = document.getElementById('stat-ayam-tidak-bertelur');
-    if (elAyamTidakBertelur) elAyamTidakBertelur.textContent = `${totalAyamTidakBertelur.toLocaleString('id-ID')} Ekor`;
-
-    // 8. ✅ FITUR BARU: Perhitungan Statistik Batch Aktif
-    const totalBatchAktif = state.ayam.filter(a => a.status === 'Aktif').length;
-    const elBatchAktif = document.getElementById('stat-batch-aktif');
-    if (elBatchAktif) elBatchAktif.textContent = `${totalBatchAktif} Batch`;
-
-    // 9. Memperbarui Grafik Analitik Visual
-    renderEggChart(7); // Render grafik produksi 7 hari terakhir
-    renderFinanceChart(); // Render grafik keuangan bulanan
-    
-    // ✅ FASE 2: Update widget ringkasan keuangan
-    renderFinanceSummaryWidget();
 }
 
-/** 
- * CHART LOGIC (REUSED & ADAPTED)
- */
-window.gantiPeriodeGrafik = function(hari, btn) {
-    document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderEggChart(hari);
+const scheduleForm = document.getElementById("addScheduleForm");
+if (scheduleForm) {
+    scheduleForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const payload = {
+            tanggal: document.getElementById("tanggal").value,
+            waktu: document.getElementById("waktu").value,
+            agenda: document.getElementById("agenda").value,
+            ruangan: document.getElementById("ruangan").value,
+            createdAt: new Date().toISOString()
+        };
+        try {
+            await addDoc(collection(db, "schedules"), payload);
+            scheduleForm.reset();
+            Swal.fire("Berhasil", "Jadwal ditambahkan!", "success");
+        } catch (err) { Swal.fire("Error", err.message, "error"); }
+    });
+}
+
+window.deleteScheduleItem = async function(id) {
+    const result = await Swal.fire({ title: "Hapus?", showCancelButton: true });
+    if (result.isConfirmed) {
+        await deleteDoc(doc(db, "schedules", id));
+    }
 };
 
-/** 
- * Merender Grafik Produksi Telur menggunakan Chart.js
- * @param {number} nHari - Jumlah hari riwayat yang ingin ditampilkan
- */
-function renderEggChart(nHari) {
-    const canvas = document.getElementById('eggProductionChart');
-    if (!canvas) return;
-    if (eggChartInstance) eggChartInstance.destroy();
-
-    // Group by date
-    const grouped = {};
-    state.produksi.forEach(p => {
-        if (!grouped[p.tanggal]) grouped[p.tanggal] = { total: 0, baik: 0, cacat: 0 };
-        grouped[p.tanggal].total += p.totalTelur;
-        grouped[p.tanggal].baik += p.telurBaik;
-        grouped[p.tanggal].cacat += p.telurCacat;
-    });
-
-    const dates = Object.keys(grouped).sort().slice(-nHari);
-    const labels = dates.map(d => {
-        const date = new Date(d);
-        return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-    });
-    const totalData = dates.map(d => grouped[d].total);
-    const baikData = dates.map(d => grouped[d].baik);
-    const cacatData = dates.map(d => grouped[d].cacat);
-
-    // Update mini-stats chart
-    const sumTotal = totalData.reduce((s, v) => s + v, 0);
-    document.getElementById('chart-stat-total').textContent = sumTotal.toLocaleString('id-ID');
-    document.getElementById('chart-stat-baik').textContent = baikData.reduce((s,v)=>s+v, 0).toLocaleString('id-ID');
-    document.getElementById('chart-stat-cacat').textContent = cacatData.reduce((s,v)=>s+v, 0).toLocaleString('id-ID');
-    document.getElementById('chart-stat-rata').textContent = Math.round(sumTotal / (totalData.length || 1)).toLocaleString('id-ID');
-    
-    document.getElementById('chartEmptyOverlay').style.display = totalData.length ? 'none' : 'flex';
-
-    eggChartInstance = new Chart(canvas, {
-        type: 'line',
-        data: {
-            labels,
-            datasets: [{
-                label: 'Total Telur',
-                data: totalData,
-                borderColor: '#fb8500',
-                backgroundColor: 'rgba(251, 133, 0, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
-        },
-        options: { responsive: true, plugins: { legend: { display: false } } }
-    });
-}
-
-/**
- * Merender Grafik Perbandingan Keuangan (Mingguan)
- */
-function renderFinanceChart() {
-    const canvas = document.getElementById('financeChart');
-    if (!canvas) return;
-    if (financeChartInstance) financeChartInstance.destroy();
-
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const incomeByWeek = [0, 0, 0, 0];
-    const expenseByWeek = [0, 0, 0, 0];
-
-    state.keuangan.forEach(trx => {
-        const d = new Date(trx.tanggal);
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-            const week = Math.min(3, Math.floor((d.getDate() - 1) / 7));
-            if (trx.tipe === 'pemasukan') incomeByWeek[week] += trx.jumlah;
-            else expenseByWeek[week] += trx.jumlah;
-        }
-    });
-
-    financeChartInstance = new Chart(canvas, {
-        type: 'bar',
-        data: {
-            labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4+'],
-            datasets: [
-                { label: 'Pemasukan', data: incomeByWeek, backgroundColor: '#10b981' },
-                { label: 'Pengeluaran', data: expenseByWeek, backgroundColor: '#ef4444' }
-            ]
-        },
-        options: { responsive: true }
-    });
-}
-
-
 // =========================================================
-// 10. ✅ FASE 2: WIDGET PREDIKSI TERAKHIR
-// =========================================================
-/**
- * Merender widget prediksi terakhir di dashboard
- */
-function renderPrediksiWidget() {
-    const prediksiContent = document.getElementById('prediction-content');
-    const prediksiEmpty = document.getElementById('prediction-empty');
-    const prediksiDate = document.getElementById('prediction-date');
-    const prediksiEggs = document.getElementById('prediction-eggs');
-    const prediksiIncome = document.getElementById('prediction-income');
-    const prediksiAccuracy = document.getElementById('prediction-accuracy');
-
-    if (!prediksiContent) return;
-
-    if (state.prediksi.length === 0) {
-        // Tidak ada prediksi
-        prediksiContent.style.display = 'none';
-        prediksiEmpty.style.display = 'block';
-    } else {
-        // Ada prediksi
-        const latest = state.prediksi[0];
-        prediksiContent.style.display = 'grid';
-        prediksiEmpty.style.display = 'none';
-
-        // Format tanggal (field: tanggal, bukan createdAt)
-        let dateStr = '-';
-        if (latest.tanggal) {
-            const dateObj = new Date(latest.tanggal);
-            dateStr = dateObj.toLocaleDateString('id-ID', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        prediksiDate.textContent = `Dibuat: ${dateStr}`;
-
-        // Tampilkan data prediksi (field: prediksiBesokButir, estimasiPendapatan)
-        prediksiEggs.textContent = `${(latest.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir`;
-        prediksiIncome.textContent = `Rp ${(latest.estimasiPendapatan || 0).toLocaleString('id-ID')}`;
-        
-        // Hitung akurasi berdasarkan keuntungan (jika untung = tinggi, rugi = rendah)
-        let akurasi = 0;
-        if (latest.keuntungan && latest.estimasiPendapatan) {
-            const rasio = (latest.keuntungan / latest.estimasiPendapatan) * 100;
-            akurasi = Math.max(0, Math.min(100, 50 + rasio)); // Scale 0-100
-        }
-        prediksiAccuracy.textContent = `${Math.round(akurasi)}%`;
-    }
-}
-
-
-// =========================================================
-// 11. ✅ FASE 2: WIDGET RINGKASAN KEUANGAN BULAN INI
-// =========================================================
-/**
- * Merender widget ringkasan keuangan bulan ini
- */
-function renderFinanceSummaryWidget() {
-    const financeMonth = document.getElementById('finance-month');
-    const financeIncome = document.getElementById('finance-income');
-    const financeExpense = document.getElementById('finance-expense');
-    const financeBalance = document.getElementById('finance-balance');
-    const financeTransactions = document.getElementById('finance-transactions');
-
-    if (!financeMonth) return;
-
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    
-    financeMonth.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-
-    let income = 0, expense = 0, trxCount = 0;
-
-    state.keuangan.forEach(trx => {
-        const d = new Date(trx.tanggal);
-        if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
-            trxCount++;
-            if (trx.tipe === 'pemasukan') {
-                income += trx.jumlah;
-            } else {
-                expense += trx.jumlah;
-            }
-        }
-    });
-
-    const balance = income - expense;
-
-    financeIncome.textContent = `Rp ${income.toLocaleString('id-ID')}`;
-    financeExpense.textContent = `Rp ${expense.toLocaleString('id-ID')}`;
-    financeBalance.textContent = `Rp ${balance.toLocaleString('id-ID')}`;
-    financeBalance.style.color = balance >= 0 ? '#fff' : '#fca5a5';
-    financeTransactions.textContent = `${trxCount} Transaksi`;
-}
-
-
-// =========================================================
-// 12. ✅ FASE 2: MODAL DETAIL PREDIKSI
+// 16. ✅ FASE 2: MODAL DETAIL PREDIKSI
 // =========================================================
 /**
  * Membuka modal detail prediksi
@@ -1047,7 +1438,7 @@ window.closeModalPrediksi = function() {
 };
 
 // =========================================================
-// 13. ✅ FASE 2: MODAL DETAIL KEUANGAN
+// 17. ✅ FASE 2: MODAL DETAIL KEUANGAN
 // =========================================================
 /**
  * Membuka modal detail keuangan
@@ -1195,339 +1586,3 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// =========================================================
-// 14. ✅ FASE 3: QUICK ACTIONS FUNCTIONALITY
-// =========================================================
-
-/**
- * Quick Action: Input Produksi
- */
-window.quickActionInputProduksi = function() {
-    window.location.href = 'inputproduksi.html';
-};
-
-/**
- * Quick Action: Kelola Stok Pakan
- */
-window.quickActionStokPakan = function() {
-    window.location.href = 'stokpakan.html';
-};
-
-/**
- * Quick Action: Catat Transaksi Keuangan
- */
-window.quickActionKeuangan = function() {
-    window.location.href = 'keuangan.html';
-};
-
-/**
- * Quick Action: Cek Kesehatan Ayam
- */
-window.quickActionKesehatan = function() {
-    window.location.href = 'kesehatanayam.html';
-};
-
-// =========================================================
-// 15. ✅ FASE 3: FEED STOCK ALERTS
-// =========================================================
-
-/**
- * Update simple feed stock alert in stat card
- */
-function checkFeedStockAlerts() {
-    let pakanMasuk = 0, pakanKeluar = 0;
-    state.pakan.forEach(p => {
-        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
-        else pakanKeluar += p.jumlah;
-    });
-    
-    const sisaPakan = pakanMasuk - pakanKeluar;
-    
-    // Update simple feed alert
-    updateSimpleFeedAlert(sisaPakan);
-}
-
-/**
- * Update simple feed stock alert - minimal approach
- */
-function updateSimpleFeedAlert(sisaPakan) {
-    const alertEl = document.getElementById('stat-pakan-alert');
-    
-    if (!alertEl) return;
-    
-    // Show simple alert if stock is low (< 100kg)
-    if (sisaPakan < 100) {
-        alertEl.style.display = 'block';
-        
-        // Simple message based on urgency - no complex styling
-        if (sisaPakan <= 20) {
-            alertEl.textContent = '🚨 Stok kritis, beli sekarang!';
-            alertEl.style.color = '#dc2626';
-        } else if (sisaPakan <= 50) {
-            alertEl.textContent = '⚠️ Stok rendah, segera restock';
-            alertEl.style.color = '#f59e0b';
-        } else {
-            alertEl.textContent = '📢 Stok menipis, persiapkan restock';
-            alertEl.style.color = '#3b82f6';
-        }
-    } else {
-        alertEl.style.display = 'none';
-    }
-}
-
-// =========================================================
-// 16. ✅ FASE 3: VACCINATION SCHEDULE WIDGET
-// =========================================================
-
-/**
- * Render vaccination schedule widget
- */
-function renderVaccinationWidget() {
-    const contentEl = document.getElementById('vaccination-content');
-    const emptyEl = document.getElementById('vaccination-empty');
-    const subtitleEl = document.getElementById('vaccination-subtitle');
-    
-    if (!contentEl) return;
-    
-    // Get upcoming vaccinations (status: Terjadwal)
-    const upcomingVaccinations = state.vaksinasi ? 
-        state.vaksinasi.filter(v => v.status === 'Terjadwal')
-                       .sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal))
-                       .slice(0, 3) : [];
-    
-    if (upcomingVaccinations.length === 0) {
-        contentEl.style.display = 'none';
-        emptyEl.style.display = 'block';
-        subtitleEl.textContent = 'Semua jadwal vaksin sudah selesai';
-    } else {
-        contentEl.style.display = 'grid';
-        emptyEl.style.display = 'none';
-        subtitleEl.textContent = `${upcomingVaccinations.length} jadwal mendatang`;
-        
-        contentEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        contentEl.style.gap = '1rem';
-        
-        contentEl.innerHTML = upcomingVaccinations.map(vaksin => {
-            const tanggal = new Date(vaksin.tanggal);
-            const today = new Date();
-            const diffDays = Math.ceil((tanggal - today) / (1000 * 60 * 60 * 24));
-            
-            let urgencyColor = '#06b6d4';
-            let urgencyText = `${diffDays} hari lagi`;
-            
-            if (diffDays <= 0) {
-                urgencyColor = '#ef4444';
-                urgencyText = 'HARI INI!';
-            } else if (diffDays <= 3) {
-                urgencyColor = '#f59e0b';
-                urgencyText = `${diffDays} hari lagi`;
-            }
-            
-            return `
-                <div style="background: rgba(255,255,255,0.15); aspect-ratio: 1; padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center;">
-                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                        💉 ${vaksin.jenisVaksin || 'Vaksin'}
-                        <span style="background: ${urgencyColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
-                            ${urgencyText}
-                        </span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 700;">${vaksin.batchId || 'Batch'}</p>
-                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">
-                        ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                </div>
-            `;
-        }).join('');
-    }
-}
-
-/**
- * Open vaccination detail page
- */
-window.openVaccinationDetail = function() {
-    // For now, redirect to kesehatan ayam page
-    // In the future, this could open a dedicated vaccination management page
-    window.location.href = 'kesehatanayam.html';
-};
-
-// =========================================================
-// 17. ✅ FASE 3: PROFILE NAVIGATION
-// =========================================================
-// goToProfile() sudah didefinisikan di firebase.component/auth-state.js
-// yang di-load di semua halaman — tidak perlu didefinisikan ulang di sini.
-
-// =========================================================
-// 18. ✅ FASE 3: DYNAMIC ALERT BANNER
-// =========================================================
-
-/**
- * Membangun dan menampilkan alert banner dinamis di atas dashboard.
- * Banner muncul otomatis berdasarkan kondisi data real-time:
- * - Stok pakan kritis / rendah
- * - Ada ayam sakit / dalam perawatan
- * - Mortalitas hari ini tinggi
- * - Vaksinasi hari ini / besok
- */
-function renderAlertBanners() {
-    const container = document.getElementById('alertBannerContainer');
-    if (!container) return;
-
-    const alerts = [];
-
-    // --- 1. Cek Stok Pakan ---
-    let pakanMasuk = 0, pakanKeluar = 0;
-    state.pakan.forEach(p => {
-        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
-        else pakanKeluar += p.jumlah;
-    });
-    const sisaPakan = pakanMasuk - pakanKeluar;
-
-    if (sisaPakan <= 20) {
-        alerts.push({
-            level: 'danger',
-            icon: '🚨',
-            title: 'Stok Pakan Kritis!',
-            msg: `Sisa pakan hanya <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Segera lakukan pembelian pakan sekarang.`,
-            action: { label: 'Kelola Pakan →', href: 'stokpakan.html' }
-        });
-    } else if (sisaPakan <= 50) {
-        alerts.push({
-            level: 'warning',
-            icon: '⚠️',
-            title: 'Stok Pakan Rendah',
-            msg: `Sisa pakan <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Persiapkan restock sebelum habis.`,
-            action: { label: 'Lihat Stok →', href: 'stokpakan.html' }
-        });
-    }
-
-    // --- 2. Cek Ayam Sakit ---
-    const ayamSakit = state.kesehatan
-        .filter(x => x.status === "Dalam Perawatan")
-        .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
-
-    if (ayamSakit > 0) {
-        alerts.push({
-            level: 'warning',
-            icon: '🩺',
-            title: 'Ada Ayam Dalam Perawatan',
-            msg: `<strong>${ayamSakit.toLocaleString('id-ID')} ekor</strong> ayam sedang dalam perawatan. Pantau kondisi kesehatan kandang.`,
-            action: { label: 'Cek Kesehatan →', href: 'kesehatanayam.html' }
-        });
-    }
-
-    // --- 3. Cek Mortalitas Hari Ini ---
-    const today = new Date();
-    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-    const mortalitasHariIni = state.kesehatan
-        .filter(x => x.tanggal === todayStr)
-        .reduce((sum, item) => {
-            if (item.status === 'Mati Semua') return sum + (parseInt(item.jmlSakit)||0) + (parseInt(item.jmlMati)||0);
-            return sum + (parseInt(item.jmlMati) || 0);
-        }, 0);
-
-    if (mortalitasHariIni > 0) {
-        alerts.push({
-            level: 'danger',
-            icon: '💀',
-            title: `Mortalitas Hari Ini: ${mortalitasHariIni} Ekor`,
-            msg: `Tercatat <strong>${mortalitasHariIni} ekor</strong> ayam mati hari ini. Periksa penyebab dan kondisi kandang segera.`,
-            action: { label: 'Lihat Data Kesehatan →', href: 'kesehatanayam.html' }
-        });
-    }
-
-    // --- 4. Cek Vaksinasi Hari Ini / Besok ---
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
-
-    const vaksinHariIni = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === todayStr);
-    const vaksinBesok = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === tomorrowStr);
-
-    if (vaksinHariIni.length > 0) {
-        alerts.push({
-            level: 'info',
-            icon: '💉',
-            title: 'Jadwal Vaksinasi Hari Ini!',
-            msg: `Ada <strong>${vaksinHariIni.length} jadwal vaksinasi</strong> yang harus dilakukan hari ini. Jangan sampai terlewat.`,
-            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
-        });
-    } else if (vaksinBesok.length > 0) {
-        alerts.push({
-            level: 'info',
-            icon: '📅',
-            title: 'Vaksinasi Besok',
-            msg: `Ada <strong>${vaksinBesok.length} jadwal vaksinasi</strong> besok. Siapkan peralatan dan vaksin sekarang.`,
-            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
-        });
-    }
-
-    // --- Render semua alert ---
-    container.innerHTML = '';
-
-    if (alerts.length === 0) {
-        // Semua kondisi aman — tampilkan banner hijau singkat
-        container.innerHTML = `
-            <div class="alert-banner alert-banner-success" role="alert">
-                <span class="alert-banner-icon">✅</span>
-                <div class="alert-banner-body">
-                    <strong>Semua kondisi kandang normal.</strong>
-                    <span>Tidak ada peringatan aktif saat ini.</span>
-                </div>
-            </div>
-        `;
-        return;
-    }
-
-    alerts.forEach(alert => {
-        const div = document.createElement('div');
-        div.className = `alert-banner alert-banner-${alert.level}`;
-        div.setAttribute('role', 'alert');
-        div.innerHTML = `
-            <span class="alert-banner-icon">${alert.icon}</span>
-            <div class="alert-banner-body">
-                <strong>${alert.title}</strong>
-                <span>${alert.msg}</span>
-            </div>
-            ${alert.action ? `<a href="${alert.action.href}" class="alert-banner-action">${alert.action.label}</a>` : ''}
-            <button class="alert-banner-close" onclick="this.parentElement.remove()" title="Tutup">×</button>
-        `;
-        container.appendChild(div);
-    });
-}
-
-// =========================================================
-// 19. ✅ FASE 3: INITIALIZE ALL FASE 3 FEATURES
-// =========================================================
-
-// Add vaccination listener to existing DOMContentLoaded
-document.addEventListener("DOMContentLoaded", () => {
-    // Add vaccination listener
-    onSnapshot(collection(db, "vaksinasi_ayam"), (snap) => {
-        state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderVaccinationWidget();
-        renderAlertBanners(); // Re-render banner saat data vaksinasi berubah
-    });
-});
-
-// Update FASE 3 features when data changes
-function updateFase3Features() {
-    checkFeedStockAlerts();
-    renderVaccinationWidget();
-    renderAlertBanners();
-}
-
-// Call FASE 3 updates in existing updateDashboardAggregates function
-const originalUpdateDashboardAggregates = updateDashboardAggregates;
-updateDashboardAggregates = function() {
-    originalUpdateDashboardAggregates();
-    updateFase3Features();
-};
-
-// Initialize FASE 3 features on page load
-document.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-        updateFase3Features();
-    }, 1000);
-});
-
-console.log("🚀 FASE 3 Features Loaded: Quick Actions, Alert Banner, Feed Alerts, Vaccination Schedule, goToProfile fix, Activity Progress Bar");

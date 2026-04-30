@@ -166,20 +166,28 @@
       <header class="mobile-header">
         <div class="mobile-logo">🐔 LIBAS</div>
         <!-- Tombol hamburger dipindahkan ke event listener JS -->
-        <button class="menu-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">☰</button>
+        <button
+          class="menu-toggle"
+          id="sidebarToggle"
+          aria-label="Toggle Sidebar"
+        >
+          ☰
+        </button>
       </header>
 
       <!-- HEADER HALAMAN: Menampilkan Judul Modul dan Deskripsi Fungsi -->
       <header class="page-header animate__animated animate__fadeInDown">
         <div class="header-text">
           <h2>📑 Manajemen Data Keuangan</h2>
-          <p>Input dan kelola catatan pemasukan serta pengeluaran peternakan Anda.</p>
+          <p>
+            Input dan kelola catatan pemasukan serta pengeluaran peternakan
+            Anda.
+          </p>
         </div>
       </header>
 
       <!-- AREA KEUANGAN: Baris kontainer yang terbagi menjadi bagian Form (Kiri) dan Daftar Data (Kanan) -->
       <div class="finance-container animate__animated animate__fadeInUp">
-        
         <!-- BAGIAN KIRI: Formulir Input Transaksi Baru -->
         <section class="finance-form-card shadow-card">
           <div class="form-header">
@@ -188,7 +196,7 @@
 
           <!-- Form ID untuk event listener di JS -->
           <form id="financeForm">
-            <input type="hidden" id="trxId">
+            <input type="hidden" id="trxId" />
 
             <!-- 1. Input Tanggal Transaksi -->
             <div class="form-group">
@@ -201,11 +209,22 @@
               <legend class="form-label">Jenis Transaksi</legend>
               <div class="radio-group">
                 <label class="radio-label">
-                  <input type="radio" name="trxType" value="pemasukan" checked required />
+                  <input
+                    type="radio"
+                    name="trxType"
+                    value="pemasukan"
+                    checked
+                    required
+                  />
                   <span>Pemasukan</span>
                 </label>
                 <label class="radio-label">
-                  <input type="radio" name="trxType" value="pengeluaran" required />
+                  <input
+                    type="radio"
+                    name="trxType"
+                    value="pengeluaran"
+                    required
+                  />
                   <span>Pengeluaran</span>
                 </label>
               </div>
@@ -214,13 +233,25 @@
             <!-- 3. Input Keterangan atau Catatan Singkat -->
             <div class="form-group">
               <label for="trxDesc">Keterangan / Deskripsi</label>
-              <input type="text" id="trxDesc" placeholder="Contoh: Penjualan 50 Papan Telur" required />
+              <input
+                type="text"
+                id="trxDesc"
+                placeholder="Contoh: Penjualan 50 Papan Telur"
+                required
+              />
             </div>
 
             <!-- 4. Input Jumlah Nominal Mata Uang Rupiah -->
             <div class="form-group">
               <label for="trxAmount">Jumlah Uang (Rp)</label>
-              <input type="number" id="trxAmount" placeholder="Contoh: 1500000" min="1" step="any" required />
+              <input
+                type="number"
+                id="trxAmount"
+                placeholder="Contoh: 1500000"
+                min="1"
+                step="any"
+                required
+              />
             </div>
 
             <!-- 5. Kumpulan Tombol -->
@@ -229,14 +260,15 @@
                 <span class="btn-text">💾 Simpan Data</span>
                 <span class="loader" id="formLoader"></span>
               </button>
-              <button type="reset" class="btn-secondary" id="btnReset">Kosongkan</button>
+              <button type="reset" class="btn-secondary" id="btnReset">
+                Kosongkan
+              </button>
             </div>
           </form>
         </section>
 
         <!-- BAGIAN KANAN: Menampilkan Nominal Ringkasan dan Daftar Tabel Transaksi -->
         <section class="finance-data-card shadow-card">
-          
           <!-- 1. Kartu Rangkuman Angka Keseluruhan -->
           <div class="finance-summary-cards">
             <div class="summary-box box-income">
@@ -261,14 +293,25 @@
             <div class="table-filters">
               <!-- Filter Rentang Tanggal -->
               <div class="filter-group">
-                <input type="date" id="filterStartDate" title="Mulai Tanggal" placeholder="Dari">
-                <span>s/d</span>
-                <input type="date" id="filterEndDate" title="Sampai Tanggal" placeholder="Sampai">
+                <label for="filterStartDate" style="font-weight: 700; color: #475569; font-size: 0.9rem; margin-right: 5px;">Filter Tanggal:</label>
+                <input
+                  type="date"
+                  id="filterStartDate"
+                  title="Pilih Tanggal"
+                />
               </div>
               <!-- Pencarian Teks -->
               <div class="search-group">
-                <input type="text" id="searchTrx" placeholder="Cari keterangan..." />
-                <button class="btn-export" id="btnExport" title="Unduh Laporan Keuangan">
+                <input
+                  type="text"
+                  id="searchTrx"
+                  placeholder="Cari keterangan..."
+                />
+                <button
+                  class="btn-export"
+                  id="btnExport"
+                  title="Unduh Laporan Keuangan"
+                >
                   📥 Ekspor CSV
                 </button>
               </div>

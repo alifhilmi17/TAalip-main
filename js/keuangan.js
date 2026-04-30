@@ -96,7 +96,7 @@ function setupEventListeners() {
     }
 
     // Filter & Search
-    ['searchTrx', 'filterStartDate', 'filterEndDate'].forEach(id => {
+    ['searchTrx', 'filterStartDate'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.addEventListener('input', () => renderTable());
@@ -199,16 +199,14 @@ function renderTable() {
     // Ambil nilai filter
     const searchTerm = document.getElementById('searchTrx').value.toLowerCase();
     const startDate = document.getElementById('filterStartDate').value;
-    const endDate = document.getElementById('filterEndDate').value;
     
     tbody.innerHTML = "";
 
-    // Logika Filtering
+    // Logika Filtering (Pencarian Teks & Tanggal Spesifik)
     const filtered = dataKeuangan.filter(t => {
         const matchesSearch = t.deskripsi.toLowerCase().includes(searchTerm);
-        const matchesStart = !startDate || t.tanggal >= startDate;
-        const matchesEnd = !endDate || t.tanggal <= endDate;
-        return matchesSearch && matchesStart && matchesEnd;
+        const matchesDate = !startDate || t.tanggal === startDate;
+        return matchesSearch && matchesDate;
     });
 
     if (filtered.length === 0) {

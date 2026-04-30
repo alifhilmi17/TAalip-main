@@ -81,7 +81,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   2. SIDEBAR NAVIGASI & HEADER MOBILE
+   PART 1 & A. NAVIGATION, SIDEBAR & HEADER MOBILE
 ========================================================= */
 .sidebar {
   background: linear-gradient(180deg, var(--primary-dark) 0%, var(--secondary-dark) 100%);
@@ -120,7 +120,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   3. SECTION 1: HERO BANNER SAMBUTAN
+   B. Section 1: Hero Banner Welcome
 ========================================================= */
 .admin-welcome {
   background: linear-gradient(135deg, var(--secondary-dark) 0%, #334155 100%);
@@ -143,7 +143,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   4. SECTION 2: STATISTIK GLOBAL (QUICK STATS)
+   C. Section 2: Statistik Global (Quick Stats)
 ========================================================= */
 .quick-stats {
   display: grid;
@@ -212,7 +212,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   5. INFO AYAM SAKIT (ALERT NOTIFIKASI)
+   D. Info Ayam Sakit (Alert Pemberitahuan)
 ========================================================= */
 .admin-ayam-sakit-info {
   animation: slideInDown 0.5s ease;
@@ -253,7 +253,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   6. SECTION 2C: GRAFIK ANALITIK ADMIN
+   E. Section 2c: Grafik Analitik Admin (Tren Real-time)
 ========================================================= */
 .charts-section {
   display: grid;
@@ -338,7 +338,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   7. SYSTEM HEALTH INDICATORS
+   F. Section: System Health Indicators
 ========================================================= */
 .system-health-admin {
     animation-delay: 0.3s;
@@ -370,7 +370,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   8. FEED STOCK MANAGEMENT
+   G. Section: Comprehensive Feed Stock Management
 ========================================================= */
 .feed-management-admin {
     animation-delay: 0.4s;
@@ -402,7 +402,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   9. SECTION 3: SHORTCUT MODUL FITUR
+   H. Section 3: Shortcut Modul Fitur (Akses Cepat)
 ========================================================= */
 .modules-grid {
   margin: 2rem 0 2.5rem;
@@ -468,7 +468,7 @@ body.sidebar-open::before {
 .module-card:nth-child(8) { background: #f0f9ff; }
 
 /* =========================================================
-   10. SECTION 4: TABEL MANAJEMEN PENGGUNA
+   I. Section 4: Tabel Manajemen Pengguna (Otoritas)
 ========================================================= */
 .user-management {
   margin: 2rem 0 2.5rem;
@@ -500,7 +500,7 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   11. SECTION 5: SNAPSHOT TABS & RINGKASAN DATA
+   J. Section 5: Ringkasan Data Peternakan Ayam (Snapshot Tabs)
 ========================================================= */
 .snapshot-tabs-header {
   display: flex;
@@ -568,7 +568,7 @@ body.sidebar-open::before {
 .prediksi-stat-card.laba { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-left: 4px solid #3b82f6; }
 
 /* =========================================================
-   12. SECTION 6: MANAJEMEN OPERASIONAL
+   K. Section 6: Manajemen Operasional
 ========================================================= */
 .office-admin {
   display: grid;
@@ -605,14 +605,14 @@ body.sidebar-open::before {
 }
 
 /* =========================================================
-   13. SECTION 7: AUDIT LOG AKTIVITAS
+   L. Section 7: Audit Log Aktivitas
 ========================================================= */
 .system-logs {
   margin: 2rem 0 2.5rem;
 }
 
 /* =========================================================
-   14. GENERAL UTILITIES (BUTTONS, TABLES, MODALS, ETC)
+   M. GENERAL UTILITIES (BUTTONS, TABLES, MODALS, ETC)
 ========================================================= */
 
 /* Tabel Responsif */
@@ -654,7 +654,7 @@ body.sidebar-open::before {
 .swal-libas-input { width: 100% !important; padding: 10px !important; border: 1px solid var(--border-hover) !important; border-radius: 8px !important; }
 
 /* =========================================================
-   15. MEDIA QUERIES (RESPONSIVENESS)
+   N. MEDIA QUERIES (RESPONSIVENESS)
 ========================================================= */
 @media (max-width: 992px) {
   .sidebar { transform: translateX(-100%); position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; transition: transform 0.3s ease; }
