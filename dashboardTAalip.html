@@ -10,13 +10,9 @@
     <!-- ========================= FONT & ANIMASI ========================== -->
     <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
     <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+      rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
     <!-- ========================= CSS KUSTOM ========================== -->
     <!-- Memuat gaya desain spesifik untuk halaman dashboard ini -->
@@ -178,6 +174,10 @@
         </p>
       </section>
 
+      <!-- ===== ALERT BANNER DINAMIS (FASE 3) ===== -->
+      <!-- Banner ini muncul otomatis jika ada kondisi kritis: stok pakan rendah, ayam sakit, mortalitas tinggi -->
+      <div id="alertBannerContainer" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem;"></div>
+
       <!-- ===== 1. KARTU STATISTIK CEPAT (Paling penting untuk melihat kondisi kandang saat ini) ===== -->
       <section class="quick-stats animate__animated animate__fadeInUp">
         <!-- ===== KARTU STATISTIK Total Telur Harian ===== -->
@@ -319,10 +319,12 @@
         </div>
       </section>
 
-      <!-- ===== 3. QUICK ACTIONS (Operasi Harian Petugas) ===== -->
-      <section class="quick-actions-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
-        <div class="quick-actions-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <!-- ===== 3 & 4. QUICK ACTIONS + JADWAL VAKSINASI (2 kolom) ===== -->
+      <section class="widgets-row animate__animated animate__fadeInUp">
+
+        <!-- QUICK ACTIONS -->
+        <div class="quick-actions-card widget-card" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);">
+          <div class="widget-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 2rem;">⚡</span>
               <div>
@@ -331,31 +333,35 @@
               </div>
             </div>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-            <button onclick="quickActionInputProduksi()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🥚 Input Produksi</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Catat hasil telur hari ini</p>
-            </button>
-            <button onclick="quickActionStokPakan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🥬 Kelola Pakan</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Update stok pakan</p>
-            </button>
-            <button onclick="quickActionKeuangan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">💰 Catat Transaksi</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Input pemasukan/pengeluaran</p>
-            </button>
-            <button onclick="quickActionKesehatan()" style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); border: none; color: white; cursor: pointer; transition: all 0.3s; text-align: left;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">🩺 Cek Kesehatan</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Monitor kondisi ayam</p>
-            </button>
+          <div class="widget-card-body">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem;">
+              <button onclick="quickActionInputProduksi()" class="qa-square-btn" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">🥚</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Input Produksi</p>
+                <p style="font-size: 0.6rem; opacity: 0.75;">Catat hasil telur hari ini</p>
+              </button>
+              <button onclick="quickActionStokPakan()" class="qa-square-btn" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">🥬</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Kelola Pakan</p>
+                <p style="font-size: 0.6rem; opacity: 0.75;">Update stok pakan</p>
+              </button>
+              <button onclick="quickActionKeuangan()" class="qa-square-btn" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">💰</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Catat Transaksi</p>
+                <p style="font-size: 0.6rem; opacity: 0.75;">Input pemasukan/pengeluaran</p>
+              </button>
+              <button onclick="quickActionKesehatan()" class="qa-square-btn" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">🩺</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Cek Kesehatan</p>
+                <p style="font-size: 0.6rem; opacity: 0.75;">Monitor kondisi ayam</p>
+              </button>
+            </div>
           </div>
         </div>
-      </section>
 
-      <!-- ===== 4. JADWAL VAKSINASI (Prioritas operasional kesehatan) ===== -->
-      <section class="vaccination-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
-        <div class="vaccination-card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <!-- JADWAL VAKSINASI -->
+        <div class="vaccination-card widget-card" style="background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); color: white; box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);">
+          <div class="widget-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 2rem;">💉</span>
               <div>
@@ -363,23 +369,26 @@
                 <p id="vaccination-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">Monitoring jadwal vaksin mendatang</p>
               </div>
             </div>
-            <button onclick="openVaccinationDetail()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            <button onclick="openVaccinationDetail()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s; flex-shrink: 0;">
               Lihat Semua →
             </button>
           </div>
-          <div id="vaccination-content">
-            <!-- Diisi via JavaScript -->
-          </div>
-          <div id="vaccination-empty" style="text-align: center; padding: 2rem; display: none;">
-            <p style="margin: 0; opacity: 0.8;">Tidak ada jadwal vaksinasi mendatang. Semua vaksin sudah selesai.</p>
+          <div class="widget-card-body">
+            <div id="vaccination-content"></div>
+            <div id="vaccination-empty" style="text-align: center; padding: 2rem; display: none;">
+              <p style="margin: 0; opacity: 0.8;">Tidak ada jadwal vaksinasi mendatang. Semua vaksin sudah selesai.</p>
+            </div>
           </div>
         </div>
+
       </section>
 
-      <!-- ===== 5. WIDGET PREDIKSI (Perencanaan & Insights) ===== -->
-      <section class="prediction-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
-        <div class="prediction-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+      <!-- ===== 5 & 6. WIDGET PREDIKSI + RINGKASAN KEUANGAN (2 kolom) ===== -->
+      <section class="widgets-row animate__animated animate__fadeInUp">
+
+        <!-- WIDGET PREDIKSI -->
+        <div class="prediction-card widget-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+          <div class="widget-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 2rem;">🔮</span>
               <div>
@@ -387,46 +396,46 @@
                 <p id="prediction-date" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">-</p>
               </div>
             </div>
-            <button onclick="openModalPrediksi()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            <button onclick="openModalPrediksi()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s; flex-shrink: 0;">
               Lihat Detail →
             </button>
           </div>
-          <div id="prediction-content" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
-                Prediksi Telur
-                <span title="Jumlah telur yang diprediksi besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
-              </p>
-              <p id="prediction-eggs" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Produksi besok</p>
+          <div class="widget-card-body">
+            <div id="prediction-content" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem;">
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                  Prediksi Telur
+                  <span title="Jumlah telur yang diprediksi besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+                </p>
+                <p id="prediction-eggs" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Produksi besok</p>
+              </div>
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                  Prediksi Pendapatan
+                  <span title="Estimasi pendapatan dari penjualan telur besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+                </p>
+                <p id="prediction-income" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Dari penjualan telur</p>
+              </div>
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                  Akurasi Model
+                  <span title="Tingkat kepercayaan prediksi" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
+                </p>
+                <p id="prediction-accuracy" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Tingkat kepercayaan</p>
+              </div>
             </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
-                Prediksi Pendapatan
-                <span title="Estimasi pendapatan dari penjualan telur besok" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
-              </p>
-              <p id="prediction-income" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Dari penjualan telur</p>
+            <div id="prediction-empty" style="text-align: center; padding: 2rem; display: none;">
+              <p style="margin: 0; opacity: 0.8;">Belum ada prediksi. Silakan buat prediksi di halaman Prediksi Hasil.</p>
             </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
-                Akurasi Model
-                <span title="Tingkat kepercayaan prediksi" style="cursor: help; font-size: 0.75rem; background: rgba(255,255,255,0.2); width: 16px; height: 16px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;">ℹ️</span>
-              </p>
-              <p id="prediction-accuracy" style="margin: 5px 0 0 0; font-size: 1.5rem; font-weight: 700;">-</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8;">Tingkat kepercayaan</p>
-            </div>
-          </div>
-          <div id="prediction-empty" style="text-align: center; padding: 2rem; display: none;">
-            <p style="margin: 0; opacity: 0.8;">Belum ada prediksi. Silakan buat prediksi di halaman Prediksi Hasil.</p>
           </div>
         </div>
-      </section>
 
-      <!-- ===== 6. RINGKASAN KEUANGAN ===== -->
-      <section class="finance-summary-widget animate__animated animate__fadeInUp" style="margin: 1.5rem 0;">
-        <div class="finance-summary-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 15px; padding: 1.5rem; color: white; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <!-- RINGKASAN KEUANGAN -->
+        <div class="finance-summary-card widget-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);">
+          <div class="widget-card-header">
             <div style="display: flex; align-items: center; gap: 10px;">
               <span style="font-size: 2rem;">💰</span>
               <div>
@@ -434,36 +443,49 @@
                 <p id="finance-month" style="margin: 0; font-size: 0.85rem; opacity: 0.9;">-</p>
               </div>
             </div>
-            <button onclick="openModalKeuangan()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s;">
+            <button onclick="openModalKeuangan()" style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 8px; border: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.3s; flex-shrink: 0;">
               Lihat Detail →
             </button>
           </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💵 Pemasukan</p>
-              <p id="finance-income" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💸 Pengeluaran</p>
-              <p id="finance-expense" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💎 Saldo Bersih</p>
-              <p id="finance-balance" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
-            </div>
-            <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-              <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">📊 Transaksi</p>
-              <p id="finance-transactions" style="margin: 5px 0 0 0; font-size: 1.3rem; font-weight: 700;">0</p>
+          <div class="widget-card-body">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem;">
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💵 Pemasukan</p>
+                <p id="finance-income" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+              </div>
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💸 Pengeluaran</p>
+                <p id="finance-expense" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+              </div>
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💎 Saldo Bersih</p>
+                <p id="finance-balance" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+              </div>
+              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
+                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">📊 Transaksi</p>
+                <p id="finance-transactions" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">0</p>
+              </div>
             </div>
           </div>
         </div>
+
       </section>
 
       <!-- ===== 7. AKTIVITAS HARIAN, PENGUMUMAN, JADWAL ===== -->
       <section class="office-admin">
-        <!-- ===== AKTIVITAS HARIAN ===== -->
+        <!-- ===== AKTIVITAS HARIAN (FASE 3 - VISUAL CHECKLIST) ===== -->
         <div class="manage-card animate__animated animate__fadeInUp">
           <h3>🧺 Aktivitas Harian</h3>
+          <!-- Progress bar ringkasan -->
+          <div style="padding: 0.8rem 1.2rem 0; background: #f8f9fa; border-bottom: 1px solid #f0f0f0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+              <span style="font-size: 0.78rem; color: #64748b; font-weight: 600;">PROGRES HARI INI</span>
+              <span id="activity-progress-text" style="font-size: 0.78rem; color: #10b981; font-weight: 700;">0 / 0 selesai</span>
+            </div>
+            <div style="background: #e2e8f0; border-radius: 100px; height: 6px; overflow: hidden;">
+              <div id="activity-progress-bar" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 100px; width: 0%; transition: width 0.5s ease;"></div>
+            </div>
+          </div>
           <ul id="dailyActivityList">
             <!-- Diisi via JavaScript -->
           </ul>

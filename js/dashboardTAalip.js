@@ -47,7 +47,8 @@ let state = {
     ayam: [],
     pakan: [],
     kesehatan: [], // ✅ Tambah state untuk data kesehatan mortalitas
-    prediksi: [] // ✅ FASE 2: Tambah state untuk data prediksi
+    prediksi: [], // ✅ FASE 2: Tambah state untuk data prediksi
+    vaksinasi: [] // ✅ FASE 3: Tambah state untuk data vaksinasi
 };
 
 let eggChartInstance = null;
@@ -168,28 +169,71 @@ window.deleteScheduleItem = async function(id) {
 // =========================================
 /**
  * Merender daftar aktivitas harian dalam bentuk list item interaktif
+ * dengan progress bar visual (FASE 3)
  */
 function renderActivities() {
     const list = document.getElementById("dailyActivityList");
     if (!list) return;
     list.innerHTML = "";
-    state.activities.forEach((item) => {
+
+    const total = state.activities.length;
+    const done = state.activities.filter(a => a.completed).length;
+
+    // Update progress bar
+    const progressBar = document.getElementById("activity-progress-bar");
+    const progressText = document.getElementById("activity-progress-text");
+    if (progressBar && progressText) {
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        progressBar.style.width = `${pct}%`;
+        progressText.textContent = `${done} / ${total} selesai`;
+        // Warna teks berubah sesuai progres
+        if (pct === 100 && total > 0) {
+            progressText.style.color = "#10b981";
+            progressBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
+        } else if (pct >= 50) {
+            progressText.style.color = "#f59e0b";
+            progressBar.style.background = "linear-gradient(90deg, #f59e0b, #fbbf24)";
+        } else {
+            progressText.style.color = "#64748b";
+            progressBar.style.background = "linear-gradient(90deg, #94a3b8, #cbd5e1)";
+        }
+    }
+
+    // Urutkan: belum selesai dulu, lalu yang sudah selesai
+    const sorted = [...state.activities].sort((a, b) => {
+        if (a.completed === b.completed) return 0;
+        return a.completed ? 1 : -1;
+    });
+
+    sorted.forEach((item) => {
         const li = document.createElement("li");
         li.style.display = "flex";
         li.style.justifyContent = "space-between";
         li.style.alignItems = "center";
         li.style.background = item.completed ? "#f1f3f5" : "#fff";
         li.style.opacity = item.completed ? "0.7" : "1";
-        
+        li.style.transition = "all 0.3s ease";
+
         li.innerHTML = `
-            <span style="flex:1; ${item.completed ? 'text-decoration:line-through; color:#888;' : ''}">${item.text}</span>
+            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                <span style="font-size: 1.1rem;">${item.completed ? "✅" : "⬜"}</span>
+                <span style="flex:1; font-size: 0.9rem; ${item.completed ? 'text-decoration:line-through; color:#888;' : 'color:#333;'}">${item.text}</span>
+            </div>
             <div class="action-btn-group">
-                <button class="action-btn check-btn" onclick="toggleActivityStatus('${item.id}', ${item.completed})">${item.completed ? '↩' : '✔'}</button>
-                <button class="action-btn delete-item-btn" onclick="deleteActivityItem('${item.id}')">✕</button>
+                <button class="action-btn check-btn" title="${item.completed ? 'Batalkan' : 'Tandai selesai'}" onclick="toggleActivityStatus('${item.id}', ${item.completed})">${item.completed ? '↩' : '✔'}</button>
+                <button class="action-btn delete-item-btn" title="Hapus" onclick="deleteActivityItem('${item.id}')">✕</button>
             </div>
         `;
         list.appendChild(li);
     });
+
+    // Tampilkan pesan jika kosong
+    if (total === 0) {
+        const empty = document.createElement("li");
+        empty.style.cssText = "text-align:center; color:#94a3b8; font-size:0.85rem; padding:1.5rem; background:transparent; border:none;";
+        empty.innerHTML = "📋 Belum ada aktivitas hari ini.<br><small>Tambahkan aktivitas di bawah.</small>";
+        list.appendChild(empty);
+    }
 }
 
 const activityForm = document.getElementById("addActivityForm");
@@ -1041,7 +1085,7 @@ function renderVaccinationWidget() {
         emptyEl.style.display = 'none';
         subtitleEl.textContent = `${upcomingVaccinations.length} jadwal mendatang`;
         
-        contentEl.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
+        contentEl.style.gridTemplateColumns = 'repeat(3, 1fr)';
         contentEl.style.gap = '1rem';
         
         contentEl.innerHTML = upcomingVaccinations.map(vaksin => {
@@ -1061,14 +1105,14 @@ function renderVaccinationWidget() {
             }
             
             return `
-                <div style="background: rgba(255,255,255,0.15); padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px);">
-                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; justify-content: space-between;">
+                <div style="background: rgba(255,255,255,0.15); aspect-ratio: 1; padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center;">
+                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
                         💉 ${vaksin.jenisVaksin || 'Vaksin'}
                         <span style="background: ${urgencyColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
                             ${urgencyText}
                         </span>
                     </p>
-                    <p style="margin: 5px 0 0 0; font-size: 1.1rem; font-weight: 700;">${vaksin.batchId || 'Batch'}</p>
+                    <p style="margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 700;">${vaksin.batchId || 'Batch'}</p>
                     <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">
                         ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
@@ -1088,11 +1132,153 @@ window.openVaccinationDetail = function() {
 };
 
 // =========================================================
-// 18. ✅ FASE 3: INITIALIZE ALL FASE 3 FEATURES
+// 17. ✅ FASE 3: PROFILE NAVIGATION
+// =========================================================
+// goToProfile() sudah didefinisikan di firebase.component/auth-state.js
+// yang di-load di semua halaman — tidak perlu didefinisikan ulang di sini.
+
+// =========================================================
+// 18. ✅ FASE 3: DYNAMIC ALERT BANNER
 // =========================================================
 
-// Add vaccination state to global state
-state.vaksinasi = [];
+/**
+ * Membangun dan menampilkan alert banner dinamis di atas dashboard.
+ * Banner muncul otomatis berdasarkan kondisi data real-time:
+ * - Stok pakan kritis / rendah
+ * - Ada ayam sakit / dalam perawatan
+ * - Mortalitas hari ini tinggi
+ * - Vaksinasi hari ini / besok
+ */
+function renderAlertBanners() {
+    const container = document.getElementById('alertBannerContainer');
+    if (!container) return;
+
+    const alerts = [];
+
+    // --- 1. Cek Stok Pakan ---
+    let pakanMasuk = 0, pakanKeluar = 0;
+    state.pakan.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += p.jumlah;
+        else pakanKeluar += p.jumlah;
+    });
+    const sisaPakan = pakanMasuk - pakanKeluar;
+
+    if (sisaPakan <= 20) {
+        alerts.push({
+            level: 'danger',
+            icon: '🚨',
+            title: 'Stok Pakan Kritis!',
+            msg: `Sisa pakan hanya <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Segera lakukan pembelian pakan sekarang.`,
+            action: { label: 'Kelola Pakan →', href: 'stokpakan.html' }
+        });
+    } else if (sisaPakan <= 50) {
+        alerts.push({
+            level: 'warning',
+            icon: '⚠️',
+            title: 'Stok Pakan Rendah',
+            msg: `Sisa pakan <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Persiapkan restock sebelum habis.`,
+            action: { label: 'Lihat Stok →', href: 'stokpakan.html' }
+        });
+    }
+
+    // --- 2. Cek Ayam Sakit ---
+    const ayamSakit = state.kesehatan
+        .filter(x => x.status === "Dalam Perawatan")
+        .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+
+    if (ayamSakit > 0) {
+        alerts.push({
+            level: 'warning',
+            icon: '🩺',
+            title: 'Ada Ayam Dalam Perawatan',
+            msg: `<strong>${ayamSakit.toLocaleString('id-ID')} ekor</strong> ayam sedang dalam perawatan. Pantau kondisi kesehatan kandang.`,
+            action: { label: 'Cek Kesehatan →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- 3. Cek Mortalitas Hari Ini ---
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const mortalitasHariIni = state.kesehatan
+        .filter(x => x.tanggal === todayStr)
+        .reduce((sum, item) => {
+            if (item.status === 'Mati Semua') return sum + (parseInt(item.jmlSakit)||0) + (parseInt(item.jmlMati)||0);
+            return sum + (parseInt(item.jmlMati) || 0);
+        }, 0);
+
+    if (mortalitasHariIni > 0) {
+        alerts.push({
+            level: 'danger',
+            icon: '💀',
+            title: `Mortalitas Hari Ini: ${mortalitasHariIni} Ekor`,
+            msg: `Tercatat <strong>${mortalitasHariIni} ekor</strong> ayam mati hari ini. Periksa penyebab dan kondisi kandang segera.`,
+            action: { label: 'Lihat Data Kesehatan →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- 4. Cek Vaksinasi Hari Ini / Besok ---
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+
+    const vaksinHariIni = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === todayStr);
+    const vaksinBesok = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === tomorrowStr);
+
+    if (vaksinHariIni.length > 0) {
+        alerts.push({
+            level: 'info',
+            icon: '💉',
+            title: 'Jadwal Vaksinasi Hari Ini!',
+            msg: `Ada <strong>${vaksinHariIni.length} jadwal vaksinasi</strong> yang harus dilakukan hari ini. Jangan sampai terlewat.`,
+            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
+        });
+    } else if (vaksinBesok.length > 0) {
+        alerts.push({
+            level: 'info',
+            icon: '📅',
+            title: 'Vaksinasi Besok',
+            msg: `Ada <strong>${vaksinBesok.length} jadwal vaksinasi</strong> besok. Siapkan peralatan dan vaksin sekarang.`,
+            action: { label: 'Lihat Jadwal →', href: 'kesehatanayam.html' }
+        });
+    }
+
+    // --- Render semua alert ---
+    container.innerHTML = '';
+
+    if (alerts.length === 0) {
+        // Semua kondisi aman — tampilkan banner hijau singkat
+        container.innerHTML = `
+            <div class="alert-banner alert-banner-success" role="alert">
+                <span class="alert-banner-icon">✅</span>
+                <div class="alert-banner-body">
+                    <strong>Semua kondisi kandang normal.</strong>
+                    <span>Tidak ada peringatan aktif saat ini.</span>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    alerts.forEach(alert => {
+        const div = document.createElement('div');
+        div.className = `alert-banner alert-banner-${alert.level}`;
+        div.setAttribute('role', 'alert');
+        div.innerHTML = `
+            <span class="alert-banner-icon">${alert.icon}</span>
+            <div class="alert-banner-body">
+                <strong>${alert.title}</strong>
+                <span>${alert.msg}</span>
+            </div>
+            ${alert.action ? `<a href="${alert.action.href}" class="alert-banner-action">${alert.action.label}</a>` : ''}
+            <button class="alert-banner-close" onclick="this.parentElement.remove()" title="Tutup">×</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// =========================================================
+// 19. ✅ FASE 3: INITIALIZE ALL FASE 3 FEATURES
+// =========================================================
 
 // Add vaccination listener to existing DOMContentLoaded
 document.addEventListener("DOMContentLoaded", () => {
@@ -1100,6 +1286,7 @@ document.addEventListener("DOMContentLoaded", () => {
     onSnapshot(collection(db, "vaksinasi_ayam"), (snap) => {
         state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderVaccinationWidget();
+        renderAlertBanners(); // Re-render banner saat data vaksinasi berubah
     });
 });
 
@@ -1107,6 +1294,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateFase3Features() {
     checkFeedStockAlerts();
     renderVaccinationWidget();
+    renderAlertBanners();
 }
 
 // Call FASE 3 updates in existing updateDashboardAggregates function
@@ -1120,7 +1308,7 @@ updateDashboardAggregates = function() {
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
         updateFase3Features();
-    }, 1000); // Delay to ensure data is loaded
+    }, 1000);
 });
 
-console.log("🚀 FASE 3 Features Loaded: Quick Actions, System Health, Feed Alerts, Vaccination Schedule");
+console.log("🚀 FASE 3 Features Loaded: Quick Actions, Alert Banner, Feed Alerts, Vaccination Schedule, goToProfile fix, Activity Progress Bar");
