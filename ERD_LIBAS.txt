@@ -1,0 +1,223 @@
+================================================================================
+  ERD (ENTITY RELATIONSHIP DIAGRAM) — SISTEM LIBAS
+  Aplikasi: Sistem Administrasi Peternakan Ayam Petelur
+  Database: Google Firebase Firestore (NoSQL)
+  Dibuat  : 2026
+================================================================================
+
+KETERANGAN SIMBOL:
+  PK  = Primary Key (ID unik dokumen Firestore)
+  FK  = Foreign Key (referensi ke koleksi lain)
+  []  = Array / List
+  1:N = Relasi Satu ke Banyak
+  N:1 = Relasi Banyak ke Satu
+  ---  = Garis relasi
+
+================================================================================
+  BAGIAN 1 — ENTITAS PENGGUNA (AUTENTIKASI & OTORISASI)
+================================================================================
+
++------------------+          +------------------+
+|      admin       |          |       user       |
++------------------+          +------------------+
+| PK uid           |          | PK uid           |
+|    fullname      |          |    fullname      |
+|    username      |          |    username      |
+|    email         |          |    email         |
++------------------+          |    phone         |
+         |                    |    role          | <-- 'admin' / 'petugas'
+         |                    |    disabled      | <-- true / false
+         |                    |    createdAt     |
+         |                    +------------------+
+         |                             |
+         | (createdByAdmin)            | (confirmedBy[])
+         |                             |
+         +-------------+---------------+
+                       |
+                       v
+            +----------------------+
+            |    announcements     |
+            +----------------------+
+            | PK id                |
+            |    text              |
+            |    confirmedBy[]     | <-- array nama petugas yg konfirmasi
+            |    createdByAdmin    |
+            |    createdAt         |
+            +----------------------+
+
+
+================================================================================
+  BAGIAN 2 — ENTITAS INTI PETERNAKAN (BATCH AYAM & TURUNANNYA)
+================================================================================
+
+                    +------------------------+
+                    |     populasi_ayam      |  <-- "Batch Ayam"
+                    +------------------------+
+                    | PK id                  |
+                    |    customId            | <-- e.g. B-20240101-123
+                    |    jenis               | <-- jenis ayam petelur
+                    |    kandang             |
+                    |    tglMasuk            |
+                    |    jumlahAwal          |
+                    |    sisaAyam            |
+                    |    status              | <-- Aktif / Panen / Afkir
+                    |    createdAt           |
+                    |    updatedAt           |
+                    +------------------------+
+                              |
+              1               |               1
+              |               |               |
+    +---------+    +----------+    +----------+---------+
+    |              |                          |
+    | N            | N                        | N
+    v              v                          v
++------------------+  +------------------+  +------------------+
+| produksi_harian  |  | kesehatan_ayam   |  | vaksinasi_ayam   |
++------------------+  +------------------+  +------------------+
+| PK id            |  | PK id            |  | PK id            |
+| FK batchId       |  | FK batchId       |  | FK batchId       |
+|    batchLabel    |  |    batchName     |  |    batchName     |
+|    tanggal       |  |    tanggal       |  |    tanggal       |
+|    jenisTelur    |  |    kandang       |  |    kandang       |
+|    kandang       |  |    gejala        |  |    jenis         |
+|    telurBaik     |  |    jmlSakit      |  |    metode        |
+|    telurCacat    |  |    jmlMati       |  |    catatan       |
+|    totalTelur    |  |    penanganan    |  |    status        |
+|    ayamTidak-    |  |    status        |  |    createdAt     |
+|    Bertelur      |  |    createdAt     |  |    updatedAt     |
+|    createdAt     |  |    updatedAt     |  +------------------+
+|    updatedAt     |  +------------------+
++------------------+
+         |
+         | (digunakan sebagai input)
+         v
++------------------------+
+|   prediksi_history     |  <-- Hasil kalkulasi Moving Average
++------------------------+
+| PK id                  |
+|    tanggal             |
+|    periodeMA           | <-- periode window MA (misal: 5 hari)
+|    populasi            |
+|    batchLabel          |
+|    prediksiBesokKg     |
+|    prediksiBesokButir  |
+|    estimasiPendapatan  |
+|    biayaPakan          |
+|    keuntungan          |
+|    proyeksi7HariKg[]   | <-- array 7 elemen
+|    proyeksi7HariKeu[]  | <-- array 7 elemen
+|    rekomendasi[]       | <-- array objek rekomendasi
++------------------------+
+
+
+================================================================================
+  BAGIAN 3 — ENTITAS OPERASIONAL (BERDIRI SENDIRI)
+================================================================================
+
++------------------+          +------------------+
+|    keuangan      |          |   stok_pakan     |
++------------------+          +------------------+
+| PK id            |          | PK id            |
+|    tanggal       |          |    tanggal       |
+|    tipe          |          |    tipe          | <-- Masuk / Keluar
+|    deskripsi     |          |    jenis         |
+|    jumlah        |          |    jumlah        | <-- dalam Kg
+|    createdAt     |          |    keterangan    |
++------------------+          |    dicatatOleh   |
+                              |    role          |
+                              |    createdAt     |
+                              |    updatedAt     |
+                              +------------------+
+
++------------------+          +------------------+
+| daily_activities |          |    schedules     |
++------------------+          +------------------+
+| PK id            |          | PK id            |
+|    text          |          |    tanggal       |
+|    completed     |          |    waktu         |
+|    createdAt     |          |    agenda        |
++------------------+          |    ruangan       |
+                              |    createdAt     |
+                              +------------------+
+
++------------------+
+|  activity_log    |  <-- Audit Trail Admin
++------------------+
+| PK id            |
+|    waktu         |
+|    user          | <-- nama admin
+|    kategori      |
+|    aksi          |
++------------------+
+
+
+================================================================================
+  BAGIAN 4 — DIAGRAM RELASI LENGKAP (RINGKASAN)
+================================================================================
+
+  admin ──────────────────────────────────────────────────────────────────────┐
+    |                                                                          |
+    | creates                                                                  |
+    v                                                                          |
+  announcements ◄──── user (confirms via confirmedBy[])                       |
+                                                                               |
+  populasi_ayam ──1:N──► produksi_harian                                      |
+       |                       |                                               |
+       |                       └──► prediksi_history (input data)             |
+       |                                                                       |
+       ├──1:N──► kesehatan_ayam                                                |
+       |                                                                       |
+       └──1:N──► vaksinasi_ayam                                                |
+                                                                               |
+  keuangan          (berdiri sendiri, tidak ada FK ke batch)                  |
+  stok_pakan        (berdiri sendiri, dicatatOleh = nama user)                |
+  daily_activities  (berdiri sendiri, dikelola admin & petugas)               |
+  schedules         (berdiri sendiri, dikelola admin)                         |
+  activity_log      (berdiri sendiri, audit trail admin) ◄────────────────────┘
+
+
+================================================================================
+  BAGIAN 5 — CATATAN PENTING (KARAKTERISTIK NOSQL FIRESTORE)
+================================================================================
+
+  1. Tidak ada foreign key constraint seperti SQL — relasi dijaga di level
+     aplikasi (JavaScript), bukan di level database.
+
+  2. Field batchId pada produksi_harian, kesehatan_ayam, dan vaksinasi_ayam
+     menyimpan ID dokumen dari koleksi populasi_ayam sebagai referensi manual.
+
+  3. Field confirmedBy[] pada announcements adalah array string (nama petugas),
+     bukan array ID — ini adalah denormalisasi khas NoSQL.
+
+  4. prediksi_history tidak memiliki FK ketat ke populasi_ayam, hanya menyimpan
+     batchLabel (string) sebagai referensi deskriptif.
+
+  5. stok_pakan menggunakan field dicatatOleh (nama user) bukan UID, sehingga
+     tidak ada relasi formal ke koleksi user.
+
+  6. Setiap dokumen Firestore memiliki ID unik yang di-generate otomatis
+     (kecuali koleksi user dan admin yang menggunakan UID dari Firebase Auth).
+
+================================================================================
+  TOTAL KOLEKSI FIRESTORE: 12 Koleksi
+================================================================================
+
+  No  | Nama Koleksi        | Fungsi
+  ----|---------------------|------------------------------------------
+  1   | admin               | Data akun administrator
+  2   | user                | Data akun petugas / pengguna biasa
+  3   | populasi_ayam       | Data batch ayam (master data)
+  4   | produksi_harian     | Pencatatan produksi telur harian
+  5   | kesehatan_ayam      | Pencatatan kesehatan & mortalitas
+  6   | vaksinasi_ayam      | Jadwal & riwayat vaksinasi
+  7   | keuangan            | Transaksi pemasukan & pengeluaran
+  8   | stok_pakan          | Manajemen stok pakan masuk & keluar
+  9   | prediksi_history    | Riwayat hasil prediksi Moving Average
+  10  | announcements       | Pengumuman dari admin ke petugas
+  11  | daily_activities    | Checklist aktivitas harian
+  12  | schedules           | Jadwal agenda kegiatan peternakan
+  13  | activity_log        | Audit trail aktivitas administrator
+
+================================================================================
+  END OF FILE
+================================================================================
