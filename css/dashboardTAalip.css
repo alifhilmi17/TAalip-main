@@ -793,8 +793,9 @@ body {
 }
 
 /* Barisan Tiap Butir/Pekerjaan List (Item List) */
-.manage-card ul li,
-.reminder-card ul li {
+/* PENTING: Exclude announcement-item dari rule ini */
+.manage-card ul li:not(.announcement-item),
+.reminder-card ul li:not(.announcement-item) {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -809,8 +810,8 @@ body {
 }
 
 /* Efek Menjalar dan Mencuat Menyamping ketika Butir List/Pekerjaan dilewati usapan Mouse Hover */
-.manage-card ul li:hover,
-.reminder-card ul li:hover {
+.manage-card ul li:not(.announcement-item):hover,
+.reminder-card ul li:not(.announcement-item):hover {
     background: #fff;
     /* Tampil putih benderang menyibak lautan kelabu teman temannya di li tsb */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -820,17 +821,18 @@ body {
 }
 
 /* Tema Pewarnaan Pinggir Tepi Garis (Garis Kiri Tembok) Setiap Kartu Modul */
-.manage-card ul li {
+.manage-card ul li:not(.announcement-item) {
     border-left-color: #38ef7d;
 }
 
-.reminder-card ul li {
+.reminder-card ul li:not(.announcement-item) {
     border-left-color: #ff5e62;
 }
 
 /* Keterangan / Kalimat yang Tertulis di Daftar-Daftarnya */
-.manage-card ul li span,
-.reminder-card ul li span {
+/* PENTING: Exclude announcement-item dari rule ini */
+.manage-card ul li:not(.announcement-item) span,
+.reminder-card ul li:not(.announcement-item) span {
     font-size: 1.05rem;
     color: #444;
     /* Serbuk batu permata arang tak pekat, aman dimata kala baca lama (Contrast Reading friendly) */
@@ -2287,4 +2289,306 @@ body {
     .widget-square-box p:last-child {
         font-size: 0.95rem !important;
     }
+}
+
+/* =========================================================
+   📢 SISTEM PENGUMUMAN — ROLE-BASED (COMPLETE REWRITE)
+   Gaya untuk kartu pengumuman dengan override total style lama
+========================================================= */
+
+/* RESET TOTAL: Hapus semua style lama yang konflik */
+.reminder-card ul {
+    list-style: none !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+}
+
+/* Item pengumuman — override SEMUA style lama */
+.reminder-card ul li.announcement-item,
+ul#announcementList li.announcement-item {
+    /* Layout dasar */
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    
+    /* Spacing & sizing */
+    padding: 0.9rem 1rem !important;
+    margin-bottom: 0.8rem !important;
+    gap: 10px !important;
+    
+    /* Visual */
+    background: #fff !important;
+    border-radius: 10px !important;
+    border-left: 5px solid #ff5e62 !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    
+    /* Prevent overflow */
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+    
+    /* Reset transform */
+    transform: none !important;
+    transition: all 0.2s ease !important;
+    
+    /* CRITICAL: Force list-style */
+    list-style: none !important;
+}
+
+.reminder-card ul li.announcement-item:hover {
+    background: #fafafa !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    transform: translateX(2px) !important;
+}
+
+/* Konten kiri (teks pengumuman) */
+.reminder-card ul li.announcement-item .announcement-content,
+ul#announcementList li.announcement-item .announcement-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: block !important;
+    overflow: visible !important;
+}
+
+/* CRITICAL: Teks pengumuman — PAKSA horizontal */
+.reminder-card ul li.announcement-item .announcement-content .text,
+.reminder-card ul li.announcement-item span.text,
+ul#announcementList li.announcement-item .text,
+ul#announcementList li.announcement-item span.text {
+    /* Reset ALL flex properties */
+    display: inline !important;
+    flex: none !important;
+    flex-direction: row !important;
+    
+    /* Typography */
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    line-height: 1.5 !important;
+    color: #1e293b !important;
+    
+    /* Text wrapping */
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: normal !important;
+    
+    /* Spacing */
+    margin: 0 0 6px 0 !important;
+    padding: 0 !important;
+}
+
+/* Meta info container */
+.reminder-card ul li.announcement-item .announcement-meta,
+ul#announcementList li.announcement-item .announcement-meta {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin-top: 6px !important;
+}
+
+/* Waktu */
+.reminder-card ul li.announcement-item .announcement-time,
+ul#announcementList li.announcement-item .announcement-time {
+    font-size: 0.72rem !important;
+    color: #94a3b8 !important;
+    white-space: nowrap !important;
+}
+
+/* Badge status */
+.reminder-card ul li.announcement-item .konfirmasi-count-badge,
+ul#announcementList li.announcement-item .konfirmasi-count-badge {
+    display: inline-block !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    white-space: nowrap !important;
+}
+
+.konfirmasi-count-badge.confirmed {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+}
+
+.konfirmasi-count-badge.pending {
+    background: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+/* Daftar konfirmasi (admin) */
+.reminder-card ul li.announcement-item .konfirmasi-list,
+ul#announcementList li.announcement-item .konfirmasi-list {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    margin-top: 8px !important;
+    align-items: center !important;
+}
+
+.konfirmasi-label {
+    font-size: 0.72rem !important;
+    color: #64748b !important;
+    font-weight: 600 !important;
+}
+
+.konfirmasi-label.belum {
+    color: #f59e0b !important;
+}
+
+.konfirmasi-badge {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    padding: 3px 10px !important;
+    border-radius: 20px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+}
+
+/* Tombol aksi kanan */
+.reminder-card ul li.announcement-item .action-btn-group,
+ul#announcementList li.announcement-item .action-btn-group {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 5px !important;
+    flex-shrink: 0 !important;
+    align-items: flex-end !important;
+    margin-left: 10px !important;
+}
+
+/* Base style untuk semua action-btn */
+.action-btn {
+    display: inline-block !important;
+    padding: 7px 12px !important;
+    border-radius: 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s !important;
+    border: none !important;
+}
+
+/* Tombol konfirmasi */
+.reminder-card ul li.announcement-item .action-btn.check-btn,
+ul#announcementList li.announcement-item .action-btn.check-btn,
+.action-btn.check-btn {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border: none !important;
+    padding: 7px 12px !important;
+    border-radius: 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    white-space: nowrap !important;
+    transition: all 0.2s !important;
+}
+
+.reminder-card ul li.announcement-item .action-btn.check-btn:hover,
+ul#announcementList li.announcement-item .action-btn.check-btn:hover,
+.action-btn.check-btn:hover {
+    background: #10b981 !important;
+    color: white !important;
+    transform: scale(1.05) !important;
+}
+
+.action-btn.confirmed-btn {
+    background: #f0fdf4 !important;
+    color: #86efac !important;
+    cursor: not-allowed !important;
+    opacity: 0.7 !important;
+}
+
+.action-btn.confirmed-btn:hover {
+    transform: none !important;
+    background: #f0fdf4 !important;
+}
+
+/* Tombol Konfirmasi */
+.reminder-card ul li.announcement-item .action-btn.confirm-item-btn,
+ul#announcementList li.announcement-item .action-btn.confirm-item-btn {
+    background: rgba(239,68,68,0.1) !important;
+    color: #00ff00 !important;
+    border: none !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+/* Tombol Konfirmasi - PAKSA MUNCUL */
+.action-btn.confirm-item-btn,
+.reminder-card ul li.announcement-item .action-btn.confirm-item-btn,
+ul#announcementList li.announcement-item .action-btn.confirm-item-btn,
+button.confirm-item-btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #10b981 !important;
+    border: none !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    min-width: 90px !important;
+}
+
+.action-btn.confirm-item-btn:hover,
+.reminder-card ul li.announcement-item .action-btn.confirm-item-btn:hover,
+ul#announcementList li.announcement-item .action-btn.confirm-item-btn:hover,
+button.confirm-item-btn:hover {
+    background: #10b981 !important;
+    color: white !important;
+    transform: scale(1.05) !important;
+}
+
+/* Tombol Konfirmasi - Status Sudah Dikonfirmasi */
+.action-btn.confirm-item-btn.confirmed,
+.reminder-card ul li.announcement-item .action-btn.confirm-item-btn.confirmed,
+ul#announcementList li.announcement-item .action-btn.confirm-item-btn.confirmed,
+button.confirm-item-btn.confirmed {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #059669 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+.action-btn.confirm-item-btn.confirmed:hover,
+.reminder-card ul li.announcement-item .action-btn.confirm-item-btn.confirmed:hover,
+ul#announcementList li.announcement-item .action-btn.confirm-item-btn.confirmed:hover,
+button.confirm-item-btn.confirmed:hover {
+    transform: none !important;
+    background: rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Tombol hapus */
+.reminder-card ul li.announcement-item .action-btn.delete-item-btn,
+ul#announcementList li.announcement-item .action-btn.delete-item-btn {
+    background: rgba(239,68,68,0.1) !important;
+    color: #ef4444 !important;
+    border: none !important;
+    padding: 6px 10px !important;
+    border-radius: 6px !important;
+    font-size: 0.85rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.reminder-card ul li.announcement-item .action-btn.delete-item-btn:hover,
+ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
+    background: #ef4444 !important;
+    color: white !important;
 }

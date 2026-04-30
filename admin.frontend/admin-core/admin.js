@@ -414,11 +414,13 @@ function initAdminDashboard() {
             try {
                 await addDoc(collection(db, "announcements"), {
                     text: input.value.trim(),
-                    read: false, // Status awal selalu belum dibaca oleh user
+                    confirmedBy: [],          // Array nama petugas yang sudah konfirmasi
+                    createdByAdmin: currentAdminData?.fullname || currentAdminData?.username || "Admin",
                     createdAt: new Date().toISOString()
                 });
                 logActivity(currentAdminData?.username || "Admin", "Operasional", `Menambah pengumuman: ${input.value.trim()}`);
                 input.value = "";
+                Swal.fire({ icon: 'success', title: 'Pengumuman Dikirim', text: 'Petugas akan melihat dan mengonfirmasi pengumuman ini.', timer: 1800, showConfirmButton: false });
             } catch (err) { console.error(err); }
         });
     }
@@ -1124,19 +1126,67 @@ function renderAdminActivities(activities) {
 
 /**
  * Merender daftar pengumuman di panel admin
+ * Menampilkan teks, waktu, siapa saja yang sudah konfirmasi, dan tombol hapus
  */
 function renderAdminAnnouncements(announcements) {
     const list = document.getElementById("adminAnnouncementList");
     if (!list) return;
-    list.innerHTML = announcements.map(item => `
-        <li style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid #f1f5f9; background:${item.read ? '#f8fafc' : 'transparent'};">
-            <span style="flex:1; font-size:0.85rem; ${item.read ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b;'}">${item.text}</span>
-            <div style="display:flex; gap:5px;">
-                <button onclick="toggleAdminAnnouncement('${item.id}', ${item.read})" style="background:${item.read ? '#64748b' : '#ef4444'}; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">${item.read ? '↩' : '✔'}</button>
-                <button onclick="deleteAdminAnnouncement('${item.id}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:0.75rem;">✕</button>
-            </div>
-        </li>
-    `).join('');
+
+    if (announcements.length === 0) {
+        list.innerHTML = `<li style="text-align:center; color:#94a3b8; font-size:0.85rem; padding:1.5rem; list-style:none;">
+            📢 Belum ada pengumuman.
+        </li>`;
+        return;
+    }
+
+    list.innerHTML = announcements.map(item => {
+        const confirmedBy = item.confirmedBy || [];
+        const jumlah = confirmedBy.length;
+
+        // Format waktu
+        let waktuStr = '';
+        if (item.createdAt) {
+            const d = new Date(item.createdAt);
+            waktuStr = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        const konfirmasiHtml = jumlah > 0
+            ? `<div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;">
+                <span style="font-size:0.72rem; color:#64748b; font-weight:600;">✅ Dikonfirmasi:</span>
+                ${confirmedBy.map(n => `
+                    <span style="background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:20px; font-size:0.72rem; font-weight:600;">${n}</span>
+                `).join('')}
+               </div>`
+            : `<div style="margin-top:6px;">
+                <span style="font-size:0.72rem; color:#f59e0b; font-weight:600;">⏳ Belum ada yang mengonfirmasi</span>
+               </div>`;
+
+        const statusBadge = jumlah > 0
+            ? `<span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; white-space:nowrap;">✅ ${jumlah} konfirmasi</span>`
+            : `<span style="background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; white-space:nowrap;">⏳ Menunggu</span>`;
+
+        return `
+            <li style="padding:12px; border-bottom:1px solid #f1f5f9; border-left:4px solid ${jumlah > 0 ? '#10b981' : '#f59e0b'}; background:${jumlah > 0 ? '#f0fdf4' : '#fffbeb'}; margin-bottom:6px; border-radius:0 8px 8px 0;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                    <div style="flex:1;">
+                        <p style="margin:0 0 4px 0; font-size:0.9rem; font-weight:600; color:#1e293b;">${item.text}</p>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span style="font-size:0.72rem; color:#94a3b8;">🕐 ${waktuStr}</span>
+                            ${item.createdByAdmin ? `<span style="font-size:0.72rem; color:#6366f1; font-weight:600;">oleh ${item.createdByAdmin}</span>` : ''}
+                            ${statusBadge}
+                        </div>
+                        ${konfirmasiHtml}
+                    </div>
+                    <button onclick="deleteAdminAnnouncement('${item.id}')" 
+                        style="background:rgba(239,68,68,0.1); color:#ef4444; border:1px solid rgba(239,68,68,0.2); padding:5px 10px; border-radius:6px; cursor:pointer; font-size:0.8rem; flex-shrink:0; transition:all 0.2s;"
+                        onmouseover="this.style.background='#ef4444'; this.style.color='white';"
+                        onmouseout="this.style.background='rgba(239,68,68,0.1)'; this.style.color='#ef4444';">
+                        🗑️
+                    </button>
+                </div>
+            </li>
+        `;
+    }).join('');
 }
 
 /**
@@ -1168,12 +1218,8 @@ window.deleteAdminActivity = async function(id) {
     if (res.isConfirmed) await deleteDoc(doc(db, "daily_activities", id));
 };
 
-window.toggleAdminAnnouncement = async function(id, currentStatus) {
-    await updateDoc(doc(db, "announcements", id), { read: !currentStatus });
-};
-
 window.deleteAdminAnnouncement = async function(id) {
-    const res = await Swal.fire({ title: 'Hapus Pengumuman?', icon: 'warning', showCancelButton: true });
+    const res = await Swal.fire({ title: 'Hapus Pengumuman?', text: 'Pengumuman ini akan dihapus permanen.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonText: 'Batal' });
     if (res.isConfirmed) await deleteDoc(doc(db, "announcements", id));
 };
 

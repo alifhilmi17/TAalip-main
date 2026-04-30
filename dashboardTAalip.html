@@ -448,22 +448,26 @@
             </button>
           </div>
           <div class="widget-card-body">
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem;">
-              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
-                <p style="margin: 0; font-size: 0.6rem; opacity: 0.9;">💵 Pemasukan</p>
-                <p id="finance-income" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem;">
+              <div class="qa-square-btn" style="background: rgba(255,255,255,0.15); cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">💵</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Pemasukan</p>
+                <p id="finance-income" style="font-size: 0.85rem; font-weight: 700; opacity: 1; margin-top: 2px;">Rp 0</p>
               </div>
-              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
-                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💸 Pengeluaran</p>
-                <p id="finance-expense" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+              <div class="qa-square-btn" style="background: rgba(255,255,255,0.15); cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">💸</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Pengeluaran</p>
+                <p id="finance-expense" style="font-size: 0.85rem; font-weight: 700; opacity: 1; margin-top: 2px;">Rp 0</p>
               </div>
-              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
-                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">💎 Saldo Bersih</p>
-                <p id="finance-balance" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">Rp 0</p>
+              <div class="qa-square-btn" style="background: rgba(255,255,255,0.15); cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">💎</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Saldo Bersih</p>
+                <p id="finance-balance" style="font-size: 0.85rem; font-weight: 700; opacity: 1; margin-top: 2px;">Rp 0</p>
               </div>
-              <div class="widget-square-box" style="background: rgba(255,255,255,0.15); border-radius: 10px; backdrop-filter: blur(10px);">
-                <p style="margin: 0; font-size: 0.8rem; opacity: 0.9;">📊 Transaksi</p>
-                <p id="finance-transactions" style="margin: 8px 0 0 0; font-size: 1.3rem; font-weight: 700;">0</p>
+              <div class="qa-square-btn" style="background: rgba(255,255,255,0.15); cursor: default;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                <p style="font-size: 1.1rem; line-height: 1;">📊</p>
+                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95;">Transaksi</p>
+                <p id="finance-transactions" style="font-size: 0.85rem; font-weight: 700; opacity: 1; margin-top: 2px;">0 Transaksi</p>
               </div>
             </div>
           </div>
@@ -503,22 +507,33 @@
         <!-- ===== PENGUMUMAN ===== -->
         <div class="reminder-card animate__animated animate__fadeInUp">
           <h3>📢 Pengumuman</h3>
+          <!-- Badge jumlah belum dikonfirmasi -->
+          <div id="announcementUnreadBadge" style="display:none; padding: 0.5rem 1.2rem; background:#fff7ed; border-bottom:1px solid #fed7aa;">
+            <span style="font-size:0.8rem; font-weight:600; color:#c2410c;">
+              🔔 <span id="announcementUnreadCount">0</span> pengumuman belum dikonfirmasi
+            </span>
+          </div>
           <ul id="announcementList">
             <!-- Diisi via JavaScript -->
           </ul>
+          <!-- Form input hanya tampil untuk admin (disembunyikan via JS) -->
           <form
             id="addAnnouncementForm"
             class="add-form"
-            style="margin-top: 1rem"
+            style="margin-top: 1rem; display: none;"
           >
             <input
               type="text"
               id="announcementInput"
-              placeholder="Tambah pengumuman..."
+              placeholder="Ketik pengumuman baru..."
               required
             />
-            <button type="submit">Tambah</button>
+            <button type="submit">➕</button>
           </form>
+          <!-- Pesan untuk petugas -->
+          <p id="announcementPetugasNote" style="display:none; padding:0.8rem 1.2rem; font-size:0.8rem; color:#64748b; font-style:italic;">
+            ✅ Konfirmasi pengumuman untuk memberi tahu admin bahwa Anda sudah membaca.
+          </p>
         </div>
 
         <!-- ===== JADWAL KEGIATAN ===== -->

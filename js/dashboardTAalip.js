@@ -17,9 +17,11 @@ import {
     query, 
     orderBy,
     limit,
-    getDocs
+    getDocs,
+    arrayUnion
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { db } from "../firebase.component/firebase-init.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { db, auth } from "../firebase.component/firebase-init.js";
 
 // =========================================
 // 1. PENGENDALI SIDEBAR & NAVIGASI
@@ -53,6 +55,42 @@ let state = {
 
 let eggChartInstance = null;
 let financeChartInstance = null;
+
+// =========================================
+// 2b. STATE PENGGUNA (ROLE & NAMA)
+// =========================================
+let currentUserName = "Pengguna";
+let currentUserRole = "petugas"; // 'admin' atau 'petugas'
+
+// Deteksi role pengguna saat halaman dimuat
+document.addEventListener("DOMContentLoaded", () => {
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+            const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js");
+            // Cek koleksi admin terlebih dahulu
+            const adminSnap = await getDoc(doc(db, "admin", user.uid));
+            if (adminSnap.exists()) {
+                currentUserRole = "admin";
+                currentUserName = adminSnap.data().fullname || adminSnap.data().username || "Admin";
+            } else {
+                const userSnap = await getDoc(doc(db, "user", user.uid));
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    currentUserName = userData.fullname || user.displayName || "Petugas";
+                    const role = (userData.role || 'petugas').trim().toLowerCase();
+                    currentUserRole = (role === 'admin' || role === 'administrator') ? 'admin' : 'petugas';
+                }
+            }
+        } catch (err) {
+            console.warn("Gagal deteksi role:", err);
+        }
+        // Tampilkan/sembunyikan form input pengumuman berdasarkan role
+        applyAnnouncementRoleUI();
+        // Re-render pengumuman agar tombol konfirmasi muncul dengan nama yang benar
+        renderAnnouncements();
+    });
+});
 
 // =========================================
 // 3. INISIALISASI & LISTENERS
@@ -264,42 +302,216 @@ window.deleteActivityItem = async function(id) {
 // =========================================
 // 6. MODULE: ANNOUNCEMENTS
 // =========================================
+
+/**
+ * Terapkan UI berdasarkan role: admin bisa input, petugas hanya lihat & konfirmasi
+ */
+function applyAnnouncementRoleUI() {
+    const form = document.getElementById('addAnnouncementForm');
+    const note = document.getElementById('announcementPetugasNote');
+    if (currentUserRole === 'admin') {
+        if (form) form.style.display = 'flex';
+        if (note) note.style.display = 'none';
+    } else {
+        if (form) form.style.display = 'none';
+        if (note) note.style.display = 'block';
+    }
+}
+
+/**
+ * Render daftar pengumuman dengan logika berbeda per role:
+ * - Admin: lihat semua + status konfirmasi + hapus
+ * - Petugas: lihat semua + tombol konfirmasi (jika belum konfirmasi)
+ */
 function renderAnnouncements() {
     const list = document.getElementById("announcementList");
     if (!list) return;
     list.innerHTML = "";
-    state.announcements.forEach((item) => {
+
+    console.log('🔍 DEBUG Announcements - Role:', currentUserRole, 'Name:', currentUserName);
+    console.log('🔍 Total pengumuman:', state.announcements.length);
+
+    // Hitung yang belum dikonfirmasi oleh user ini
+    let belumKonfirmasi = 0;
+
+    if (state.announcements.length === 0) {
+        list.innerHTML = `<li style="text-align:center; color:#94a3b8; font-size:0.85rem; padding:1.5rem; background:transparent; border:none; list-style:none;">
+            📢 Belum ada pengumuman.
+        </li>`;
+        updateUnreadBadge(0);
+        return;
+    }
+
+    state.announcements.forEach((item, index) => {
+        console.log(`🔍 Processing pengumuman ${index + 1}:`, item.text);
+        
         const li = document.createElement("li");
         li.className = "announcement-item";
-        if (item.read) {
-            li.style.opacity = "0.7";
-            li.style.background = "#f1f3f5";
-        }
-        li.innerHTML = `
-            <div class="announcement-content">
-                <div class="announcement-details">
-                    <span class="text" ${item.read ? 'style="text-decoration:line-through; color:#888;"' : ''}>${item.text}</span>
+
+        const confirmedBy = item.confirmedBy || [];
+        const sudahKonfirmasi = confirmedBy.includes(currentUserName);
+        const jumlahKonfirmasi = confirmedBy.length;
+
+        console.log('   - Confirmed by:', confirmedBy);
+        console.log('   - Sudah konfirmasi:', sudahKonfirmasi);
+        console.log('   - Current role:', currentUserRole);
+
+        if (currentUserRole === 'admin') {
+            // ===== TAMPILAN ADMIN =====
+            console.log('   - Rendering ADMIN view');
+            const konfirmasiInfo = jumlahKonfirmasi > 0
+                ? `<div class="konfirmasi-list">
+                    <span class="konfirmasi-label">✅ Dikonfirmasi oleh:</span>
+                    ${confirmedBy.map(n => `<span class="konfirmasi-badge">${n}</span>`).join('')}
+                   </div>`
+                : `<div class="konfirmasi-list">
+                    <span class="konfirmasi-label belum">⏳ Belum ada yang mengonfirmasi</span>
+                   </div>`;
+
+            li.innerHTML = `
+                <div class="announcement-content" style="flex:1;">
+                    <span class="text">${item.text}</span>
+                    <div class="announcement-meta">
+                        <span class="announcement-time">${formatWaktuPengumuman(item.createdAt)}</span>
+                        <span class="konfirmasi-count-badge ${jumlahKonfirmasi > 0 ? 'confirmed' : 'pending'}">
+                            ${jumlahKonfirmasi > 0 ? `✅ ${jumlahKonfirmasi} konfirmasi` : '⏳ Menunggu'}
+                        </span>
+                    </div>
+                    ${konfirmasiInfo}
                 </div>
-            </div>
-            <div class="action-btn-group">
-                <button class="action-btn check-btn" onclick="toggleAnnouncementRead('${item.id}', ${item.read})">${item.read ? '↩' : '✔'}</button>
-                <button class="action-btn delete-item-btn" onclick="deleteAnnouncementItem('${item.id}')">✕</button>
-            </div>
-        `;
+                <div class="action-btn-group">
+                    <button class="action-btn delete-item-btn" title="Hapus pengumuman" onclick="deleteAnnouncementItem('${item.id}')">✕</button>
+                </div>
+            `;
+        } else {
+            // ===== TAMPILAN PETUGAS =====
+            console.log('   - Rendering PETUGAS view');
+            if (!sudahKonfirmasi) belumKonfirmasi++;
+
+            li.style.background = sudahKonfirmasi ? '#f0fdf4' : '#fff';
+            li.style.borderLeft = sudahKonfirmasi ? '4px solid #10b981' : '4px solid #ff5e62';
+            li.style.display = 'flex';
+            li.style.justifyContent = 'space-between';
+            li.style.alignItems = 'center';
+            li.style.padding = '1rem';
+            li.style.marginBottom = '0.8rem';
+            li.style.borderRadius = '10px';
+
+            // Buat elemen konten
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'announcement-content';
+            contentDiv.style.flex = '1';
+            contentDiv.innerHTML = `
+                <span class="text" style="${sudahKonfirmasi ? 'color:#16a34a;' : 'color:#333;'}">${item.text}</span>
+                <div class="announcement-meta" style="display:flex; gap:10px; margin-top:8px; align-items:center;">
+                    <span class="announcement-time" style="font-size:0.72rem; color:#94a3b8;">${formatWaktuPengumuman(item.createdAt)}</span>
+                    ${sudahKonfirmasi
+                        ? `<span class="konfirmasi-count-badge confirmed" style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;">✅ Sudah dikonfirmasi</span>`
+                        : `<span class="konfirmasi-count-badge pending" style="background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;">⏳ Belum dikonfirmasi</span>`
+                    }
+                </div>
+            `;
+
+            // Buat button group
+            const btnGroup = document.createElement('div');
+            btnGroup.className = 'action-btn-group';
+            btnGroup.style.display = 'flex';
+            btnGroup.style.flexDirection = 'column';
+            btnGroup.style.gap = '5px';
+            btnGroup.style.marginLeft = '10px';
+            btnGroup.style.flexShrink = '0';
+
+            // Buat tombol konfirmasi
+            const confirmBtn = document.createElement('button');
+            confirmBtn.className = sudahKonfirmasi 
+                ? 'action-btn confirm-item-btn confirmed' 
+                : 'action-btn confirm-item-btn';
+            confirmBtn.textContent = sudahKonfirmasi ? '✔ Sudah' : '✔ Konfirmasi';
+            confirmBtn.title = sudahKonfirmasi ? 'Sudah dikonfirmasi' : 'Konfirmasi pengumuman ini';
+            confirmBtn.style.display = 'block'; // PAKSA MUNCUL
+            confirmBtn.style.visibility = 'visible'; // PAKSA TERLIHAT
+            
+            if (sudahKonfirmasi) {
+                confirmBtn.disabled = true;
+            } else {
+                confirmBtn.onclick = () => {
+                    console.log('🔍 Tombol konfirmasi diklik untuk:', item.id);
+                    konfirmasiPengumuman(item.id);
+                };
+            }
+
+            console.log('   - Tombol dibuat:', confirmBtn.textContent, '| Disabled:', confirmBtn.disabled);
+
+            btnGroup.appendChild(confirmBtn);
+            li.appendChild(contentDiv);
+            li.appendChild(btnGroup);
+        }
+
         list.appendChild(li);
+        console.log('   - Item ditambahkan ke list');
     });
+
+    console.log('🔍 Total belum konfirmasi:', belumKonfirmasi);
+    updateUnreadBadge(belumKonfirmasi);
 }
 
+/** Update badge jumlah pengumuman belum dikonfirmasi */
+function updateUnreadBadge(count) {
+    const badge = document.getElementById('announcementUnreadBadge');
+    const countEl = document.getElementById('announcementUnreadCount');
+    if (!badge || !countEl) return;
+    if (currentUserRole === 'petugas' && count > 0) {
+        badge.style.display = 'block';
+        countEl.textContent = count;
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+/** Format waktu pengumuman */
+function formatWaktuPengumuman(isoString) {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+/**
+ * Petugas mengonfirmasi pengumuman — nama petugas ditambahkan ke array confirmedBy
+ */
+window.konfirmasiPengumuman = async function(id) {
+    if (!currentUserName || currentUserName === "Pengguna") {
+        Swal.fire('Tunggu', 'Data pengguna belum dimuat. Coba lagi sebentar.', 'info');
+        return;
+    }
+    try {
+        await updateDoc(doc(db, "announcements", id), {
+            confirmedBy: arrayUnion(currentUserName)
+        });
+        Swal.fire({
+            icon: 'success',
+            title: 'Dikonfirmasi!',
+            text: `Pengumuman telah dikonfirmasi atas nama "${currentUserName}".`,
+            timer: 1800,
+            showConfirmButton: false
+        });
+    } catch (err) {
+        Swal.fire("Error", "Gagal mengonfirmasi: " + err.message, "error");
+    }
+};
+
+// Form input pengumuman — hanya admin yang bisa submit (form disembunyikan untuk petugas)
 const announcementForm = document.getElementById("addAnnouncementForm");
 if (announcementForm) {
     announcementForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+        if (currentUserRole !== 'admin') return; // Guard tambahan
         const input = document.getElementById("announcementInput");
         if (!input.value.trim()) return;
         try {
             await addDoc(collection(db, "announcements"), {
                 text: input.value.trim(),
-                read: false,
+                confirmedBy: [],          // Array nama petugas yang sudah konfirmasi
+                createdByAdmin: currentUserName,
                 createdAt: new Date().toISOString()
             });
             input.value = "";
@@ -307,12 +519,19 @@ if (announcementForm) {
     });
 }
 
-window.toggleAnnouncementRead = async function(id, currentStatus) {
-    await updateDoc(doc(db, "announcements", id), { read: !currentStatus });
-};
-
 window.deleteAnnouncementItem = async function(id) {
-    await deleteDoc(doc(db, "announcements", id));
+    if (currentUserRole !== 'admin') return;
+    const res = await Swal.fire({
+        title: 'Hapus Pengumuman?',
+        text: 'Pengumuman ini akan dihapus permanen.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonText: 'Batal'
+    });
+    if (res.isConfirmed) {
+        await deleteDoc(doc(db, "announcements", id));
+    }
 };
 
 // =========================================================

@@ -618,3 +618,247 @@
         gap: 1rem;
     }
 }
+
+
+/* =========================================================
+   📌 HEADER ACTIONS (TOMBOL GANDA DI HEADER)
+========================================================= */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* =========================================================
+   📤 TOMBOL CATAT PEMAKAIAN (ORANYE)
+========================================================= */
+/* Tombol oranye untuk akses cepat mencatat pemakaian pakan harian */
+.btn-pemakaian {
+    background: white;
+    color: #f97316;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-pemakaian:hover {
+    background: #fff7ed;
+    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+    transform: translateY(-3px);
+}
+
+/* =========================================================
+   📅 KARTU STATISTIK — PEMAKAIAN BULAN INI (BIRU MUDA)
+========================================================= */
+.pakan-stats .stat-card:nth-child(4) {
+    border-left-color: #0ea5e9;
+}
+
+.pakan-stats .stat-icon.stat-bulan {
+    background: #e0f2fe;
+    color: #0ea5e9;
+}
+
+/* =========================================================
+   🗂️ TAB NAVIGASI
+========================================================= */
+.tab-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 0;
+}
+
+.tab-btn {
+    background: transparent;
+    border: none;
+    padding: 12px 24px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.3s ease;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-btn:hover {
+    color: #10b981;
+    background: #f0fdf4;
+}
+
+.tab-btn.active {
+    color: #059669;
+    border-bottom-color: #10b981;
+    background: #f0fdf4;
+}
+
+/* =========================================================
+   🃏 KARTU TABEL PEMAKAIAN (AKSEN ORANYE)
+========================================================= */
+.pemakaian-card {
+    border-top-color: #f97316 !important;
+}
+
+.pemakaian-card .table-header h3 {
+    color: #c2410c;
+}
+
+/* =========================================================
+   📊 RINGKASAN PEMAKAIAN DI ATAS TABEL
+========================================================= */
+.pemakaian-summary {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 20px;
+}
+
+.pemakaian-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #7c3aed;
+}
+
+.pemakaian-summary-item strong {
+    color: #f97316;
+    font-size: 1.05rem;
+}
+
+/* =========================================================
+   🏷️ BADGE "DICATAT OLEH"
+========================================================= */
+/* Menampilkan nama dan role pencatat data */
+.dicatat-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.dicatat-admin {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+.dicatat-petugas {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+/* =========================================================
+   📦 INFO SISA STOK DI MODAL PEMAKAIAN
+========================================================= */
+.sisa-stok-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+.sisa-label {
+    color: #374151;
+    font-weight: 500;
+}
+
+.sisa-value {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #059669;
+}
+
+/* =========================================================
+   🪟 MODAL PEMAKAIAN — HEADER ORANYE
+========================================================= */
+.modal-pemakaian {
+    border-top-color: #f97316 !important;
+}
+
+.modal-header-pemakaian h3 {
+    color: #c2410c;
+}
+
+/* =========================================================
+   💾 TOMBOL SIMPAN PEMAKAIAN (ORANYE)
+========================================================= */
+.btn-pemakaian-submit {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-pemakaian-submit:hover {
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+}
+
+/* =========================================================
+   📥 TOMBOL EKSPOR CSV ORANYE (TAB PEMAKAIAN)
+========================================================= */
+.btn-export-orange {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3) !important;
+}
+
+.btn-export-orange:hover {
+    box-shadow: 0 8px 25px rgba(249, 115, 22, 0.4) !important;
+}
+
+/* =========================================================
+   📱 RESPONSIF — LAYAR KECIL (≤768px)
+========================================================= */
+@media (max-width: 768px) {
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .btn-pemakaian,
+    .btn-primary {
+        justify-content: center;
+    }
+
+    .tab-nav {
+        overflow-x: auto;
+    }
+
+    .pemakaian-summary {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
