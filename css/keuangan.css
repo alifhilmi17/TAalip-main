@@ -130,9 +130,9 @@
 /* =========================================================
    🔵 AKSEN KARTU DATA TABEL (GARIS ATAS BIRU)
 ========================================================= */
-/* Garis biru di bagian atas kartu tabel untuk memberi identitas visual berbeda */
+/* Garis hijau di bagian atas kartu tabel untuk memberi identitas visual berbeda */
 .finance-data-card {
-    border-top: 5px solid #3b82f6;
+    border-top: 5px solid #10b981;
 }
 
 /* =========================================================
@@ -548,6 +548,17 @@
 }
 
 /* =========================================================
+   🎨 UTILITAS WARNA TEKS KOLOM JUMLAH
+ ========================================================= */
+.text-income {
+    color: #10b981 !important;
+}
+
+.text-expense {
+    color: #ef4444 !important;
+}
+
+/* =========================================================
    ✏️ TOMBOL EDIT BARIS TABEL (BIRU MUDA)
 ========================================================= */
 /* Tombol kecil biru muda di setiap baris untuk membuka form edit transaksi */
@@ -605,28 +616,152 @@
 }
 
 /* =========================================================
-   📥 TOMBOL EKSPOR CSV
+   🔍 FILTER & PENCARIAN MODERN
 ========================================================= */
-/* Tombol biru bergradien untuk mengunduh riwayat keuangan dalam format CSV */
-.btn-export {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    font-family: 'Poppins', sans-serif;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+.table-header-modern {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 2px dashed #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
-/* Tombol ekspor naik dan bayangan menguat saat hover */
-.btn-export:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+.table-filters {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8fafc;
+    padding: 8px 15px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.filter-group input[type="date"] {
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: #475569;
+    outline: none;
+}
+
+.search-group {
+    display: flex;
+    gap: 10px;
+}
+
+.search-group input {
+    padding: 10px 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 30px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    width: 220px;
+    background: #f8fafc;
+    transition: all 0.3s;
+}
+
+.search-group input:focus {
+    background: #fff;
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    outline: none;
+}
+
+/* =========================================================
+   ⏳ LOADING STATES (SPINNER & SKELETON)
+========================================================= */
+/* Loader dalam tombol */
+.loader {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ffffff;
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: none;
+    animation: rotation 1s linear infinite;
+    margin-left: 8px;
+}
+
+@keyframes rotation {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-primary.loading .btn-text { display: none; }
+.btn-primary.loading .loader { display: inline-block; }
+
+/* Skeleton Loading untuk Tabel */
+.table-loader-container {
+    display: none;
+    padding: 20px;
+}
+
+.skeleton-row {
+    height: 45px;
+    background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* =========================================================
+   💬 EMPTY STATE MODERN
+========================================================= */
+.empty-state-modern {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #94a3b8;
+    background: #f8fafc;
+    border-radius: 16px;
+    margin-top: 20px;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* =========================================================
+   🛠️ UTILITY CLASSES
+========================================================= */
+.text-right { text-align: right !important; }
+.text-center { text-align: center !important; }
+.border-none { border: none !important; padding: 0 !important; margin-bottom: 20px !important; }
+.form-label { font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.95rem; display: block; }
+
+/* 📱 RESPONSIF — LAYAR KECIL */
+@media (max-width: 768px) {
+    .table-header-modern {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .table-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-group input {
+        width: 100%;
+    }
 }

@@ -104,16 +104,12 @@
         <header class="page-header animate__animated animate__fadeInDown">
             <div class="header-text">
                 <h2>🥬 Manajemen Stok Pakan</h2>
-                <p>Kelola data masuk dan pemakaian pakan ternak</p>
+                <p>Kelola data masuk dan pemakaian pakan ternak harian</p>
             </div>
             <div class="header-actions">
-                <!-- Tombol Catat Pemakaian — akses cepat untuk petugas -->
-                <button class="btn-pemakaian" onclick="openPemakaianModal()" title="Catat pemakaian pakan harian">
-                    📤 Catat Pemakaian
-                </button>
-                <!-- Tombol Tambah Stok — untuk admin/restock -->
-                <button class="btn-primary animate__animated animate__pulse animate__infinite" id="btnTambahStok" onclick="openPakanModal()">
-                    ➕ Tambah Stok
+                <!-- Tombol Utama: Membuka modal pilihan tipe transaksi -->
+                <button class="btn-primary animate__animated animate__pulse animate__infinite" onclick="openChoiceModal()">
+                    ➕ Catat Transaksi Pakan
                 </button>
             </div>
         </header>
@@ -153,18 +149,18 @@
         <!-- ===== TAB NAVIGASI ===== -->
         <div class="tab-nav animate__animated animate__fadeInUp">
             <button class="tab-btn active" id="tabRiwayat" onclick="switchTab('riwayat')">
-                📋 Riwayat Stok
+                📋 Riwayat Stok Pakan
             </button>
             <button class="tab-btn" id="tabPemakaian" onclick="switchTab('pemakaian')">
                 📤 Riwayat Pemakaian
             </button>
         </div>
 
-        <!-- ===== TABEL RIWAYAT STOK (semua data) ===== -->
+        <!-- ===== TABEL RIWAYAT STOK (FILTERED BY MASUK) ===== -->
         <section class="data-pakan-section animate__animated animate__fadeInUp" id="sectionRiwayat">
             <div class="table-container shadow-card">
                 <div class="table-header">
-                    <h3>📋 Riwayat Stok Pakan</h3>
+                    <h3>📥 Riwayat Stok Pakan (Masuk)</h3>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <label for="filterBulanPakan" style="font-weight: 600;">Filter Bulan:</label>
                         <input type="month" id="filterBulanPakan" onchange="filterData()"
@@ -174,7 +170,7 @@
                             style="padding: 8px 12px; border-radius: 8px; border: none; background: #e2e8f0; cursor: pointer; font-family: 'Poppins', sans-serif;">
                             Semua Data
                         </button>
-                        <button class="btn-export" onclick="downloadLaporanCSV('semua')" title="Unduh Laporan Data Pakan">
+                        <button class="btn-export" onclick="downloadLaporanCSV('masuk')" title="Unduh Laporan Pakan Masuk">
                             📥 Ekspor CSV
                         </button>
                     </div>
@@ -185,7 +181,6 @@
                             <tr>
                                 <th>Tanggal</th>
                                 <th>Jenis Pakan</th>
-                                <th>Tipe</th>
                                 <th>Jumlah (Kg)</th>
                                 <th>Keterangan</th>
                                 <th>Dicatat Oleh</th>
@@ -198,17 +193,17 @@
                     </table>
                     <div id="emptyStatePakan" class="empty-state" style="display: none;">
                         <span class="empty-icon">📂</span>
-                        <p>Belum ada data pakan. Silakan tambah data baru!</p>
+                        <p>Belum ada data pakan masuk.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ===== TABEL RIWAYAT PEMAKAIAN (hanya keluar) ===== -->
+        <!-- ===== TABEL RIWAYAT PEMAKAIAN (FILTERED BY KELUAR) ===== -->
         <section class="data-pakan-section animate__animated animate__fadeInUp" id="sectionPemakaian" style="display: none;">
             <div class="table-container shadow-card pemakaian-card">
                 <div class="table-header">
-                    <h3>📤 Riwayat Pemakaian Pakan</h3>
+                    <h3>📤 Riwayat Pemakaian Pakan (Keluar)</h3>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <label for="filterBulanPemakaian" style="font-weight: 600;">Filter Bulan:</label>
                         <input type="month" id="filterBulanPemakaian" onchange="filterPemakaian()"
@@ -218,15 +213,10 @@
                             style="padding: 8px 12px; border-radius: 8px; border: none; background: #e2e8f0; cursor: pointer; font-family: 'Poppins', sans-serif;">
                             Semua Data
                         </button>
-                        <button class="btn-export btn-export-orange" onclick="downloadLaporanCSV('pemakaian')" title="Unduh Laporan Pemakaian">
+                        <button class="btn-export btn-export-orange" onclick="downloadLaporanCSV('keluar')" title="Unduh Laporan Pemakaian">
                             📥 Ekspor CSV
                         </button>
                     </div>
-                </div>
-
-                <!-- Ringkasan total pemakaian di tab ini -->
-                <div class="pemakaian-summary" id="pemakaianSummary">
-                    <!-- Diisi oleh JS -->
                 </div>
 
                 <div class="table-responsive">
@@ -235,7 +225,7 @@
                             <tr>
                                 <th>Tanggal</th>
                                 <th>Jenis Pakan</th>
-                                <th>Jumlah Terpakai (Kg)</th>
+                                <th>Jumlah (Kg)</th>
                                 <th>Keterangan</th>
                                 <th>Dicatat Oleh</th>
                                 <th style="text-align: center;">Aksi</th>
@@ -255,7 +245,36 @@
 
     </main>
 
-    <!-- ========================= MODAL TAMBAH STOK / EDIT ========================== -->
+    <!-- ========================= MODAL PILIHAN (CHOICE MODAL) ========================== -->
+    <div id="choiceModal" class="modal">
+        <div class="modal-content choice-content animate__animated animate__fadeInUp">
+            <div class="modal-header">
+                <h3>Pilih Tipe Transaksi Pakan</h3>
+                <button type="button" class="close-btn" onclick="closeChoiceModal()">&times;</button>
+            </div>
+            <div class="choice-body">
+                <p class="choice-desc">Silakan pilih jenis aktivitas pakan yang ingin Anda catat hari ini:</p>
+                <div class="choice-grid">
+                    <button class="btn-choice choice-masuk" onclick="selectTransactionType('Masuk')">
+                        <span class="choice-icon">📥</span>
+                        <div class="choice-text">
+                            <strong>Pakan Masuk</strong>
+                            <span>Penambahan stok (Pembelian / Restock)</span>
+                        </div>
+                    </button>
+                    <button class="btn-choice choice-keluar" onclick="selectTransactionType('Keluar')">
+                        <span class="choice-icon">📤</span>
+                        <div class="choice-text">
+                            <strong>Pakan Keluar</strong>
+                            <span>Pemakaian stok (Konsumsi Harian Ayam)</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= MODAL FORM UTAMA (STOK & PEMAKAIAN) ========================== -->
     <div id="pakanModal" class="modal">
         <div class="modal-content animate__animated animate__zoomIn">
             <div class="modal-header">
@@ -299,53 +318,6 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" onclick="closePakanModal()">Batal</button>
                     <button type="submit" class="btn-primary">💾 Simpan Data</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ========================= MODAL CATAT PEMAKAIAN ========================== -->
-    <div id="pemakaianModal" class="modal">
-        <div class="modal-content modal-pemakaian animate__animated animate__zoomIn">
-            <div class="modal-header modal-header-pemakaian">
-                <h3 id="modalTitlePemakaian">📤 Catat Pemakaian Pakan</h3>
-                <button type="button" class="close-btn" onclick="closePemakaianModal()">&times;</button>
-            </div>
-            <form id="pemakaianForm" onsubmit="savePemakaianData(event)">
-                <input type="hidden" id="pemakaianId">
-
-                <div class="form-group">
-                    <label for="tglPemakaian">Tanggal Pemakaian</label>
-                    <input type="date" id="tglPemakaian" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="jenisPakanPemakaian">Jenis / Nama Pakan</label>
-                    <input type="text" id="jenisPakanPemakaian"
-                        placeholder="Contoh: Konsentrat BP11, Jagung Giling" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="jumlahPemakaian">Jumlah Terpakai (Kg)</label>
-                    <input type="number" id="jumlahPemakaian" min="0.1" step="0.1"
-                        placeholder="Masukkan jumlah dalam Kilogram" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="ketPemakaian">Keterangan</label>
-                    <textarea id="ketPemakaian" rows="3"
-                        placeholder="Contoh: Diberikan ke Kandang A, Pakan pagi dan sore"></textarea>
-                </div>
-
-                <!-- Info sisa stok saat ini -->
-                <div class="sisa-stok-info" id="sisaStokInfo">
-                    <span class="sisa-label">📦 Sisa Stok Saat Ini:</span>
-                    <span class="sisa-value" id="sisaStokInfoValue">— Kg</span>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closePemakaianModal()">Batal</button>
-                    <button type="submit" class="btn-pemakaian-submit">📤 Simpan Pemakaian</button>
                 </div>
             </form>
         </div>

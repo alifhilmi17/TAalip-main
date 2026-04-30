@@ -31,7 +31,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
   </head>
 
   <body>
-    <!-- ===== SIDEBAR NAVIGASI ===== -->
+    <!-- ===== PART 1: NAVIGATION & SIDEBAR ===== -->
     <aside class="sidebar" aria-label="Sidebar Navigasi Utama">
       <div class="sidebar-content">
         <!-- Logo Aplikasi -->
@@ -115,9 +115,9 @@ Pusat kendali manajemen pengguna dan monitoring data global.
       </div>
     </aside>
 
-    <!-- ===== KONTEN UTAMA (MAIN CONTENT) ===== -->
+    <!-- ===== PART 2: MAIN CONTENT AREA ===== -->
     <main class="main-content">
-      <!-- Header Mobile (Hanya muncul di layar kecil) -->
+      <!-- A. Header Mobile (Hanya muncul di layar kecil) -->
       <header class="mobile-header">
         <div class="mobile-logo">🛡️ Admin Panel</div>
         <button
@@ -129,7 +129,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </button>
       </header>
 
-      <!-- Section 1: Hero Banner Welcome -->
+      <!-- B. Section 1: Hero Banner Welcome -->
       <section
         class="welcome-card admin-welcome animate__animated animate__fadeInDown"
       >
@@ -140,7 +140,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </p>
       </section>
 
-      <!-- Section 2: Statistik Global -->
+      <!-- C. Section 2: Statistik Global (Quick Stats) -->
       <section class="quick-stats animate__animated animate__fadeInUp">
         <!-- BARIS 1: Statistik Utama -->
         <div class="stat-card">
@@ -221,13 +221,12 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- ===== FITUR BARU: Info Ayam Sakit (Alert) ===== -->
+      <!-- D. Info Ayam Sakit (Alert Pemberitahuan) -->
       <div id="stat-admin-ayam-sakit" class="admin-ayam-sakit-info" style="display: none; margin: 1rem 2rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; font-weight: 600; color: #92400e;">
         <!-- Diisi oleh JavaScript -->
       </div>
 
-      <!-- ===== GRAFIK ANALITIK ADMIN ===== -->
-      <!-- Section 2c: Tren Produksi & Keuangan Real-time -->
+      <!-- E. Section 2c: Grafik Analitik Admin (Tren Real-time) -->
       <section class="charts-section animate__animated animate__fadeInUp">
         <!-- Grafik Tren Produksi Telur -->
         <div class="chart-container chart-produksi-card">
@@ -330,7 +329,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- ===== FASE 3: SYSTEM HEALTH INDICATORS (ADMIN ONLY) ===== -->
+      <!-- F. Section: System Health Indicators (Admin Only) -->
       <section class="system-health-admin animate__animated animate__fadeInUp" style="margin: 2rem 0;">
         <div class="management-card">
           <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
@@ -392,7 +391,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- ===== FASE 3: COMPREHENSIVE FEED STOCK MANAGEMENT (ADMIN ONLY) ===== -->
+      <!-- G. Section: Comprehensive Feed Stock Management (Admin Only) -->
       <section class="feed-management-admin animate__animated animate__fadeInUp" style="margin: 2rem 0;">
         <div class="management-card">
           <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
@@ -495,7 +494,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- Section 3: Shortcut Modul Fitur -->
+      <!-- H. Section 3: Shortcut Modul Fitur (Akses Cepat) -->
       <section class="modules-grid animate__animated animate__fadeInUp">
         <div class="management-card">
           <div
@@ -597,7 +596,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- Section 4: Tabel Manajemen Pengguna -->
+      <!-- I. Section 4: Tabel Manajemen Pengguna (Otoritas) -->
       <section
         id="userManagementSection"
         class="user-management animate__animated animate__fadeInUp"
@@ -698,7 +697,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- Section 5: Ringkasan Data Peternakan Ayam -->
+      <!-- J. Section 5: Ringkasan Data Peternakan Ayam (Snapshot Tabs) -->
       <section class="snapshot-management animate__animated animate__fadeInUp">
         <div class="management-card">
           <div
@@ -1120,7 +1119,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- Section 6: Manajemen Operasional (Aktivitas, Pengumuman, Jadwal) -->
+      <!-- K. Section 6: Manajemen Operasional (Aktivitas, Pengumuman, Jadwal) -->
       <section
         class="operational-management animate__animated animate__fadeInUp"
         style="margin-top: 2.5rem"
@@ -1385,7 +1384,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
         </div>
       </section>
 
-      <!-- Section 7: Audit Log Aktivitas -->
+      <!-- L. Section 7: Audit Log Aktivitas (Keamanan) -->
       <section
         class="system-logs animate__animated animate__fadeInUp"
         style="margin-top: 2.5rem"

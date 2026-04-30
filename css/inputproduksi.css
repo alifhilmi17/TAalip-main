@@ -736,19 +736,100 @@
 
 
 /* =========================================================
-   📱 RESPONSIF — LAYAR KECIL (≤768px)
+   📦 GAYA VISUAL GRUP BATCH (ACCORDION)
 ========================================================= */
-/* Di HP: header ditumpuk vertikal dan ikon watermark diperkecil */
-@media (max-width: 768px) {
 
-    /* Header berubah dari baris sejajar menjadi kolom vertikal */
+/* Baris Header Grup: Dibuat lebih modern dengan gradien dan efek interaktif */
+.batch-group-header {
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.batch-group-header td {
+    background: linear-gradient(to right, #f8fafc 0%, #f1f5f9 100%) !important;
+    text-align: left !important;
+    padding: 14px 20px !important;
+    font-weight: 800 !important;
+    color: #4f46e5 !important;
+    border-left: 6px solid #6366f1 !important;
+}
+
+/* Efek hover agar header terasa interaktif */
+.batch-group-header:hover td {
+    background: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 100%) !important;
+    color: #4338ca !important;
+}
+
+/* Animasi Ikon Buka/Tutup */
+.batch-group-header .toggle-icon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    background: #ffffff;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(99, 102, 241, 0.2);
+    margin-right: 12px;
+    font-size: 0.8rem;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.batch-group-header.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+/* Gaya Baris Data di dalam Grup */
+.data-row {
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Indikator vertikal di samping baris data untuk menunjukkan hubungan dengan grup */
+.data-row td:first-child {
+    position: relative;
+}
+
+.data-row td:first-child::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: #e2e8f0;
+    opacity: 0.5;
+}
+
+/* Efek hover pada baris data agar lebih hidup */
+.data-row:hover td {
+    background-color: #f0f9ff !important;
+    color: #0c4a6e !important;
+}
+
+/* Hint klik di pojok kanan header */
+.header-hint {
+    float: right;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+    margin-top: 2px;
+}
+
+/* 📱 RESPONSIF — LAYAR KECIL (≤768px) */
+@media (max-width: 768px) {
     .page-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 1rem;
     }
-
-    /* Ikon watermark diperkecil dan dipindah ke pojok HP */
     .page-header::after {
         right: 10px;
         top: 10px;

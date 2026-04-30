@@ -1,11 +1,3 @@
-/* =========================================================
-   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
-   File: keuangan.js
-   Deskripsi: File ini menangani manajemen pencatatan keuangan
-   termasuk pemasukan (income) dan pengeluaran (expense)
-   menggunakan cloud database Firebase Firestore.
-========================================================= */
-
 import { 
     collection, 
     addDoc, 
@@ -25,10 +17,6 @@ const keuanganCollection = collection(db, "keuangan");
 // ==========================================
 // 1. UTILITAS
 // ==========================================
-/**
- * Memformat angka menjadi format mata uang Rupiah (IDR)
- * @param {number} number - Angka yang akan diformat
- */
 function formatIDR(number) {
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
@@ -43,10 +31,45 @@ function formatTanggal(tglString) {
     return new Date(tglString).toLocaleDateString('id-ID', options);
 }
 
+/**
+ * Mengontrol tampilan loading (spinner/skeleton)
+ */
+function toggleLoading(target, isLoading) {
+    if (target === 'form') {
+        const btn = document.getElementById('btnSubmit');
+        if (btn) {
+            btn.classList.toggle('loading', isLoading);
+            btn.disabled = isLoading;
+        }
+    } else if (target === 'table') {
+        const loader = document.getElementById('tableLoading');
+        const table = document.getElementById('financeTable');
+        const empty = document.getElementById('emptyState');
+        
+        if (loader) loader.style.display = isLoading ? 'block' : 'none';
+        if (table) table.style.opacity = isLoading ? '0.3' : '1';
+        if (empty && isLoading) empty.style.display = 'none';
+    }
+}
+
 // ==========================================
 // 2. INISIALISASI & FIREBASE LISTENER
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
+    // 1. Jalankan Listener Firebase
+    initFirebaseListener();
+
+    // 2. Pasang Event Listeners
+    setupEventListeners();
+
+    // 3. Set Default Date
+    const today = new Date().toISOString().split('T')[0];
+    const dateInput = document.getElementById('trxDate');
+    if (dateInput) dateInput.value = today;
+});
+
+function initFirebaseListener() {
+    toggleLoading('table', true);
     const q = query(keuanganCollection, orderBy("tanggal", "desc"));
     
     onSnapshot(q, (snapshot) => {
@@ -55,27 +78,65 @@ document.addEventListener("DOMContentLoaded", () => {
             ...doc.data()
         }));
         
+        toggleLoading('table', false);
         renderTable();
         updateSummary();
+    }, (err) => {
+        toggleLoading('table', false);
+        console.error("Firebase Error:", err);
+        Swal.fire("Error", "Gagal mengambil data dari server.", "error");
+    });
+}
+
+function setupEventListeners() {
+    // Form Submit
+    const financeForm = document.getElementById('financeForm');
+    if (financeForm) {
+        financeForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    // Filter & Search
+    ['searchTrx', 'filterStartDate', 'filterEndDate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => renderTable());
+        }
     });
 
-    // Set default date hari ini
-    const today = new Date().toISOString().split('T')[0];
-    if (document.getElementById('trxDate')) {
-        document.getElementById('trxDate').value = today;
+    // Export
+    const btnExport = document.getElementById('btnExport');
+    if (btnExport) {
+        btnExport.addEventListener('click', downloadLaporanCSV);
     }
-});
+
+    // Sidebar Toggle (Mobile)
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+    }
+
+    // Event Delegation untuk Hapus
+    const tableBody = document.getElementById('financeTableBody');
+    if (tableBody) {
+        tableBody.addEventListener('click', (e) => {
+            const btnDelete = e.target.closest('.btn-delete');
+            if (btnDelete) {
+                const id = btnDelete.dataset.id;
+                deleteTransaction(id);
+            }
+        });
+    }
+}
 
 // ==========================================
 // 3. CRUD LOGIC
 // ==========================================
-/**
- * Menambah catatan transaksi baru (Pemasukan/Pengeluaran) ke Firestore
- */
-window.addTransaction = async function(event) {
+async function handleFormSubmit(event) {
     event.preventDefault();
+    toggleLoading('form', true);
 
-    // Mengambil data dari form
     const tanggal = document.getElementById('trxDate').value;
     const tipe = document.querySelector('input[name="trxType"]:checked').value;
     const deskripsi = document.getElementById('trxDesc').value;
@@ -90,72 +151,84 @@ window.addTransaction = async function(event) {
     };
 
     try {
-        await addDoc(keuanganCollection, payload); // Simpan ke koleksi 'keuangan'
+        await addDoc(keuanganCollection, payload);
         Swal.fire({
             icon: 'success',
             title: 'Berhasil',
-            text: 'Transaksi berhasil disimpan ke cloud.',
+            text: 'Transaksi berhasil dicatat.',
             timer: 1500,
             showConfirmButton: false
         });
         document.getElementById('financeForm').reset();
-        // Reset tanggal ke hari ini setelah simpan
         document.getElementById('trxDate').value = new Date().toISOString().split('T')[0];
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
+    } finally {
+        toggleLoading('form', false);
     }
-};
+}
 
-/**
- * Menghapus transaksi berdasarkan ID dokumen Firestore
- * @param {string} id - UID dokumen
- */
-window.deleteTransaction = function(id) {
-    Swal.fire({
+async function deleteTransaction(id) {
+    const result = await Swal.fire({
         title: 'Hapus Transaksi?',
-        text: "Data akan dihapus permanen dari Firestore.",
+        text: "Data akan dihapus permanen.",
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonColor: '#ff6b6b'
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            try {
-                await deleteDoc(doc(db, "keuangan", id));
-                Swal.fire('Terhapus!', 'Transaksi telah dihapus.', 'success');
-            } catch (err) {
-                Swal.fire("Error", "Gagal menghapus: " + err.message, "error");
-            }
-        }
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus'
     });
-};
+
+    if (result.isConfirmed) {
+        try {
+            await deleteDoc(doc(db, "keuangan", id));
+            Swal.fire('Terhapus!', 'Transaksi telah dihapus.', 'success');
+        } catch (err) {
+            Swal.fire("Error", "Gagal menghapus: " + err.message, "error");
+        }
+    }
+}
 
 // ==========================================
 // 4. DISPLAY & FILTER
 // ==========================================
 function renderTable() {
     const tbody = document.getElementById('financeTableBody');
-    const searchTerm = document.getElementById('searchTrx').value.toLowerCase();
-    
+    const emptyState = document.getElementById('emptyState');
     if (!tbody) return;
+
+    // Ambil nilai filter
+    const searchTerm = document.getElementById('searchTrx').value.toLowerCase();
+    const startDate = document.getElementById('filterStartDate').value;
+    const endDate = document.getElementById('filterEndDate').value;
+    
     tbody.innerHTML = "";
 
-    const filtered = dataKeuangan.filter(t => t.deskripsi.toLowerCase().includes(searchTerm));
+    // Logika Filtering
+    const filtered = dataKeuangan.filter(t => {
+        const matchesSearch = t.deskripsi.toLowerCase().includes(searchTerm);
+        const matchesStart = !startDate || t.tanggal >= startDate;
+        const matchesEnd = !endDate || t.tanggal <= endDate;
+        return matchesSearch && matchesStart && matchesEnd;
+    });
 
     if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Belum ada data transaksi match.</td></tr>`;
+        if (emptyState) emptyState.style.display = 'flex';
     } else {
+        if (emptyState) emptyState.style.display = 'none';
         filtered.forEach(t => {
             const tr = document.createElement('tr');
-            const typeClass = t.tipe === "pemasukan" ? 'status-masuk' : 'status-keluar';
+            const isIncome = t.tipe === "pemasukan";
+            const badgeClass = isIncome ? 'badge-income' : 'badge-expense';
+            const textClass = isIncome ? 'text-income' : 'text-expense';
             const typeLabel = t.tipe.charAt(0).toUpperCase() + t.tipe.slice(1);
             
             tr.innerHTML = `
                 <td>${formatTanggal(t.tanggal)}</td>
-                <td><span class="badge ${typeClass}">${typeLabel}</span></td>
+                <td><span class="badge-type ${badgeClass}">${typeLabel}</span></td>
                 <td>${t.deskripsi}</td>
-                <td style="text-align: right; font-weight: 600;">${formatIDR(t.jumlah)}</td>
-                <td style="text-align: center;">
-                    <button class="btn-delete" onclick="deleteTransaction('${t.id}')" title="Hapus">🗑️</button>
+                <td class="text-right ${textClass}" style="font-weight: 700;">${formatIDR(t.jumlah)}</td>
+                <td class="text-center">
+                    <button class="btn-delete" data-id="${t.id}" title="Hapus">🗑️</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -163,9 +236,6 @@ function renderTable() {
     }
 }
 
-/**
- * Menghitung dan memperbarui ringkasan saldo, total pemasukan, dan total pengeluaran
- */
 function updateSummary() {
     let income = 0;
     let expense = 0;
@@ -175,30 +245,38 @@ function updateSummary() {
         else expense += t.jumlah;
     });
 
-    if(document.getElementById('totalPemasukan')) document.getElementById('totalPemasukan').innerText = formatIDR(income);
-    if(document.getElementById('totalPengeluaran')) document.getElementById('totalPengeluaran').innerText = formatIDR(expense);
-    if(document.getElementById('totalSaldo')) document.getElementById('totalSaldo').innerText = formatIDR(income - expense);
+    const incomeEl = document.getElementById('totalPemasukan');
+    const expenseEl = document.getElementById('totalPengeluaran');
+    const balanceEl = document.getElementById('totalSaldo');
+
+    if(incomeEl) incomeEl.innerText = formatIDR(income);
+    if(expenseEl) expenseEl.innerText = formatIDR(expense);
+    if(balanceEl) balanceEl.innerText = formatIDR(income - expense);
 }
 
-window.filterTable = function() {
-    renderTable();
-};
+function downloadLaporanCSV() {
+    if (dataKeuangan.length === 0) {
+        Swal.fire("Info", "Tidak ada data untuk diekspor.", "info");
+        return;
+    }
 
-window.downloadLaporanCSV = function() {
-    if (dataKeuangan.length === 0) return;
     let csv = "Tanggal,Jenis,Deskripsi,Jumlah (Rp)\n";
     dataKeuangan.forEach(t => {
-        csv += `${t.tanggal},${t.tipe},"${t.deskripsi}",${t.jumlah}\n`;
+        csv += `${t.tanggal},${t.tipe},"${t.deskripsi.replace(/"/g, '""')}",${t.jumlah}\n`;
     });
-    const blob = new Blob([csv], { type: 'text/csv' });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Laporan_Keuangan_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `Laporan_Keuangan_LIBAS_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
-};
+}
 
-// Sidebar
+/**
+ * Fungsi utilitas untuk sidebar (submenu) - Digunakan oleh button onclick
+ * Tetap biarkan window-scoped karena diatur di HTML global sidebar
+ */
 window.toggleSidebarMenu = function(id) {
     const el = document.getElementById(id);
     if(!el) return;

@@ -94,7 +94,6 @@
 /* Tiga kartu kecil di atas tabel yang menampilkan stok masuk, keluar, dan sisa */
 .pakan-stats .stat-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border-left: 5px solid #10b981;         /* Aksen garis kiri hijau default */
 }
 
 /* =========================================================
@@ -102,7 +101,6 @@
 ========================================================= */
 /* Kartu pertama: hijau menandakan pakan yang masuk ke gudang */
 .pakan-stats .stat-card:nth-child(1) {
-    border-left-color: #10b981;
 }
 
 /* =========================================================
@@ -110,7 +108,6 @@
 ========================================================= */
 /* Kartu kedua: oranye menandakan pakan yang terpakai/keluar */
 .pakan-stats .stat-card:nth-child(2) {
-    border-left-color: #f97316;
 }
 
 /* =========================================================
@@ -118,7 +115,6 @@
 ========================================================= */
 /* Kartu ketiga: indigo menandakan sisa stok pakan yang tersedia */
 .pakan-stats .stat-card:nth-child(3) {
-    border-left-color: #4f46e5;
 }
 
 /* =========================================================
@@ -660,7 +656,6 @@
    📅 KARTU STATISTIK — PEMAKAIAN BULAN INI (BIRU MUDA)
 ========================================================= */
 .pakan-stats .stat-card:nth-child(4) {
-    border-left-color: #0ea5e9;
 }
 
 .pakan-stats .stat-icon.stat-bulan {
@@ -839,16 +834,115 @@
 }
 
 /* =========================================================
+   📦 MODAL PILIHAN (CHOICE MODAL)
+========================================================= */
+.choice-content {
+    max-width: 450px !important;
+    text-align: center;
+    border-top: 5px solid #6366f1 !important; /* Biru Indigo */
+}
+
+.choice-body {
+    padding: 10px 0;
+}
+
+.choice-desc {
+    color: #64748b;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+}
+
+.choice-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Tombol pilihan vertikal */
+.btn-choice {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: left;
+    width: 100%;
+}
+
+.choice-icon {
+    font-size: 2rem;
+    margin-right: 20px;
+    background: white;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.choice-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.choice-text strong {
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.choice-text span {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Warna Hijau untuk Masuk */
+.choice-masuk:hover {
+    border-color: #10b981;
+    background: #f0fdf4;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.1);
+}
+
+.choice-masuk:hover .choice-icon {
+    background: #10b981;
+    color: white;
+}
+
+/* Warna Oranye untuk Keluar */
+.choice-keluar:hover {
+    border-color: #f97316;
+    background: #fff7ed;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(249, 115, 22, 0.1);
+}
+
+.choice-keluar:hover .choice-icon {
+    background: #f97316;
+    color: white;
+}
+
+/* =========================================================
    📱 RESPONSIF — LAYAR KECIL (≤768px)
 ========================================================= */
 @media (max-width: 768px) {
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
     .header-actions {
         flex-direction: column;
         align-items: stretch;
         width: 100%;
     }
 
-    .btn-pemakaian,
     .btn-primary {
         justify-content: center;
     }
@@ -857,8 +951,17 @@
         overflow-x: auto;
     }
 
-    .pemakaian-summary {
-        flex-direction: column;
+    .choice-grid {
         gap: 10px;
+    }
+
+    .btn-choice {
+        padding: 15px;
+    }
+
+    .choice-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.5rem;
     }
 }

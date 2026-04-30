@@ -2592,3 +2592,324 @@ ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
     background: #ef4444 !important;
     color: white !important;
 }
+/* =========================================================
+   âœ¨ MODERN DESIGN SYSTEM & UTILITIES
+   Memindahkan semua inline styles ke dalam class terstruktur
+========================================================= */
+
+/* 1. LAYOUT & CONTAINERS */
+.admin-switch-container {
+    display: none;
+    margin-top: 1.5rem;
+}
+
+.alert-banner-container {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* 2. STAT CARDS UTILITIES */
+.stat-subtext-danger {
+    font-size: 0.85rem;
+    color: #ef4444;
+    margin-top: 5px;
+    font-weight: 600;
+    display: none;
+}
+
+.stat-subtext-warning {
+    font-size: 0.85rem;
+    color: #f59e0b;
+    margin-top: 5px;
+    font-weight: 600;
+    display: none;
+}
+
+.pakan-alert-text {
+    display: none;
+    margin-top: 5px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #ef4444;
+}
+
+/* 3. ANALYTICS & CHARTS */
+.chart-mini-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 12px;
+}
+
+.mini-stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.mini-stat-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+}
+
+.mini-stat-val {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* 4. WIDGET CARDS (GRADIENTS & SHADOWS) */
+.widget-card {
+    border-radius: 20px;
+    padding: 1.5rem;
+    color: white !important;
+}
+
+.quick-actions-card {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3) !important;
+}
+
+.vaccination-card {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3) !important;
+}
+
+.prediction-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3) !important;
+}
+
+.finance-summary-card {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3) !important;
+}
+
+.widget-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.widget-card-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white !important;
+}
+
+.widget-card-header p {
+    margin: 0;
+    font-size: 0.85rem;
+    opacity: 0.9;
+    color: white !important;
+}
+
+.widget-btn-outline {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.widget-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateX(4px);
+}
+
+/* 5. QUICK ACTION BUTTONS */
+.qa-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+}
+
+.qa-square-btn {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border: none !important;
+    padding: 1rem !important;
+    border-radius: 12px !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+}
+
+.qa-square-btn:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: translateY(-2px);
+}
+
+.qa-square-btn p { margin: 0; color: white !important; }
+.qa-icon-large { font-size: 1.1rem; line-height: 1; }
+.qa-label-bold { font-size: 0.7rem; font-weight: 700; opacity: 0.95; }
+.qa-desc-small { font-size: 0.6rem; opacity: 0.75; }
+
+/* 6. PROGRESS BARS */
+.activity-progress-container {
+    padding: 0.8rem 1.2rem 0;
+    background: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.progress-track {
+    background: #e2e8f0;
+    border-radius: 100px;
+    height: 6px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 100px;
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+/* 7. ANNOUNCEMENT BADGE */
+.announcement-badge {
+    display: none;
+    padding: 0.5rem 1.2rem;
+    background: #fff7ed;
+    border-bottom: 1px solid #fed7aa;
+}
+
+.announcement-note {
+    display: none;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.8rem;
+    color: #64748b;
+    font-style: italic;
+}
+
+/* 8. MODAL STYLES */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; /* Default hidden */
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content-modern {
+    background: white;
+    width: 95%;
+    max-width: 800px;
+    max-height: 90vh;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header-modern {
+    padding: 1.5rem;
+    color: white !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header-modern.prediksi { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+.modal-header-modern.keuangan { background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; }
+
+.modal-header-modern h2 { color: white !important; margin: 0; }
+
+.close-modal-btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: none !important;
+    color: white !important;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.close-modal-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: rotate(90deg);
+}
+
+.modal-body-scroll {
+    padding: 1.5rem;
+    overflow-y: auto;
+}
+
+/* 9. PREDIKSI WIDGET GRID */
+.prediction-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.85rem;
+}
+
+.widget-square-box {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-icon-hint {
+    cursor: help;
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+

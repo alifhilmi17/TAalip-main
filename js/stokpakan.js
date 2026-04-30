@@ -48,21 +48,23 @@ function getBulanIni() {
 // ==========================================
 // 2. INISIALISASI AUTH & FIREBASE LISTENER
 // ==========================================
+// ==========================================
+// 2. INISIALISASI AUTH & FIREBASE LISTENER
+// ==========================================
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Set default filter ke bulan ini
-    const bulanIni = getBulanIni();
+    // Filter bulan dimulai kosong (sesuai permintaan user)
     const elFilter = document.getElementById('filterBulanPakan');
     const elFilterP = document.getElementById('filterBulanPemakaian');
-    if (elFilter) elFilter.value = bulanIni;
-    if (elFilterP) elFilterP.value = bulanIni;
+    if (elFilter) elFilter.value = "";
+    if (elFilterP) elFilterP.value = "";
 
     // Deteksi role pengguna dari Firestore
     onAuthStateChanged(auth, async (user) => {
         if (!user) return;
 
         try {
-            // Cek koleksi 'admin' terlebih dahulu
+            // Cek koleksi 'admin'
             const adminSnap = await getDoc(doc(db, "admin", user.uid));
             if (adminSnap.exists()) {
                 currentUserRole = "admin";
@@ -81,13 +83,11 @@ document.addEventListener("DOMContentLoaded", () => {
             console.warn("Gagal deteksi role:", err);
         }
 
-        // Tampilkan/sembunyikan tombol Tambah Stok berdasarkan role
+        // Semua tombol kini terlihat untuk semua role (admin dan petugas)
         const btnTambahStok = document.getElementById('btnTambahStok');
-        if (btnTambahStok) {
-            btnTambahStok.style.display = currentUserRole === 'admin' ? 'inline-flex' : 'none';
-        }
+        if (btnTambahStok) btnTambahStok.style.display = 'inline-flex';
 
-        // Mulai listener Firestore setelah role diketahui
+        // Mulai listener Firestore
         startFirestoreListener();
     });
 });
@@ -104,7 +104,7 @@ function startFirestoreListener() {
 }
 
 // ==========================================
-// 3. TAB NAVIGASI
+// 3. TAB NAVIGASI & MODAL PILIHAN (CHOICE)
 // ==========================================
 window.switchTab = function(tab) {
     const sectionRiwayat = document.getElementById('sectionRiwayat');
@@ -122,18 +122,44 @@ window.switchTab = function(tab) {
         sectionPemakaian.style.display = 'block';
         tabRiwayat.classList.remove('active');
         tabPemakaian.classList.add('active');
-        renderPemakaianTable(); // refresh saat tab dibuka
     }
 };
 
+window.openChoiceModal = function() {
+    document.getElementById('choiceModal').classList.add('show');
+};
+
+window.closeChoiceModal = function() {
+    document.getElementById('choiceModal').classList.remove('show');
+};
+
+/** Memilih tipe transaksi dari modal pilihan */
+window.selectTransactionType = function(type) {
+    window.closeChoiceModal();
+    openPakanModal(type);
+};
+
 // ==========================================
-// 4. MODAL TAMBAH STOK (ADMIN)
+// 4. MODAL FORM UTAMA (STOK & PEMAKAIAN)
 // ==========================================
-window.openPakanModal = function() {
+window.openPakanModal = function(type = '') {
     const form = document.getElementById('pakanForm');
     if (form) form.reset();
+    
     document.getElementById('pakanId').value = "";
-    document.getElementById('modalTitlePakan').innerText = "Tambah Data Pakan";
+    
+    // Set tanggal default ke hari ini
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tglPakan').value = today;
+
+    const tipeEl = document.getElementById('tipePakan');
+    if (type) {
+        tipeEl.value = type;
+        document.getElementById('modalTitlePakan').innerText = type === "Masuk" ? "➕ Tambah Stok Pakan" : "📤 Catat Pemakaian Pakan";
+    } else {
+        document.getElementById('modalTitlePakan').innerText = "Edit Data Pakan";
+    }
+
     document.getElementById('pakanModal').classList.add('show');
 };
 
@@ -142,55 +168,44 @@ window.closePakanModal = function() {
 };
 
 // ==========================================
-// 5. MODAL CATAT PEMAKAIAN (PETUGAS & ADMIN)
-// ==========================================
-window.openPemakaianModal = function() {
-    const form = document.getElementById('pemakaianForm');
-    if (form) form.reset();
-    document.getElementById('pemakaianId').value = "";
-    document.getElementById('modalTitlePemakaian').innerText = "📤 Catat Pemakaian Pakan";
-
-    // Set tanggal default ke hari ini
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('tglPemakaian').value = today;
-
-    // Tampilkan sisa stok saat ini
-    updateSisaStokInfo();
-
-    document.getElementById('pemakaianModal').classList.add('show');
-};
-
-window.closePemakaianModal = function() {
-    document.getElementById('pemakaianModal').classList.remove('show');
-};
-
-/** Update info sisa stok di dalam modal pemakaian */
-function updateSisaStokInfo() {
-    let masuk = 0, keluar = 0;
-    dataPakan.forEach(p => {
-        if (p.tipe === "Masuk") masuk += p.jumlah;
-        else keluar += p.jumlah;
-    });
-    const sisa = masuk - keluar;
-    const el = document.getElementById('sisaStokInfoValue');
-    if (el) {
-        el.textContent = sisa.toLocaleString('id-ID') + ' Kg';
-        el.style.color = sisa < 50 ? '#ef4444' : '#059669';
-    }
-}
-
-// ==========================================
-// 6. SIMPAN DATA STOK (TAMBAH / EDIT) — ADMIN
+// 6. SIMPAN DATA STOK (TAMBAH / EDIT)
 // ==========================================
 window.savePakanData = async function(event) {
     event.preventDefault();
     const id = document.getElementById('pakanId').value;
+    const tipe = document.getElementById('tipePakan').value;
+    const jumlah = parseFloat(document.getElementById('jumlahPakan').value) || 0;
+
+    // VALIDASI STOK (Jika Keluar)
+    if (tipe === "Keluar") {
+        let masuk = 0, keluar = 0;
+        dataPakan.forEach(p => {
+            if (p.tipe === "Masuk") masuk += p.jumlah;
+            else keluar += p.jumlah;
+        });
+        const sisaSekarang = masuk - keluar;
+        let sisaEfektif = sisaSekarang;
+        if (id !== "") {
+            const itemLama = dataPakan.find(p => p.id === id);
+            if (itemLama && itemLama.tipe === "Keluar") sisaEfektif = sisaSekarang + itemLama.jumlah;
+        }
+
+        if (jumlah > sisaEfektif) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Stok Tidak Cukup',
+                html: `Jumlah pemakaian <strong>${jumlah.toLocaleString('id-ID')} Kg</strong> melebihi sisa stok <strong>${sisaEfektif.toLocaleString('id-ID')} Kg</strong>.`,
+                confirmButtonColor: '#f97316'
+            });
+            return;
+        }
+    }
 
     const payload = {
         tanggal: document.getElementById('tglPakan').value,
-        tipe: document.getElementById('tipePakan').value,
+        tipe: tipe,
         jenis: document.getElementById('jenisPakan').value,
-        jumlah: parseFloat(document.getElementById('jumlahPakan').value) || 0,
+        jumlah: jumlah,
         keterangan: document.getElementById('ketPakan').value || "",
         dicatatOleh: currentUserName,
         role: currentUserRole,
@@ -201,72 +216,12 @@ window.savePakanData = async function(event) {
         if (id === "") {
             payload.createdAt = new Date().toISOString();
             await addDoc(pakanCollection, payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan ditambahkan.', timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil disimpan.', timer: 1500, showConfirmButton: false });
         } else {
             await updateDoc(doc(db, "stok_pakan", id), payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data stok pakan diperbarui.', timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil diperbarui.', timer: 1500, showConfirmButton: false });
         }
         window.closePakanModal();
-    } catch (err) {
-        Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
-    }
-};
-
-// ==========================================
-// 7. SIMPAN DATA PEMAKAIAN — PETUGAS & ADMIN
-// ==========================================
-window.savePemakaianData = async function(event) {
-    event.preventDefault();
-    const id = document.getElementById('pemakaianId').value;
-
-    const jumlah = parseFloat(document.getElementById('jumlahPemakaian').value) || 0;
-
-    // Cek apakah stok mencukupi
-    let masuk = 0, keluar = 0;
-    dataPakan.forEach(p => {
-        if (p.tipe === "Masuk") masuk += p.jumlah;
-        else keluar += p.jumlah;
-    });
-    const sisaSekarang = masuk - keluar;
-
-    // Jika edit, tambahkan kembali jumlah lama ke sisa
-    let sisaEfektif = sisaSekarang;
-    if (id !== "") {
-        const itemLama = dataPakan.find(p => p.id === id);
-        if (itemLama) sisaEfektif = sisaSekarang + itemLama.jumlah;
-    }
-
-    if (jumlah > sisaEfektif) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Stok Tidak Cukup',
-            html: `Jumlah pemakaian <strong>${jumlah.toLocaleString('id-ID')} Kg</strong> melebihi sisa stok <strong>${sisaEfektif.toLocaleString('id-ID')} Kg</strong>.`,
-            confirmButtonColor: '#f97316'
-        });
-        return;
-    }
-
-    const payload = {
-        tanggal: document.getElementById('tglPemakaian').value,
-        tipe: "Keluar",
-        jenis: document.getElementById('jenisPakanPemakaian').value,
-        jumlah: jumlah,
-        keterangan: document.getElementById('ketPemakaian').value || "",
-        dicatatOleh: currentUserName,
-        role: currentUserRole,
-        updatedAt: new Date().toISOString()
-    };
-
-    try {
-        if (id === "") {
-            payload.createdAt = new Date().toISOString();
-            await addDoc(pakanCollection, payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Pemakaian pakan berhasil dicatat.', timer: 1500, showConfirmButton: false });
-        } else {
-            await updateDoc(doc(db, "stok_pakan", id), payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data pemakaian diperbarui.', timer: 1500, showConfirmButton: false });
-        }
-        window.closePemakaianModal();
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     }
@@ -279,34 +234,21 @@ window.editPakan = function(id) {
     const item = dataPakan.find(p => p.id === id);
     if (!item) return;
 
-    if (item.tipe === "Keluar") {
-        // Buka modal pemakaian untuk data keluar
-        document.getElementById('pemakaianId').value = item.id;
-        document.getElementById('tglPemakaian').value = item.tanggal;
-        document.getElementById('jenisPakanPemakaian').value = item.jenis;
-        document.getElementById('jumlahPemakaian').value = item.jumlah;
-        document.getElementById('ketPemakaian').value = item.keterangan || "";
-        document.getElementById('modalTitlePemakaian').innerText = "✏️ Edit Data Pemakaian";
-        updateSisaStokInfo();
-        document.getElementById('pemakaianModal').classList.add('show');
-    } else {
-        // Buka modal stok untuk data masuk
-        document.getElementById('pakanId').value = item.id;
-        document.getElementById('tglPakan').value = item.tanggal;
-        document.getElementById('tipePakan').value = item.tipe;
-        document.getElementById('jenisPakan').value = item.jenis;
-        document.getElementById('jumlahPakan').value = item.jumlah;
-        document.getElementById('ketPakan').value = item.keterangan || "";
-        document.getElementById('modalTitlePakan').innerText = "✏️ Edit Data Pakan";
-        document.getElementById('pakanModal').classList.add('show');
-    }
+    document.getElementById('pakanId').value = item.id;
+    document.getElementById('tglPakan').value = item.tanggal;
+    document.getElementById('tipePakan').value = item.tipe;
+    document.getElementById('jenisPakan').value = item.jenis;
+    document.getElementById('jumlahPakan').value = item.jumlah;
+    document.getElementById('ketPakan').value = item.keterangan || "";
+    
+    document.getElementById('modalTitlePakan').innerText = "✏️ Edit Data " + (item.tipe === "Masuk" ? "Pakan Masuk" : "Pemakaian");
+    document.getElementById('pakanModal').classList.add('show');
 };
 
 window.deletePakan = function(id) {
     const item = dataPakan.find(p => p.id === id);
     const isAdmin = currentUserRole === 'admin';
 
-    // Petugas hanya boleh hapus data yang dia sendiri catat
     if (!isAdmin && item && item.dicatatOleh !== currentUserName) {
         Swal.fire('Akses Ditolak', 'Anda hanya dapat menghapus data yang Anda catat sendiri.', 'error');
         return;
@@ -329,7 +271,7 @@ window.deletePakan = function(id) {
 };
 
 // ==========================================
-// 9. RENDER TABEL RIWAYAT STOK (semua)
+// 9. RENDER TABEL RIWAYAT STOK (Hanya Masuk)
 // ==========================================
 function renderTable() {
     const tbody = document.getElementById('pakanTableBody');
@@ -339,7 +281,9 @@ function renderTable() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    const filtered = dataPakan.filter(p => !filterBulan || p.tanggal.startsWith(filterBulan));
+    const filtered = dataPakan.filter(p => 
+        p.tipe === "Masuk" && (!filterBulan || p.tanggal.startsWith(filterBulan))
+    );
 
     if (filtered.length === 0) {
         emptyState.style.display = 'block';
@@ -347,7 +291,6 @@ function renderTable() {
         emptyState.style.display = 'none';
         filtered.forEach(p => {
             const tr = document.createElement('tr');
-            const typeBadge = p.tipe === "Masuk" ? 'badge-aktif' : 'badge-afkir';
             const isOwner = p.dicatatOleh === currentUserName || currentUserRole === 'admin';
             const aksiBtn = isOwner
                 ? `<button class="btn-edit" onclick="editPakan('${p.id}')">✏️</button>
@@ -357,8 +300,7 @@ function renderTable() {
             tr.innerHTML = `
                 <td>${formatTanggal(p.tanggal)}</td>
                 <td>${p.jenis}</td>
-                <td><span class="badge ${typeBadge}">${p.tipe}</span></td>
-                <td><strong>${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
+                <td><strong style="color:#10b981;">+ ${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
                 <td>${p.keterangan || '-'}</td>
                 <td>
                     <span class="dicatat-badge ${p.role === 'admin' ? 'dicatat-admin' : 'dicatat-petugas'}">
@@ -373,7 +315,7 @@ function renderTable() {
 }
 
 // ==========================================
-// 10. RENDER TABEL PEMAKAIAN (hanya keluar)
+// 10. RENDER TABEL PEMAKAIAN (Hanya Keluar)
 // ==========================================
 function renderPemakaianTable() {
     const tbody = document.getElementById('pemakaianTableBody');
@@ -386,22 +328,6 @@ function renderPemakaianTable() {
     const filtered = dataPakan.filter(p =>
         p.tipe === "Keluar" && (!filterBulan || p.tanggal.startsWith(filterBulan))
     );
-
-    // Update ringkasan pemakaian
-    const totalPemakaianFiltered = filtered.reduce((sum, p) => sum + p.jumlah, 0);
-    const summaryEl = document.getElementById('pemakaianSummary');
-    if (summaryEl) {
-        summaryEl.innerHTML = `
-            <div class="pemakaian-summary-item">
-                <span>📊 Total Pemakaian${filterBulan ? ' Bulan Ini' : ' Keseluruhan'}:</span>
-                <strong>${totalPemakaianFiltered.toLocaleString('id-ID')} Kg</strong>
-            </div>
-            <div class="pemakaian-summary-item">
-                <span>📋 Jumlah Catatan:</span>
-                <strong>${filtered.length} entri</strong>
-            </div>
-        `;
-    }
 
     if (filtered.length === 0) {
         emptyState.style.display = 'block';
@@ -418,7 +344,7 @@ function renderPemakaianTable() {
             tr.innerHTML = `
                 <td>${formatTanggal(p.tanggal)}</td>
                 <td>${p.jenis}</td>
-                <td><strong style="color:#f97316;">${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
+                <td><strong style="color:#f97316;">- ${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
                 <td>${p.keterangan || '-'}</td>
                 <td>
                     <span class="dicatat-badge ${p.role === 'admin' ? 'dicatat-admin' : 'dicatat-petugas'}">
@@ -436,16 +362,17 @@ function renderPemakaianTable() {
 // 11. STATISTIK KARTU RINGKASAN
 // ==========================================
 function updateQuickStats() {
-    let masuk = 0, keluar = 0, pemakaianBulanIni = 0;
-    const bulanIni = getBulanIni();
+    let masuk = 0, keluar = 0, pemakaianBulanIniCount = 0;
+    const now = new Date();
+    const bulanSekarang = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
     dataPakan.forEach(p => {
         if (p.tipe === "Masuk") {
             masuk += p.jumlah;
         } else {
             keluar += p.jumlah;
-            if (p.tanggal && p.tanggal.startsWith(bulanIni)) {
-                pemakaianBulanIni += p.jumlah;
+            if (p.tanggal && p.tanggal.startsWith(bulanSekarang)) {
+                pemakaianBulanIniCount += p.jumlah;
             }
         }
     });
@@ -459,11 +386,10 @@ function updateQuickStats() {
     if (document.getElementById('sisaStokPakan')) {
         const el = document.getElementById('sisaStokPakan');
         el.innerText = sisa.toLocaleString('id-ID') + ' Kg';
-        // Warna merah jika stok menipis (< 50 Kg)
         el.style.color = sisa < 50 ? '#ef4444' : '#4f46e5';
     }
     if (document.getElementById('pemakaianBulanIni'))
-        document.getElementById('pemakaianBulanIni').innerText = pemakaianBulanIni.toLocaleString('id-ID') + ' Kg';
+        document.getElementById('pemakaianBulanIni').innerText = pemakaianBulanIniCount.toLocaleString('id-ID') + ' Kg';
 }
 
 // ==========================================
@@ -490,13 +416,15 @@ window.resetFilterPemakaian = function() {
 // ==========================================
 // 13. EKSPOR CSV
 // ==========================================
-window.downloadLaporanCSV = function(mode = 'semua') {
-    const filterBulan = mode === 'pemakaian'
+window.downloadLaporanCSV = function(mode = 'masuk') {
+    const filterBulan = mode === 'keluar'
         ? document.getElementById('filterBulanPemakaian')?.value || ""
         : document.getElementById('filterBulanPakan')?.value || "";
 
     let data = dataPakan;
-    if (mode === 'pemakaian') data = data.filter(p => p.tipe === "Keluar");
+    if (mode === 'keluar') data = data.filter(p => p.tipe === "Keluar");
+    else data = data.filter(p => p.tipe === "Masuk");
+    
     if (filterBulan) data = data.filter(p => p.tanggal.startsWith(filterBulan));
 
     if (data.length === 0) {
@@ -504,16 +432,16 @@ window.downloadLaporanCSV = function(mode = 'semua') {
         return;
     }
 
-    let csv = "Tanggal,Jenis Pakan,Tipe,Jumlah (Kg),Keterangan,Dicatat Oleh,Role\n";
+    let csv = "Tanggal,Jenis Pakan,Jumlah (Kg),Keterangan,Dicatat Oleh,Role\n";
     data.forEach(p => {
-        csv += `${p.tanggal},"${p.jenis}","${p.tipe}",${p.jumlah},"${p.keterangan || ''}","${p.dicatatOleh || ''}","${p.role || ''}"\n`;
+        csv += `${p.tanggal},"${p.jenis}",${p.jumlah},"${p.keterangan || ''}","${p.dicatatOleh || ''}","${p.role || ''}"\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const suffix = mode === 'pemakaian' ? 'Pemakaian' : 'Stok';
+    const suffix = mode === 'keluar' ? 'Pemakaian' : 'Masuk';
     a.download = `Laporan_${suffix}_Pakan_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);

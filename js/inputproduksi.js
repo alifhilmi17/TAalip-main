@@ -20,6 +20,7 @@ import { db } from "../firebase.component/firebase-init.js";
 // State Global
 let dataProduksi = [];
 let dataAyam = [];
+let collapsedBatches = new Set(); 
 
 const produksiCollection = collection(db, "produksi_harian");
 const ayamCollection = collection(db, "populasi_ayam");
@@ -248,6 +249,15 @@ window.deleteProduksi = function(id) {
 // =========================================
 // 5. TABLE & STATS
 // =========================================
+window.toggleBatchGroup = function(batchId) {
+    if (collapsedBatches.has(batchId)) {
+        collapsedBatches.delete(batchId);
+    } else {
+        collapsedBatches.add(batchId);
+    }
+    renderTable(); // Render ulang untuk memperbarui icon dan visibilitas
+};
+
 function renderTable() {
     const tbody = document.getElementById("produksiTableBody");
     const emptyState = document.getElementById("emptyState");
@@ -257,7 +267,17 @@ function renderTable() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
-    const filteredData = dataProduksi.filter(prod => !filterTgl || prod.tanggal === filterTgl);
+    // Memfilter data berdasarkan tanggal jika ada filter yang aktif
+    let filteredData = dataProduksi.filter(prod => !filterTgl || prod.tanggal === filterTgl);
+
+    // MENGELOMPOKKAN DATA: Urutkan berdasarkan batchId terlebih dahulu, kemudian tanggal terbaru
+    filteredData.sort((a, b) => {
+        // Urutkan berdasarkan Batch ID (agar berkelompok)
+        if (a.batchId < b.batchId) return -1;
+        if (a.batchId > b.batchId) return 1;
+        // Jika batch sama, urutkan berdasarkan tanggal terbaru (descending)
+        return b.tanggal.localeCompare(a.tanggal);
+    });
 
     if (filteredData.length === 0) {
         tableEl.style.display = "none";
@@ -266,8 +286,32 @@ function renderTable() {
         tableEl.style.display = "table";
         emptyState.style.display = "none";
 
+        let currentBatch = null;
+
         filteredData.forEach((prod) => {
+            const isCollapsed = collapsedBatches.has(prod.batchId);
+
+            // SISIPKAN HEADER GRUP (Klik untuk Buka/Tutup)
+            if (prod.batchId !== currentBatch) {
+                currentBatch = prod.batchId;
+                const headerRow = document.createElement("tr");
+                headerRow.className = `batch-group-header ${isCollapsed ? 'collapsed' : ''}`;
+                headerRow.onclick = () => toggleBatchGroup(prod.batchId);
+                headerRow.innerHTML = `
+                    <td colspan="9">
+                        <span class="toggle-icon">${isCollapsed ? '▶' : '▼'}</span>
+                        <span style="font-weight: 700; letter-spacing: 0.5px;">${prod.batchLabel.split(' - ')[0]}</span>
+                        <span class="header-hint">${isCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
+                    </td>
+                `;
+                tbody.appendChild(headerRow);
+            }
+
+            // Jika batch sedang ditutup, jangan tampilkan baris datanya
+            if (isCollapsed) return;
+
             const row = document.createElement("tr");
+            row.className = "data-row";
             row.innerHTML = `
                 <td>${formatTanggal(prod.tanggal)}</td>
                 <td><span class="badge" style="background:#6366f1;color:white;">${prod.batchLabel.split(' - ')[0]}</span></td>
