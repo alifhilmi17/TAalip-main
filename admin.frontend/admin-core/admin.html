@@ -706,7 +706,7 @@ Pusat kendali manajemen pengguna dan monitoring data global.
             style="border-bottom: none; margin-bottom: 2rem"
           >
             <h3 style="margin: 0">📊 Ringkasan Data Peternakan Ayam</h3>
-            <span class="badge">6 Kategori Informasi</span>
+            <span class="badge">7 Kategori Informasi</span>
           </div>
 
           <div class="snapshot-tabs-header">
@@ -745,6 +745,12 @@ Pusat kendali manajemen pengguna dan monitoring data global.
               onclick="openSnapshotTab(event, 'tabVaksin')"
             >
               💉 Vaksinasi
+            </button>
+            <button
+              class="tab-btn btn-tab-prediksi"
+              onclick="openSnapshotTab(event, 'tabPrediksi')"
+            >
+              📈 Prediksi & Rekomendasi
             </button>
           </div>
 
@@ -1002,6 +1008,110 @@ Pusat kendali manajemen pengguna dan monitoring data global.
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Prediksi & Rekomendasi -->
+            <div id="tabPrediksi" class="tab-pane">
+              <div class="schedule-card" style="width: 100%">
+                <h3
+                  style="
+                    background: linear-gradient(
+                      135deg,
+                      #3b82f6 0%,
+                      #60a5fa 100%
+                    );
+                  "
+                >
+                  📈 Hasil Prediksi & Rekomendasi Terbaru
+                </h3>
+                <div class="schedule-content">
+                  <!-- Info Banner -->
+                  <div class="prediksi-info-banner">
+                    <p><strong>💡 Info:</strong> Menampilkan hasil prediksi Moving Average (MA) terbaru dari sistem. Data diperbarui setiap kali pengguna melakukan analisis prediksi.</p>
+                  </div>
+
+                  <!-- Statistik Prediksi Ringkas -->
+                  <div class="prediksi-stats-grid">
+                    <!-- Card Prediksi Produksi -->
+                    <div class="prediksi-stat-card produksi">
+                      <div class="prediksi-stat-header">
+                        <span>🥚</span>
+                        <h4>Prediksi Produksi</h4>
+                      </div>
+                      <p id="admin-prediksi-produksi" class="prediksi-stat-value">-</p>
+                      <small id="admin-prediksi-butir" class="prediksi-stat-label">-</small>
+                    </div>
+
+                    <!-- Card Estimasi Pendapatan -->
+                    <div class="prediksi-stat-card pendapatan">
+                      <div class="prediksi-stat-header">
+                        <span>💰</span>
+                        <h4>Est. Pendapatan</h4>
+                      </div>
+                      <p id="admin-prediksi-pendapatan" class="prediksi-stat-value">-</p>
+                      <small class="prediksi-stat-label">Per Hari (Kotor)</small>
+                    </div>
+
+                    <!-- Card Biaya Pakan -->
+                    <div class="prediksi-stat-card biaya">
+                      <div class="prediksi-stat-header">
+                        <span>📉</span>
+                        <h4>Biaya Pakan</h4>
+                      </div>
+                      <p id="admin-prediksi-biaya" class="prediksi-stat-value">-</p>
+                      <small class="prediksi-stat-label">Modal Harian</small>
+                    </div>
+
+                    <!-- Card Proyeksi Keuntungan -->
+                    <div class="prediksi-stat-card laba">
+                      <div class="prediksi-stat-header">
+                        <span>📊</span>
+                        <h4>Proyeksi Laba</h4>
+                      </div>
+                      <p id="admin-prediksi-keuntungan" class="prediksi-stat-value">-</p>
+                      <small class="prediksi-stat-label">Laba Bersih/Hari</small>
+                    </div>
+                  </div>
+
+                  <!-- Tabel Riwayat Prediksi -->
+                  <div class="table-responsive">
+                    <table class="logs-table">
+                      <thead>
+                        <tr>
+                          <th>Tanggal Analisis</th>
+                          <th>Periode MA</th>
+                          <th>Populasi</th>
+                          <th>Prediksi Produksi</th>
+                          <th>Proyeksi Laba</th>
+                          <th style="text-align: center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody id="adminPrediksiSnapshot">
+                        <tr class="skeleton-row">
+                          <td colspan="6"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="6"><div class="skeleton-cell"></div></td>
+                        </tr>
+                        <tr class="skeleton-row">
+                          <td colspan="6"><div class="skeleton-cell"></div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <!-- Rekomendasi Prediktif -->
+                  <div id="admin-rekomendasi-container" style="display: none;">
+                    <h4 class="rekomendasi-header">
+                      <span class="rekomendasi-header-badge">💡</span>
+                      Rekomendasi Prediktif Terbaru
+                    </h4>
+                    <div id="admin-rekomendasi-list">
+                      <!-- Diisi via JavaScript -->
+                    </div>
                   </div>
                 </div>
               </div>

@@ -369,6 +369,17 @@ function initAdminDashboard() {
     // =========================================================
     // Mengatur fungsi saat tombol submit ditekan pada form-form di dashboard admin.
     
+    // ✅ FASE BARU: Monitoring Prediksi & Rekomendasi (Koleksi: prediksi_history)
+    onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"), limit(10)), (snapshot) => {
+        const prediksiData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderPrediksiSnapshot(prediksiData);
+        
+        // Update widget statistik prediksi dengan data terbaru
+        if (prediksiData.length > 0) {
+            updatePrediksiStats(prediksiData[0]);
+        }
+    });
+    
     // 1. Form Aktivitas Harian
     const activityForm = document.getElementById('adminAddActivityForm');
     if (activityForm) {
@@ -727,6 +738,331 @@ function renderVaksinSnapshot(data) {
                 </td>
             </tr>
         `).join('');
+    }
+}
+
+/**
+ * ✅ FASE BARU: Merender ringkasan prediksi & rekomendasi
+ */
+function renderPrediksiSnapshot(data) {
+    const body = document.getElementById('adminPrediksiSnapshot');
+    if (!body) return;
+
+    if (data.length === 0) {
+        body.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Belum ada hasil prediksi yang dibuat.</td></tr>`;
+    } else {
+        body.innerHTML = data.map(item => {
+            const tanggalObj = item.tanggal ? new Date(item.tanggal) : null;
+            const tanggalStr = tanggalObj ? tanggalObj.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'short', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : '-';
+            
+            const produksiKg = (item.prediksiBesokKg || 0).toFixed(2);
+            const produksiButir = (item.prediksiBesokButir || 0).toLocaleString('id-ID');
+            const keuntungan = (item.keuntungan || 0);
+            const keuntunganColor = keuntungan >= 0 ? '#10b981' : '#ef4444';
+            
+            return `
+                <tr style="cursor:pointer;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+                    <td style="font-size:0.82rem;">${tanggalStr}</td>
+                    <td><strong>${item.periodeMA || '-'} Hari</strong></td>
+                    <td>${(item.populasi || 0).toLocaleString('id-ID')} Ekor</td>
+                    <td><strong>${produksiKg} Kg</strong><br><small style="color:#64748b;">(${produksiButir} Butir)</small></td>
+                    <td style="color:${keuntunganColor}; font-weight:700;">Rp ${Math.abs(keuntungan).toLocaleString('id-ID')}</td>
+                    <td style="text-align:center;">
+                        <button onclick="openPrediksiDetail('${item.id}')" 
+                            style="background:#3b82f6; color:white; border:none; padding:4px 10px; border-radius:6px; font-size:11px; cursor:pointer; font-weight:600;">✏️ Detail</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Render rekomendasi dari prediksi terbaru
+    if (data.length > 0 && data[0].rekomendasi && data[0].rekomendasi.length > 0) {
+        renderRekomendasiAdmin(data[0].rekomendasi);
+    } else {
+        hideRekomendasiAdmin();
+    }
+}
+
+/**
+ * ✅ FASE BARU: Update widget statistik prediksi
+ */
+function updatePrediksiStats(latestPrediksi) {
+    if (!latestPrediksi) return;
+    
+    // Update Prediksi Produksi
+    const elProduksi = document.getElementById('admin-prediksi-produksi');
+    const elButir = document.getElementById('admin-prediksi-butir');
+    if (elProduksi) {
+        const kg = (latestPrediksi.prediksiBesokKg || 0).toFixed(2);
+        elProduksi.textContent = `${kg} Kg`;
+    }
+    if (elButir) {
+        const butir = (latestPrediksi.prediksiBesokButir || 0).toLocaleString('id-ID');
+        elButir.textContent = `${butir} Butir Telur`;
+    }
+    
+    // Update Estimasi Pendapatan
+    const elPendapatan = document.getElementById('admin-prediksi-pendapatan');
+    if (elPendapatan) {
+        const pendapatan = (latestPrediksi.estimasiPendapatan || 0).toLocaleString('id-ID');
+        elPendapatan.textContent = `Rp ${pendapatan}`;
+    }
+    
+    // Update Biaya Pakan
+    const elBiaya = document.getElementById('admin-prediksi-biaya');
+    if (elBiaya) {
+        const biaya = (latestPrediksi.biayaPakan || 0).toLocaleString('id-ID');
+        elBiaya.textContent = `Rp ${biaya}`;
+    }
+    
+    // Update Proyeksi Keuntungan
+    const elKeuntungan = document.getElementById('admin-prediksi-keuntungan');
+    if (elKeuntungan) {
+        const keuntungan = (latestPrediksi.keuntungan || 0);
+        const keuntunganStr = keuntungan >= 0 ? `Rp ${keuntungan.toLocaleString('id-ID')}` : `- Rp ${Math.abs(keuntungan).toLocaleString('id-ID')}`;
+        elKeuntungan.textContent = keuntunganStr;
+        elKeuntungan.style.color = keuntungan >= 0 ? '#10b981' : '#ef4444';
+    }
+}
+
+/**
+ * ✅ FASE BARU: Render rekomendasi prediktif di admin panel
+ */
+function renderRekomendasiAdmin(rekomendasi) {
+    const container = document.getElementById('admin-rekomendasi-container');
+    const list = document.getElementById('admin-rekomendasi-list');
+    
+    if (!container || !list) return;
+    
+    container.style.display = 'block';
+    
+    list.innerHTML = rekomendasi.map((rek, idx) => {
+        // Tentukan warna berdasarkan level
+        let bgColor = '#f8fafc';
+        let borderColor = '#e2e8f0';
+        let badgeColor = '#64748b';
+        
+        if (rek.level === 'success') {
+            bgColor = '#d1fae5';
+            borderColor = '#10b981';
+            badgeColor = '#10b981';
+        } else if (rek.level === 'warning') {
+            bgColor = '#fef3c7';
+            borderColor = '#f59e0b';
+            badgeColor = '#f59e0b';
+        } else if (rek.level === 'danger') {
+            bgColor = '#fee2e2';
+            borderColor = '#ef4444';
+            badgeColor = '#ef4444';
+        } else if (rek.level === 'info') {
+            bgColor = '#dbeafe';
+            borderColor = '#3b82f6';
+            badgeColor = '#3b82f6';
+        }
+        
+        // Render actions jika ada
+        let actionsHTML = '';
+        if (rek.actions && rek.actions.length > 0) {
+            actionsHTML = `
+                <div style="margin-top: 0.75rem; padding-left: 1rem; border-left: 2px solid ${borderColor};">
+                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.85rem; color: #2c3e50;">Langkah yang Disarankan:</p>
+                    <ul style="margin: 0; padding-left: 1.25rem; color: #495057; font-size: 0.85rem;">
+                        ${rek.actions.map(action => `<li style="margin-bottom: 0.25rem;">${action}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+        
+        return `
+            <div class="rekomendasi-card-admin animate__animated animate__fadeInUp" 
+                 style="background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; animation-delay: ${idx * 0.1}s;">
+                <div style="display: flex; align-items: flex-start; gap: 12px;">
+                    <span style="font-size: 1.5rem; flex-shrink: 0;">${rek.icon || '💡'}</span>
+                    <div style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                            <span style="background: ${badgeColor}; color: white; font-size: 0.7rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;">${rek.level}</span>
+                            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1a202c;">${rek.title || 'Rekomendasi'}</h4>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; color: #4a5568; line-height: 1.6;">${rek.description || ''}</p>
+                        ${actionsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * ✅ FASE BARU: Sembunyikan container rekomendasi jika tidak ada data
+ */
+function hideRekomendasiAdmin() {
+    const container = document.getElementById('admin-rekomendasi-container');
+    if (container) container.style.display = 'none';
+}
+
+/**
+ * ✅ FASE BARU: Buka detail prediksi (Modal)
+ */
+window.openPrediksiDetail = async function(prediksiId) {
+    try {
+        const prediksiDoc = await getDoc(doc(db, "prediksi_history", prediksiId));
+        if (!prediksiDoc.exists()) {
+            Swal.fire('Error', 'Data prediksi tidak ditemukan.', 'error');
+            return;
+        }
+        
+        const data = prediksiDoc.data();
+        
+        // Format tanggal
+        const tanggalObj = data.tanggal ? new Date(data.tanggal) : null;
+        const tanggalStr = tanggalObj ? tanggalObj.toLocaleDateString('id-ID', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }) : '-';
+        
+        // Render proyeksi 7 hari
+        let proyeksiHTML = '';
+        if (data.proyeksi7HariKg && data.proyeksi7HariKg.length > 0) {
+            proyeksiHTML = `
+                <h4 style="margin: 1.5rem 0 1rem 0; color: #2c3e50; border-bottom: 2px solid #e9ecef; padding-bottom: 0.5rem;">📈 Proyeksi 7 Hari Ke Depan</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f8f9fa;">
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6;">Hari</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;">Produksi (Kg)</th>
+                                <th style="padding: 12px; text-align: right; border-bottom: 2px solid #dee2e6;">Keuntungan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.proyeksi7HariKg.map((kg, i) => {
+                                const profit = (data.proyeksi7HariKeuntungan || [])[i] || 0;
+                                const profitColor = profit >= 0 ? '#10b981' : '#ef4444';
+                                return `
+                                    <tr style="border-bottom: 1px solid #f1f3f5;">
+                                        <td style="padding: 12px; font-weight: 600;">H+${i + 1}</td>
+                                        <td style="padding: 12px; text-align: right; color: #667eea; font-weight: 600;">${kg.toFixed(2)} Kg</td>
+                                        <td style="padding: 12px; text-align: right; color: ${profitColor}; font-weight: 700;">Rp ${Math.round(profit).toLocaleString('id-ID')}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        
+        // Render rekomendasi
+        let rekomendasiHTML = '';
+        if (data.rekomendasi && data.rekomendasi.length > 0) {
+            rekomendasiHTML = `
+                <h4 style="margin: 1.5rem 0 1rem 0; color: #2c3e50; border-bottom: 2px solid #e9ecef; padding-bottom: 0.5rem;">💡 Rekomendasi Prediktif</h4>
+                <div style="display: grid; gap: 1rem;">
+                    ${data.rekomendasi.map(rek => {
+                        let bgColor = '#f8f9fa';
+                        let borderColor = '#dee2e6';
+                        let iconBg = '#6c757d';
+                        
+                        if (rek.level === 'success') {
+                            bgColor = '#d1fae5';
+                            borderColor = '#10b981';
+                            iconBg = '#10b981';
+                        } else if (rek.level === 'warning') {
+                            bgColor = '#fef3c7';
+                            borderColor = '#f59e0b';
+                            iconBg = '#f59e0b';
+                        } else if (rek.level === 'danger') {
+                            bgColor = '#fee2e2';
+                            borderColor = '#ef4444';
+                            iconBg = '#ef4444';
+                        }
+                        
+                        return `
+                            <div style="background: ${bgColor}; border-left: 4px solid ${borderColor}; border-radius: 8px; padding: 1rem;">
+                                <div style="display: flex; align-items: start; gap: 1rem;">
+                                    <div style="background: ${iconBg}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+                                        ${rek.icon || '💡'}
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50; font-size: 1rem;">${rek.title || 'Rekomendasi'}</h4>
+                                        <p style="margin: 0 0 0.75rem 0; color: #495057; font-size: 0.9rem; line-height: 1.5;">${rek.description || ''}</p>
+                                        ${rek.actions && rek.actions.length > 0 ? `
+                                            <div style="margin-top: 0.75rem; padding-left: 1rem; border-left: 2px solid ${borderColor};">
+                                                <p style="margin: 0 0 0.5rem 0; font-weight: 600; font-size: 0.85rem; color: #2c3e50;">Langkah yang Disarankan:</p>
+                                                <ul style="margin: 0; padding-left: 1.25rem; color: #495057; font-size: 0.85rem;">
+                                                    ${rek.actions.map(action => `<li style="margin-bottom: 0.25rem;">${action}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        Swal.fire({
+            title: '🔮 Detail Prediksi Lengkap',
+            html: `
+                <div style="text-align: left; max-height: 70vh; overflow-y: auto; padding: 1rem;">
+                    <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
+                        <p style="margin: 0; color: #7f8c8d; font-size: 0.9rem;">📅 Tanggal Prediksi</p>
+                        <p style="margin: 5px 0 0 0; font-weight: 700; color: #2c3e50;">${tanggalStr}</p>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="padding: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; color: white;">
+                            <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">🥚 Prediksi Telur</p>
+                            <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">${(data.prediksiBesokButir || 0).toLocaleString('id-ID')}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Butir</p>
+                        </div>
+                        <div style="padding: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; color: white;">
+                            <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">💰 Prediksi Pendapatan</p>
+                            <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">Rp ${(data.estimasiPendapatan || 0).toLocaleString('id-ID')}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Estimasi</p>
+                        </div>
+                        <div style="padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; color: white;">
+                            <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">📉 Biaya Pakan</p>
+                            <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">Rp ${(data.biayaPakan || 0).toLocaleString('id-ID')}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Modal</p>
+                        </div>
+                    </div>
+                    
+                    ${proyeksiHTML}
+                    
+                    <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #2c3e50;">ℹ️ Informasi Tambahan</h4>
+                        <div style="display: grid; gap: 0.5rem; font-size: 0.9rem; color: #495057;">
+                            <div><strong>Periode MA:</strong> ${data.periodeMA || '-'} Hari</div>
+                            <div><strong>Populasi:</strong> ${(data.populasi || 0).toLocaleString('id-ID')} Ekor</div>
+                            <div><strong>Batch:</strong> ${data.batchLabel || '-'}</div>
+                            <div><strong>Keuntungan Bersih:</strong> <span style="color: ${data.keuntungan >= 0 ? '#10b981' : '#ef4444'}; font-weight: 700;">Rp ${(data.keuntungan || 0).toLocaleString('id-ID')}</span></div>
+                        </div>
+                    </div>
+                    
+                    ${rekomendasiHTML}
+                </div>
+            `,
+            width: '900px',
+            confirmButtonText: 'Tutup',
+            confirmButtonColor: '#3b82f6'
+        });
+        
+    } catch (error) {
+        console.error('Error loading prediksi detail:', error);
+        Swal.fire('Error', 'Gagal memuat detail prediksi: ' + error.message, 'error');
     }
 }
 

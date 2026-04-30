@@ -1998,14 +1998,115 @@ body {
     flex-direction: column;
     justify-content: center;
     min-height: 90px;
+    overflow: hidden;
 }
 
-/* Responsif: 2 kolom di layar kecil */
-@media (max-width: 768px) {
+.widget-square-box p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.widget-square-box p:last-child {
+    white-space: normal;
+    word-break: break-word;
+}
+
+/* Responsif: Perbaikan untuk layar sedang dan kecil */
+@media (max-width: 1200px) {
+    .quick-actions-widget .qa-square-btn,
+    .prediction-widget .widget-square-box,
+    .finance-summary-widget .widget-square-box {
+        min-height: 85px;
+        padding: 0.7rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 992px) {
     .quick-actions-widget .qa-square-btn,
     .prediction-widget .widget-square-box,
     .finance-summary-widget .widget-square-box {
         min-height: 80px;
+        padding: 0.6rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.7rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .quick-actions-widget .qa-square-btn,
+    .prediction-widget .widget-square-box,
+    .finance-summary-widget .widget-square-box {
+        min-height: 75px;
+        padding: 0.6rem;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 1.2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Di layar sangat kecil, buat grid 1 kolom untuk widget keuangan */
+    .finance-summary-card .widget-card-body > div {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .widget-square-box {
+        min-height: 70px;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .widget-card-header p {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* Perbaikan khusus untuk finance summary widget */
+.finance-summary-card .widget-card-body > div {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.85rem;
+}
+
+/* Responsif grid keuangan untuk layar medium-small */
+@media (max-width: 900px) and (min-width: 769px) {
+    .finance-summary-card .widget-card-body > div {
+        gap: 0.6rem;
+    }
+    
+    .finance-summary-card .widget-square-box {
+        padding: 0.6rem;
+    }
+    
+    .finance-summary-card .widget-square-box p:first-child {
+        font-size: 0.7rem !important;
+    }
+    
+    .finance-summary-card .widget-square-box p:last-child {
+        font-size: 1rem !important;
     }
 }
 
@@ -2021,6 +2122,17 @@ body {
     gap: 1.5rem;
     margin-bottom: 1.5rem;
     align-items: stretch;
+}
+
+/* Responsif untuk tablet landscape */
+@media (max-width: 1024px) {
+    .widgets-row {
+        gap: 1rem;
+    }
+    
+    .widget-card {
+        padding: 1rem;
+    }
 }
 
 /* Card wrapper — tinggi TETAP untuk semua widget agar seragam */
@@ -2040,6 +2152,25 @@ body {
     justify-content: space-between;
     margin-bottom: 1rem;
     gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.widget-card-header > div:first-child {
+    flex: 1;
+    min-width: 200px;
+    overflow: hidden;
+}
+
+.widget-card-header > div:first-child h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.widget-card-header button {
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-width: fit-content;
 }
 
 /* Body konten bawah header — mengisi sisa ruang */
@@ -2093,5 +2224,67 @@ body {
     .widget-card {
         height: auto;
         min-height: 240px;
+    }
+    
+    .widget-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .widget-card-header button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .widget-card {
+        padding: 1rem;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 1rem !important;
+    }
+    
+    .widget-card-header p {
+        font-size: 0.75rem !important;
+    }
+    
+    .widget-card-header span {
+        font-size: 1.5rem !important;
+    }
+    
+    .widget-card-header button {
+        font-size: 0.75rem !important;
+        padding: 6px 12px !important;
+    }
+}
+
+/* Perbaikan khusus untuk layar sangat kecil (< 400px) */
+@media (max-width: 400px) {
+    .widget-card-header {
+        gap: 0.75rem;
+    }
+    
+    .widget-card-header > div:first-child {
+        min-width: 150px;
+    }
+    
+    .widget-card-header h3 {
+        font-size: 0.9rem !important;
+        line-height: 1.3;
+    }
+    
+    .widget-square-box {
+        padding: 0.5rem;
+        min-height: 65px;
+    }
+    
+    .widget-square-box p:first-child {
+        font-size: 0.65rem !important;
+    }
+    
+    .widget-square-box p:last-child {
+        font-size: 0.95rem !important;
     }
 }

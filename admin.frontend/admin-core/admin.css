@@ -1649,3 +1649,427 @@ canvas {
         gap: 1rem;
     }
 }
+
+
+/* =========================================================
+   ✅ TAB PREDIKSI & REKOMENDASI - ADMIN PANEL
+   Styling untuk tab prediksi pada bagian Ringkasan Data Peternakan
+========================================================= */
+
+/* Tab Button Prediksi */
+.tab-btn.btn-tab-prediksi.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+}
+
+/* Info Banner Prediksi */
+.prediksi-info-banner {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left: 4px solid #3b82f6;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.prediksi-info-banner p {
+    margin: 0;
+    color: #1e40af;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.prediksi-info-banner strong {
+    font-weight: 700;
+}
+
+/* Grid Statistik Prediksi */
+.prediksi-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Card Statistik Prediksi Individual */
+.prediksi-stat-card {
+    padding: 1rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.prediksi-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Produksi (Kuning) */
+.prediksi-stat-card.produksi {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid #f59e0b;
+}
+
+/* Card Pendapatan (Hijau) */
+.prediksi-stat-card.pendapatan {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+}
+
+/* Card Biaya (Merah) */
+.prediksi-stat-card.biaya {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left: 4px solid #ef4444;
+}
+
+/* Card Laba (Biru) */
+.prediksi-stat-card.laba {
+    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    border-left: 4px solid #3b82f6;
+}
+
+/* Header Card Prediksi */
+.prediksi-stat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.prediksi-stat-header span {
+    font-size: 1.5rem;
+}
+
+.prediksi-stat-header h4 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+/* Warna Teks Header */
+.prediksi-stat-card.produksi .prediksi-stat-header h4 {
+    color: #92400e;
+}
+
+.prediksi-stat-card.pendapatan .prediksi-stat-header h4 {
+    color: #065f46;
+}
+
+.prediksi-stat-card.biaya .prediksi-stat-header h4 {
+    color: #7f1d1d;
+}
+
+.prediksi-stat-card.laba .prediksi-stat-header h4 {
+    color: #1e3a8a;
+}
+
+/* Nilai Statistik */
+.prediksi-stat-value {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.prediksi-stat-card.produksi .prediksi-stat-value {
+    color: #78350f;
+}
+
+.prediksi-stat-card.pendapatan .prediksi-stat-value {
+    color: #064e3b;
+}
+
+.prediksi-stat-card.biaya .prediksi-stat-value {
+    color: #991b1b;
+}
+
+.prediksi-stat-card.laba .prediksi-stat-value {
+    color: #1e40af;
+}
+
+/* Label Kecil */
+.prediksi-stat-label {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.prediksi-stat-card.produksi .prediksi-stat-label {
+    color: #92400e;
+}
+
+.prediksi-stat-card.pendapatan .prediksi-stat-label {
+    color: #065f46;
+}
+
+.prediksi-stat-card.biaya .prediksi-stat-label {
+    color: #7f1d1d;
+}
+
+.prediksi-stat-card.laba .prediksi-stat-label {
+    color: #1e3a8a;
+}
+
+/* Container Rekomendasi */
+#admin-rekomendasi-container {
+    margin-top: 1.5rem;
+    animation: fadeInUp 0.5s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header Rekomendasi */
+.rekomendasi-header {
+    margin: 0 0 1rem 0;
+    color: #1e293b;
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rekomendasi-header-badge {
+    background: #3b82f6;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+/* Card Rekomendasi Individual */
+.rekomendasi-card {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    animation: slideInLeft 0.5s ease;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.rekomendasi-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Rekomendasi Success (Hijau) */
+.rekomendasi-card.success {
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-left: 4px solid #10b981;
+}
+
+/* Rekomendasi Warning (Kuning) */
+.rekomendasi-card.warning {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border-left: 4px solid #f59e0b;
+}
+
+/* Rekomendasi Danger (Merah) */
+.rekomendasi-card.danger {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-left: 4px solid #ef4444;
+}
+
+/* Konten Rekomendasi */
+.rekomendasi-content {
+    display: flex;
+    align-items: start;
+    gap: 10px;
+}
+
+/* Icon Rekomendasi */
+.rekomendasi-icon {
+    font-size: 1.5rem;
+    color: white;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.rekomendasi-card.success .rekomendasi-icon {
+    background: #10b981;
+}
+
+.rekomendasi-card.warning .rekomendasi-icon {
+    background: #f59e0b;
+}
+
+.rekomendasi-card.danger .rekomendasi-icon {
+    background: #ef4444;
+}
+
+/* Text Rekomendasi */
+.rekomendasi-text {
+    flex: 1;
+}
+
+.rekomendasi-title {
+    margin: 0 0 0.5rem 0;
+    color: #1e293b;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.rekomendasi-description {
+    margin: 0;
+    color: #475569;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* List Actions dalam Rekomendasi */
+.rekomendasi-actions {
+    margin: 0.5rem 0 0 0;
+    padding-left: 1.5rem;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.rekomendasi-actions li {
+    margin-bottom: 0.25rem;
+    color: #475569;
+}
+
+/* Responsive Design untuk Tab Prediksi */
+@media (max-width: 992px) {
+    .prediksi-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .prediksi-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .prediksi-stat-card {
+        padding: 0.85rem;
+    }
+    
+    .prediksi-stat-header span {
+        font-size: 1.3rem;
+    }
+    
+    .prediksi-stat-header h4 {
+        font-size: 0.8rem;
+    }
+    
+    .prediksi-stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .prediksi-stat-label {
+        font-size: 0.7rem;
+    }
+    
+    .rekomendasi-card {
+        padding: 0.85rem;
+    }
+    
+    .rekomendasi-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1.3rem;
+    }
+    
+    .rekomendasi-title {
+        font-size: 0.95rem;
+    }
+    
+    .rekomendasi-description {
+        font-size: 0.85rem;
+    }
+    
+    .rekomendasi-actions {
+        font-size: 0.8rem;
+        padding-left: 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .prediksi-info-banner {
+        padding: 0.85rem;
+    }
+    
+    .prediksi-info-banner p {
+        font-size: 0.85rem;
+    }
+    
+    .prediksi-stat-card {
+        padding: 0.75rem;
+    }
+    
+    .prediksi-stat-header {
+        gap: 8px;
+    }
+    
+    .prediksi-stat-header span {
+        font-size: 1.2rem;
+    }
+    
+    .prediksi-stat-header h4 {
+        font-size: 0.75rem;
+    }
+    
+    .prediksi-stat-value {
+        font-size: 1rem;
+    }
+    
+    .rekomendasi-header {
+        font-size: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .rekomendasi-header-badge {
+        font-size: 0.8rem;
+        padding: 3px 6px;
+    }
+    
+    .rekomendasi-card {
+        padding: 0.75rem;
+    }
+    
+    .rekomendasi-content {
+        gap: 8px;
+    }
+    
+    .rekomendasi-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 1.2rem;
+    }
+    
+    .rekomendasi-title {
+        font-size: 0.9rem;
+    }
+    
+    .rekomendasi-description {
+        font-size: 0.8rem;
+    }
+    
+    .rekomendasi-actions {
+        font-size: 0.75rem;
+        padding-left: 1rem;
+    }
+}
