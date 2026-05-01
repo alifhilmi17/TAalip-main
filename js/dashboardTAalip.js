@@ -38,7 +38,7 @@ window.toggleSidebarMenu = function(submenuId) {
 };
 
 // =========================================================
-// 2. ✅ FASE 3: PROFILE NAVIGATION
+// 2. PROFILE NAVIGATION
 // =========================================================
 // goToProfile() sudah didefinisikan di firebase.component/auth-state.js
 // yang di-load di semua halaman — tidak perlu didefinisikan ulang di sini.
@@ -54,9 +54,9 @@ let state = {
     keuangan: [],
     ayam: [],
     pakan: [],
-    kesehatan: [], // ✅ Tambah state untuk data kesehatan mortalitas
-    prediksi: [], // ✅ FASE 2: Tambah state untuk data prediksi
-    vaksinasi: [] // ✅ FASE 3: Tambah state untuk data vaksinasi
+    kesehatan: [], // Tambah state untuk data kesehatan mortalitas
+    prediksi: [], //  Tambah state untuk data prediksi
+    vaksinasi: [] //  Tambah state untuk data vaksinasi
 };
 
 let eggChartInstance = null;
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // =========================================================
-// 5. ✅ FASE 3: INITIALIZE ALL FASE 3 FEATURES
+// 5. INITIALIZE ALL FASE 3 FEATURES
 // =========================================================
 
 // Add vaccination listener to existing DOMContentLoaded
@@ -171,14 +171,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-// Update FASE 3 features when data changes
+// Update features when data changes
 function updateFase3Features() {
     checkFeedStockAlerts();
     renderVaccinationWidget();
     renderAlertBanners();
 }
 
-// Call FASE 3 updates in existing updateDashboardAggregates function
+// Call updates in existing updateDashboardAggregates function
 const originalUpdateDashboardAggregates = updateDashboardAggregates;
 updateDashboardAggregates = function() {
     originalUpdateDashboardAggregates();
@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 console.log("🚀 FASE 3 Features Loaded: Quick Actions, Alert Banner, Feed Alerts, Vaccination Schedule, goToProfile fix, Activity Progress Bar");// =========================================================
-// 6. ✅ FASE 3: DYNAMIC ALERT BANNER
+// 6. DYNAMIC ALERT BANNER
 // =========================================================
 
 /**
@@ -608,7 +608,7 @@ function renderFinanceChart() {
 
 
 // =========================================================
-// 8. ✅ FASE 3: FEED STOCK ALERTS
+// 8. STOCK PAKAN ALERTS
 // =========================================================
 
 /**
@@ -656,7 +656,7 @@ function updateSimpleFeedAlert(sisaPakan) {
 }
 
 // =========================================================
-// 9. ✅ FASE 3: QUICK ACTIONS FUNCTIONALITY
+// 9. QUICK ACTIONS FUNCTIONALITY
 // =========================================================
 
 /**
@@ -723,10 +723,11 @@ function renderVaccinationWidget() {
             const tanggal = new Date(vaksin.tanggal);
             const today = new Date();
             const diffDays = Math.ceil((tanggal - today) / (1000 * 60 * 60 * 24));
-            
-            let urgencyColor = '#06b6d4';
+
+            let urgencyColor = 'rgba(255,255,255,0.25)';
             let urgencyText = `${diffDays} hari lagi`;
-            
+            let urgencyTextColor = 'white';
+
             if (diffDays <= 0) {
                 urgencyColor = '#ef4444';
                 urgencyText = 'HARI INI!';
@@ -734,18 +735,52 @@ function renderVaccinationWidget() {
                 urgencyColor = '#f59e0b';
                 urgencyText = `${diffDays} hari lagi`;
             }
-            
+
+            // Pisahkan nomor batch dan nama kandang: "B-20260501-237 (Kandang B (Timur))" 
+            const batchRaw = vaksin.batchName || vaksin.batchId || 'Batch';
+            const batchMatch = batchRaw.match(/^(B-[\d]+-[\d]+)\s*(\(.*\))?$/);
+            const batchNum  = batchMatch ? batchMatch[1] : batchRaw;
+            const batchKandang = batchMatch && batchMatch[2] ? batchMatch[2] : '';
+
             return `
-                <div style="background: rgba(255,255,255,0.15); aspect-ratio: 1; padding: 1rem; border-radius: 10px; backdrop-filter: blur(10px); display: flex; flex-direction: column; justify-content: center;">
-                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.9; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px;">
-                        💉 ${vaksin.jenisVaksin || 'Vaksin'}
-                        <span style="background: ${urgencyColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700;">
-                            ${urgencyText}
+                <div style="
+                    background: rgba(255,255,255,0.15);
+                    border-radius: 12px;
+                    padding: 1rem 1.1rem;
+                    backdrop-filter: blur(10px);
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                    min-width: 0;
+                ">
+                    <!-- Baris 1: Jenis vaksin + badge urgensi -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: nowrap;">
+                        <span style="font-size: 0.78rem; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">
+                            💉 ${vaksin.jenis || 'Vaksin'}
                         </span>
+                        <span style="
+                            background: ${urgencyColor};
+                            color: ${urgencyTextColor};
+                            padding: 2px 8px;
+                            border-radius: 12px;
+                            font-size: 0.68rem;
+                            font-weight: 700;
+                            white-space: nowrap;
+                            flex-shrink: 0;
+                        ">${urgencyText}</span>
+                    </div>
+
+                    <!-- Baris 2: Nomor batch -->
+                    <p style="margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: 0.3px; line-height: 1.2;">
+                        ${batchNum}
                     </p>
-                    <p style="margin: 8px 0 0 0; font-size: 1.1rem; font-weight: 700;">${vaksin.batchId || 'Batch'}</p>
-                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">
-                        ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+
+                    <!-- Baris 3: Nama kandang (jika ada) -->
+                    ${batchKandang ? `<p style="margin: 0; font-size: 0.75rem; opacity: 0.75; line-height: 1.2;">${batchKandang}</p>` : ''}
+
+                    <!-- Baris 4: Tanggal -->
+                    <p style="margin: 0; font-size: 0.75rem; opacity: 0.8;">
+                        📅 ${tanggal.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                 </div>
             `;
@@ -763,7 +798,7 @@ window.openVaccinationDetail = function() {
 };
 
 // =========================================================
-// 11. ✅ FASE 2: WIDGET PREDIKSI TERAKHIR
+// 11.  WIDGET PREDIKSI TERAKHIR
 // =========================================================
 /**
  * Merender widget prediksi terakhir di dashboard
@@ -818,7 +853,7 @@ function renderPrediksiWidget() {
 
 
 // =========================================================
-// 12. ✅ FASE 2: WIDGET RINGKASAN KEUANGAN BULAN INI
+// 12.  WIDGET RINGKASAN KEUANGAN BULAN INI
 // =========================================================
 /**
  * Merender widget ringkasan keuangan bulan ini
@@ -894,16 +929,15 @@ function renderActivities() {
     list.innerHTML = "";
 
     const total = state.activities.length;
-    const done = state.activities.filter(a => a.completed).length;
+    const done  = state.activities.filter(a => a.completed).length;
 
-    // Update progress bar
-    const progressBar = document.getElementById("activity-progress-bar");
+    // ── Update progress bar ──────────────────────────────────────
+    const progressBar  = document.getElementById("activity-progress-bar");
     const progressText = document.getElementById("activity-progress-text");
     if (progressBar && progressText) {
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
         progressBar.style.width = `${pct}%`;
         progressText.textContent = `${done} / ${total} selesai`;
-        // Warna teks berubah sesuai progres
         if (pct === 100 && total > 0) {
             progressText.style.color = "#10b981";
             progressBar.style.background = "linear-gradient(90deg, #10b981, #34d399)";
@@ -916,7 +950,18 @@ function renderActivities() {
         }
     }
 
-    // Urutkan: belum selesai dulu, lalu yang sudah selesai
+    // ── Kosong ───────────────────────────────────────────────────
+    if (total === 0) {
+        list.innerHTML = `
+            <li style="text-align:center; color:#94a3b8; font-size:0.85rem;
+                        padding:1.5rem; background:transparent; border:none; list-style:none;">
+                📋 Belum ada aktivitas hari ini.<br>
+                <small>Tambahkan aktivitas di bawah.</small>
+            </li>`;
+        return;
+    }
+
+    // ── Urutkan: belum selesai dulu ──────────────────────────────
     const sorted = [...state.activities].sort((a, b) => {
         if (a.completed === b.completed) return 0;
         return a.completed ? 1 : -1;
@@ -924,33 +969,61 @@ function renderActivities() {
 
     sorted.forEach((item) => {
         const li = document.createElement("li");
-        li.style.display = "flex";
-        li.style.justifyContent = "space-between";
-        li.style.alignItems = "center";
-        li.style.background = item.completed ? "#f1f3f5" : "#fff";
-        li.style.opacity = item.completed ? "0.7" : "1";
-        li.style.transition = "all 0.3s ease";
+        li.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: ${item.completed ? '#f8fafc' : '#fff'};
+            border-left: 3px solid ${item.completed ? '#10b981' : '#e2e8f0'};
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            opacity: ${item.completed ? '0.75' : '1'};
+            transition: all 0.25s ease;
+        `;
+
+        // Format waktu ditambahkan
+        const waktuLabel = item.createdAt
+            ? new Date(item.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+            : '';
 
         li.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
-                <span style="font-size: 1.1rem;">${item.completed ? "✅" : "⬜"}</span>
-                <span style="flex:1; font-size: 0.9rem; ${item.completed ? 'text-decoration:line-through; color:#888;' : 'color:#333;'}">${item.text}</span>
+            <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                <button
+                    class="activity-check-circle ${item.completed ? 'done' : ''}"
+                    title="${item.completed ? 'Batalkan' : 'Tandai selesai'}"
+                    onclick="toggleActivityStatus('${item.id}', ${item.completed})"
+                    style="
+                        width: 26px; height: 26px; flex-shrink: 0;
+                        border-radius: 50%; border: 2px solid ${item.completed ? '#10b981' : '#cbd5e1'};
+                        background: ${item.completed ? '#10b981' : 'transparent'};
+                        color: white; font-size: 0.75rem; cursor: pointer;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: all 0.2s ease;
+                    "
+                >${item.completed ? '✓' : ''}</button>
+                <div style="flex:1; min-width:0;">
+                    <span style="
+                        display: block;
+                        font-size: 0.88rem;
+                        ${item.completed ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b; font-weight:500;'}
+                        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                    ">${item.text}</span>
+                    ${waktuLabel ? `<span style="font-size:0.7rem; color:#cbd5e1;">${item.completed ? '✅ Selesai' : '🕐 ' + waktuLabel}</span>` : ''}
+                </div>
             </div>
-            <div class="action-btn-group">
-                <button class="action-btn check-btn" title="${item.completed ? 'Batalkan' : 'Tandai selesai'}" onclick="toggleActivityStatus('${item.id}', ${item.completed})">${item.completed ? '↩' : '✔'}</button>
-                <button class="action-btn delete-item-btn" title="Hapus" onclick="deleteActivityItem('${item.id}')">✕</button>
-            </div>
+            <button
+                class="action-btn delete-item-btn"
+                title="Hapus aktivitas"
+                onclick="deleteActivityItem('${item.id}')"
+                style="flex-shrink:0; opacity:0.4; transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='1'"
+                onmouseout="this.style.opacity='0.4'"
+            >✕</button>
         `;
         list.appendChild(li);
     });
-
-    // Tampilkan pesan jika kosong
-    if (total === 0) {
-        const empty = document.createElement("li");
-        empty.style.cssText = "text-align:center; color:#94a3b8; font-size:0.85rem; padding:1.5rem; background:transparent; border:none;";
-        empty.innerHTML = "📋 Belum ada aktivitas hari ini.<br><small>Tambahkan aktivitas di bawah.</small>";
-        list.appendChild(empty);
-    }
 }
 
 const activityForm = document.getElementById("addActivityForm");
@@ -1007,9 +1080,6 @@ function renderAnnouncements() {
     if (!list) return;
     list.innerHTML = "";
 
-    console.log('🔍 DEBUG Announcements - Role:', currentUserRole, 'Name:', currentUserName);
-    console.log('🔍 Total pengumuman:', state.announcements.length);
-
     // Hitung yang belum dikonfirmasi oleh user ini
     let belumKonfirmasi = 0;
 
@@ -1021,9 +1091,7 @@ function renderAnnouncements() {
         return;
     }
 
-    state.announcements.forEach((item, index) => {
-        console.log(`🔍 Processing pengumuman ${index + 1}:`, item.text);
-        
+    state.announcements.forEach((item) => {
         const li = document.createElement("li");
         li.className = "announcement-item";
 
@@ -1031,13 +1099,8 @@ function renderAnnouncements() {
         const sudahKonfirmasi = confirmedBy.includes(currentUserName);
         const jumlahKonfirmasi = confirmedBy.length;
 
-        console.log('   - Confirmed by:', confirmedBy);
-        console.log('   - Sudah konfirmasi:', sudahKonfirmasi);
-        console.log('   - Current role:', currentUserRole);
-
         if (currentUserRole === 'admin') {
             // ===== TAMPILAN ADMIN =====
-            console.log('   - Rendering ADMIN view');
             const konfirmasiInfo = jumlahKonfirmasi > 0
                 ? `<div class="konfirmasi-list">
                     <span class="konfirmasi-label">✅ Dikonfirmasi oleh:</span>
@@ -1064,73 +1127,79 @@ function renderAnnouncements() {
             `;
         } else {
             // ===== TAMPILAN PETUGAS =====
-            console.log('   - Rendering PETUGAS view');
             if (!sudahKonfirmasi) belumKonfirmasi++;
 
-            li.style.background = sudahKonfirmasi ? '#f0fdf4' : '#fff';
-            li.style.borderLeft = sudahKonfirmasi ? '4px solid #10b981' : '4px solid #ff5e62';
-            li.style.display = 'flex';
-            li.style.justifyContent = 'space-between';
-            li.style.alignItems = 'center';
-            li.style.padding = '1rem';
-            li.style.marginBottom = '0.8rem';
-            li.style.borderRadius = '10px';
+            li.style.cssText = `
+                background: ${sudahKonfirmasi ? '#f0fdf4' : '#fff'};
+                border-left: 4px solid ${sudahKonfirmasi ? '#10b981' : '#ff5e62'};
+                border-radius: 10px;
+                padding: 12px 14px;
+                margin-bottom: 0.8rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 12px;
+            `;
 
-            // Buat elemen konten
+            // Konten kiri
             const contentDiv = document.createElement('div');
             contentDiv.className = 'announcement-content';
-            contentDiv.style.flex = '1';
+            contentDiv.style.cssText = 'flex:1; min-width:0;';
             contentDiv.innerHTML = `
-                <span class="text" style="${sudahKonfirmasi ? 'color:#16a34a;' : 'color:#333;'}">${item.text}</span>
-                <div class="announcement-meta" style="display:flex; gap:10px; margin-top:8px; align-items:center;">
-                    <span class="announcement-time" style="font-size:0.72rem; color:#94a3b8;">${formatWaktuPengumuman(item.createdAt)}</span>
-                    ${sudahKonfirmasi
-                        ? `<span class="konfirmasi-count-badge confirmed" style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;">✅ Sudah dikonfirmasi</span>`
-                        : `<span class="konfirmasi-count-badge pending" style="background:#fef3c7; color:#92400e; padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:700;">⏳ Belum dikonfirmasi</span>`
-                    }
+                <span class="text" style="
+                    display: block;
+                    font-size: 0.88rem;
+                    font-weight: 600;
+                    color: ${sudahKonfirmasi ? '#15803d' : '#1e293b'};
+                    margin-bottom: 6px;
+                    line-height: 1.4;
+                ">${item.text}</span>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:0.7rem; color:#94a3b8;">${formatWaktuPengumuman(item.createdAt)}</span>
+                    <span style="
+                        background: ${sudahKonfirmasi ? '#dcfce7' : '#fef3c7'};
+                        color: ${sudahKonfirmasi ? '#15803d' : '#92400e'};
+                        padding: 2px 8px; border-radius: 20px;
+                        font-size: 0.68rem; font-weight: 700;
+                    ">${sudahKonfirmasi ? '✅ Sudah dikonfirmasi' : '⏳ Belum dikonfirmasi'}</span>
                 </div>
             `;
 
-            // Buat button group
-            const btnGroup = document.createElement('div');
-            btnGroup.className = 'action-btn-group';
-            btnGroup.style.display = 'flex';
-            btnGroup.style.flexDirection = 'column';
-            btnGroup.style.gap = '5px';
-            btnGroup.style.marginLeft = '10px';
-            btnGroup.style.flexShrink = '0';
-
-            // Buat tombol konfirmasi
+            // Tombol konfirmasi kanan
             const confirmBtn = document.createElement('button');
-            confirmBtn.className = sudahKonfirmasi 
-                ? 'action-btn confirm-item-btn confirmed' 
-                : 'action-btn confirm-item-btn';
-            confirmBtn.textContent = sudahKonfirmasi ? '✔ Sudah' : '✔ Konfirmasi';
+            confirmBtn.style.cssText = `
+                flex-shrink: 0;
+                padding: 7px 14px;
+                border-radius: 8px;
+                border: none;
+                font-size: 0.78rem;
+                font-weight: 700;
+                cursor: ${sudahKonfirmasi ? 'default' : 'pointer'};
+                background: ${sudahKonfirmasi ? '#dcfce7' : '#10b981'};
+                color: ${sudahKonfirmasi ? '#15803d' : '#fff'};
+                white-space: nowrap;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            `;
+            confirmBtn.innerHTML = sudahKonfirmasi ? '✓ Sudah' : '✓ Konfirmasi';
             confirmBtn.title = sudahKonfirmasi ? 'Sudah dikonfirmasi' : 'Konfirmasi pengumuman ini';
-            confirmBtn.style.display = 'block'; // PAKSA MUNCUL
-            confirmBtn.style.visibility = 'visible'; // PAKSA TERLIHAT
-            
-            if (sudahKonfirmasi) {
-                confirmBtn.disabled = true;
-            } else {
-                confirmBtn.onclick = () => {
-                    console.log('🔍 Tombol konfirmasi diklik untuk:', item.id);
-                    konfirmasiPengumuman(item.id);
-                };
+            confirmBtn.disabled = sudahKonfirmasi;
+
+            if (!sudahKonfirmasi) {
+                confirmBtn.onmouseover = () => confirmBtn.style.background = '#059669';
+                confirmBtn.onmouseout  = () => confirmBtn.style.background = '#10b981';
+                confirmBtn.onclick = () => konfirmasiPengumuman(item.id);
             }
 
-            console.log('   - Tombol dibuat:', confirmBtn.textContent, '| Disabled:', confirmBtn.disabled);
-
-            btnGroup.appendChild(confirmBtn);
             li.appendChild(contentDiv);
-            li.appendChild(btnGroup);
+            li.appendChild(confirmBtn);
         }
 
         list.appendChild(li);
-        console.log('   - Item ditambahkan ke list');
     });
 
-    console.log('🔍 Total belum konfirmasi:', belumKonfirmasi);
     updateUnreadBadge(belumKonfirmasi);
 }
 
@@ -1265,7 +1334,7 @@ window.deleteScheduleItem = async function(id) {
 };
 
 // =========================================================
-// 16. ✅ FASE 2: MODAL DETAIL PREDIKSI
+// 16.  MODAL DETAIL PREDIKSI
 // =========================================================
 /**
  * Membuka modal detail prediksi
@@ -1438,7 +1507,7 @@ window.closeModalPrediksi = function() {
 };
 
 // =========================================================
-// 17. ✅ FASE 2: MODAL DETAIL KEUANGAN
+// 17.  MODAL DETAIL KEUANGAN
 // =========================================================
 /**
  * Membuka modal detail keuangan

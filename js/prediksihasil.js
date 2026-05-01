@@ -115,16 +115,19 @@ window.logoutUser = function() {
 let predictionChart = null;
 let totalHistoryDays = 7; // Default jumlah hari riwayat
 let batchDataAyam = []; // Data batch ayam dari Firestore
+let dataProduksi = []; // Data produksi harian dari Firestore
 let lastPredictionData = null; // Menyimpan data prediksi terakhir untuk keperluan download CSV
 
 // Referensi koleksi Firestore
 const ayamCollection = collection(db, "populasi_ayam");
+const produksiCollection = collection(db, "produksi_harian");
 const historyCollection = collection(db, "prediksi_history");
 
 // Inisialisasi awal render input begitu halaman dimuat
 document.addEventListener('DOMContentLoaded', () => {
     renderHistoricalInputs();
     loadBatchAyam();
+    loadProduksiData();
     loadPredictionHistory();
 });
 
@@ -171,7 +174,8 @@ function loadBatchAyam() {
 
         // Option: semua batch aktif digabung
         const optAll = document.createElement('option');
-        optAll.value = totalSemua;
+        optAll.value = 'ALL';
+        optAll.dataset.populasi = totalSemua;
         optAll.textContent = `📊 Semua Batch Aktif (${totalSemua.toLocaleString('id-ID')} Ekor)`;
         optAll.dataset.info = `Total dari ${batchAktif.length} batch aktif`;
         selectEl.appendChild(optAll);
@@ -181,14 +185,15 @@ function loadBatchAyam() {
             const opt = document.createElement('option');
             const sisa = parseInt(b.sisaAyam) || 0;
             const batchId = b.customId || b.id.substring(0, 5);
-            opt.value = sisa;
+            opt.value = b.id; // ID dokumen Firestore
+            opt.dataset.populasi = sisa;
             opt.textContent = `🐔 ${batchId} — ${b.kandang} (${sisa.toLocaleString('id-ID')} Ekor)`;
             opt.dataset.info = `${b.jenis} | ${b.kandang} | Sisa: ${sisa.toLocaleString('id-ID')} ekor`;
             selectEl.appendChild(opt);
         });
 
         // Set default ke total semua
-        selectEl.value = totalSemua;
+        selectEl.value = 'ALL';
         hiddenPopulasi.value = totalSemua;
         if (infoEl) infoEl.textContent = `Total dari ${batchAktif.length} batch aktif`;
     }, (error) => {
@@ -198,13 +203,99 @@ function loadBatchAyam() {
 
     // Event listener perubahan dropdown
     selectEl.addEventListener('change', function() {
-        hiddenPopulasi.value = this.value;
         const selectedOption = this.options[this.selectedIndex];
+        hiddenPopulasi.value = selectedOption.dataset.populasi || 0;
         if (infoEl && selectedOption.dataset.info) {
             infoEl.textContent = selectedOption.dataset.info;
         }
+        // Auto-fill data produksi saat batch dipilih
+        autoFillFromBatch();
     });
 }
+
+/**
+ * Memuat data produksi harian dari Firestore
+ */
+function loadProduksiData() {
+    const q = query(produksiCollection, orderBy("tanggal", "desc"));
+    onSnapshot(q, (snapshot) => {
+        dataProduksi = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    });
+}
+
+/**
+ * Auto-fill data historis produksi berdasarkan batch yang dipilih
+ */
+window.autoFillFromBatch = function() {
+    const batchSelect = document.getElementById('populasiBatch');
+    const periodeMA = parseInt(document.getElementById('periodeMA').value) || 5;
+    
+    if (!batchSelect || !batchSelect.value) return;
+    
+    const selectedBatchId = batchSelect.value;
+    
+    // Filter data produksi berdasarkan batch
+    let filteredData = [];
+    if (selectedBatchId === 'ALL') {
+        // Jika "Semua Batch", ambil semua data produksi
+        filteredData = [...dataProduksi];
+    } else {
+        // Jika batch spesifik, filter berdasarkan batchId
+        filteredData = dataProduksi.filter(p => p.batchId === selectedBatchId);
+    }
+    
+    // Urutkan berdasarkan tanggal descending (terbaru dulu)
+    filteredData.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
+    
+    // Ambil N data terakhir sesuai periode MA
+    const dataToFill = filteredData.slice(0, periodeMA);
+    
+    if (dataToFill.length === 0) {
+        Swal.fire({
+            icon: 'info',
+            title: 'Belum Ada Data Produksi',
+            html: `Batch yang dipilih belum memiliki data produksi.<br><br>Silakan input data produksi terlebih dahulu di halaman <strong>Input Produksi Harian</strong>.`,
+            confirmButtonColor: '#3085d6'
+        });
+        return;
+    }
+    
+    if (dataToFill.length < periodeMA) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data Produksi Kurang Lengkap',
+            html: `Batch ini hanya memiliki <strong>${dataToFill.length} hari</strong> data produksi, sedangkan Periode MA yang dipilih adalah <strong>${periodeMA} hari</strong>.<br><br>Data yang ada akan diisi otomatis, sisanya perlu dilengkapi manual.`,
+            confirmButtonColor: '#f59e0b'
+        });
+    }
+    
+    // Isi data ke input field (dari H-0 mundur ke H-N)
+    dataToFill.forEach((prod, index) => {
+        const inputId = `hist${index}`;
+        const profitId = `prof${index}`;
+        const inputEl = document.getElementById(inputId);
+        const profitEl = document.getElementById(profitId);
+        
+        if (inputEl) {
+            inputEl.value = prod.totalTelur || 0; // Dalam butir
+        }
+        
+        // Untuk profit, kita perlu hitung manual atau ambil dari data keuangan
+        // Sementara kosongkan dulu (user harus isi manual)
+        if (profitEl) {
+            profitEl.value = ''; // Kosongkan, user isi manual
+        }
+    });
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'Data Berhasil Dimuat!',
+        html: `<strong>${dataToFill.length} hari</strong> data produksi telah diisi otomatis ke form.<br><br>Silakan lengkapi data <strong>Keuntungan (Rp)</strong> secara manual di tab sebelah.`,
+        timer: 3000,
+        showConfirmButton: true,
+        confirmButtonColor: '#10b981'
+    });
+};
 
 /**
  * Menambah atau mengurangi jumlah hari riwayat data yang ingin diinput

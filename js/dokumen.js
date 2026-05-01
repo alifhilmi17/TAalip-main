@@ -469,7 +469,7 @@ window.cetakLaporan = function(modul) {
     win.document.close();
     win.print(); // Perintah cetak
     
-    tambahLog(`🖨️ Cetak laporan: ${modul} (${data.length} entri)`, '🖨️');
+    tambahLog(`🖨️ Cetak laporan: ${modul} (${data.length} entri)`, );
 };
 
 // =========================================
@@ -850,7 +850,7 @@ window.cetakLaporanTerpadu = function() {
     // Tunggu sejenak agar browser merender HTML sebelum memicu cetak
     setTimeout(() => {
         win.print();
-        tambahLog('🖨️ Cetak Laporan Terpadu berhasil dilakukan', '🖨️');
+        tambahLog('🖨️ Cetak Laporan Terpadu berhasil dilakukan', );
     }, 500);
 };
 
@@ -1046,7 +1046,7 @@ window.bukaModalPreview = function(modul) {
         document.body.style.overflow = 'hidden'; // Cegah scroll halaman di belakang modal
     }
 
-    tambahLog(`👁️ Membuka pratinjau: ${cfg.title} (${data.length} entri)`, '👁️');
+    tambahLog(`👁️ Membuka pratinjau: ${cfg.title} (${data.length} entri)`, );
 };
 
 /**

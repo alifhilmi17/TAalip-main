@@ -261,13 +261,27 @@
 
                 <div class="form-group">
                     <label for="ayamTidakBertelur">Jumlah Ayam Tidak Bertelur (Ekor)</label>
-                    <input type="number" id="ayamTidakBertelur" min="0"  placeholder="Catat jumlah ayam yang tidak menghasilkan telur hari ini">
+                    <input type="number" id="ayamTidakBertelur" min="0"
+                        placeholder="Catat jumlah ayam yang tidak menghasilkan telur hari ini"
+                        oninput="validateProduksiRealtime()">
                 </div>
 
                 <div class="form-group">
                     <label for="totalTelur">Total Telur (Butir)</label>
                     <input type="number" id="totalTelur" readonly
                         style="background-color: #e2e8f0; font-weight: bold; pointer-events: none;">
+                    <!-- Hint validasi real-time -->
+                    <small id="validasiHint" style="
+                        display: none;
+                        margin-top: 6px;
+                        font-size: 0.78rem;
+                        font-weight: 500;
+                        padding: 6px 10px;
+                        border-radius: 6px;
+                        background: #fef9ec;
+                        border: 1px solid #fde68a;
+                        line-height: 1.4;
+                    "></small>
                 </div>
 
                 <!--  <div class="form-group">

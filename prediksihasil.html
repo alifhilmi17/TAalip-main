@@ -329,12 +329,13 @@
                         <div class="form-row">
                             <div class="form-group half">
                                 <label for="periodeMA" style="font-weight: 600;">Periode MA (Hari)</label>
-                                <select id="periodeMA" class="styled-select"
+                                <select id="periodeMA" class="styled-select" onchange="autoFillFromBatch()"
                                     style="background: #fff; border-color: #9b59b6;">
                                     <option value="3">3 Hari (Responsif)</option>
                                     <option value="5" selected>5 Hari (Standar)</option>
                                     <option value="7">7 Hari (Tren Panjang)</option>
                                 </select>
+                                <small style="font-size: 0.78rem; color: #7f8c8d; margin-top: 4px; display: block;">Ubah periode untuk menyesuaikan jumlah data historis yang dimuat.</small>
                             </div>
                             <div class="form-group half">
                                 <label for="populasiBatch" style="font-weight: 600;">Populasi Kandang/Ayam</label>
@@ -345,6 +346,28 @@
                                 <input type="hidden" id="populasi" value="0">
                                 <small id="populasiBatchInfo" style="font-size: 0.78rem; color: #7f8c8d; margin-top: 4px; display: block;">Pilih batch ayam aktif dari data yang sudah diinput.</small>
                             </div>
+                        </div>
+
+                        <!-- Tombol Muat Data Otomatis -->
+                        <div style="margin-top: 15px; padding: 12px; background: #e8f5e9; border: 1px solid #a5d6a7; border-radius: 10px;">
+                            <button type="button" onclick="autoFillFromBatch()" class="btn-secondary" style="
+                                width: 100%;
+                                padding: 12px;
+                                background: linear-gradient(135deg, #10b981, #059669);
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                font-size: 0.95rem;
+                                cursor: pointer;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+                            " onmouseover="this.style.background='linear-gradient(135deg, #059669, #047857)'" onmouseout="this.style.background='linear-gradient(135deg, #10b981, #059669)'">
+                                🔄 Muat Data Produksi dari Batch
+                            </button>
+                            <small style="display: block; margin-top: 8px; font-size: 0.75rem; color: #065f46; text-align: center;">
+                                Klik untuk mengisi data historis produksi secara otomatis berdasarkan batch dan periode MA yang dipilih.
+                            </small>
                         </div>
 
                         <!-- Baris 2: Konsumsi Pakan per Ekor -->

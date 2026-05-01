@@ -142,7 +142,46 @@ window.calculateTotal = function() {
     const baik = parseInt(document.getElementById('telurBaik').value) || 0;
     const cacat = parseInt(document.getElementById('telurCacat').value) || 0;
     document.getElementById('totalTelur').value = baik + cacat;
+
+    // Jalankan validasi ringan real-time saat angka berubah
+    window.validateProduksiRealtime();
 };
+
+/**
+ * Validasi ringan real-time — tampilkan hint di bawah field tanpa memblokir
+ */
+window.validateProduksiRealtime = function() {
+    const batchId = document.getElementById('batchProduksi').value;
+    if (!batchId) return;
+
+    const batchData = dataAyam.find(a => a.id === batchId);
+    if (!batchData) return;
+
+    const sisaAyam   = parseInt(batchData.sisaAyam) || 0;
+    const totalTelur = parseInt(document.getElementById('totalTelur').value) || 0;
+    const hint       = document.getElementById('validasiHint');
+    if (!hint) return;
+
+    if (sisaAyam <= 0) { hint.style.display = 'none'; return; }
+
+    const rasio = (totalTelur / sisaAyam) * 100;
+
+    if (totalTelur > sisaAyam) {
+        hint.textContent = `⚠️ Total telur (${totalTelur}) melebihi jumlah ayam (${sisaAyam} ekor). Periksa kembali.`;
+        hint.style.color = '#ef4444';
+        hint.style.display = 'block';
+    } else if (rasio > 95) {
+        hint.textContent = `ℹ️ Rasio produksi ${rasio.toFixed(1)}% — sangat tinggi, pastikan data sudah benar.`;
+        hint.style.color = '#f59e0b';
+        hint.style.display = 'block';
+    } else if (totalTelur > 0 && rasio < 30) {
+        hint.textContent = `ℹ️ Rasio produksi ${rasio.toFixed(1)}% — cukup rendah. Normal jika ada wabah atau cuaca ekstrem.`;
+        hint.style.color = '#64748b';
+        hint.style.display = 'block';
+    } else {
+        hint.style.display = 'none';
+    }
+}
 
 // =========================================
 // 4. CRUD FIRESTORE
@@ -174,34 +213,98 @@ window.saveProduksiData = async function(event) {
 
     const idInput = document.getElementById('produksiId').value;
     const batchEl = document.getElementById('batchProduksi');
-    
-    // Memberntuk objek data produksi
+
+    // ── Ambil nilai form ──────────────────────────────────────────
+    const telurBaik        = parseInt(document.getElementById('telurBaik').value) || 0;
+    const telurCacat       = parseInt(document.getElementById('telurCacat').value) || 0;
+    const totalTelur       = telurBaik + telurCacat;
+    const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
+
+    // ── Ambil data batch untuk validasi ──────────────────────────
+    const batchData = dataAyam.find(a => a.id === batchEl.value);
+    const sisaAyam  = batchData ? (parseInt(batchData.sisaAyam) || 0) : 0;
+
+    // ── VALIDASI DATA INTEGRITY ───────────────────────────────────
+    if (sisaAyam > 0) {
+
+        // 1. Total telur tidak boleh melebihi jumlah ayam
+        if (totalTelur > sisaAyam) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Data Tidak Logis',
+                html: `Total telur <strong>${totalTelur.toLocaleString('id-ID')} butir</strong> melebihi jumlah ayam yang ada: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.<br><br>
+                       Seekor ayam hanya bisa menghasilkan maksimal 1 telur per hari.`,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Perbaiki Data'
+            });
+            return;
+        }
+
+        // 2. Ayam tidak bertelur tidak boleh melebihi jumlah ayam
+        if (ayamTidakBertelur > sisaAyam) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Data Tidak Logis',
+                html: `Jumlah ayam tidak bertelur <strong>${ayamTidakBertelur.toLocaleString('id-ID')} ekor</strong> melebihi total ayam yang ada: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.`,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Perbaiki Data'
+            });
+            return;
+        }
+
+        // 3. Ayam bertelur + tidak bertelur tidak boleh melebihi total ayam
+        const ayamBertelur = totalTelur; // 1 telur per ayam
+        if (ayamBertelur + ayamTidakBertelur > sisaAyam) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Data Tidak Konsisten',
+                html: `Jumlah ayam bertelur (${ayamBertelur.toLocaleString('id-ID')}) + tidak bertelur (${ayamTidakBertelur.toLocaleString('id-ID')}) = <strong>${(ayamBertelur + ayamTidakBertelur).toLocaleString('id-ID')} ekor</strong>, melebihi total ayam: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.`,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'Perbaiki Data'
+            });
+            return;
+        }
+
+        // 4. Peringatan jika rasio produksi sangat tinggi (> 95%) — minta konfirmasi
+        const rasio = (totalTelur / sisaAyam) * 100;
+        if (rasio > 95 && totalTelur > 0) {
+            const konfirmasi = await Swal.fire({
+                icon: 'warning',
+                title: 'Rasio Produksi Sangat Tinggi',
+                html: `Rasio produksi <strong>${rasio.toFixed(1)}%</strong> (${totalTelur} telur dari ${sisaAyam} ayam) tergolong sangat tinggi.<br><br>
+                       Apakah data ini sudah benar?`,
+                showCancelButton: true,
+                confirmButtonColor: '#f59e0b',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Ya, Data Sudah Benar',
+                cancelButtonText: 'Periksa Lagi'
+            });
+            if (!konfirmasi.isConfirmed) return;
+        }
+    }
+
+    // ── Bentuk payload ────────────────────────────────────────────
     const tanggalValue = document.getElementById('tglProduksi').value;
-    console.log('🔍 DEBUG Input Produksi - Tanggal yang akan disimpan:', tanggalValue);
-    
+
     const payload = {
-        tanggal: tanggalValue, 
+        tanggal: tanggalValue,
         batchId: batchEl.value,
         batchLabel: batchEl.options[batchEl.selectedIndex].text,
         jenisTelur: document.getElementById('jenisTelurProduksi').value,
         kandang: document.getElementById('kandangProduksiHidden').value || document.getElementById('kandangProduksi').value,
-        telurBaik: parseInt(document.getElementById('telurBaik').value) || 0,
-        telurCacat: parseInt(document.getElementById('telurCacat').value) || 0,
-        totalTelur: parseInt(document.getElementById('totalTelur').value) || 0,
-        ayamTidakBertelur: parseInt(document.getElementById('ayamTidakBertelur').value) || 0,
+        telurBaik,
+        telurCacat,
+        totalTelur,
+        ayamTidakBertelur,
         updatedAt: new Date().toISOString()
     };
-    
-    console.log('🔍 DEBUG Input Produksi - Payload lengkap:', payload);
 
     try {
         if (idInput === "") {
-            // Mode Tambah Baru
             payload.createdAt = new Date().toISOString();
             await addDoc(produksiCollection, payload);
             Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi ditambahkan.', timer: 2000, showConfirmButton: false });
         } else {
-            // Mode Update Data
             await updateDoc(doc(db, "produksi_harian", idInput), payload);
             Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi diperbarui.', timer: 2000, showConfirmButton: false });
         }
