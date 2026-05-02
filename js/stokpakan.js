@@ -142,6 +142,36 @@ window.selectTransactionType = function(type) {
 // ==========================================
 // 4. MODAL FORM UTAMA (STOK & PEMAKAIAN)
 // ==========================================
+window.toggleJenisPakanInput = function() {
+    const tipe = document.getElementById('tipePakan').value;
+    const inputEl = document.getElementById('jenisPakan');
+    const selectEl = document.getElementById('jenisPakanSelect');
+    
+    if (tipe === "Keluar") {
+        inputEl.style.display = 'none';
+        inputEl.removeAttribute('required');
+        inputEl.setAttribute('disabled', 'true');
+        
+        selectEl.style.display = 'block';
+        selectEl.setAttribute('required', 'true');
+        selectEl.removeAttribute('disabled');
+        
+        const uniqueFeeds = [...new Set(dataPakan.filter(p => p.tipe === "Masuk").map(p => p.jenis))];
+        
+        selectEl.innerHTML = '<option value="" disabled selected>-- Pilih Pakan Tersedia --</option>';
+        uniqueFeeds.forEach(feed => {
+            selectEl.innerHTML += `<option value="${feed}">${feed}</option>`;
+        });
+    } else {
+        selectEl.style.display = 'none';
+        selectEl.removeAttribute('required');
+        selectEl.setAttribute('disabled', 'true');
+        
+        inputEl.style.display = 'block';
+        inputEl.setAttribute('required', 'true');
+        inputEl.removeAttribute('disabled');
+    }
+};
 window.openPakanModal = function(type = '') {
     const form = document.getElementById('pakanForm');
     if (form) form.reset();
@@ -155,8 +185,11 @@ window.openPakanModal = function(type = '') {
     const tipeEl = document.getElementById('tipePakan');
     if (type) {
         tipeEl.value = type;
+        tipeEl.setAttribute('disabled', 'true');
         document.getElementById('modalTitlePakan').innerText = type === "Masuk" ? "➕ Tambah Stok Pakan" : "📤 Catat Pemakaian Pakan";
+        window.toggleJenisPakanInput();
     } else {
+        tipeEl.removeAttribute('disabled');
         document.getElementById('modalTitlePakan').innerText = "Edit Data Pakan";
     }
 
@@ -204,7 +237,7 @@ window.savePakanData = async function(event) {
     const payload = {
         tanggal: document.getElementById('tglPakan').value,
         tipe: tipe,
-        jenis: document.getElementById('jenisPakan').value,
+        jenis: tipe === "Keluar" ? document.getElementById('jenisPakanSelect').value : document.getElementById('jenisPakan').value,
         jumlah: jumlah,
         keterangan: document.getElementById('ketPakan').value || "",
         dicatatOleh: currentUserName,
@@ -236,8 +269,19 @@ window.editPakan = function(id) {
 
     document.getElementById('pakanId').value = item.id;
     document.getElementById('tglPakan').value = item.tanggal;
-    document.getElementById('tipePakan').value = item.tipe;
-    document.getElementById('jenisPakan').value = item.jenis;
+    
+    const tipeEl = document.getElementById('tipePakan');
+    tipeEl.value = item.tipe;
+    tipeEl.setAttribute('disabled', 'true');
+    
+    window.toggleJenisPakanInput();
+    
+    if (item.tipe === "Keluar") {
+        document.getElementById('jenisPakanSelect').value = item.jenis;
+    } else {
+        document.getElementById('jenisPakan').value = item.jenis;
+    }
+    
     document.getElementById('jumlahPakan').value = item.jumlah;
     document.getElementById('ketPakan').value = item.keterangan || "";
     

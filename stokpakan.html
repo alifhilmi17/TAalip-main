@@ -291,7 +291,7 @@
 
                 <div class="form-group">
                     <label for="tipePakan">Tipe Transaksi</label>
-                    <select id="tipePakan" required>
+                    <select id="tipePakan" onchange="toggleJenisPakanInput()" required>
                         <option value="" disabled selected>Pilih Tipe Transaksi</option>
                         <option value="Masuk">Masuk (Beli / Restock)</option>
                         <option value="Keluar">Keluar (Pemakaian / Konsumsi)</option>
@@ -301,6 +301,9 @@
                 <div class="form-group">
                     <label for="jenisPakan">Jenis / Nama Pakan</label>
                     <input type="text" id="jenisPakan" placeholder="Contoh: Konsentrat BP11, Jagung Giling" required>
+                    <select id="jenisPakanSelect" style="display:none;" disabled required>
+                        <option value="" disabled selected>-- Pilih Pakan Tersedia --</option>
+                    </select>
                 </div>
 
                 <div class="form-group">

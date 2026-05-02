@@ -56,7 +56,9 @@ let state = {
     pakan: [],
     kesehatan: [], // Tambah state untuk data kesehatan mortalitas
     prediksi: [], //  Tambah state untuk data prediksi
-    vaksinasi: [] //  Tambah state untuk data vaksinasi
+    vaksinasi: [], //  Tambah state untuk data vaksinasi
+    reminders: [], // Tambah state untuk data restock_reminders
+    alertLimits: { kritis: 20, rendah: 50 } // Default limits
 };
 
 let eggChartInstance = null;
@@ -155,6 +157,20 @@ document.addEventListener("DOMContentLoaded", () => {
         state.prediksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         renderPrediksiWidget();
     });
+
+    // J. Data Reminders Pakan
+    onSnapshot(collection(db, "restock_reminders"), (snap) => {
+        state.reminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        updateFase3Features();
+    });
+
+    // K. Listener Settings Pakan Alert
+    onSnapshot(doc(db, "settings", "pakan_alert"), (docSnap) => {
+        if (docSnap.exists()) {
+            state.alertLimits = docSnap.data();
+            updateFase3Features();
+        }
+    });
 });
 
 // =========================================================
@@ -218,7 +234,9 @@ function renderAlertBanners() {
     });
     const sisaPakan = pakanMasuk - pakanKeluar;
 
-    if (sisaPakan <= 20) {
+    const { kritis, rendah } = state.alertLimits;
+
+    if (sisaPakan <= kritis) {
         alerts.push({
             level: 'danger',
             icon: '🚨',
@@ -226,13 +244,35 @@ function renderAlertBanners() {
             msg: `Sisa pakan hanya <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Segera lakukan pembelian pakan sekarang.`,
             action: { label: 'Kelola Pakan →', href: 'stokpakan.html' }
         });
-    } else if (sisaPakan <= 50) {
+    } else if (sisaPakan <= rendah) {
         alerts.push({
             level: 'warning',
             icon: '⚠️',
             title: 'Stok Pakan Rendah',
             msg: `Sisa pakan <strong>${sisaPakan.toLocaleString('id-ID')} Kg</strong>. Persiapkan restock sebelum habis.`,
             action: { label: 'Lihat Stok →', href: 'stokpakan.html' }
+        });
+    }
+
+    // --- 1.b. Cek Restock Reminders ---
+    const pendingReminders = state.reminders.filter(r => r.status === 'Pending');
+    const tinggiReminders = pendingReminders.filter(r => r.prioritas === 'Tinggi');
+    
+    if (tinggiReminders.length > 0) {
+        alerts.push({
+            level: 'danger',
+            icon: '⏰',
+            title: 'Pengingat Restock Mendesak!',
+            msg: `Ada <strong>${tinggiReminders.length} pengingat pakan</strong> prioritas tinggi yang belum selesai.`,
+            action: { label: 'Lihat Reminder →', href: 'restockreminder.html' }
+        });
+    } else if (pendingReminders.length > 0) {
+        alerts.push({
+            level: 'info',
+            icon: '⏰',
+            title: 'Pengingat Restock Pakan',
+            msg: `Terdapat <strong>${pendingReminders.length} pengingat</strong> pemesanan pakan yang menunggu diselesaikan.`,
+            action: { label: 'Lihat Reminder →', href: 'restockreminder.html' }
         });
     }
 
@@ -635,20 +675,18 @@ function updateSimpleFeedAlert(sisaPakan) {
     
     if (!alertEl) return;
     
-    // Show simple alert if stock is low (< 100kg)
-    if (sisaPakan < 100) {
+    // Show simple alert if stock is low (using dynamic limits)
+    const { kritis, rendah } = state.alertLimits;
+
+    if (sisaPakan <= rendah) {
         alertEl.style.display = 'block';
         
-        // Simple message based on urgency - no complex styling
-        if (sisaPakan <= 20) {
+        if (sisaPakan <= kritis) {
             alertEl.textContent = '🚨 Stok kritis, beli sekarang!';
             alertEl.style.color = '#dc2626';
-        } else if (sisaPakan <= 50) {
+        } else {
             alertEl.textContent = '⚠️ Stok rendah, segera restock';
             alertEl.style.color = '#f59e0b';
-        } else {
-            alertEl.textContent = '📢 Stok menipis, persiapkan restock';
-            alertEl.style.color = '#3b82f6';
         }
     } else {
         alertEl.style.display = 'none';

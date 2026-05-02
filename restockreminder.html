@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <!-- ========================= META & TITLE ========================== -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Restock Reminder - LIBAS</title>
+
+    <!-- ========================= FONT & ANIMASI ========================== -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+    <!-- ========================= CSS KUSTOM ========================== -->
+    <link rel="stylesheet" href="css/dashboardTAalip.css" />
+    <link rel="stylesheet" href="css/stokpakan.css" />
+
+    <!-- ========================= LIBRARY ========================== -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        .reminder-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .reminder-card.tinggi { border-left-color: #ef4444; background: #fef2f2; }
+        .reminder-card.selesai { border-left-color: #10b981; opacity: 0.7; }
+        .reminder-info h4 { margin: 0 0 5px 0; color: #1e293b; font-size: 1.1rem; }
+        .reminder-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
+        .reminder-meta { display: flex; gap: 15px; margin-top: 10px; font-size: 0.8rem; font-weight: 600; }
+        .badge { padding: 4px 10px; border-radius: 20px; }
+        .badge-tinggi { background: #fee2e2; color: #ef4444; }
+        .badge-sedang { background: #fef3c7; color: #d97706; }
+        .badge-selesai { background: #d1fae5; color: #059669; }
+        .badge-pending { background: #e0e7ff; color: #4338ca; }
+        .admin-only { display: none; }
+    </style>
+</head>
+
+<body>
+    <!-- ========================= SIDEBAR ========================== -->
+    <aside class="sidebar" aria-label="Sidebar Navigasi">
+        <div class="sidebar-content">
+            <h2 class="logo">🐔 LIBAS</h2>
+            <nav class="main-nav">
+                <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+                
+                <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+                    📊 Data Ayam <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+                    <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
+                    <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
+                </div>
+
+                <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+                    Rekomendasi Prediktif <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+                    <a href="prediksihasil.html">Prediksi Hasil</a>
+                </div>
+
+                <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+                    🥚 Produksi <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+                    <a href="inputproduksi.html">📝 Input Produksi Harian</a>
+                </div>
+
+                <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="true">
+                    📦 Persediaan <span class="arrow">▸</span>
+                </button>
+                <div class="submenu open" id="persediaanSubmenu" aria-hidden="false">
+                    <a href="stokpakan.html">🥬 Stok Pakan</a>
+                    <a href="restockreminder.html" class="active">⏰ Restock Reminder</a>
+                </div>
+
+                <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+                    💵 Keuangan <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+                    <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+                </div>
+
+                <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+                    📂 Dokumen <span class="arrow">▸</span>
+                </button>
+                <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+                    <a href="dokumen.html">📄 Pusat Dokumen</a>
+                </div>
+
+                <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem;">
+                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+                        🛡️ Kembali ke Admin
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-profile">
+                <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+                <div class="profile-name-container">
+                    <p class="profile-name"></p>
+                    <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+                </div>
+                <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========================= MAIN CONTENT ========================== -->
+    <main class="main-content">
+        <header class="page-header animate__animated animate__fadeInDown">
+            <div class="header-text">
+                <h2>⏰ Restock Reminder</h2>
+                <p>Pengingat pemesanan ulang pakan untuk mencegah kehabisan stok</p>
+            </div>
+            <div class="header-actions admin-only" id="adminActionsContainer">
+                <button class="btn-primary" onclick="openReminderModal()">
+                    ➕ Buat Reminder Baru
+                </button>
+            </div>
+        </header>
+
+        <section class="animate__animated animate__fadeInUp" style="margin-top:20px;">
+            <div class="shadow-card" style="padding: 20px;">
+                <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Daftar Pengingat</h3>
+                <div id="reminderListContainer">
+                    <div class="empty-state">
+                        <span class="empty-icon">📂</span>
+                        <p>Memuat data pengingat...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================= MODAL FORM ========================== -->
+    <div id="reminderModal" class="modal">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Reminder Pakan</h3>
+                <button type="button" class="close-btn" onclick="closeReminderModal()">&times;</button>
+            </div>
+            <form id="reminderForm" onsubmit="saveReminder(event)">
+                <input type="hidden" id="reminderId">
+
+                <div class="form-group">
+                    <label>Batas Tanggal (Tenggat Waktu)</label>
+                    <input type="date" id="tglReminder" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Target Jenis Pakan</label>
+                    <input type="text" id="jenisPakan" placeholder="Contoh: Konsentrat BP11" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tingkat Prioritas</label>
+                    <select id="prioritas" required>
+                        <option value="Sedang">Sedang (Rutin)</option>
+                        <option value="Tinggi">Tinggi (Mendesak / Stok Menipis)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Pesan / Catatan Tambahan</label>
+                    <textarea id="catatan" rows="3" placeholder="Contoh: Pesan 50 karung ke Supplier A"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeReminderModal()">Batal</button>
+                    <button type="submit" class="btn-primary">💾 Simpan Reminder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script Utama -->
+    <script type="module" src="js/restockreminder.js"></script>
+    <script>
+        window.toggleSidebarMenu = function(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const isHidden = el.getAttribute('aria-hidden') === 'true';
+            el.setAttribute('aria-hidden', String(!isHidden));
+            el.previousElementSibling.setAttribute('aria-expanded', String(isHidden));
+            if (isHidden) { el.classList.add('open'); } 
+            else { el.classList.remove('open'); }
+        };
+    </script>
+</body>
+
+</html>

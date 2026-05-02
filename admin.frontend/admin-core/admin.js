@@ -233,6 +233,18 @@ async function initAdminDashboard() {
     // K. SINKRONISASI INTERVAL (Fase 3)
     setInterval(updateAdminSystemHealthIndicators, 30000);
     setInterval(updateAdminFeedStockManagement, 300000);
+
+    // L. LOAD STOCK ALERT SETTINGS
+    try {
+        const settingsDoc = await getDoc(doc(db, "settings", "pakan_alert"));
+        if (settingsDoc.exists()) {
+            const data = settingsDoc.data();
+            if (document.getElementById('settingStokKritis')) document.getElementById('settingStokKritis').value = data.kritis || 20;
+            if (document.getElementById('settingStokRendah')) document.getElementById('settingStokRendah').value = data.rendah || 50;
+        }
+    } catch (err) {
+        console.warn("Gagal memuat pengaturan alert:", err);
+    }
     
     console.log("✅ Semua Listener Cloud Aktif.");
 }
@@ -395,7 +407,8 @@ function renderAdminEggChart(nHari) {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } } } },
             scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
         }
     });
@@ -431,7 +444,8 @@ function renderAdminFinanceChart() {
         },
         options: {
             responsive: true,
-            plugins: { legend: { position: 'top', labels: { usePointStyle: true } } },
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8, font: { size: 10 } } } },
             scales: { y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }
         }
     });
@@ -620,7 +634,7 @@ function renderAdminUserList(users) {
 
     tbody.innerHTML = users.map(user => {
         const isAuthAdmin = (user.role || '').toLowerCase().includes('admin');
-        const roleLabel = isAuthAdmin ? 'ADMIN' : 'PEKERJA';
+        const roleLabel = isAuthAdmin ? 'ADMIN' : 'PETUGAS';
         const roleClass = isAuthAdmin ? 'badge-admin' : 'badge-user';
         const statusLabel = user.disabled ? 'NONAKTIF' : 'AKTIF';
         const statusColor = user.disabled ? '#ef4444' : '#10b981';
@@ -635,6 +649,7 @@ function renderAdminUserList(users) {
             <tr>
                 <td style="text-align:left;">
                     <div style="font-weight:600; color:#1e293b;">${user.fullname || '-'}</div>
+                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">💼 ${user.jabatan}</div>` : ''}
                 </td>
                 <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${user.username || '-'}</code></td>
                 <td style="font-size:0.85rem; color:#64748b;">${user.email || '-'}</td>
@@ -643,9 +658,15 @@ function renderAdminUserList(users) {
                 <td><span style="color:${statusColor}; font-weight:700; font-size:0.75rem;">● ${statusLabel}</span></td>
                 <td>
                     <div style="display:flex; justify-content:center; gap:8px;">
-                        <button onclick="openEditUserModal('${user.id}')" class="action-btn-small" style="background:#3b82f6;" title="Edit Profil">✏️</button>
-                        <button onclick="toggleAdminRole('${user.id}', '${user.role}')" class="action-btn-small" style="background:#6366f1;" title="Ubah Otoritas">🛡️</button>
-                        <button onclick="deleteUserAccount('${user.id}', '${user.fullname}')" class="action-btn-small" style="background:#ef4444;" title="Hapus Akun">🗑️</button>
+                        <button onclick="openEditUserModal('${user.id}')" class="action-btn-small btn-edit" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Edit Profil">
+                            <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button onclick="toggleAdminRole('${user.id}', '${user.role}')" class="action-btn-small btn-authority" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Ubah Otoritas">
+                            <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                        </button>
+                        <button onclick="deleteUserAccount('${user.id}', '${user.fullname}')" class="action-btn-small btn-delete" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Hapus Akun">
+                            <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                     </div>
                 </td>
             </tr>`;
@@ -665,11 +686,11 @@ function renderAdminAyamSnapshot(data) {
 
     tbody.innerHTML = data.slice(0, 10).map(a => `
         <tr>
-            <td><strong style="color:#1e293b;">${a.customId || a.id.slice(0, 8)}</strong></td>
+            <td><strong style="color:#1e293b;">${a.customId || (a.id ? a.id.slice(0, 8) : '-')}</strong></td>
             <td>${a.jenis || '-'}</td>
-            <td><span style="color:${a.status === 'Aktif' ? '#10b981' : '#64748b'}; font-weight:700;">${a.status}</span></td>
+            <td><span style="color:${a.status === 'Aktif' ? '#10b981' : '#64748b'}; font-weight:700;">${a.status || '-'}</span></td>
             <td style="font-weight:600;">${(a.sisaAyam || 0).toLocaleString('id-ID')} Ekor</td>
-            <td><button onclick="openAyamDetail('${a.id}')" class="action-btn-small" style="background:#10b981;">Detail</button></td>
+            <td><button onclick="openAyamDetail('${a.id || ''}')" class="action-btn-small btn-detail">Detail</button></td>
         </tr>`).join('');
 }
 
@@ -680,11 +701,11 @@ function renderAdminKeuanganSnapshot(data) {
 
     tbody.innerHTML = data.map(t => `
         <tr>
-            <td style="font-size:0.85rem;">${new Date(t.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</td>
-            <td style="text-align:left; font-size:0.85rem;">${t.deskripsi}</td>
-            <td><span style="color:${t.tipe === 'pemasukan' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${t.tipe.toUpperCase()}</span></td>
+            <td style="font-size:0.85rem;">${t.tanggal ? new Date(t.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}</td>
+            <td style="font-size:0.85rem;">${t.deskripsi || '-'}</td>
+            <td><span style="color:${t.tipe === 'pemasukan' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${(t.tipe || '-').toUpperCase()}</span></td>
             <td style="font-weight:700;">Rp ${parseInt(t.jumlah || 0).toLocaleString('id-ID')}</td>
-            <td><button onclick="openKeuanganDetail('${t.id}')" class="action-btn-small" style="background:#3b82f6;">Edit</button></td>
+            <td><button onclick="openKeuanganDetail('${t.id || ''}')" class="action-btn-small btn-edit">Edit</button></td>
         </tr>`).join('');
 }
 
@@ -695,11 +716,11 @@ function renderAdminProduksiSnapshot(data) {
 
     tbody.innerHTML = data.map(p => `
         <tr>
-            <td>${new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
-            <td style="font-weight:700; color:#1e293b;">${p.totalTelur} Btr</td>
-            <td style="color:#10b981; font-weight:600;">${p.telurBaik}</td>
-            <td style="color:#ef4444; font-weight:600;">${p.telurCacat}</td>
-            <td><button onclick="openProduksiDetail('${p.id}')" class="action-btn-small" style="background:#fb8500;">Edit</button></td>
+            <td>${p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-'}</td>
+            <td style="font-weight:700; color:#1e293b;">${p.totalTelur || 0} Btr</td>
+            <td style="color:#10b981; font-weight:600;">${p.telurBaik || 0}</td>
+            <td style="color:#ef4444; font-weight:600;">${p.telurCacat || 0}</td>
+            <td><button onclick="openProduksiDetail('${p.id || ''}')" class="action-btn-small btn-warning">Edit</button></td>
         </tr>`).join('');
 }
 
@@ -710,11 +731,11 @@ function renderAdminPakanSnapshot(data) {
 
     tbody.innerHTML = data.map(p => `
         <tr>
-            <td>${new Date(p.tanggal).toLocaleDateString('id-ID')}</td>
-            <td style="text-align:left;">${p.namaBarang}</td>
-            <td><span style="color:${p.tipe === 'Masuk' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${p.tipe.toUpperCase()}</span></td>
-            <td style="font-weight:600;">${p.jumlah} Kg</td>
-            <td><button onclick="openPakanDetail('${p.id}')" class="action-btn-small" style="background:#6366f1;">Edit</button></td>
+            <td>${p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-'}</td>
+            <td>${p.jenis || p.namaBarang || '-'}</td>
+            <td><span style="color:${p.tipe === 'Masuk' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${(p.tipe || '-').toUpperCase()}</span></td>
+            <td style="font-weight:600;">${p.jumlah || 0} Kg</td>
+            <td><button onclick="openPakanDetail('${p.id || ''}')" class="action-btn-small btn-authority">Edit</button></td>
         </tr>`).join('');
 }
 
@@ -725,11 +746,11 @@ function renderAdminKesehatanSnapshot(data) {
 
     tbody.innerHTML = data.map(h => `
         <tr>
-            <td>${new Date(h.tanggal).toLocaleDateString('id-ID')}</td>
+            <td>${h.tanggal ? new Date(h.tanggal).toLocaleDateString('id-ID') : '-'}</td>
             <td>${h.batchName || 'Batch Global'}</td>
-            <td style="color:#ef4444; font-weight:700;">${h.jmlMati} Ekor</td>
+            <td style="color:#ef4444; font-weight:700;">${h.jmlMati || 0} Ekor</td>
             <td style="font-size:0.8rem; color:#64748b;">${h.sebab || '-'}</td>
-            <td><button onclick="openKesehatanDetail('${h.id}')" class="action-btn-small" style="background:#ef4444;">Edit</button></td>
+            <td><button onclick="openKesehatanDetail('${h.id || ''}')" class="action-btn-small" style="background:#ef4444;">Edit</button></td>
         </tr>`).join('');
 }
 
@@ -740,11 +761,11 @@ function renderAdminVaksinSnapshot(data) {
 
     tbody.innerHTML = data.map(v => `
         <tr>
-            <td>${new Date(v.tanggal).toLocaleDateString('id-ID')}</td>
-            <td style="font-weight:600;">${v.namaVaksin}</td>
+            <td>${v.tanggal ? new Date(v.tanggal).toLocaleDateString('id-ID') : '-'}</td>
+            <td style="font-weight:600;">${v.jenis || '-'}</td>
             <td style="font-size:0.85rem;">${v.batchName || '-'}</td>
-            <td><span style="background:${v.status === 'Selesai' ? '#d1fae5' : '#fef3c7'}; color:${v.status === 'Selesai' ? '#065f46' : '#92400e'}; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:700;">${v.status.toUpperCase()}</span></td>
-            <td><button onclick="openVaksinDetail('${v.id}')" class="action-btn-small" style="background:#8b5cf6;">Edit</button></td>
+            <td><span style="background:${v.status === 'Selesai' ? '#d1fae5' : '#fef3c7'}; color:${v.status === 'Selesai' ? '#065f46' : '#92400e'}; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:700;">${(v.status || '-').toUpperCase()}</span></td>
+            <td><button onclick="openVaksinDetail('${v.id || ''}')" class="action-btn-small" style="background:#8b5cf6;">Edit</button></td>
         </tr>`).join('');
 }
 
@@ -755,12 +776,12 @@ function renderAdminPrediksiSnapshot(data) {
 
     tbody.innerHTML = data.map(p => `
         <tr>
-            <td style="font-size:0.75rem;">${new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
-            <td>${p.periodeMA} Hari</td>
+            <td style="font-size:0.75rem;">${p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-'}</td>
+            <td>${p.periodeMA || 0} Hari</td>
             <td>${(p.populasi || 0).toLocaleString('id-ID')}</td>
             <td style="font-weight:700; color:#3b82f6;">${(p.prediksiBesokButir || 0).toLocaleString('id-ID')} Btr</td>
             <td style="font-weight:700; color:#10b981;">Rp ${(p.keuntungan || 0).toLocaleString('id-ID')}</td>
-            <td><button onclick="openPrediksiDetail('${p.id}')" class="action-btn-small" style="background:#3b82f6;">Detail</button></td>
+            <td><button onclick="openPrediksiDetail('${p.id || ''}')" class="action-btn-small" style="background:#3b82f6;">Detail</button></td>
         </tr>`).join('');
 }
 
@@ -838,7 +859,7 @@ function renderAdminActivities(activities) {
 function renderAdminAnnouncements(ann) {
     const list = document.getElementById("adminAnnouncementList");
     if (!list) return;
-    if (ann.length === 0) { list.innerHTML = `<li style="text-align:center; padding:2rem; color:#94a3b8; font-size:0.85rem;">📢 Belum ada pengumuman aktif.</li>`; return; }
+    if (ann.length === 0) { list.innerHTML = `<li style="text-align:center; padding:3rem; color:#94a3b8; font-size:0.9rem;">📢 Belum ada pengumuman aktif.</li>`; return; }
 
     list.innerHTML = ann.map(item => {
         const confirmedBy = item.confirmedBy || [];
@@ -846,17 +867,17 @@ function renderAdminAnnouncements(ann) {
         const date = item.createdAt ? new Date(item.createdAt).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '-';
         
         return `
-            <li style="padding:15px; border-bottom:1px solid #f1f5f9; border-left:4px solid ${count > 0 ? '#10b981' : '#f59e0b'}; background:${count > 0 ? '#f0fdf4' : '#fffbeb'}; border-radius:0 12px 12px 0; margin-bottom:10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+            <li class="announcement-card-modern" style="border-left-color: ${count > 0 ? '#10b981' : '#f59e0b'}">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="flex:1;">
-                        <p style="margin:0 0 5px 0; font-weight:700; font-size:0.95rem; color:#1e293b; line-height:1.4;">${item.text}</p>
-                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px;">
-                            <span style="font-size:0.75rem; color:#94a3b8; display:flex; align-items:center; gap:3px;">🕐 ${date}</span>
-                            <span style="background:${count > 0 ? '#dcfce7' : '#fef3c7'}; color:${count > 0 ? '#15803d' : '#92400e'}; padding:2px 8px; border-radius:20px; font-size:0.7rem; font-weight:700;">✅ ${count} Konfirmasi</span>
+                        <p style="margin:0 0 10px 0; font-weight:700; font-size:1.05rem; color:#1e293b;">${item.text}</p>
+                        <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <span style="font-size:0.8rem; color:#64748b;">🕒 ${date}</span>
+                            <span style="background:${count > 0 ? '#dcfce7' : '#fff7ed'}; color:${count > 0 ? '#166534' : '#c2410c'}; padding:4px 12px; border-radius:50px; font-size:0.75rem; font-weight:700; border: 1px solid ${count > 0 ? '#bbf7d0' : '#ffedd5'};">✅ ${count} Konfirmasi</span>
                         </div>
-                        ${count > 0 ? `<div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">${confirmedBy.map(n => `<span style="font-size:0.65rem; background:#fff; border:1px solid #e2e8f0; padding:1px 6px; border-radius:4px; color:#64748b;">${n}</span>`).join('')}</div>` : ''}
+                        ${count > 0 ? `<div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;">${confirmedBy.map(n => `<span style="font-size:0.7rem; background:#f1f5f9; padding:3px 8px; border-radius:6px; color:#475569; border:1px solid #e2e8f0;">${n}</span>`).join('')}</div>` : ''}
                     </div>
-                    <button onclick="deleteAdminAnnouncement('${item.id}')" style="background:transparent; border:none; color:#ef4444; cursor:pointer; padding:5px; font-size:1.1rem; opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">🗑️</button>
+                    <button onclick="deleteAdminAnnouncement('${item.id}')" class="btn-delete" style="padding:6px 12px; font-size:0.75rem; border-radius:8px;">Hapus</button>
                 </div>
             </li>`;
     }).join('');
@@ -1023,12 +1044,92 @@ window.openFeedPurchaseRecommendation = function() {
     }).then(r => { if (r.isConfirmed) window.location.href = '../../stokpakan.html'; });
 };
 
-window.openFeedAlertSettings = function() {
+window.openFeedAlertSettings = async function() {
+    // Ambil data terbaru dari Firestore jika perlu, atau gunakan default
+    let thresholdKritis = 20;
+    let thresholdRendah = 50;
+    
+    try {
+        const snap = await getDoc(doc(db, "settings", "feed_alerts"));
+        if (snap.exists()) {
+            thresholdKritis = snap.data().kritis || 20;
+            thresholdRendah = snap.data().rendah || 50;
+        }
+    } catch(e) { console.error("Gagal memuat settings:", e); }
+
     Swal.fire({
-        title: '⚙️ Pengaturan Alert Stok',
-        text: 'Fitur pengaturan threshold notifikasi khusus sedang dalam tahap pengembangan.',
-        icon: 'info',
-        confirmButtonText: 'Dimengerti'
+        title: '⚙️ Pengaturan Alert Stok Pakan',
+        width: '650px',
+        html: `
+            <div style="text-align: left; padding: 10px;">
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0; font-size: 0.85rem; color: #64748b; line-height: 1.5;">
+                        Konfigurasi ambang batas (*threshold*) stok pakan untuk memicu peringatan otomatis pada dashboard dan notifikasi sistem.
+                    </p>
+                </div>
+                
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 260px; background: white; padding: 20px; border-radius: 16px; border: 1px solid #fee2e2; border-left: 5px solid #ef4444;">
+                        <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 12px;">🚨 Batas Kritis (Merah)</label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="number" id="swal-stok-kritis" value="${thresholdKritis}" style="width: 100px; padding: 12px; border: 2px solid #ef4444; border-radius: 10px; font-size: 1.2rem; font-weight: 700; text-align: center; color: #ef4444;">
+                            <span style="font-weight: 600; color: #64748b;">Kg</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 10px;">Alert darurat muncul jika stok <= angka ini.</p>
+                    </div>
+
+                    <div style="flex: 1; min-width: 260px; background: white; padding: 20px; border-radius: 16px; border: 1px solid #fef3c7; border-left: 5px solid #f59e0b;">
+                        <label style="display: block; font-weight: 700; color: #1e293b; margin-bottom: 12px;">⚠️ Batas Rendah (Kuning)</label>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <input type="number" id="swal-stok-rendah" value="${thresholdRendah}" style="width: 100px; padding: 12px; border: 2px solid #f59e0b; border-radius: 10px; font-size: 1.2rem; font-weight: 700; text-align: center; color: #f59e0b;">
+                            <span style="font-weight: 600; color: #64748b;">Kg</span>
+                        </div>
+                        <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 10px;">Peringatan awal muncul jika stok <= angka ini.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 15px; background: #f0f9ff; border-radius: 10px; border: 1px solid #e0f2fe; display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 1.2rem;">🛡️</span>
+                    <p style="margin:0; font-size: 0.8rem; color: #0369a1;">Sistem akan memvalidasi data setiap kali ada transaksi pakan keluar.</p>
+                </div>
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: '💾 Simpan Konfigurasi',
+        cancelButtonText: 'Batal',
+        confirmButtonColor: '#3b82f6',
+        preConfirm: () => {
+            const kritis = parseInt(document.getElementById('swal-stok-kritis').value);
+            const rendah = parseInt(document.getElementById('swal-stok-rendah').value);
+            
+            if (isNaN(kritis) || isNaN(rendah)) {
+                Swal.showValidationMessage('Mohon masukkan angka yang valid!');
+                return false;
+            }
+            if (kritis >= rendah) {
+                Swal.showValidationMessage('Batas kritis harus lebih kecil dari batas rendah!');
+                return false;
+            }
+            return { kritis, rendah };
+        }
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                await setDoc(doc(db, "settings", "feed_alerts"), {
+                    kritis: result.value.kritis,
+                    rendah: result.value.rendah,
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentAdminData?.username || 'Admin'
+                });
+                Swal.fire('Berhasil!', 'Konfigurasi alert stok pakan telah diperbarui.', 'success');
+                // Trigger update UI jika perlu
+                if (typeof updateAdminSystemHealthIndicators === 'function') updateAdminSystemHealthIndicators();
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Gagal', 'Terjadi kesalahan saat menyimpan pengaturan.', 'error');
+            }
+        }
     });
 };
 
@@ -1137,9 +1238,10 @@ window.openEditUserModal = async function(uid) {
         const user = snap.data();
         
         Swal.fire({
-            title: 'Edit Profil Pengguna',
+            title: 'Edit Profil Lengkap',
+            width: 500,
             html: `
-                <div style="text-align:left; font-size:0.9rem;">
+                <div style="text-align:left; font-size:0.9rem; max-height: 60vh; overflow-y: auto; overflow-x: hidden; padding-right: 10px;">
                     <div style="margin-bottom:12px;">
                         <label style="font-weight:600; display:block; margin-bottom:4px;">Nama Lengkap</label>
                         <input id="edit-fullname" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" value="${user.fullname || ''}">
@@ -1149,22 +1251,44 @@ window.openEditUserModal = async function(uid) {
                         <input id="edit-username" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" value="${user.username || ''}">
                     </div>
                     <div style="margin-bottom:12px;">
+                        <label style="font-weight:600; display:block; margin-bottom:4px;">Email Akun (Bawaan)</label>
+                        <input style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; background:#f8fafc; color:#64748b;" value="${user.email || ''}" readonly>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-bottom:12px;">
+                        <div style="flex:1;">
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">No. Telepon / WA</label>
+                            <input id="edit-phone" placeholder="Contoh: 0812345678" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" value="${user.phone || ''}">
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-weight:600; display:block; margin-bottom:4px;">Jabatan / Posisi</label>
+                            <input id="edit-jabatan" placeholder="Misal: Mandor B" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd;" value="${user.jabatan || ''}">
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:600; display:block; margin-bottom:4px;">Alamat Lengkap</label>
+                        <textarea id="edit-address" placeholder="Tuliskan domisili tempat tinggal..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; min-height:60px; font-family:inherit;">${user.address || ''}</textarea>
+                    </div>
+                    <div style="margin-bottom:12px;">
                         <label style="font-weight:600; display:block; margin-bottom:4px;">Status Akun</label>
                         <select id="edit-disabled" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ddd; background:white;">
-                            <option value="false" ${!user.disabled ? 'selected' : ''}>Aktif (Normal)</option>
-                            <option value="true" ${user.disabled ? 'selected' : ''}>Nonaktif (Terblokir)</option>
+                            <option value="false" ${!user.disabled ? 'selected' : ''}>🟢 Aktif (Normal)</option>
+                            <option value="true" ${user.disabled ? 'selected' : ''}>🔴 Nonaktif (Terblokir)</option>
                         </select>
                     </div>
                     <div style="border-top:1px solid #eee; padding-top:15px; margin-top:15px; text-align:center;">
-                        <button type="button" onclick="sendResetEmail('${user.email}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fee2e2; padding:8px 15px; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:600;">📧 Kirim Reset Password</button>
+                        <button type="button" onclick="sendResetEmail('${user.email}')" style="background:#fef2f2; color:#ef4444; border:1px solid #fee2e2; padding:8px 15px; border-radius:8px; font-size:0.8rem; cursor:pointer; font-weight:600; transition:0.2s;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">📧 Kirim Link Reset Password via Email</button>
                     </div>
                 </div>`,
             showCancelButton: true,
             confirmButtonText: 'Simpan Perubahan',
+            cancelButtonText: 'Batal',
             confirmButtonColor: '#10b981',
             preConfirm: () => ({
                 fullname: document.getElementById('edit-fullname').value,
                 username: document.getElementById('edit-username').value,
+                phone: document.getElementById('edit-phone').value,
+                jabatan: document.getElementById('edit-jabatan').value,
+                address: document.getElementById('edit-address').value,
                 disabled: document.getElementById('edit-disabled').value === 'true'
             })
         }).then(async (res) => {
@@ -1184,7 +1308,7 @@ window.openEditUserModal = async function(uid) {
 window.toggleAdminRole = async function(uid, currentRole) {
     const isNowAdmin = (currentRole || '').toLowerCase().includes('admin');
     const newRole = isNowAdmin ? 'user' : 'admin';
-    const actionName = newRole === 'admin' ? 'PROMOSI KE ADMIN' : 'TURUNKAN KE PEKERJA';
+    const actionName = newRole === 'admin' ? 'PROMOSI KE ADMIN' : 'TURUNKAN KE PETUGAS';
     
     const confirm = await Swal.fire({
         title: 'Ubah Hak Akses?',
@@ -1663,3 +1787,98 @@ window.sendResetEmail = async (email) => {
 
 
 console.log("🛡️ LIBAS Admin Panel System Core Fully Restored & Reorganized.");
+
+// =========================================================
+// PENGATURAN ALERT STOK PAKAN (LOGIKA ADMIN)
+// =========================================================
+window.saveStokAlertSettings = async function() {
+    const kritis = parseInt(document.getElementById('settingStokKritis').value) || 20;
+    const rendah = parseInt(document.getElementById('settingStokRendah').value) || 50;
+
+    try {
+        const btn = document.getElementById('btnSaveStokAlert');
+        if (btn) btn.disabled = true;
+
+        await setDoc(doc(db, "settings", "pakan_alert"), {
+            kritis: kritis,
+            rendah: rendah,
+            updatedAt: serverTimestamp(),
+            updatedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : 'admin'
+        });
+
+        Swal.fire('Berhasil', 'Pengaturan alert stok pakan telah disimpan.', 'success');
+        
+        // Log aktivitas admin
+        try {
+            await addDoc(collection(db, "activity_log"), {
+                user: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : 'admin',
+                modul: "Pengaturan",
+                aksi: "Mengubah batas alert stok pakan",
+                waktu: serverTimestamp()
+            });
+        } catch (e) { console.warn("Log activity error:", e); }
+
+    } catch (err) {
+        console.error("Gagal simpan settings:", err);
+        Swal.fire('Error', 'Gagal menyimpan pengaturan.', 'error');
+    } finally {
+        const btn = document.getElementById('btnSaveStokAlert');
+        if (btn) btn.disabled = false;
+    }
+};
+
+// Listener untuk tombol simpan
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btnSaveStokAlert');
+    if (btn) btn.onclick = saveStokAlertSettings;
+
+    // Default Page
+    const hash = window.location.hash || '#section-dashboard';
+    switchAdminPage(hash.replace('#', ''));
+});
+
+/**
+ * Switch Admin Page (SPA)
+ * @param {string} pageId - ID dari section yang ingin ditampilkan
+ */
+window.switchAdminPage = function(pageId) {
+    console.log("📂 Switching to page:", pageId);
+    
+    // 1. Sembunyikan semua section
+    const sections = document.querySelectorAll('.admin-page-section');
+    sections.forEach(s => s.classList.remove('active'));
+    
+    // 2. Tampilkan section target
+    const target = document.getElementById(pageId);
+    if (target) {
+        target.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+        // Fallback ke dashboard jika ID tidak ditemukan
+        const dashboard = document.getElementById('section-dashboard');
+        if (dashboard) dashboard.classList.add('active');
+    }
+    
+    // 3. Update active state di sidebar
+    const navLinks = document.querySelectorAll('.main-nav a');
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+        const href = link.getAttribute('href');
+        if (href === `#${pageId}`) {
+            link.classList.add('active');
+        } else if (pageId === 'section-dashboard' && href === '#') {
+            link.classList.add('active');
+        }
+    });
+
+    // 4. Update URL hash tanpa reload
+    if (window.location.hash !== `#${pageId}`) {
+        history.pushState(null, null, `#${pageId}`);
+    }
+};
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', () => {
+    const hash = window.location.hash || '#section-dashboard';
+    switchAdminPage(hash.replace('#', ''));
+});
