@@ -44,6 +44,9 @@ document.addEventListener("DOMContentLoaded", () => {
         dataProduksi = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTable();
         updateQuickStats();
+    }, (error) => {
+        console.error("Firestore Error (Produksi): ", error);
+        Swal.fire("Error", "Gagal memuat data produksi: " + error.message, "error");
     });
 
     // Listener Data Ayam (Batch)
@@ -54,6 +57,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const currentSelected = document.getElementById('batchProduksi').value;
             loadBatchOptions(currentSelected);
         }
+    }, (error) => {
+        console.error("Firestore Error (Ayam): ", error);
+        Swal.fire("Error", "Gagal memuat data ayam: " + error.message, "error");
     });
 });
 
@@ -96,12 +102,16 @@ window.autoFillFromBatch = function() {
     const selectedBatchId = selectEl.value;
     const batchData = dataAyam.find(a => a.id === selectedBatchId);
 
-    const tglEl = document.getElementById('tglProduksi');
     const kandangEl = document.getElementById('kandangProduksi');
     const jenisEl = document.getElementById('jenisTelurProduksi');
 
     if (batchData) {
-        if (tglEl) tglEl.value = batchData.tglMasuk || '';
+        // Jangan timpa tanggal jika sudah diisi, atau set ke hari ini jika kosong
+        const tglEl = document.getElementById('tglProduksi');
+        if (tglEl && !tglEl.value) {
+            tglEl.value = new Date().toISOString().split('T')[0];
+        }
+
         if (kandangEl) kandangEl.value = batchData.kandang || '';
         if (jenisEl) jenisEl.value = batchData.jenis || '';
         lockBatchFields();
@@ -109,11 +119,11 @@ window.autoFillFromBatch = function() {
 };
 
 function lockBatchFields() {
-    ['tglProduksi', 'kandangProduksi', 'jenisTelurProduksi'].forEach(id => {
+    ['kandangProduksi', 'jenisTelurProduksi'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.disabled = true; // For selects
-            el.readOnly = true; // For inputs
+            el.disabled = (el.tagName === 'SELECT');
+            el.readOnly = (el.tagName === 'INPUT');
             el.style.backgroundColor = '#e2e8f0';
         }
     });
@@ -127,10 +137,16 @@ function unlockBatchFields() {
     ['tglProduksi', 'kandangProduksi', 'jenisTelurProduksi'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.disabled = true; // Still disabled until batch selected
-            el.readOnly = true;
-            el.value = '';
-            el.style.backgroundColor = '#e2e8f0';
+            if (id !== 'tglProduksi') {
+                el.disabled = true;
+                el.readOnly = true;
+                el.value = '';
+                el.style.backgroundColor = '#e2e8f0';
+            } else {
+                el.disabled = false;
+                el.readOnly = false;
+                el.style.backgroundColor = '#fff';
+            }
         }
     });
 }
@@ -191,6 +207,13 @@ window.openProduksiModal = function() {
     const modal = document.getElementById('produksiModal');
     if (form) form.reset();
     document.getElementById('produksiId').value = "";
+    
+    // Set tanggal default ke hari ini
+    const tglEl = document.getElementById('tglProduksi');
+    if (tglEl) {
+        tglEl.value = new Date().toISOString().split('T')[0];
+    }
+
     loadBatchOptions();
     unlockBatchFields();
     document.getElementById('modalTitle').innerText = "Tambah Data Produksi";

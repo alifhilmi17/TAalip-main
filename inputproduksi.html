@@ -216,13 +216,12 @@
                     <small class="hint-text">*Data batch diambil dari halaman Data Ayam</small>
                 </div>
 
-                <!-- Tanggal: diisi & dikunci otomatis saat batch dipilih -->
+                <!-- Tanggal: Diisi otomatis hari ini, tapi bisa diubah jika ingin input data kemarin -->
                 <div class="form-group">
-                    <label for="tglProduksi">Tanggal Masuk Batch</label>
-                    <input type="date" id="tglProduksi" required readonly
-                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;pointer-events:none;"
-                        title="Terisi otomatis dari data batch yang dipilih">
-                    <small class="hint-text" id="tglHint">⬆️ Pilih batch terlebih dahulu</small>
+                    <label for="tglProduksi">Tanggal Produksi</label>
+                    <input type="date" id="tglProduksi" required
+                        title="Pilih tanggal pencatatan produksi">
+                    <small class="hint-text" id="tglHint">📅 Pilih tanggal produksi (default: Hari Ini)</small>
                 </div>
 
                 <!-- Kandang: diisi & dikunci otomatis saat batch dipilih -->
@@ -237,16 +236,16 @@
                         <option value="Kandang B (Timur)">Kandang B (Timur)</option>
                         <!--<option value="Kandang C (Selatan)">Kandang C (Selatan)</option>-->
                     </select>
-                    <small class="hint-text" id="kandangHint">⬆️ Pilih batch terlebih dahulu</small>
+                    <small class="hint-text" id="kandangHint">⬆️ Terisi otomatis saat batch dipilih</small>
                 </div>
 
                 <!-- Jenis Telur Ayam: diisi & dikunci otomatis saat batch dipilih -->
                 <div class="form-group">
                     <label for="jenisTelurProduksi">Jenis Telur Ayam</label>
                     <input type="text" id="jenisTelurProduksi" readonly placeholder="— otomatis dari batch —"
-                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;pointer-events:none;"
+                        style="background-color:#e2e8f0;color:#64748b;cursor:not-allowed;"
                         title="Terisi otomatis dari data batch yang dipilih">
-                    <small class="hint-text" id="jenisHint">⬆️ Pilih batch terlebih dahulu</small>
+                    <small class="hint-text" id="jenisHint">⬆️ Terisi otomatis saat batch dipilih</small>
                 </div>
 
                 <div class="form-group">
