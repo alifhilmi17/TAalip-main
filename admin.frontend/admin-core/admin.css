@@ -765,7 +765,9 @@ body.sidebar-open::before {
   padding: 0; /* Pastikan tidak ada padding agar h3 full width */
 }
 
-.operational-management h3 {
+.operational-management .manage-card h3,
+.operational-management .announcement-card h3,
+.operational-management .schedule-card h3 {
   margin: 0;
   padding: 1.5rem 2rem;
   color: white;
@@ -774,6 +776,15 @@ body.sidebar-open::before {
   display: flex;
   align-items: center;
   gap: 12px;
+}
+
+.operational-management .card-header-flex h3 {
+  color: var(--text-main);
+  font-size: 1.4rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 /* Header Themes */
@@ -812,10 +823,6 @@ body.sidebar-open::before {
 
 /* Tabel Responsif */
 .table-responsive { width: 100%; overflow-x: auto; }
-.logs-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.9rem; }
-.logs-table th, .logs-table td { padding: 14px 15px; border-bottom: 1px solid var(--border-color); text-align: center; vertical-align: middle; }
-.logs-table th:last-child, .logs-table td:last-child { text-align: center; }
-.logs-table th { background-color: var(--bg-light); color: #475569; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; text-align: center;}
 
 /* Tombol-tombol */
 .create-account-btn { background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%); color: white; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
@@ -962,6 +969,12 @@ body.sidebar-open::before {
     border-bottom: 1px solid #f1f5f9;
     font-size: 0.9rem;
     color: #1e293b;
+    text-align: left;
+}
+
+.logs-table th:last-child, 
+.logs-table td:last-child { 
+    text-align: center; 
 }
 
 /* =========================================

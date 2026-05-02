@@ -41,11 +41,8 @@
 
           <a href="#section-restock-reminder" onclick="switchAdminPage('section-restock-reminder')">⏰ Restock Reminder</a>
           
-          <a href="#section-pakan-alert" onclick="switchAdminPage('section-pakan-alert')">⚙️ Pengaturan Alert</a>
-
-          <a href="#section-audit-log" onclick="switchAdminPage('section-audit-log')">📋 Log Keamanan</a>
-
           <!-- Switch Tampilan -->
+          <a href="#section-audit-log" onclick="switchAdminPage('section-audit-log')">📋 Log Keamanan</a>
           <a
             href="../../dashboardTAalip.html"
             class="switch-mode-btn"
@@ -1188,38 +1185,7 @@
         </div>
       </section>
 
-      <!-- N. Section Pengaturan Alert Stok Pakan -->
-      <section id="section-pakan-alert" class="admin-page-section animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
-        <div class="management-card">
-          <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 1.5rem; padding-bottom: 1rem;">
-            <div style="display: flex; align-items: center; gap: 15px">
-              <h3 style="margin: 0">⚙️ Pengaturan Alert Stok Pakan</h3>
-              <span class="badge" style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db;">Sistem</span>
-            </div>
-          </div>
-          <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-            <div class="alert-setting-box" style="border-left: 4px solid #ef4444;">
-                <label>🚨 Batas Stok Kritis (Merah)</label>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <input type="number" id="settingStokKritis" value="20">
-                    <span style="font-weight: 600; color: #64748b;">Kilogram</span>
-                </div>
-                <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; line-height: 1.4;">Sistem memunculkan peringatan darurat jika sisa pakan berada di bawah angka ini.</p>
-            </div>
-            <div class="alert-setting-box" style="border-left: 4px solid #f59e0b;">
-                <label>⚠️ Batas Stok Rendah (Kuning)</label>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <input type="number" id="settingStokRendah" value="50">
-                    <span style="font-weight: 600; color: #64748b;">Kilogram</span>
-                </div>
-                <p style="font-size: 0.8rem; color: #64748b; margin-top: 10px; line-height: 1.4;">Sistem memunculkan peringatan awal jika sisa pakan berada di bawah angka ini.</p>
-            </div>
-          </div>
-          <div style="margin-top: 20px;">
-            <button class="btn-primary" id="btnSaveStokAlert">💾 Simpan Pengaturan</button>
-          </div>
-        </div>
-      </section>
+
 
       <!-- L. Section 7: Audit Log Aktivitas (Keamanan) -->
       <section

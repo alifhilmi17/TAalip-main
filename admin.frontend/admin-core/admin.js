@@ -224,27 +224,17 @@ async function initAdminDashboard() {
     onSnapshot(query(collection(db, "schedules"), orderBy("tanggal", "asc")), (snap) => {
         renderAdminSchedules(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-
     // J. LISTENER AUDIT LOG (Section 7)
     onSnapshot(query(collection(db, "activity_log"), orderBy("waktu", "desc"), limit(5)), (snap) => {
         renderSystemLogs(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
 
+
     // K. SINKRONISASI INTERVAL (Fase 3)
     setInterval(updateAdminSystemHealthIndicators, 30000);
     setInterval(updateAdminFeedStockManagement, 300000);
 
-    // L. LOAD STOCK ALERT SETTINGS
-    try {
-        const settingsDoc = await getDoc(doc(db, "settings", "pakan_alert"));
-        if (settingsDoc.exists()) {
-            const data = settingsDoc.data();
-            if (document.getElementById('settingStokKritis')) document.getElementById('settingStokKritis').value = data.kritis || 20;
-            if (document.getElementById('settingStokRendah')) document.getElementById('settingStokRendah').value = data.rendah || 50;
-        }
-    } catch (err) {
-        console.warn("Gagal memuat pengaturan alert:", err);
-    }
+
     
     console.log("✅ Semua Listener Cloud Aktif.");
 }
@@ -897,6 +887,9 @@ function renderAdminSchedules(sch) {
         </tr>`).join('');
 }
 
+
+
+// =========================================================
 /**
  * ---------------------------------------------------------
  * L. Section 7: Audit Log Aktivitas
@@ -925,7 +918,6 @@ function renderSystemLogs(logs) {
     }).join('');
 }
 
-// =========================================================
 // 5. ACTION HANDLERS & MODALS (FULL ORIGINAL LOGIC)
 // =========================================================
 
@@ -1701,38 +1693,7 @@ window.deleteAdminActivity = async (id) => { if ((await Swal.fire({title:'Hapus 
 window.deleteAdminAnnouncement = async (id) => { if ((await Swal.fire({title:'Hapus Pengumuman?', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444'})).isConfirmed) await deleteDoc(doc(db, "announcements", id)); };
 window.deleteAdminSchedule = async (id) => { if ((await Swal.fire({title:'Hapus Agenda?', icon:'warning', showCancelButton:true, confirmButtonColor:'#ef4444'})).isConfirmed) await deleteDoc(doc(db, "schedules", id)); };
 
-/**
- * ---------------------------------------------------------
- * L. Section 7: Audit Log Aktivitas
- * ---------------------------------------------------------
- */
 
-window.clearLogs = async function() {
-    if (!currentAdminData || currentAdminData.type !== 'super_admin') {
-        Swal.fire('Akses Ditolak', 'Hanya Super Administrator yang dapat membersihkan log sistem.', 'error');
-        return;
-    }
-
-    const { value: confirmText } = await Swal.fire({
-        title: 'Hapus Seluruh Log?',
-        html: '<p>Tindakan ini permanen. Ketik <strong>HAPUS</strong> untuk melanjutkan:</p>',
-        input: 'text',
-        showCancelButton: true,
-        confirmButtonColor: '#ef4444',
-        inputValidator: (val) => { if (val !== 'HAPUS') return 'Ketik HAPUS dengan benar!'; }
-    });
-
-    if (confirmText === 'HAPUS') {
-        Swal.fire({ title: 'Membersihkan Log...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        try {
-            const snap = await getDocs(collection(db, "activity_log"));
-            const batch = snap.docs.map(d => deleteDoc(doc(db, "activity_log", d.id)));
-            await Promise.all(batch);
-            Swal.fire('Sukses', 'Riwayat log telah dikosongkan.', 'success');
-            logActivity("Super Admin", "Sistem", "Pembersihan total riwayat log aktivitas database.");
-        } catch (e) { Swal.fire('Error', e.message, 'error'); }
-    }
-};
 
 // =========================================================
 // 6. UTILITY FUNCTIONS
@@ -1767,12 +1728,7 @@ window.filterUserList = function() {
     });
 };
 
-window.filterLogList = function() {
-    const q = document.getElementById("searchLogInput").value.toLowerCase();
-    document.querySelectorAll("#systemLogBody tr").forEach(r => {
-        r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
-    });
-};
+
 
 window.sendResetEmail = async (email) => {
     const c = await Swal.fire({ title: 'Kirim Email Reset?', text: `Tautan reset password akan dikirim ke ${email}`, icon: 'info', showCancelButton: true });
@@ -1788,55 +1744,54 @@ window.sendResetEmail = async (email) => {
 
 console.log("🛡️ LIBAS Admin Panel System Core Fully Restored & Reorganized.");
 
-// =========================================================
-// PENGATURAN ALERT STOK PAKAN (LOGIKA ADMIN)
-// =========================================================
-window.saveStokAlertSettings = async function() {
-    const kritis = parseInt(document.getElementById('settingStokKritis').value) || 20;
-    const rendah = parseInt(document.getElementById('settingStokRendah').value) || 50;
+/**
+ * ---------------------------------------------------------
+ * L. Section 7: Audit Log Aktivitas
+ * ---------------------------------------------------------
+ */
 
-    try {
-        const btn = document.getElementById('btnSaveStokAlert');
-        if (btn) btn.disabled = true;
+window.clearLogs = async function() {
+    if (!currentAdminData || currentAdminData.type !== 'super_admin') {
+        Swal.fire('Akses Ditolak', 'Hanya Super Administrator yang dapat membersihkan log sistem.', 'error');
+        return;
+    }
 
-        await setDoc(doc(db, "settings", "pakan_alert"), {
-            kritis: kritis,
-            rendah: rendah,
-            updatedAt: serverTimestamp(),
-            updatedBy: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : 'admin'
-        });
+    const { value: confirmText } = await Swal.fire({
+        title: 'Hapus Seluruh Log?',
+        html: '<p>Tindakan ini permanen. Ketik <strong>HAPUS</strong> untuk melanjutkan:</p>',
+        input: 'text',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        inputValidator: (val) => { if (val !== 'HAPUS') return 'Ketik HAPUS dengan benar!'; }
+    });
 
-        Swal.fire('Berhasil', 'Pengaturan alert stok pakan telah disimpan.', 'success');
-        
-        // Log aktivitas admin
+    if (confirmText === 'HAPUS') {
+        Swal.fire({ title: 'Membersihkan Log...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         try {
-            await addDoc(collection(db, "activity_log"), {
-                user: auth.currentUser ? (auth.currentUser.email || auth.currentUser.uid) : 'admin',
-                modul: "Pengaturan",
-                aksi: "Mengubah batas alert stok pakan",
-                waktu: serverTimestamp()
-            });
-        } catch (e) { console.warn("Log activity error:", e); }
-
-    } catch (err) {
-        console.error("Gagal simpan settings:", err);
-        Swal.fire('Error', 'Gagal menyimpan pengaturan.', 'error');
-    } finally {
-        const btn = document.getElementById('btnSaveStokAlert');
-        if (btn) btn.disabled = false;
+            const snap = await getDocs(collection(db, "activity_log"));
+            const batch = snap.docs.map(d => deleteDoc(doc(db, "activity_log", d.id)));
+            await Promise.all(batch);
+            Swal.fire('Sukses', 'Riwayat log telah dikosongkan.', 'success');
+            logActivity("Super Admin", "Sistem", "Pembersihan total riwayat log aktivitas database.");
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
     }
 };
 
-// Listener untuk tombol simpan
-document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('btnSaveStokAlert');
-    if (btn) btn.onclick = saveStokAlertSettings;
+window.filterLogList = function() {
+    const q = document.getElementById("searchLogInput").value.toLowerCase();
+    document.querySelectorAll("#systemLogBody tr").forEach(r => {
+        r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+    });
+};
 
+// =========================================================
+// INITIALIZATION
+// =========================================================
+document.addEventListener('DOMContentLoaded', () => {
     // Default Page
     const hash = window.location.hash || '#section-dashboard';
     switchAdminPage(hash.replace('#', ''));
 });
-
 /**
  * Switch Admin Page (SPA)
  * @param {string} pageId - ID dari section yang ingin ditampilkan
