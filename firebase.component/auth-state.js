@@ -10,6 +10,17 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-
 import { auth, db } from "./firebase-init.js";
 
 /**
+ * Helper: Mendapatkan path login yang benar berdasarkan kedalaman folder saat ini.
+ * Mencegah redirect ke URL yang salah saat berada di subfolder (misal: admin-core).
+ */
+function getLoginPath() {
+    const href = window.location.href;
+    if (href.includes('admin-core')) return '../../login.html';
+    if (href.includes('admin.frontend')) return '../login.html';
+    return 'login.html';
+}
+
+/**
  * Global Helper: Navigasi ke Halaman Edit Profil
  * Fungsi ini dipanggil dari ikon pensil atau menu profil di Sidebar
  */
@@ -46,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.warn("Akun dinonaktifkan oleh administrator.");
                         await signOut(auth);
                         alert("Akun Anda telah dinonaktifkan oleh administrator. Silakan hubungi admin.");
-                        window.location.href = 'login.html';
+                        window.location.href = getLoginPath();
                         return;
                     }
 
@@ -74,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         // Bukan user, bukan admin, dan tidak sedang di halaman admin → paksa logout
                         console.warn("Sesi tidak valid: akun tidak ditemukan di database.");
                         await signOut(auth);
-                        window.location.href = 'login.html';
+                        window.location.href = getLoginPath();
                         return;
                     }
                 }

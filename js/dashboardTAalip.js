@@ -194,13 +194,6 @@ function updateFase3Features() {
     renderAlertBanners();
 }
 
-// Call updates in existing updateDashboardAggregates function
-const originalUpdateDashboardAggregates = updateDashboardAggregates;
-updateDashboardAggregates = function() {
-    originalUpdateDashboardAggregates();
-    updateFase3Features();
-};
-
 // Initialize FASE 3 features on page load
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
@@ -386,20 +379,12 @@ function updateDashboardAggregates() {
     const day = String(today.getDate()).padStart(2, '0');
     const todayStr = `${year}-${month}-${day}`;
     
-    console.log('🔍 DEBUG Dashboard - Tanggal hari ini:', todayStr);
-    console.log('🔍 DEBUG Dashboard - Total data produksi:', state.produksi.length);
-    
     // 1. Perhitungan Statistik Produksi Telur (Hanya Hari Ini)
     // Menyaring data produksi yang tanggalnya sama dengan hari ini
-    const prodToday = state.produksi.filter(p => {
-        console.log('🔍 DEBUG - Data tanggal:', p.tanggal, 'vs', todayStr, '=', p.tanggal === todayStr);
-        return p.tanggal === todayStr;
-    });
-    console.log('🔍 DEBUG Dashboard - Data hari ini:', prodToday.length);
+    const prodToday = state.produksi.filter(p => p.tanggal === todayStr);
     
     // Menjumlahkan total telur dari hasil saringan tersebut
     const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
-    console.log('🔍 DEBUG Dashboard - Total telur hari ini:', totalTelurToday);
     
     // Menjumlahkan total telur cacat hari ini
     const totalTelurCacatToday = prodToday.reduce((s, v) => s + (parseInt(v.telurCacat) || 0), 0);
@@ -530,6 +515,9 @@ function updateDashboardAggregates() {
     
     // ✅ FASE 2: Update widget ringkasan keuangan
     renderFinanceSummaryWidget();
+
+    // ✅ FASE 3: Update fitur alert, vaksinasi, dan stok pakan
+    updateFase3Features();
 }
 
 /** 

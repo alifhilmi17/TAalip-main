@@ -31,7 +31,10 @@ const ayamCollection = collection(db, "populasi_ayam");
 function formatTanggal(tglString) {
     if (!tglString) return "-";
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(tglString).toLocaleDateString('id-ID', options);
+    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal, bukan UTC midnight
+    // (mencegah tanggal meleset 1 hari di timezone UTC+7)
+    const safeDate = tglString.includes('T') ? tglString : tglString + 'T00:00:00';
+    return new Date(safeDate).toLocaleDateString('id-ID', options);
 }
 
 // =========================================
@@ -133,7 +136,12 @@ function lockBatchFields() {
     if (kSelect && kHidden) kHidden.value = kSelect.value;
 }
 
-function unlockBatchFields() {
+/**
+ * Mereset field kandang & jenis ke kondisi awal (disabled) saat modal dibuka untuk
+ * tambah data baru — field ini akan ter-isi otomatis setelah batch dipilih via autoFillFromBatch.
+ * (Sebelumnya bernama unlockBatchFields — nama diperbarui agar sesuai perilaku aktual)
+ */
+function resetBatchFieldsForNewEntry() {
     ['tglProduksi', 'kandangProduksi', 'jenisTelurProduksi'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -215,7 +223,7 @@ window.openProduksiModal = function() {
     }
 
     loadBatchOptions();
-    unlockBatchFields();
+    resetBatchFieldsForNewEntry();
     document.getElementById('modalTitle').innerText = "Tambah Data Produksi";
     if (modal) modal.classList.add('show');
 };

@@ -50,7 +50,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             }
-            document.querySelector('.profile-name').innerText = currentUserName;
+            // WARN-06 FIX: Gunakan null check agar tidak crash jika elemen tidak ada
+            const profileEl = document.querySelector('.profile-name');
+            if (profileEl) profileEl.innerText = currentUserName;
         } catch (err) {
             console.warn("Gagal deteksi role:", err);
         }
@@ -170,13 +172,21 @@ window.saveReminder = async function(e) {
     e.preventDefault();
     const id = document.getElementById('reminderId').value;
     
+    // BUG-10 FIX: Saat mode edit, pertahankan status lama (jangan selalu set 'Pending').
+    // Ini mencegah reminder yang sudah 'Selesai' ter-reset saat admin mengedit field lain.
+    let statusToSave = 'Pending'; // default untuk data baru
+    if (id) {
+        const existingReminder = dataReminders.find(r => r.id === id);
+        statusToSave = existingReminder ? existingReminder.status : 'Pending';
+    }
+    
     const payload = {
         jenisPakan: document.getElementById('jenisPakan').value,
         tglBatas: document.getElementById('tglReminder').value,
         prioritas: document.getElementById('prioritas').value,
         catatan: document.getElementById('catatan').value,
         dibuatOleh: currentUserName,
-        status: 'Pending',
+        status: statusToSave,
         updatedAt: serverTimestamp()
     };
 

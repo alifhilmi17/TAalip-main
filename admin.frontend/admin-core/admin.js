@@ -252,7 +252,12 @@ function updateStatTidakBertelur(totalProdParam) {
         totalProd = produksiDataAdmin.filter(p => p.tanggal === today).reduce((s, p) => s + (parseInt(p.totalTelur) || 0), 0);
     }
 
-    const tidakBertelur = Math.max(0, cachedTotalSisaAyam - totalProd);
+    // BUG-08 FIX: Hitung hanya dari batch yang Aktif (bukan semua batch termasuk Panen/Afkir)
+    const totalAyamAktif = ayamData
+        .filter(a => a.status === 'Aktif')
+        .reduce((s, a) => s + (parseInt(a.sisaAyam) || 0), 0);
+
+    const tidakBertelur = Math.max(0, totalAyamAktif - totalProd);
     elTidakBertelur.textContent = `${tidakBertelur.toLocaleString('id-ID')} Ekor`;
 }
 
@@ -1042,7 +1047,8 @@ window.openFeedAlertSettings = async function() {
     let thresholdRendah = 50;
     
     try {
-        const snap = await getDoc(doc(db, "settings", "feed_alerts"));
+        // BUG-04 FIX: Nama dokumen disamakan dengan yang digunakan listener dashboard (pakan_alert)
+        const snap = await getDoc(doc(db, "settings", "pakan_alert"));
         if (snap.exists()) {
             thresholdKritis = snap.data().kritis || 20;
             thresholdRendah = snap.data().rendah || 50;
@@ -1108,7 +1114,9 @@ window.openFeedAlertSettings = async function() {
         if (result.isConfirmed) {
             Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
-                await setDoc(doc(db, "settings", "feed_alerts"), {
+                // BUG-04 FIX: Nama dokumen disamakan → 'pakan_alert' (bukan 'feed_alerts')
+                // agar sinkron dengan listener di dashboardTAalip.js baris 168
+                await setDoc(doc(db, "settings", "pakan_alert"), {
                     kritis: result.value.kritis,
                     rendah: result.value.rendah,
                     updatedAt: serverTimestamp(),
@@ -1328,22 +1336,26 @@ window.toggleAdminRole = async function(uid, currentRole) {
 };
 
 window.deleteUserAccount = async function(uid, name) {
+    // BUG-03 FIX: Firebase Auth tidak bisa dihapus dari client-side untuk akun orang lain.
+    // Solusi: Nonaktifkan akun (disabled: true) agar user tidak bisa login,
+    // memanfaatkan mekanisme force-logout yang sudah ada di auth-state.js.
     const confirm = await Swal.fire({
-        title: 'Hapus Akun Permanen?',
-        html: `Akun <strong>${name}</strong> akan dihapus dari sistem dan tidak akan bisa login lagi.`,
-        icon: 'error',
+        title: 'Nonaktifkan Akun?',
+        html: `Akun <strong>${name}</strong> akan <strong>dinonaktifkan</strong> dan tidak dapat login lagi.<br><br><small style="color:#64748b;">💡 Data akun tetap tersimpan dan bisa diaktifkan kembali via Edit Profil.</small>`,
+        icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Hapus Selamanya'
+        confirmButtonText: 'Ya, Nonaktifkan'
     });
     
     if (confirm.isConfirmed) {
-        Swal.fire({ title: 'Menghapus...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
         try {
-            await deleteDoc(doc(db, "user", uid));
-            try { await deleteDoc(doc(db, "admin", uid)); } catch(e) {}
-            Swal.fire('Akun Terhapus', 'Semua data akses pengguna telah dibersihkan.', 'success');
-            logActivity(currentAdminData?.username || "Admin", "User Management", `Hapus user secara permanen: ${name}`);
+            await updateDoc(doc(db, "user", uid), { disabled: true, disabledAt: serverTimestamp(), disabledBy: currentAdminData?.username || 'Admin' });
+            // Jika juga admin, tandai di koleksi admin
+            try { await updateDoc(doc(db, "admin", uid), { disabled: true }); } catch(e) {}
+            Swal.fire('Akun Dinonaktifkan', `${name} tidak dapat login lagi. Aktifkan kembali via Edit Profil jika diperlukan.`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "User Management", `Nonaktifkan akun: ${name}`);
         } catch (e) { Swal.fire('Error', e.message, 'error'); }
     }
 };
@@ -1577,7 +1589,9 @@ window.openVaksinDetail = function(id) {
         denyButtonText: 'Hapus',
         confirmButtonColor: '#8b5cf6',
         preConfirm: () => ({
-            namaVaksin: document.getElementById('ev-name').value,
+            // BUG-11 FIX: Gunakan field 'jenis' (bukan 'namaVaksin') agar konsisten
+            // dengan schema data yang disimpan oleh kesehatanayam.js
+            jenis: document.getElementById('ev-name').value,
             status: document.getElementById('ev-status').value
         })
     }).then(async (res) => {
@@ -1658,7 +1672,9 @@ document.getElementById('adminAddAnnouncementForm')?.addEventListener('submit', 
     try {
         await addDoc(collection(db, "announcements"), {
             text: input.value.trim(),
-            createdAt: Date.now(),
+            // WARN-05 FIX: Gunakan ISO string agar format konsisten dengan dashboard
+            // (dashboardTAalip.js menggunakan new Date().toISOString(), bukan Date.now())
+            createdAt: new Date().toISOString(),
             createdByAdmin: currentAdminData?.username || 'Admin',
             confirmedBy: []
         });

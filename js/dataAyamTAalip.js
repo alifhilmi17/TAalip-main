@@ -39,7 +39,10 @@ const kesehatanCollection = collection(db, "kesehatan_ayam");
 function formatTanggal(tglString) {
     if (!tglString) return "-";
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(tglString).toLocaleDateString('id-ID', options);
+    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal, bukan UTC midnight
+    // (mencegah tanggal meleset 1 hari di timezone UTC+7)
+    const safeDate = tglString.includes('T') ? tglString : tglString + 'T00:00:00';
+    return new Date(safeDate).toLocaleDateString('id-ID', options);
 }
 
 // =========================================
@@ -150,6 +153,7 @@ function renderTable() {
             else if (statusNormal === 'afkir') badgeClass = "badge-afkir";
 
             const row = document.createElement("tr");
+            row.setAttribute('data-id', ayam.id); // BUG-07 FIX: Embed ID untuk searchTable
             row.innerHTML = `
                 <td><strong>${ayam.customId || ayam.id.substring(0, 5)}</strong></td>
                 <td>${formatTanggal(ayam.tglMasuk)}</td>
@@ -324,21 +328,26 @@ window.searchTable = function() {
     const input = document.getElementById("searchAyam").value.toLowerCase();
     const rows = document.querySelectorAll("#ayamTableBody tr");
     
-    // Simpan data yang cocok dengan pencarian untuk update stats
+    // BUG-07 FIX: Gunakan data-id attribute di setiap baris, bukan DOM index.
+    // DOM index tidak sinkron dengan array dataAyam setelah sorting/filtering.
     const filteredResults = [];
 
-    rows.forEach((row, index) => {
+    rows.forEach((row) => {
         const textContent = row.innerText.toLowerCase();
         const isMatch = textContent.includes(input);
         row.style.display = isMatch ? "" : "none";
         
         if (isMatch) {
-            filteredResults.push(dataAyam[index]);
+            const rowId = row.getAttribute('data-id');
+            if (rowId) {
+                const matchedData = dataAyam.find(a => a.id === rowId);
+                if (matchedData) filteredResults.push(matchedData);
+            }
         }
     });
 
     // Update kartu statistik berdasarkan hasil pencarian
-    updateQuickStats(filteredResults);
+    updateQuickStats(filteredResults.length > 0 || input ? filteredResults : undefined);
 };
 
 /**

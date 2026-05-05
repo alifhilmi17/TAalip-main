@@ -211,23 +211,30 @@ window.savePakanData = async function(event) {
 
     // VALIDASI STOK (Jika Keluar)
     if (tipe === "Keluar") {
+        // BUG-05 FIX: Filter per jenis pakan yang dipilih, bukan semua jenis digabung.
+        // Mencegah stok jenis pakan A bisa dipakai melebihi batas karena tertutupi stok jenis B.
+        const jenisDipilih = document.getElementById('jenisPakanSelect').value;
         let masuk = 0, keluar = 0;
         dataPakan.forEach(p => {
-            if (p.tipe === "Masuk") masuk += p.jumlah;
-            else keluar += p.jumlah;
+            if (p.jenis === jenisDipilih) {
+                if (p.tipe === "Masuk") masuk += p.jumlah;
+                else keluar += p.jumlah;
+            }
         });
         const sisaSekarang = masuk - keluar;
         let sisaEfektif = sisaSekarang;
         if (id !== "") {
             const itemLama = dataPakan.find(p => p.id === id);
-            if (itemLama && itemLama.tipe === "Keluar") sisaEfektif = sisaSekarang + itemLama.jumlah;
+            if (itemLama && itemLama.tipe === "Keluar" && itemLama.jenis === jenisDipilih) {
+                sisaEfektif = sisaSekarang + itemLama.jumlah;
+            }
         }
 
         if (jumlah > sisaEfektif) {
             Swal.fire({
                 icon: 'warning',
                 title: 'Stok Tidak Cukup',
-                html: `Jumlah pemakaian <strong>${jumlah.toLocaleString('id-ID')} Kg</strong> melebihi sisa stok <strong>${sisaEfektif.toLocaleString('id-ID')} Kg</strong>.`,
+                html: `Jumlah pemakaian <strong>${jumlah.toLocaleString('id-ID')} Kg</strong> melebihi sisa stok <strong>${jenisDipilih}</strong>: <strong>${sisaEfektif.toLocaleString('id-ID')} Kg</strong>.`,
                 confirmButtonColor: '#f97316'
             });
             return;
