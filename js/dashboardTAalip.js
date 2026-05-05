@@ -569,16 +569,128 @@ function renderEggChart(nHari) {
         type: 'line',
         data: {
             labels,
-            datasets: [{
-                label: 'Total Telur',
-                data: totalData,
-                borderColor: '#fb8500',
-                backgroundColor: 'rgba(251, 133, 0, 0.1)',
-                fill: true,
-                tension: 0.4
-            }]
+            datasets: [
+                {
+                    label: 'Total Telur',
+                    data: totalData,
+                    borderColor: '#f97316',
+                    backgroundColor: (ctx) => {
+                        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+                        gradient.addColorStop(0, 'rgba(249, 115, 22, 0.25)');
+                        gradient.addColorStop(1, 'rgba(249, 115, 22, 0.01)');
+                        return gradient;
+                    },
+                    fill: true,
+                    tension: 0.45,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#f97316',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    order: 3
+                },
+                {
+                    label: 'Telur Baik',
+                    data: baikData,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                    fill: true,
+                    tension: 0.45,
+                    borderWidth: 2.5,
+                    borderDash: [],
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    order: 2
+                },
+                {
+                    label: 'Telur Cacat',
+                    data: cacatData,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'transparent',
+                    fill: false,
+                    tension: 0.45,
+                    borderWidth: 2,
+                    borderDash: [6, 4],
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 6,
+                    order: 1
+                }
+            ]
         },
-        options: { responsive: true, plugins: { legend: { display: false } } }
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        padding: 20,
+                        color: '#475569',
+                        font: {
+                            family: "'Poppins', sans-serif",
+                            size: 11,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    padding: 14,
+                    displayColors: true,
+                    usePointStyle: true,
+                    boxPadding: 5,
+                    callbacks: {
+                        title: function(items) {
+                            return '📅 ' + items[0].label;
+                        },
+                        label: function(ctx) {
+                            const icons = { 'Total Telur': '🥚', 'Telur Baik': '✅', 'Telur Cacat': '⚠️' };
+                            const icon = icons[ctx.dataset.label] || '';
+                            return ` ${icon} ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString('id-ID')} Butir`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(148, 163, 184, 0.12)',
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 10, family: "'Poppins', sans-serif" },
+                        callback: (v) => v.toLocaleString('id-ID')
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: {
+                        color: '#94a3b8',
+                        font: { size: 10, family: "'Poppins', sans-serif" }
+                    }
+                }
+            }
+        }
     });
 }
 
