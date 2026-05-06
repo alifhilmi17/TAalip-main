@@ -1,0 +1,113 @@
+========================================================================
+             DOKUMENTASI TEKNIS ENTITY RELATIONSHIP DIAGRAM (ERD)
+                 SISTEM MANAJEMEN PETERNAKAN (LIBAS)
+========================================================================
+
+Dokumen ini berisi detail teknis struktur database relasional yang 
+dikonversi dari sistem NoSQL Firebase LIBAS ke dalam model Relasional.
+
+1. DAFTAR TABEL (ENTITAS)
+---------------------------------------------------------
+
+A. Tabel: users (Data Pengguna/Petugas)
+   - user_id (PK, Integer): ID unik pengguna.
+   - username (Varchar): Nama unik untuk login.
+   - fullname (Varchar): Nama lengkap pengguna.
+   - email (Varchar): Alamat email terdaftar.
+   - role_id (FK, Integer): Referensi ke tabel roles.
+   - jabatan (Varchar): Posisi dalam peternakan (contoh: Kepala Kandang).
+   - is_disabled (Boolean): Status aktif/non-aktif akun.
+
+B. Tabel: roles (Peran/Otoritas)
+   - id (PK, Integer): ID unik peran.
+   - role_name (Varchar): Nama peran (contoh: Admin, Petugas).
+
+C. Tabel: batches (Populasi/Kelompok Ayam)
+   - batch_id (PK, Integer): ID unik kelompok ayam.
+   - custom_batch_id (Varchar): ID manual (contoh: B-20240506-001).
+   - tanggal_masuk (Date): Tanggal ayam masuk ke peternakan.
+   - jenis_ayam (Varchar): Jenis strain ayam petelur.
+   - jumlah_awal (Integer): Populasi awal saat masuk.
+   - sisa_ayam (Integer): Jumlah ayam yang masih hidup saat ini.
+   - kandang (Varchar): Lokasi kandang (contoh: Kandang A1).
+   - status (Varchar): Status batch (Aktif, Panen, Afkir).
+
+D. Tabel: daily_productions (Produksi Telur Harian)
+   - production_id (PK, Integer): ID unik catatan produksi.
+   - batch_id (FK, Integer): Referensi ke kelompok ayam (batches).
+   - user_id (FK, Integer): Petugas yang menginput data.
+   - tanggal (Date): Tanggal pengambilan telur.
+   - telur_baik (Integer): Jumlah telur kondisi bagus.
+   - telur_cacat (Integer): Jumlah telur retak/rusak.
+   - total_telur (Integer): Total telur (baik + cacat).
+   - ayam_tidak_bertelur (Integer): Estimasi ayam yang tidak produktif hari itu.
+
+E. Tabel: health_records (Catatan Kesehatan & Mortalitas)
+   - health_id (PK, Integer): ID unik catatan kesehatan.
+   - batch_id (FK, Integer): Referensi ke kelompok ayam (batches).
+   - tanggal (Date): Tanggal kejadian.
+   - jml_sakit (Integer): Jumlah ayam yang sakit/dirawat.
+   - jml_mati (Integer): Jumlah ayam yang mati hari itu.
+   - sebab (Text): Alasan sakit atau kematian.
+   - status_medis (Varchar): Status (Dalam Perawatan, Sembuh, Mati).
+
+F. Tabel: vaccinations (Jadwal & Riwayat Vaksin)
+   - vaccine_id (PK, Integer): ID unik catatan vaksin.
+   - batch_id (FK, Integer): Referensi ke kelompok ayam (batches).
+   - tanggal (Date): Tanggal pelaksanaan vaksinasi.
+   - jenis_vaksin (Varchar): Nama atau tipe vaksin yang diberikan.
+   - status_vaksin (Varchar): Status pemberian (Terjadwal, Selesai).
+
+G. Tabel: finances (Transaksi Keuangan)
+   - finance_id (PK, Integer): ID unik transaksi.
+   - tanggal (Date): Tanggal transaksi.
+   - deskripsi (Varchar): Detail transaksi (contoh: Penjualan Telur).
+   - tipe (Enum/Varchar): Pemasukan atau Pengeluaran.
+   - jumlah (Decimal): Nilai uang transaksi.
+   - user_id (FK, Integer): Admin yang mencatat transaksi.
+
+H. Tabel: feed_stocks (Stok Pakan)
+   - feed_id (PK, Integer): ID unik stok.
+   - tanggal (Date): Tanggal pencatatan.
+   - nama_barang (Varchar): Jenis pakan (contoh: Konsentrat).
+   - tipe_transaksi (Varchar): Masuk atau Keluar.
+   - jumlah (Float): Berat pakan dalam satuan Kg.
+
+I. Tabel: predictions (Riwayat Prediksi MA)
+   - prediction_id (PK, Integer): ID unik prediksi.
+   - tanggal (Timestamp): Waktu prediksi dilakukan.
+   - periode_ma (Integer): Periode Moving Average (contoh: 7 hari).
+   - populasi_total (Integer): Jumlah ayam saat prediksi.
+   - prediksi_butir (Integer): Estimasi hasil telur (butir).
+   - prediksi_kg (Float): Estimasi hasil telur (kg).
+   - estimasi_keuntungan (Decimal): Perkiraan laba bersih.
+   - rekomendasi (Text): Saran sistem berdasarkan hasil prediksi.
+
+2. PENJELASAN RELASI (KARDINALITAS)
+---------------------------------------------------------
+
+1. Roles (1) ke Users (N):
+   - Satu peran (seperti 'Admin') bisa dimiliki oleh banyak pengguna.
+   
+2. Batches (1) ke Daily Productions (N):
+   - Satu kelompok ayam memiliki banyak catatan produksi harian selama siklus hidupnya.
+
+3. Batches (1) ke Health Records (N):
+   - Satu kelompok ayam dapat memiliki banyak catatan riwayat kesehatan atau kematian.
+
+4. Batches (1) ke Vaccinations (N):
+   - Satu kelompok ayam menerima berbagai jenis vaksin di waktu yang berbeda.
+
+5. Users (1) ke Daily Productions (N):
+   - Seorang petugas bertanggung jawab mencatat banyak data produksi.
+
+6. Users (1) ke Finances (N):
+   - Seorang admin dapat mencatat banyak transaksi keuangan.
+
+========================================================================
+PK = Primary Key (Kunci Utama)
+FK = Foreign Key (Kunci Tamu/Referensi)
+========================================================================
+Dibuat oleh: Antigravity AI Assistant
+Tanggal: 2026-05-07
+========================================================================

@@ -237,12 +237,26 @@ window.saveAyamData = async function(event) {
             // LOGIKA MODE TAMBAH BARU
             // ✅ FIX: Gunakan timestamp + counter aman (bukan length-based yang rawan duplikat)
             // Format: B-YYYYMMDD-XXX (aman karena berbasis waktu)
+            // ✅ SISTEM ID URUT BERDASARKAN TANGGAL: B-YYYYMMDD-001
             const now = new Date();
             const dateStr = now.getFullYear().toString() +
                 String(now.getMonth() + 1).padStart(2, '0') +
                 String(now.getDate()).padStart(2, '0');
-            const randomSuffix = String(Math.floor(Math.random() * 900) + 100); // 3 digit random
-            const customId = `B-${dateStr}-${randomSuffix}`;
+
+            // Cari counter tertinggi KHUSUS untuk hari ini
+            let maxCounter = 0;
+            dataAyam.forEach(item => {
+                // Cek apakah ID batch diawali dengan tanggal hari ini
+                if (item.customId && item.customId.startsWith(`B-${dateStr}-`)) {
+                    const parts = item.customId.split('-');
+                    // Mengambil angka terakhir (B-20240506-001 -> index ke-2 adalah 001)
+                    const num = parseInt(parts[2]);
+                    if (!isNaN(num) && num > maxCounter) maxCounter = num;
+                }
+            });
+
+            const nextCounter = maxCounter + 1;
+            const customId = `B-${dateStr}-${String(nextCounter).padStart(3, '0')}`;
             payload.customId = customId;
             payload.createdAt = new Date().toISOString();
             
