@@ -19,6 +19,18 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { db } from "../firebase.component/firebase-init.js";
 
+/**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 // State Global untuk menyimpan data dari Firestore
 let state = {
     produksi: [],
@@ -47,57 +59,42 @@ function tampilkanTanggalHariIni() {
 // =========================================
 // 2. INISIALISASI & FIREBASE LISTENERS
 // =========================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     tampilkanTanggalHariIni();
     tambahLog(' Halaman Pusat Dokumen dibuka', '📂');
 
-    // Listener Produksi
-    onSnapshot(query(collection(db, "produksi_harian"), orderBy("tanggal", "desc")), (snap) => {
-        state.produksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
+    try {
+        // Ambil semua data sekaligus menggunakan Promise.all untuk performa maksimal
+        const [
+            snapProduksi, snapPakan, snapKeuangan, snapAyam, 
+            snapKesehatan, snapVaksinasi, snapPrediksi, snapLogs
+        ] = await Promise.all([
+            getDocs(query(collection(db, "produksi_harian"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "stok_pakan"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "keuangan"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "populasi_ayam"), orderBy("tglMasuk", "desc"))),
+            getDocs(query(collection(db, "kesehatan_ayam"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "vaksinasi_ayam"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"))),
+            getDocs(query(collection(db, "aktivitas_ekspor"), orderBy("tanggal", "desc"), limit(25)))
+        ]);
 
-    // Listener Pakan
-    onSnapshot(query(collection(db, "stok_pakan"), orderBy("tanggal", "desc")), (snap) => {
-        state.pakan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.produksi = snapProduksi.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.pakan = snapPakan.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.keuangan = snapKeuangan.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.ayam = snapAyam.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.kesehatan = snapKesehatan.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.vaksinasi = snapVaksinasi.docs.map(d => ({ id: d.id, ...d.data() }));
+        state.prediksi = snapPrediksi.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        const logs = snapLogs.docs.map(d => ({ id: d.id, ...d.data() }));
+        
         perbaruiUI();
-    });
-
-    // Listener Keuangan
-    onSnapshot(query(collection(db, "keuangan"), orderBy("tanggal", "desc")), (snap) => {
-        state.keuangan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
-
-    // Listener Ayam (Populasi)
-    onSnapshot(query(collection(db, "populasi_ayam"), orderBy("tglMasuk", "desc")), (snap) => {
-        state.ayam = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
-
-    // Listener Kesehatan Ayam
-    onSnapshot(query(collection(db, "kesehatan_ayam"), orderBy("tanggal", "desc")), (snap) => {
-        state.kesehatan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
-
-    // Listener Vaksinasi Ayam
-    onSnapshot(query(collection(db, "vaksinasi_ayam"), orderBy("tanggal", "desc")), (snap) => {
-        state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
-
-    // Listener Histori Prediksi MA
-    onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc")), (snap) => {
-        state.prediksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        perbaruiUI();
-    });
-
-    // Listener Aktivitas Ekspor (Log)
-    onSnapshot(query(collection(db, "aktivitas_ekspor"), orderBy("tanggal", "desc"), limit(25)), (snap) => {
-        const logs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         perbaruiLogUI(logs);
-    });
+    } catch (error) {
+        console.error("Gagal mengambil data untuk dokumen:", error);
+        Swal.fire("Error", "Gagal memuat data dari server.", "error");
+    }
 
     // Auto open submenu Dokumen di Sidebar
     const dokSubMenu = document.getElementById('dokumenSubmenu');
@@ -172,7 +169,7 @@ function tampilkanPreview() {
         const warna = item.tipe === 'pemasukan' ? '#10b981' : '#ef4444';
         const prefix = item.tipe === 'pemasukan' ? '+' : '-';
         const nominal = Number(item.jumlah || 0).toLocaleString('id-ID');
-        const desc = (item.deskripsi || '-').substring(0, 22) + ((item.deskripsi || '').length > 22 ? '…' : '');
+        const desc = escapeHTML(item.deskripsi || '-').substring(0, 22) + ((item.deskripsi || '').length > 22 ? '…' : '');
         return `
         <div class="preview-row">
             <span class="preview-label">📅 ${tgl} | ${desc}</span>
@@ -187,7 +184,7 @@ function tampilkanPreview() {
         const customId = item.customId || (item.id.length > 8 ? item.id.substring(0, 5) : item.id);
         return `
         <div class="preview-row">
-            <span class="preview-label">🐓 ${customId} &nbsp;|&nbsp; ${item.jenis || '-'}</span>
+            <span class="preview-label">🐓 ${customId} &nbsp;|&nbsp; ${escapeHTML(item.jenis || '-')}</span>
             <span class="preview-val">
                 ${sisaStr} ekor
                 <span style="font-size:0.65rem;background:${warnaBadge};color:#fff;padding:1px 4px;border-radius:4px;margin-left:4px;">${item.status}</span>
@@ -198,7 +195,7 @@ function tampilkanPreview() {
     // 5. Kesehatan Preview: Menampilkan angka ayam sakit/mati
     renderPreview('preview-kesehatan', state.kesehatan, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
-        const batch = item.batchName || 'N/A';
+        const batch = escapeHTML(item.batchName || 'N/A');
         const sakit = item.jmlSakit || 0;
         const mati = item.jmlMati || 0;
         return `
@@ -214,8 +211,8 @@ function tampilkanPreview() {
     renderPreview('preview-vaksinasi', state.vaksinasi, (item) => {
         const tgl = formatTanggalPreview(item.tanggal);
         const warna = item.status === 'Selesai' ? '#10b981' : '#f59e0b';
-        const jenis = item.jenis || '-';
-        const metode = item.metode || '-';
+        const jenis = escapeHTML(item.jenis || '-');
+        const metode = escapeHTML(item.metode || '-');
         return `
         <div class="preview-row">
             <span class="preview-label">💉 ${tgl} &nbsp;|&nbsp; ${jenis}</span>
@@ -575,7 +572,7 @@ function perbaruiLogUI(logs) {
         return `
             <li>
                 <span class="log-icon">${log.ikon || '📄'}</span>
-                <span class="log-text">${log.teks}</span>
+                <span class="log-text">${escapeHTML(log.teks)}</span>
                 <span class="log-time">${tglStr} ${waktu}</span>
             </li>`;
     }).join('');

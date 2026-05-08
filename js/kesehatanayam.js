@@ -32,6 +32,18 @@ window.toggleSidebarMenu = function(submenuId) {
     else parentButton.classList.remove("active-parent");
 };
 
+/**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 // ==========================================
 // 2. STATE & COLLECTIONS
 // ==========================================
@@ -265,10 +277,10 @@ function renderKesehatanTable() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${tglIndo}</strong></td>
-                <td>${item.batchName}</td>
-                <td>${item.gejala}</td>
+                <td>${escapeHTML(item.batchName)}</td>
+                <td>${escapeHTML(item.gejala)}</td>
                 <td>Sakit: <strong>${item.jmlSakit}</strong><br>Mati: <strong style="color:red">${item.jmlMati}</strong></td>
-                <td>${item.penanganan}</td>
+                <td>${escapeHTML(item.penanganan)}</td>
                 <td><span class="badge ${badgeClass}">${item.status}</span></td>
                 <td>
                     <button class="btn-edit" onclick="openKesehatanModal('${item.id}')">✏️</button>
@@ -401,10 +413,10 @@ function renderVaksinTable() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td><strong>${tglIndo}</strong></td>
-                <td>${item.batchName}</td>
-                <td>${item.jenis}</td>
-                <td>${item.metode}</td>
-                <td>${item.catatan || '-'}</td>
+                <td>${escapeHTML(item.batchName)}</td>
+                <td>${escapeHTML(item.jenis)}</td>
+                <td>${escapeHTML(item.metode)}</td>
+                <td>${escapeHTML(item.catatan)}</td>
                 <td><span class="badge ${badgeClass}">${item.status}</span></td>
                 <td>
                     ${item.status !== "Selesai" ? `<button class="btn-success" style="padding:5px 8px;" onclick="selesaikanVaksin('${item.id}')">✔️</button>` : ''}

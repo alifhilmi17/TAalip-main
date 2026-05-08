@@ -235,9 +235,48 @@ async function initAdminDashboard() {
     setInterval(updateAdminFeedStockManagement, 300000);
 
 
-    
+    // L. LISTENER KONFIGURASI SISTEM
+    onSnapshot(doc(db, "settings", "konfigurasi_sistem"), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            const inputEl = document.getElementById('inputButirPerKgAdmin');
+            if (inputEl && data.butirPerKg) {
+                inputEl.value = data.butirPerKg;
+            }
+        }
+    });
+
     console.log("✅ Semua Listener Cloud Aktif.");
 }
+
+/**
+ * Menyimpan konfigurasi sistem (Konversi Telur)
+ */
+window.saveKonversiTelur = async function() {
+    const inputEl = document.getElementById('inputButirPerKgAdmin');
+    if (!inputEl) return;
+    
+    const newVal = parseFloat(inputEl.value);
+    if (isNaN(newVal) || newVal <= 0) {
+        Swal.fire('Input Tidak Valid', 'Masukkan angka konversi yang benar (misal: 16)', 'warning');
+        return;
+    }
+    
+    try {
+        const docRef = doc(db, "settings", "konfigurasi_sistem");
+        await setDoc(docRef, { butirPerKg: newVal }, { merge: true });
+        Swal.fire({
+            icon: 'success',
+            title: 'Tersimpan!',
+            text: `Konversi berhasil diubah menjadi ${newVal} butir/Kg.`,
+            timer: 2000,
+            showConfirmButton: false
+        });
+    } catch (err) {
+        console.error("Gagal menyimpan konfigurasi:", err);
+        Swal.fire('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.', 'error');
+    }
+};
 
 /**
  * Helper: Update statistik ayam tidak bertelur

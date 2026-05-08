@@ -471,6 +471,22 @@
                 >Buka Preview</a
               >
             </div>
+
+            <!-- 9. Konfigurasi Sistem -->
+            <div class="module-card" style="background: #f8fafc; border: 1px solid #e2e8f0;">
+              <div class="mod-icon" style="background: #e2e8f0; color: #475569;">⚙️</div>
+              <h4 style="color: #334155;">Konfigurasi Sistem</h4>
+              <p style="color: #64748b;">
+                Atur variabel sistem, seperti konversi jumlah butir telur per Kilogram (Kg).
+              </p>
+              <div style="margin-top: 15px;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: #64748b; display:block; margin-bottom: 5px;">Konversi (Butir / Kg):</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="number" id="inputButirPerKgAdmin" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.9rem;" placeholder="Contoh: 16">
+                  <button onclick="saveKonversiTelur()" style="background: #10b981; color: white; border: none; border-radius: 6px; padding: 0 12px; font-weight: 600; cursor: pointer; white-space: nowrap;">Simpan</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

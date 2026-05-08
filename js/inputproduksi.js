@@ -11,7 +11,7 @@ import {
     updateDoc, 
     deleteDoc, 
     doc, 
-    onSnapshot, 
+    getDocs, 
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -38,32 +38,41 @@ function formatTanggal(tglString) {
 }
 
 // =========================================
-// 2. INISIALISASI & REAL-TIME LISTENERS
+// 2. INISIALISASI & FETCH DATA
 // =========================================
-document.addEventListener("DOMContentLoaded", () => {
-    // Listener Produksi
-    const q = query(produksiCollection, orderBy("tanggal", "desc"));
-    onSnapshot(q, (snapshot) => {
+
+async function loadProduksiData() {
+    try {
+        const q = query(produksiCollection, orderBy("tanggal", "desc"));
+        const snapshot = await getDocs(q);
         dataProduksi = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTable();
         updateQuickStats();
-    }, (error) => {
+    } catch (error) {
         console.error("Firestore Error (Produksi): ", error);
         Swal.fire("Error", "Gagal memuat data produksi: " + error.message, "error");
-    });
+    }
+}
 
-    // Listener Data Ayam (Batch)
-    onSnapshot(ayamCollection, (snapshot) => {
+async function loadAyamData() {
+    try {
+        const snapshot = await getDocs(ayamCollection);
         dataAyam = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
         // Jika modal sedang terbuka, refresh opsi
         if (document.getElementById('produksiModal').classList.contains('show')) {
             const currentSelected = document.getElementById('batchProduksi').value;
             loadBatchOptions(currentSelected);
         }
-    }, (error) => {
+    } catch (error) {
         console.error("Firestore Error (Ayam): ", error);
         Swal.fire("Error", "Gagal memuat data ayam: " + error.message, "error");
-    });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // Jalankan fetch data secara paralel
+    await Promise.all([loadProduksiData(), loadAyamData()]);
 });
 
 // =========================================
@@ -339,6 +348,9 @@ window.saveProduksiData = async function(event) {
             await updateDoc(doc(db, "produksi_harian", idInput), payload);
             Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi diperbarui.', timer: 2000, showConfirmButton: false });
         }
+        
+        // Refresh data setelah operasi selesai
+        loadProduksiData();
         window.closeProduksiModal();
     } catch (err) {
         Swal.fire("Error", err.message, "error");
@@ -376,6 +388,9 @@ window.deleteProduksi = function(id) {
         if (result.isConfirmed) {
             await deleteDoc(doc(db, "produksi_harian", id));
             Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+            
+            // Refresh data setelah dihapus
+            loadProduksiData();
         }
     });
 };

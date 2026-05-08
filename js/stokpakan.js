@@ -45,6 +45,18 @@ function getBulanIni() {
     return now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 }
 
+/**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 // ==========================================
 // 2. INISIALISASI AUTH & FIREBASE LISTENER
 // ==========================================
@@ -350,9 +362,9 @@ function renderTable() {
 
             tr.innerHTML = `
                 <td>${formatTanggal(p.tanggal)}</td>
-                <td>${p.jenis}</td>
+                <td>${escapeHTML(p.jenis)}</td>
                 <td><strong style="color:#10b981;">+ ${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
-                <td>${p.keterangan || '-'}</td>
+                <td>${escapeHTML(p.keterangan)}</td>
                 <td>
                     <span class="dicatat-badge ${p.role === 'admin' ? 'dicatat-admin' : 'dicatat-petugas'}">
                         ${p.dicatatOleh || '-'}
@@ -394,9 +406,9 @@ function renderPemakaianTable() {
 
             tr.innerHTML = `
                 <td>${formatTanggal(p.tanggal)}</td>
-                <td>${p.jenis}</td>
+                <td>${escapeHTML(p.jenis)}</td>
                 <td><strong style="color:#f97316;">- ${p.jumlah.toLocaleString('id-ID')} Kg</strong></td>
-                <td>${p.keterangan || '-'}</td>
+                <td>${escapeHTML(p.keterangan)}</td>
                 <td>
                     <span class="dicatat-badge ${p.role === 'admin' ? 'dicatat-admin' : 'dicatat-petugas'}">
                         ${p.dicatatOleh || '-'}

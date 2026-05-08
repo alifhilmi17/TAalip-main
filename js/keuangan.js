@@ -4,7 +4,7 @@ import {
     updateDoc, 
     deleteDoc, 
     doc, 
-    onSnapshot, 
+    getDocs, 
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -35,6 +35,18 @@ function formatTanggal(tglString) {
 }
 
 /**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
+/**
  * Mengontrol tampilan loading (spinner/skeleton)
  */
 function toggleLoading(target, isLoading) {
@@ -59,8 +71,8 @@ function toggleLoading(target, isLoading) {
 // 2. INISIALISASI & FIREBASE LISTENER
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Jalankan Listener Firebase
-    initFirebaseListener();
+    // 1. Jalankan Fetch Data Firebase
+    loadKeuanganData();
 
     // 2. Pasang Event Listeners
     setupEventListeners();
@@ -71,11 +83,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (dateInput) dateInput.value = today;
 });
 
-function initFirebaseListener() {
+async function loadKeuanganData() {
     toggleLoading('table', true);
-    const q = query(keuanganCollection, orderBy("tanggal", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
+    try {
+        const q = query(keuanganCollection, orderBy("tanggal", "desc"));
+        const snapshot = await getDocs(q);
+        
         dataKeuangan = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -84,11 +97,11 @@ function initFirebaseListener() {
         toggleLoading('table', false);
         renderTable();
         updateSummary();
-    }, (err) => {
+    } catch (err) {
         toggleLoading('table', false);
         console.error("Firebase Error:", err);
         Swal.fire("Error", "Gagal mengambil data dari server.", "error");
-    });
+    }
 }
 
 function setupEventListeners() {
@@ -164,6 +177,9 @@ async function handleFormSubmit(event) {
         });
         document.getElementById('financeForm').reset();
         document.getElementById('trxDate').value = new Date().toISOString().split('T')[0];
+        
+        // Refresh data setelah penambahan
+        loadKeuanganData();
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     } finally {
@@ -185,6 +201,9 @@ async function deleteTransaction(id) {
         try {
             await deleteDoc(doc(db, "keuangan", id));
             Swal.fire('Terhapus!', 'Transaksi telah dihapus.', 'success');
+            
+            // Refresh data setelah penghapusan
+            loadKeuanganData();
         } catch (err) {
             Swal.fire("Error", "Gagal menghapus: " + err.message, "error");
         }
@@ -226,7 +245,7 @@ function renderTable() {
             tr.innerHTML = `
                 <td>${formatTanggal(t.tanggal)}</td>
                 <td><span class="badge-type ${badgeClass}">${typeLabel}</span></td>
-                <td>${t.deskripsi}</td>
+                <td>${escapeHTML(t.deskripsi)}</td>
                 <td class="text-right ${textClass}" style="font-weight: 700;">${formatIDR(t.jumlah)}</td>
                 <td class="text-center">
                     <button class="btn-delete" data-id="${t.id}" title="Hapus">🗑️</button>

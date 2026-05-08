@@ -23,6 +23,18 @@ import {
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { db, auth } from "../firebase.component/firebase-init.js";
 
+/**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 // =========================================
 // 1. PENGENDALI SIDEBAR & NAVIGASI
 // =========================================
@@ -122,41 +134,47 @@ document.addEventListener("DOMContentLoaded", () => {
         renderAnnouncements(); // Perbarui tampilan pengumuman
     });
 
-    // D. Data Produksi: Mendengarkan data jumlah telur harian
-    onSnapshot(collection(db, "produksi_harian"), (snap) => {
-        state.produksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates(); // Hitung ulang statistik dashboard
-    });
-
-    // E. Data Keuangan: Mendengarkan transaksi pemasukan/pengeluaran
-    onSnapshot(collection(db, "keuangan"), (snap) => {
-        state.keuangan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates(); // Hitung ulang total pendapatan
-    });
-
-    // F. Data Ayam: Mendengarkan data populasi dan status batch ayam
-    onSnapshot(collection(db, "populasi_ayam"), (snap) => {
-        state.ayam = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        updateDashboardAggregates(); // Perbarui jumlah ekor ayam aktif
-    });
-
-    // G. Data Pakan: Mendengarkan aliran masuk dan keluar pakan
+    // G. Data Pakan: Mendengarkan aliran masuk dan keluar pakan (Penting untuk Alert Realtime)
     onSnapshot(collection(db, "stok_pakan"), (snap) => {
         state.pakan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         updateDashboardAggregates();
     });
 
-    // H. Data Kesehatan: Mendengarkan data mortalitas dari koleksi kesehatan_ayam
+    // H. Data Kesehatan: Mendengarkan data mortalitas dari koleksi kesehatan_ayam (Penting untuk Alert Realtime)
     onSnapshot(collection(db, "kesehatan_ayam"), (snap) => {
         state.kesehatan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         updateDashboardAggregates();
     });
 
-    // I. ✅ FASE 2: Data Prediksi - Mendengarkan prediksi terakhir
-    onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"), limit(1)), (snap) => {
-        state.prediksi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderPrediksiWidget();
-    });
+    // --- Pengambilan Data Historis (Sekali jalan / getDocs) ---
+    async function loadHistoricalData() {
+        try {
+            // D. Data Produksi
+            const prodSnap = await getDocs(collection(db, "produksi_harian"));
+            state.produksi = prodSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // E. Data Keuangan
+            const keuSnap = await getDocs(collection(db, "keuangan"));
+            state.keuangan = keuSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // F. Data Ayam
+            const ayamSnap = await getDocs(collection(db, "populasi_ayam"));
+            state.ayam = ayamSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // I. Data Prediksi (Fase 2)
+            const predSnap = await getDocs(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"), limit(1)));
+            state.prediksi = predSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // Perbarui antarmuka setelah data historis dimuat
+            updateDashboardAggregates();
+            renderPrediksiWidget();
+        } catch (error) {
+            console.error("Gagal memuat data historis:", error);
+        }
+    }
+    
+    // Panggil fungsi pengambilan
+    loadHistoricalData();
 
     // J. Data Reminders Pakan
     onSnapshot(collection(db, "restock_reminders"), (snap) => {
@@ -1147,7 +1165,7 @@ function renderActivities() {
                         font-size: 0.88rem;
                         ${item.completed ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b; font-weight:500;'}
                         white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                    ">${item.text}</span>
+                    ">${escapeHTML(item.text)}</span>
                     ${waktuLabel ? `<span style="font-size:0.7rem; color:#cbd5e1;">${item.completed ? '✅ Selesai' : '🕐 ' + waktuLabel}</span>` : ''}
                 </div>
             </div>
@@ -1250,7 +1268,7 @@ function renderAnnouncements() {
 
             li.innerHTML = `
                 <div class="announcement-content" style="flex:1;">
-                    <span class="text">${item.text}</span>
+                    <span class="text">${escapeHTML(item.text)}</span>
                     <div class="announcement-meta">
                         <span class="announcement-time">${formatWaktuPengumuman(item.createdAt)}</span>
                         <span class="konfirmasi-count-badge ${jumlahKonfirmasi > 0 ? 'confirmed' : 'pending'}">
@@ -1291,7 +1309,7 @@ function renderAnnouncements() {
                     color: ${sudahKonfirmasi ? '#15803d' : '#1e293b'};
                     margin-bottom: 6px;
                     line-height: 1.4;
-                ">${item.text}</span>
+                ">${escapeHTML(item.text)}</span>
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:0.7rem; color:#94a3b8;">${formatWaktuPengumuman(item.createdAt)}</span>
                     <span style="

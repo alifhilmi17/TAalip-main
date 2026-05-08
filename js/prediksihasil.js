@@ -19,7 +19,7 @@
 // 0. IMPORT FIREBASE MODULES
 // =========================================
 import { 
-    collection, addDoc, deleteDoc, doc, getDocs, 
+    collection, addDoc, deleteDoc, doc, getDocs, getDoc,
     onSnapshot, query, orderBy, where, limit 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { db } from "../firebase.component/firebase-init.js";
@@ -117,6 +117,7 @@ let totalHistoryDays = 7; // Default jumlah hari riwayat
 let batchDataAyam = []; // Data batch ayam dari Firestore
 let dataProduksi = []; // Data produksi harian dari Firestore
 let lastPredictionData = null; // Menyimpan data prediksi terakhir untuk keperluan download CSV
+let konversiButirPerKg = 16; // Konfigurasi default (bisa diubah via Firebase settings)
 
 // Referensi koleksi Firestore
 const ayamCollection = collection(db, "populasi_ayam");
@@ -124,12 +125,33 @@ const produksiCollection = collection(db, "produksi_harian");
 const historyCollection = collection(db, "prediksi_history");
 
 // Inisialisasi awal render input begitu halaman dimuat
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderHistoricalInputs();
-    loadBatchAyam();
-    loadProduksiData();
-    loadPredictionHistory();
+    await Promise.all([
+        loadBatchAyam(),
+        loadProduksiData(),
+        loadPredictionHistory(),
+        loadSettings()
+    ]);
 });
+
+/**
+ * Memuat konfigurasi sistem (seperti konversi telur per Kg) dari Firestore
+ */
+async function loadSettings() {
+    try {
+        const docRef = doc(db, "settings", "konfigurasi_sistem");
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.butirPerKg) {
+                konversiButirPerKg = parseFloat(data.butirPerKg);
+            }
+        }
+    } catch (err) {
+        console.warn("Gagal memuat konfigurasi konversi butir per kg:", err);
+    }
+}
 
 // =========================================
 // 3. FITUR BARU: POPULASI DARI BATCH AYAM (FIRESTORE)
@@ -140,17 +162,17 @@ document.addEventListener('DOMContentLoaded', () => {
 /**
  * Memuat data batch ayam dari Firestore dan mengisi dropdown Populasi
  */
-function loadBatchAyam() {
+async function loadBatchAyam() {
     const selectEl = document.getElementById('populasiBatch');
     const hiddenPopulasi = document.getElementById('populasi');
     const infoEl = document.getElementById('populasiBatchInfo');
     
     if (!selectEl) return;
 
-    // Listener real-time agar dropdown selalu sinkron
-    const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
+    try {
+        const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
+        const snapshot = await getDocs(q);
+        
         batchDataAyam = snapshot.docs.map(d => ({
             id: d.id,
             ...d.data()
@@ -180,26 +202,23 @@ function loadBatchAyam() {
         optAll.dataset.info = `Total dari ${batchAktif.length} batch aktif`;
         selectEl.appendChild(optAll);
 
-        // Option per batch individual
+        // Option: masing-masing batch
         batchAktif.forEach(b => {
             const opt = document.createElement('option');
-            const sisa = parseInt(b.sisaAyam) || 0;
-            const batchId = b.customId || b.id.substring(0, 5);
-            opt.value = b.id; // ID dokumen Firestore
-            opt.dataset.populasi = sisa;
-            opt.textContent = `🐔 ${batchId} — ${b.kandang} (${sisa.toLocaleString('id-ID')} Ekor)`;
-            opt.dataset.info = `${b.jenis} | ${b.kandang} | Sisa: ${sisa.toLocaleString('id-ID')} ekor`;
+            opt.value = b.id;
+            opt.dataset.populasi = b.sisaAyam;
+            const customId = b.customId || b.id.substring(0, 5);
+            opt.textContent = `🐓 Batch ${customId} (${parseInt(b.sisaAyam).toLocaleString('id-ID')} Ekor)`;
+            opt.dataset.info = `Batch ${customId} masuk pada ${b.tglMasuk}. Kandang: ${b.kandang || '-'}`;
             selectEl.appendChild(opt);
         });
 
-        // Set default ke total semua
-        selectEl.value = 'ALL';
-        hiddenPopulasi.value = totalSemua;
-        if (infoEl) infoEl.textContent = `Total dari ${batchAktif.length} batch aktif`;
-    }, (error) => {
+        // Trigger change untuk initial value
+        selectEl.dispatchEvent(new Event('change'));
+    } catch (error) {
         console.error("Error loading batch ayam:", error);
         selectEl.innerHTML = '<option value="" disabled selected>❌ Gagal memuat data</option>';
-    });
+    }
 
     // Event listener perubahan dropdown
     selectEl.addEventListener('change', function() {
@@ -216,11 +235,14 @@ function loadBatchAyam() {
 /**
  * Memuat data produksi harian dari Firestore
  */
-function loadProduksiData() {
-    const q = query(produksiCollection, orderBy("tanggal", "desc"));
-    onSnapshot(q, (snapshot) => {
+async function loadProduksiData() {
+    try {
+        const q = query(produksiCollection, orderBy("tanggal", "desc"));
+        const snapshot = await getDocs(q);
         dataProduksi = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    });
+    } catch (error) {
+        console.error("Error loading produksi data:", error);
+    }
 }
 
 /**
@@ -485,8 +507,8 @@ window.calculatePrediction = function(event) {
 
     // KONVERSI EMAS MA (Butir -> Kilogram)
     // Parameter hitungan kita pakai Kg, namun petani nyaman pakai Butir.
-    // Maka (Asumsi 1 Kg = sekitar 16 Butir Telur Kecil). Nilai array Butir dipetakan ke wujud Kilogram (Kg).
-    let fullHistoryKg = fullHistoryButir.map(butir => butir / 16);
+    // Nilai array Butir dipetakan ke wujud Kilogram (Kg) berdasarkan rasio konversi.
+    let fullHistoryKg = fullHistoryButir.map(butir => butir / konversiButirPerKg);
 
     // --- STEP 5: MELAKUKAN KALKULASI PINTAR PREDIKSI "HARI ESOK" (H+1) ---
     // Ambil rentang index sepotong sebanyak periode MA terakhir (contoh MA 5 = 5 angka terakhir dari ujung history list)
@@ -500,7 +522,7 @@ window.calculatePrediction = function(event) {
     let prediksiBesokKg = sumKg / periodeMA;
 
     // --- STEP 6: KALKULASI LAPORAN UANG/FINANSIAL HARI ESOK ---
-    let prediksiBesokButir = Math.round(prediksiBesokKg * 16); // Konver kembali ke butir secara integer tak desimal (Dibulatkan)
+    let prediksiBesokButir = Math.round(prediksiBesokKg * konversiButirPerKg); // Konver kembali ke butir secara integer tak desimal (Dibulatkan)
     let estimasiPendapatan = prediksiBesokKg * hargaTelur;     // Total Uang Penjualan
     let totalPakanKg = (populasi * pakanPerEkor) / 1000;       // Butuh pakan berapa sekandang perharinya? (/1000 konversi karena pakan dari input beralias gram)
     let biayaPakan = totalPakanKg * hargaPakan;                // Biaya Operasional / Modal Cost
@@ -576,7 +598,7 @@ window.calculatePrediction = function(event) {
         tableBody.innerHTML = '';
         for (let i = 0; i < 7; i++) {
             let pKg = proyeksi7HariKg[i];
-            let butir = Math.round(pKg * 16);
+            let butir = Math.round(pKg * konversiButirPerKg);
             let profit = proyeksi7HariKeuntungan[i];
             let rpFormat = Math.round(profit).toLocaleString('id-ID');
             let profitStyle = profit < 0 ? "color: #e74c3c; font-weight: 700;" : "color: #27ae60; font-weight: 700;";
@@ -960,6 +982,7 @@ async function savePredictionHistory(data) {
 
         await addDoc(historyCollection, payload);
         console.log("✅ Histori prediksi tersimpan.");
+        loadPredictionHistory(); // Refresh table setelah menyimpan
     } catch (error) {
         console.error("❌ Gagal menyimpan histori:", error);
     }
@@ -968,18 +991,19 @@ async function savePredictionHistory(data) {
 /**
  * Memuat histori prediksi dari Firestore secara Real-Time
  */
-function loadPredictionHistory() {
-    const q = query(historyCollection, orderBy("tanggal", "desc"), limit(20));
-    
-    onSnapshot(q, (snapshot) => {
+async function loadPredictionHistory() {
+    try {
+        const q = query(historyCollection, orderBy("tanggal", "desc"), limit(20));
+        const snapshot = await getDocs(q);
+        
         const histories = snapshot.docs.map(d => ({
             id: d.id,
             ...d.data()
         }));
         renderHistoryTable(histories);
-    }, (error) => {
+    } catch (error) {
         console.error("Error loading history:", error);
-    });
+    }
 }
 
 /**

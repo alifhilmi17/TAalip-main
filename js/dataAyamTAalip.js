@@ -14,7 +14,7 @@ import {
     updateDoc, 
     deleteDoc, 
     doc, 
-    onSnapshot, 
+    getDocs, 
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -45,14 +45,27 @@ function formatTanggal(tglString) {
     return new Date(safeDate).toLocaleDateString('id-ID', options);
 }
 
+/**
+ * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
+ * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
+ */
+function escapeHTML(str) {
+    if (!str) return '-';
+    if (typeof str !== 'string') return str;
+    return str.replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+    }[tag] || tag));
+}
+
 // =========================================
-// 3. INISIALISASI PROGRAM & REAL-TIME LISTENER
+// 3. INISIALISASI PROGRAM & FETCH DATA
 // =========================================
-document.addEventListener("DOMContentLoaded", () => {
-    // Listener Real-time dari Firestore untuk Data Ayam
-    const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
+
+async function loadAyamData() {
+    try {
+        const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
+        const snapshot = await getDocs(q);
+        
         dataAyam = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
@@ -60,22 +73,29 @@ document.addEventListener("DOMContentLoaded", () => {
         
         renderTable();
         updateQuickStats();
-    }, (error) => {
+    } catch (error) {
         console.error("Firestore Error: ", error);
         Swal.fire("Error", "Gagal memuat data dari database: " + error.message, "error");
-    });
+    }
+}
 
-    // Listener Real-time dari Firestore untuk Data Kesehatan (untuk hitung ayam sakit)
-    onSnapshot(kesehatanCollection, (snapshot) => {
+async function loadKesehatanData() {
+    try {
+        const snapshot = await getDocs(kesehatanCollection);
         dataKesehatan = snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data()
         }));
         
         updateQuickStats();
-    }, (error) => {
+    } catch (error) {
         console.error("Firestore Error (Kesehatan): ", error);
-    });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    // Jalankan fetch data secara paralel
+    await Promise.all([loadAyamData(), loadKesehatanData()]);
 });
 
 /**
@@ -157,10 +177,10 @@ function renderTable() {
             row.innerHTML = `
                 <td><strong>${ayam.customId || ayam.id.substring(0, 5)}</strong></td>
                 <td>${formatTanggal(ayam.tglMasuk)}</td>
-                <td>${ayam.jenis}</td>
+                <td>${escapeHTML(ayam.jenis)}</td>
                 <td>${(parseInt(ayam.jumlahAwal) || 0).toLocaleString('id-ID')}</td>
                 <td><strong>${(parseInt(ayam.sisaAyam) || 0).toLocaleString('id-ID')}</strong></td>
-                <td>${ayam.kandang}</td>
+                <td>${escapeHTML(ayam.kandang)}</td>
                 <td><span class="badge ${badgeClass}">${ayam.status}</span></td>
                 <td>
                     <button class="btn-edit" onclick="editAyam('${ayam.id}')">✏️ Edit</button>
@@ -280,6 +300,9 @@ window.saveAyamData = async function(event) {
                 showConfirmButton: false
             });
         }
+        
+        // Refresh data setelah selesai menyimpan
+        loadAyamData();
         window.closeAyamModal(); // Tutup modal setelah sukses
     } catch (error) {
         console.error("Error saving document: ", error);
@@ -327,6 +350,9 @@ window.deleteAyam = function(id) {
             try {
                 await deleteDoc(doc(db, "populasi_ayam", id)); // Hapus dari Firestore
                 Swal.fire('Terhapus!', 'Data batch telah dihapus.', 'success');
+                
+                // Refresh data setelah menghapus
+                loadAyamData();
             } catch (error) {
                 Swal.fire("Error", "Gagal menghapus data: " + error.message, "error");
             }
