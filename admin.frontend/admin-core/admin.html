@@ -18,6 +18,7 @@
     <!-- ===== CSS KUSTOM ===== -->
     <link rel="stylesheet" href="../../css/dashboardTAalip.css" />
     <link rel="stylesheet" href="admin.css" />
+    <link rel="stylesheet" href="../../css/recap-modal.css" />
 
     <!-- ===== LIBRARIES ===== -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -92,12 +93,36 @@
       <!-- DASHBOARD PAGE (Grouped) -->
       <div id="section-dashboard" class="admin-page-section active">
       <!-- B. Section 1: Welcome Hero Banner (Gaya Modern) -->
-      <section class="welcome-card animate__animated animate__fadeInDown">
-        <h2>Ringkasan Seluruh Sistem 🛡️</h2>
-        <p>
-          Pusat kendali untuk memantau performa, manajemen akun, serta integrasi
-          data peternakan Anda.
-        </p>
+      <section class="welcome-card animate__animated animate__fadeInDown" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div style="text-align: left;">
+          <h2>Ringkasan Seluruh Sistem 🛡️</h2>
+          <p>
+            Pusat kendali untuk memantau performa, manajemen akun, serta integrasi
+            data peternakan Anda.
+          </p>
+        </div>
+        <button
+          onclick="openAdminDailyRecap()"
+          style="
+            background: rgba(255, 255, 255, 0.9);
+            color: #f97316;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+          "
+          onmouseover="this.style.transform = 'scale(1.05)'"
+          onmouseout="this.style.transform = 'scale(1)'"
+        >
+          <span style="font-size: 1.5rem;">📈</span> Laporan Eksekutif Hari Ini
+        </button>
       </section>
 
       <!-- C. Section 2: Statistik Global (Quick Stats) -->
@@ -1324,6 +1349,46 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- ========================= MODAL REKAP HARIAN (ADMIN) ========================== -->
+    <div class="recap-modal-overlay" id="adminRecapModalOverlay">
+      <div class="recap-modal-card">
+        <button class="recap-close-btn" onclick="closeAdminDailyRecap()">×</button>
+        <div class="recap-modal-header admin-theme">
+          <h2>Laporan Eksekutif Hari Ini</h2>
+          <p id="adminRecapDate">Memuat tanggal...</p>
+        </div>
+        <div class="recap-modal-body">
+          <div class="recap-stat-grid">
+            <div class="recap-stat-box">
+              <span class="icon">📈</span>
+              <p class="value" id="ar-pendapatan">-</p>
+              <p class="label">Pemasukan Hari Ini</p>
+            </div>
+            <div class="recap-stat-box">
+              <span class="icon">📉</span>
+              <p class="value" id="ar-pengeluaran">-</p>
+              <p class="label">Pengeluaran Hari Ini</p>
+            </div>
+            <div class="recap-stat-box">
+              <span class="icon">🥚</span>
+              <p class="value" id="ar-telur">-</p>
+              <p class="label">Total Panen (Butir)</p>
+            </div>
+            <div class="recap-stat-box">
+              <span class="icon">📦</span>
+              <p class="value" id="ar-pakan">-</p>
+              <p class="label">Sisa Pakan Global</p>
+            </div>
+          </div>
+          <div class="recap-note-section admin-theme">
+            <h4>🚨 Status Kritis & Peringatan</h4>
+            <p id="ar-kritis">Memuat data...</p>
+          </div>
+          <button class="recap-action-btn" onclick="closeAdminDailyRecap()">Tutup Laporan</button>
+        </div>
+      </div>
     </div>
 
     <!-- ===== SKRIP INTEGRASI SISTEM ===== -->

@@ -1811,3 +1811,88 @@ document.addEventListener('click', function(event) {
     }
 });
 
+// =========================================================
+// 10. DAILY RECAP (USER)
+// =========================================================
+window.openUserDailyRecap = function() {
+    const modal = document.getElementById('userRecapModalOverlay');
+    if (!modal) return;
+
+    // Set tanggal hari ini
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('userRecapDate').textContent = today.toLocaleDateString('id-ID', options);
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    // 1. Telur Panen Hari Ini
+    const prodToday = state.produksi.filter(p => p.tanggal === todayStr);
+    const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
+    document.getElementById('ur-telur').textContent = totalTelurToday > 0 ? `${totalTelurToday.toLocaleString('id-ID')}` : '0';
+
+    // 2. Pakan Terpakai Hari Ini
+    const pakanToday = state.pakan.filter(p => p.tanggal === todayStr && p.tipe === 'Keluar');
+    const totalPakanToday = pakanToday.reduce((s, v) => s + (v.jumlah || 0), 0);
+    document.getElementById('ur-pakan').textContent = totalPakanToday > 0 ? `${totalPakanToday.toLocaleString('id-ID')}` : '0';
+
+    // 3. Ayam Mati & Sakit Hari Ini
+    let matiToday = 0;
+    let sakitToday = 0;
+    state.kesehatan.filter(k => k.tanggal === todayStr).forEach(k => {
+        if (k.status === 'Dalam Perawatan') sakitToday += (parseInt(k.jmlSakit) || 0);
+        if (k.status === 'Mati Semua') {
+            matiToday += (parseInt(k.jmlSakit) || 0) + (parseInt(k.jmlMati) || 0);
+        } else {
+            matiToday += (parseInt(k.jmlMati) || 0);
+        }
+    });
+    document.getElementById('ur-mati').textContent = matiToday > 0 ? `${matiToday.toLocaleString('id-ID')}` : '0';
+    document.getElementById('ur-sakit').textContent = sakitToday > 0 ? `${sakitToday.toLocaleString('id-ID')}` : '0';
+
+    // 4. Pekerjaan Besok (Vaksin / Restock)
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
+    
+    let besokTugas = [];
+    
+    // Cek Vaksin Besok
+    const vaksinBesok = state.vaksinasi.filter(v => v.status === 'Terjadwal' && v.tanggal === tomorrowStr);
+    if (vaksinBesok.length > 0) {
+        besokTugas.push(`💉 ${vaksinBesok.length} Jadwal Vaksinasi`);
+    }
+
+    // Cek Restock (yang status Pending)
+    const pendingRestock = state.reminders.filter(r => r.status === 'Pending');
+    if (pendingRestock.length > 0) {
+        besokTugas.push(`🥬 ${pendingRestock.length} Pemesanan Pakan`);
+    }
+
+    const besokEl = document.getElementById('ur-besok');
+    if (besokTugas.length > 0) {
+        besokEl.innerHTML = `Besok ada tugas: <br><strong>${besokTugas.join('<br>')}</strong>`;
+    } else {
+        besokEl.textContent = "✅ Tidak ada jadwal khusus untuk besok. Tetap jaga kebersihan kandang!";
+    }
+
+    // Tampilkan modal
+    modal.classList.add('show');
+};
+
+window.closeUserDailyRecap = function() {
+    const modal = document.getElementById('userRecapModalOverlay');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+};
+
+// Tutup modal jika klik di luar
+document.addEventListener('click', function(event) {
+    const recapModal = document.getElementById('userRecapModalOverlay');
+    if (event.target === recapModal) {
+        closeUserDailyRecap();
+    }
+});

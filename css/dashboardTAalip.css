@@ -1308,8 +1308,7 @@ body {
     padding: 1.2rem;
     display: flex;
     flex-direction: column;
-    height: 280px;
-    overflow: hidden;
+    min-height: 280px;
 }
 
 /* Header baris atas: judul + tombol */

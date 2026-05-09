@@ -1892,3 +1892,98 @@ window.addEventListener('popstate', () => {
     const hash = window.location.hash || '#section-dashboard';
     switchAdminPage(hash.replace('#', ''));
 });
+
+// =========================================================
+// 10. DAILY RECAP (ADMIN)
+// =========================================================
+window.openAdminDailyRecap = function() {
+    const modal = document.getElementById('adminRecapModalOverlay');
+    if (!modal) return;
+
+    // Set tanggal hari ini
+    const today = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('adminRecapDate').textContent = today.toLocaleDateString('id-ID', options);
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    // 1. Finansial Hari Ini
+    let masukToday = 0;
+    let keluarToday = 0;
+    keuanganDataAdmin.filter(k => k.tanggal === todayStr).forEach(k => {
+        if (k.tipe === 'pemasukan') masukToday += (k.jumlah || 0);
+        else keluarToday += (k.jumlah || 0);
+    });
+    
+    document.getElementById('ar-pendapatan').textContent = masukToday > 0 ? `Rp ${masukToday.toLocaleString('id-ID')}` : 'Rp 0';
+    document.getElementById('ar-pendapatan').style.color = masukToday > 0 ? '#10b981' : '#1e293b';
+    
+    document.getElementById('ar-pengeluaran').textContent = keluarToday > 0 ? `Rp ${keluarToday.toLocaleString('id-ID')}` : 'Rp 0';
+    document.getElementById('ar-pengeluaran').style.color = keluarToday > 0 ? '#ef4444' : '#1e293b';
+
+    // 2. Panen Hari Ini
+    const prodToday = produksiDataAdmin.filter(p => p.tanggal === todayStr);
+    const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
+    document.getElementById('ar-telur').textContent = totalTelurToday > 0 ? `${totalTelurToday.toLocaleString('id-ID')}` : '0';
+
+    // 3. Sisa Pakan Global
+    let pakanMasuk = 0;
+    let pakanKeluar = 0;
+    pakanDataAdmin.forEach(p => {
+        if (p.tipe === 'Masuk') pakanMasuk += (p.jumlah || 0);
+        else pakanKeluar += (p.jumlah || 0);
+    });
+    const sisaPakan = pakanMasuk - pakanKeluar;
+    document.getElementById('ar-pakan').textContent = `${sisaPakan.toLocaleString('id-ID')} Kg`;
+    if (sisaPakan <= 50) document.getElementById('ar-pakan').style.color = '#ef4444';
+
+    // 4. Kritis / Peringatan
+    let kritisTugas = [];
+    
+    if (sisaPakan <= 50) {
+        kritisTugas.push(`⚠️ Stok Pakan KRITIS (${sisaPakan} Kg)`);
+    }
+
+    const ayamSakit = kesehatanDataAdmin.filter(x => x.status === "Dalam Perawatan").reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+    if (ayamSakit > 0) {
+        kritisTugas.push(`🩺 ${ayamSakit} Ayam dalam perawatan (Sakit)`);
+    }
+
+    let matiToday = 0;
+    kesehatanDataAdmin.filter(k => k.tanggal === todayStr).forEach(k => {
+        if (k.status === 'Mati Semua') matiToday += (parseInt(k.jmlSakit) || 0) + (parseInt(k.jmlMati) || 0);
+        else matiToday += (parseInt(k.jmlMati) || 0);
+    });
+    if (matiToday > 0) {
+        kritisTugas.push(`💀 ${matiToday} Ayam tercatat mati hari ini`);
+    }
+
+    const kritisEl = document.getElementById('ar-kritis');
+    if (kritisTugas.length > 0) {
+        kritisEl.innerHTML = `<strong>Peringatan yang butuh atensi:</strong><br>${kritisTugas.join('<br>')}`;
+    } else {
+        kritisEl.textContent = "✅ Tidak ada peringatan kritis. Sistem dan operasional berjalan sangat baik hari ini.";
+        kritisEl.style.color = '#166534'; // Green
+    }
+
+    // Tampilkan modal
+    modal.classList.add('show');
+};
+
+window.closeAdminDailyRecap = function() {
+    const modal = document.getElementById('adminRecapModalOverlay');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+};
+
+// Tutup modal jika klik di luar
+document.addEventListener('click', function(event) {
+    const recapModal = document.getElementById('adminRecapModalOverlay');
+    if (event.target === recapModal) {
+        closeAdminDailyRecap();
+    }
+});
