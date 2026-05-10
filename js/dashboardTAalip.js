@@ -1814,46 +1814,58 @@ document.addEventListener('click', function(event) {
 // =========================================================
 // 10. DAILY RECAP (USER)
 // =========================================================
-window.openUserDailyRecap = function() {
+window.openUserDailyRecap = function(selectedDate = null) {
     const modal = document.getElementById('userRecapModalOverlay');
     if (!modal) return;
 
-    // Set tanggal hari ini
-    const today = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('userRecapDate').textContent = today.toLocaleDateString('id-ID', options);
+    // Tentukan target tanggal (default hari ini)
+    let targetDateStr = selectedDate;
+    if (!targetDateStr) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        targetDateStr = `${year}-${month}-${day}`;
+    }
 
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
+    // Update input date value agar sinkron UI
+    const dateInput = document.getElementById('userRecapDate');
+    if (dateInput && dateInput.value !== targetDateStr) {
+        dateInput.value = targetDateStr;
+    }
 
-    // 1. Telur Panen Hari Ini
-    const prodToday = state.produksi.filter(p => p.tanggal === todayStr);
-    const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
-    document.getElementById('ur-telur').textContent = totalTelurToday > 0 ? `${totalTelurToday.toLocaleString('id-ID')}` : '0';
+    // 1. Telur Panen
+    const prodHariIni = state.produksi.filter(p => p.tanggal === targetDateStr);
+    const totalTelurHariIni = prodHariIni.reduce((s, v) => s + (v.totalTelur || 0), 0);
+    document.getElementById('ur-telur').textContent = totalTelurHariIni > 0 ? `${totalTelurHariIni.toLocaleString('id-ID')}` : '0';
 
-    // 2. Pakan Terpakai Hari Ini
-    const pakanToday = state.pakan.filter(p => p.tanggal === todayStr && p.tipe === 'Keluar');
-    const totalPakanToday = pakanToday.reduce((s, v) => s + (v.jumlah || 0), 0);
-    document.getElementById('ur-pakan').textContent = totalPakanToday > 0 ? `${totalPakanToday.toLocaleString('id-ID')}` : '0';
+    // 2. Pakan Terpakai
+    const pakanHariIni = state.pakan.filter(p => p.tanggal === targetDateStr && p.tipe === 'Keluar');
+    const totalPakanHariIni = pakanHariIni.reduce((s, v) => s + (v.jumlah || 0), 0);
+    document.getElementById('ur-pakan').textContent = totalPakanHariIni > 0 ? `${totalPakanHariIni.toLocaleString('id-ID')}` : '0';
 
-    // 3. Ayam Mati & Sakit Hari Ini
-    let matiToday = 0;
-    let sakitToday = 0;
-    state.kesehatan.filter(k => k.tanggal === todayStr).forEach(k => {
-        if (k.status === 'Dalam Perawatan') sakitToday += (parseInt(k.jmlSakit) || 0);
+    // 3. Ayam Mati & Sakit
+    // Ayam sakit global (sedang perawatan) agar selalu sinkron dengan dashboard
+    const sakitGlobal = state.kesehatan.filter(x => x.status === "Dalam Perawatan")
+                                       .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+    
+    // Ayam mati filter per tanggal yang dipilih
+    let matiHariIni = 0;
+    state.kesehatan.filter(k => k.tanggal === targetDateStr).forEach(k => {
         if (k.status === 'Mati Semua') {
-            matiToday += (parseInt(k.jmlSakit) || 0) + (parseInt(k.jmlMati) || 0);
+            matiHariIni += (parseInt(k.jmlSakit) || 0) + (parseInt(k.jmlMati) || 0);
         } else {
-            matiToday += (parseInt(k.jmlMati) || 0);
+            matiHariIni += (parseInt(k.jmlMati) || 0);
         }
     });
-    document.getElementById('ur-mati').textContent = matiToday > 0 ? `${matiToday.toLocaleString('id-ID')}` : '0';
-    document.getElementById('ur-sakit').textContent = sakitToday > 0 ? `${sakitToday.toLocaleString('id-ID')}` : '0';
+
+    document.getElementById('ur-mati').textContent = matiHariIni > 0 ? `${matiHariIni.toLocaleString('id-ID')}` : '0';
+    document.getElementById('ur-sakit').textContent = sakitGlobal > 0 ? `${sakitGlobal.toLocaleString('id-ID')}` : '0';
 
     // 4. Pekerjaan Besok (Vaksin / Restock)
-    const tomorrow = new Date(today);
+    // Tentukan tomorrow berdasarkan targetDateStr agar sinkron
+    const targetDateObj = new Date(targetDateStr);
+    const tomorrow = new Date(targetDateObj);
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = `${tomorrow.getFullYear()}-${String(tomorrow.getMonth()+1).padStart(2,'0')}-${String(tomorrow.getDate()).padStart(2,'0')}`;
     

@@ -1356,8 +1356,8 @@
       <div class="recap-modal-card">
         <button class="recap-close-btn" onclick="closeAdminDailyRecap()">×</button>
         <div class="recap-modal-header admin-theme">
-          <h2>Laporan Eksekutif Hari Ini</h2>
-          <p id="adminRecapDate">Memuat tanggal...</p>
+          <h2>Laporan Eksekutif Harian</h2>
+          <input type="date" id="adminRecapDate" class="recap-date-picker admin-theme" onchange="openAdminDailyRecap(this.value)" />
         </div>
         <div class="recap-modal-body">
           <div class="recap-stat-grid">

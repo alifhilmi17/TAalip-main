@@ -421,8 +421,17 @@
 .result-cards-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.2rem;
-    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    align-items: stretch;
+}
+
+/* Responsivitas: 1 kolom pada mobile */
+@media (max-width: 600px) {
+    .result-cards-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* =========================================================
@@ -430,18 +439,21 @@
 ========================================================= */
 /* Setiap kotak putih membulat berisi ikon berwarna dan angka hasil prediksi */
 .result-card {
-    background: linear-gradient(135deg, #ffffff 0%, #fdfbfb 100%);
-    border-radius: 12px;
-    padding: 1.2rem 1.2rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 1.5rem;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    border: 1px solid #e2e8f0;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+    gap: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
     position: relative;
     overflow: hidden;
     height: 100%;
+    min-height: 140px; /* Memastikan tinggi seragam untuk semua kartu */
     box-sizing: border-box;
 }
 
@@ -476,16 +488,16 @@
 ========================================================= */
 /* Kotak membulat yang menampung emoji/ikon dalam kartu hasil dengan animasi shine */
 .stat-icon {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 12px;
-    font-size: 1.5rem;
+    border-radius: 16px;
+    font-size: 1.8rem;
     flex-shrink: 0;
     color: white;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     position: relative;
     overflow: hidden;
     z-index: 1;
@@ -620,7 +632,7 @@
 
 .result-card.bg-biaya:hover {
     border-color: #ef4444;
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.15);
+    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25);
 }
 
 /* =========================================================
@@ -634,7 +646,7 @@
 
 .result-card.bg-keuntungan:hover {
     border-color: #3b82f6;
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.15);
+    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.25);
 }
 
 

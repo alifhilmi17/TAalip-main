@@ -1182,7 +1182,7 @@
         <button class="recap-close-btn" onclick="closeUserDailyRecap()">×</button>
         <div class="recap-modal-header">
           <h2>Rekap Harian Kandang</h2>
-          <p id="userRecapDate">Memuat tanggal...</p>
+          <input type="date" id="userRecapDate" class="recap-date-picker" onchange="openUserDailyRecap(this.value)" />
         </div>
         <div class="recap-modal-body">
           <div class="recap-stat-grid">

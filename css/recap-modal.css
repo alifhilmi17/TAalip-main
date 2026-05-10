@@ -67,6 +67,31 @@
     opacity: 0.9;
 }
 
+/* Style untuk Input Tanggal */
+.recap-date-picker {
+    margin-top: 10px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+}
+
+.recap-date-picker::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.recap-date-picker:focus {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: white;
+}
+
 /* Tombol Tutup Silang */
 .recap-close-btn {
     position: absolute;

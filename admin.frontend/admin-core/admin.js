@@ -1896,24 +1896,30 @@ window.addEventListener('popstate', () => {
 // =========================================================
 // 10. DAILY RECAP (ADMIN)
 // =========================================================
-window.openAdminDailyRecap = function() {
+window.openAdminDailyRecap = function(selectedDate = null) {
     const modal = document.getElementById('adminRecapModalOverlay');
     if (!modal) return;
 
-    // Set tanggal hari ini
-    const today = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('adminRecapDate').textContent = today.toLocaleDateString('id-ID', options);
+    // Tentukan target tanggal (default hari ini)
+    let targetDateStr = selectedDate;
+    if (!targetDateStr) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        targetDateStr = `${year}-${month}-${day}`;
+    }
 
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const todayStr = `${year}-${month}-${day}`;
+    // Update input date value agar sinkron UI
+    const dateInput = document.getElementById('adminRecapDate');
+    if (dateInput && dateInput.value !== targetDateStr) {
+        dateInput.value = targetDateStr;
+    }
 
     // 1. Finansial Hari Ini
     let masukToday = 0;
     let keluarToday = 0;
-    keuanganDataAdmin.filter(k => k.tanggal === todayStr).forEach(k => {
+    keuanganDataAdmin.filter(k => k.tanggal === targetDateStr).forEach(k => {
         if (k.tipe === 'pemasukan') masukToday += (k.jumlah || 0);
         else keluarToday += (k.jumlah || 0);
     });
@@ -1925,11 +1931,11 @@ window.openAdminDailyRecap = function() {
     document.getElementById('ar-pengeluaran').style.color = keluarToday > 0 ? '#ef4444' : '#1e293b';
 
     // 2. Panen Hari Ini
-    const prodToday = produksiDataAdmin.filter(p => p.tanggal === todayStr);
+    const prodToday = produksiDataAdmin.filter(p => p.tanggal === targetDateStr);
     const totalTelurToday = prodToday.reduce((s, v) => s + (v.totalTelur || 0), 0);
     document.getElementById('ar-telur').textContent = totalTelurToday > 0 ? `${totalTelurToday.toLocaleString('id-ID')}` : '0';
 
-    // 3. Sisa Pakan Global
+    // 3. Sisa Pakan Global (Tetap Global)
     let pakanMasuk = 0;
     let pakanKeluar = 0;
     pakanDataAdmin.forEach(p => {
@@ -1953,19 +1959,19 @@ window.openAdminDailyRecap = function() {
     }
 
     let matiToday = 0;
-    kesehatanDataAdmin.filter(k => k.tanggal === todayStr).forEach(k => {
+    kesehatanDataAdmin.filter(k => k.tanggal === targetDateStr).forEach(k => {
         if (k.status === 'Mati Semua') matiToday += (parseInt(k.jmlSakit) || 0) + (parseInt(k.jmlMati) || 0);
         else matiToday += (parseInt(k.jmlMati) || 0);
     });
     if (matiToday > 0) {
-        kritisTugas.push(`💀 ${matiToday} Ayam tercatat mati hari ini`);
+        kritisTugas.push(`💀 ${matiToday} Ayam tercatat mati pada tanggal ini`);
     }
 
     const kritisEl = document.getElementById('ar-kritis');
     if (kritisTugas.length > 0) {
         kritisEl.innerHTML = `<strong>Peringatan yang butuh atensi:</strong><br>${kritisTugas.join('<br>')}`;
     } else {
-        kritisEl.textContent = "✅ Tidak ada peringatan kritis. Sistem dan operasional berjalan sangat baik hari ini.";
+        kritisEl.textContent = "✅ Tidak ada peringatan kritis. Sistem dan operasional berjalan sangat baik.";
         kritisEl.style.color = '#166534'; // Green
     }
 

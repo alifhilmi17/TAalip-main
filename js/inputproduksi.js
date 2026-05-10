@@ -47,7 +47,6 @@ async function loadProduksiData() {
         const snapshot = await getDocs(q);
         dataProduksi = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTable();
-        updateQuickStats();
     } catch (error) {
         console.error("Firestore Error (Produksi): ", error);
         Swal.fire("Error", "Gagal memuat data produksi: " + error.message, "error");
@@ -73,6 +72,7 @@ async function loadAyamData() {
 document.addEventListener("DOMContentLoaded", async () => {
     // Jalankan fetch data secara paralel
     await Promise.all([loadProduksiData(), loadAyamData()]);
+    updateQuickStats(); // Jalankan statistik setelah kedua data tersedia
 });
 
 // =========================================
@@ -126,6 +126,10 @@ window.autoFillFromBatch = function() {
 
         if (kandangEl) kandangEl.value = batchData.kandang || '';
         if (jenisEl) jenisEl.value = batchData.jenis || '';
+        
+        const totalAyamEl = document.getElementById('totalAyamInput');
+        if (totalAyamEl) totalAyamEl.value = batchData.sisaAyam || 0;
+
         lockBatchFields();
     }
 };
@@ -259,6 +263,7 @@ window.saveProduksiData = async function(event) {
     const telurCacat       = parseInt(document.getElementById('telurCacat').value) || 0;
     const totalTelur       = telurBaik + telurCacat;
     const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
+    const totalAyam        = parseInt(document.getElementById('totalAyamInput').value) || 0;
 
     // ── Ambil data batch untuk validasi ──────────────────────────
     const batchData = dataAyam.find(a => a.id === batchEl.value);
@@ -336,6 +341,7 @@ window.saveProduksiData = async function(event) {
         telurCacat,
         totalTelur,
         ayamTidakBertelur,
+        totalAyam,
         updatedAt: new Date().toISOString()
     };
 
@@ -371,6 +377,10 @@ window.editProduksi = function(id) {
         document.getElementById('kandangProduksi').value = prod.kandang;
         document.getElementById('kandangProduksiHidden').value = prod.kandang;
         
+        // Load Total Ayam (jika ada di data, atau ambil dari batch info)
+        const batchInfo = dataAyam.find(a => a.id === prod.batchId);
+        document.getElementById('totalAyamInput').value = prod.totalAyam !== undefined ? prod.totalAyam : (batchInfo ? batchInfo.sisaAyam : 0);
+
         lockBatchFields();
         document.getElementById('modalTitle').innerText = "Edit Produksi";
         document.getElementById('produksiModal').classList.add('show');
@@ -447,7 +457,7 @@ function renderTable() {
                 headerRow.className = `batch-group-header ${isCollapsed ? 'collapsed' : ''}`;
                 headerRow.onclick = () => toggleBatchGroup(prod.batchId);
                 headerRow.innerHTML = `
-                    <td colspan="9">
+                    <td colspan="10">
                         <span class="toggle-icon">${isCollapsed ? '▶' : '▼'}</span>
                         <span style="font-weight: 700; letter-spacing: 0.5px;">${prod.batchLabel.split(' - ')[0]}</span>
                         <span class="header-hint">${isCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
@@ -470,6 +480,7 @@ function renderTable() {
                 <td><span class="badge" style="background:#ef4444;color:white;">${prod.telurCacat.toLocaleString('id-ID')}</span></td>
                 <td><strong>${prod.totalTelur.toLocaleString('id-ID')}</strong></td>
                 <td><span class="badge" style="background:#8b5cf6;color:white;">${(prod.ayamTidakBertelur || 0).toLocaleString('id-ID')} Ekor</span></td>
+                <td><span class="badge" style="background:#3b82f6;color:white;">${(prod.totalAyam !== undefined ? prod.totalAyam : (dataAyam.find(a => a.id === prod.batchId)?.sisaAyam || 0)).toLocaleString('id-ID')} Ekor</span></td>
                 <td>
                     <button class="btn-edit" onclick="editProduksi('${prod.id}')">✏️</button>
                     <button class="btn-delete" onclick="deleteProduksi('${prod.id}')">🗑️</button>
@@ -483,27 +494,40 @@ function renderTable() {
 function updateQuickStats() {
     const filterTgl = document.getElementById('filterTanggal').value;
     let total = 0, baik = 0, cacat = 0;
+    let tidakBertelurTotal = 0;
+    let distinctDates = new Set();
 
     dataProduksi.forEach(prod => {
         if (!filterTgl || prod.tanggal === filterTgl) {
             total += prod.totalTelur;
             baik += prod.telurBaik;
             cacat += prod.telurCacat;
+            tidakBertelurTotal += (prod.ayamTidakBertelur || 0);
+            distinctDates.add(prod.tanggal);
         }
     });
 
-    // Update statistik ayam tidak bertelur
-    let tidakBertelur = 0;
-    dataProduksi.forEach(prod => {
-        if (!filterTgl || prod.tanggal === filterTgl) {
-            tidakBertelur += (prod.ayamTidakBertelur || 0);
-        }
+    // Hitung rata-rata jika melihat semua data, atau total jika difilter per tanggal
+    const totalDays = distinctDates.size || 1;
+    const finalTidakBertelur = filterTgl ? tidakBertelurTotal : Math.round(tidakBertelurTotal / totalDays);
+    
+    // Update label secara dinamis
+    const labelEl = document.getElementById('labelAyamTidakBertelur');
+    if (labelEl) {
+        labelEl.innerText = filterTgl ? "Total Ayam Tidak Bertelur" : "Rata-rata Ayam Tidak Bertelur";
+    }
+
+    // Hitung total populasi ayam aktif dari dataAyam
+    let totalPopulasi = 0;
+    dataAyam.filter(a => a.status === 'Aktif').forEach(a => {
+        totalPopulasi += (parseInt(a.sisaAyam) || 0);
     });
 
     if(document.getElementById('totalTelurHariIni')) document.getElementById('totalTelurHariIni').innerText = total.toLocaleString('id-ID') + ' Butir';
     if(document.getElementById('totalTelurBaik')) document.getElementById('totalTelurBaik').innerText = baik.toLocaleString('id-ID') + ' Butir';
     if(document.getElementById('totalTelurCacat')) document.getElementById('totalTelurCacat').innerText = cacat.toLocaleString('id-ID') + ' Butir';
-    if(document.getElementById('totalAyamTidakBertelur')) document.getElementById('totalAyamTidakBertelur').innerText = tidakBertelur.toLocaleString('id-ID') + ' Ekor';
+    if(document.getElementById('totalAyamTidakBertelur')) document.getElementById('totalAyamTidakBertelur').innerText = finalTidakBertelur.toLocaleString('id-ID') + ' Ekor';
+    if(document.getElementById('totalPopulasiAyam')) document.getElementById('totalPopulasiAyam').innerText = totalPopulasi.toLocaleString('id-ID') + ' Ekor';
 }
 
 window.filterTable = function() {
@@ -518,9 +542,10 @@ window.resetFilter = function() {
 
 window.downloadLaporanCSV = function() {
     if (dataProduksi.length === 0) return;
-    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur,Ayam Tidak Bertelur\n";
+    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur,Ayam Tidak Bertelur,Total Ayam\n";
     dataProduksi.forEach(p => {
-        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur},${p.ayamTidakBertelur || 0}\n`;
+        const totalAyam = p.totalAyam !== undefined ? p.totalAyam : (dataAyam.find(a => a.id === p.batchId)?.sisaAyam || 0);
+        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur},${p.ayamTidakBertelur || 0},${totalAyam}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

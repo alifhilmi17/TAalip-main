@@ -250,7 +250,7 @@ async function loadProduksiData() {
  */
 window.autoFillFromBatch = function() {
     const batchSelect = document.getElementById('populasiBatch');
-    const periodeMA = parseInt(document.getElementById('periodeMA').value) || 5;
+    const periodeMA = parseInt(document.getElementById('periodeMA').value) || 7;
     
     if (!batchSelect || !batchSelect.value) return;
     
@@ -282,15 +282,6 @@ window.autoFillFromBatch = function() {
         return;
     }
     
-    if (dataToFill.length < periodeMA) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Data Produksi Kurang Lengkap',
-            html: `Batch ini hanya memiliki <strong>${dataToFill.length} hari</strong> data produksi, sedangkan Periode MA yang dipilih adalah <strong>${periodeMA} hari</strong>.<br><br>Data yang ada akan diisi otomatis, sisanya perlu dilengkapi manual.`,
-            confirmButtonColor: '#f59e0b'
-        });
-    }
-    
     // Isi data ke input field (dari H-0 mundur ke H-N)
     dataToFill.forEach((prod, index) => {
         const inputId = `hist${index}`;
@@ -309,14 +300,25 @@ window.autoFillFromBatch = function() {
         }
     });
     
-    Swal.fire({
-        icon: 'success',
-        title: 'Data Berhasil Dimuat!',
-        html: `<strong>${dataToFill.length} hari</strong> data produksi telah diisi otomatis ke form.<br><br>Silakan lengkapi data <strong>Keuntungan (Rp)</strong> secara manual di tab sebelah.`,
-        timer: 3000,
-        showConfirmButton: true,
-        confirmButtonColor: '#10b981'
-    });
+    if (dataToFill.length < periodeMA) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Data Belum Sesuai/Lengkap',
+            html: `Batch ini hanya memiliki <strong>${dataToFill.length} hari</strong> data produksi, sedangkan Periode MA yang dipilih adalah <strong>${periodeMA} hari</strong>.<br><br>Data yang ada telah diisi otomatis, <strong>namun Anda wajib melengkapi sisanya secara manual</strong> agar prediksi dapat berjalan.`,
+            showConfirmButton: true,
+            confirmButtonText: 'Mengerti',
+            confirmButtonColor: '#f59e0b'
+        });
+    } else {
+        Swal.fire({
+            icon: 'success',
+            title: 'Data Berhasil Dimuat!',
+            html: `<strong>${dataToFill.length} hari</strong> data produksi telah diisi otomatis ke form.<br><br>Silakan lengkapi data <strong>Keuntungan (Rp)</strong> secara manual di tab sebelah.`,
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#10b981'
+        });
+    }
 };
 
 /**
@@ -355,7 +357,7 @@ function renderHistoricalInputs() {
     const profitContainer = document.getElementById('containerHistProf');
     if (!prodContainer || !profitContainer) return;
 
-    let periodeMA = parseInt(document.getElementById('periodeMA').value) || 5;
+    let periodeMA = parseInt(document.getElementById('periodeMA').value) || 7;
 
     // Simpan data sebelumnya supaya tidak hilang saat jumlah baris berubah
     let oldProd = {};
@@ -511,7 +513,7 @@ window.calculatePrediction = function(event) {
     let fullHistoryKg = fullHistoryButir.map(butir => butir / konversiButirPerKg);
 
     // --- STEP 5: MELAKUKAN KALKULASI PINTAR PREDIKSI "HARI ESOK" (H+1) ---
-    // Ambil rentang index sepotong sebanyak periode MA terakhir (contoh MA 5 = 5 angka terakhir dari ujung history list)
+    // Ambil rentang index sepotong sebanyak periode MA terakhir (contoh MA 7 = 7 angka terakhir dari ujung history list)
     let sliceForPredict = fullHistoryKg.slice(-periodeMA);
 
     // a. Menjumlahkan (Summation) nilai dari himpunan tsb
@@ -568,7 +570,7 @@ window.calculatePrediction = function(event) {
     let tempHistory = [...fullHistoryKg];
 
     for (let i = 0; i < 7; i++) { // Loop lompat simulasi dimensi hari+1 s.d hari+7
-        // Cari Rata2 MA dari rentang 5 data terbaru (Yang selalu bergeser ke kanan hari demi harinya)
+        // Cari Rata2 MA dari rentang 7 data terbaru (Yang selalu bergeser ke kanan hari demi harinya)
         let currentWindow = tempHistory.slice(-periodeMA);
         let currSum = currentWindow.reduce((a, b) => a + b, 0);
         let nextPredKg = currSum / periodeMA;
