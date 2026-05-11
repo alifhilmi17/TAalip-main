@@ -679,11 +679,20 @@ function renderAdminUserList(users) {
             joinDate = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         }
 
+        let roleIcon = '💼';
+        if (user.jabatan) {
+            const j = user.jabatan.toLowerCase();
+            if (j.includes('admin')) roleIcon = '🛡️';
+            else if (j.includes('owner')) roleIcon = '👑';
+            else if (j.includes('akuntan')) roleIcon = '🧾';
+            else if (j.includes('petugas')) roleIcon = '👨‍🌾';
+        }
+
         return `
             <tr>
                 <td style="text-align:left;">
                     <div style="font-weight:600; color:#1e293b;">${user.fullname || '-'}</div>
-                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">💼 ${user.jabatan}</div>` : ''}
+                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${roleIcon} ${user.jabatan}</div>` : ''}
                 </td>
                 <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${user.username || '-'}</code></td>
                 <td style="font-size:0.85rem; color:#64748b;">${user.email || '-'}</td>

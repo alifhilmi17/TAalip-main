@@ -429,11 +429,19 @@ function updateQuickStats() {
     const now = new Date();
     const bulanSekarang = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
 
+    let stokPerJenis = {};
+
     dataPakan.forEach(p => {
+        if (!stokPerJenis[p.jenis]) {
+            stokPerJenis[p.jenis] = { masuk: 0, keluar: 0 };
+        }
+
         if (p.tipe === "Masuk") {
             masuk += p.jumlah;
+            stokPerJenis[p.jenis].masuk += p.jumlah;
         } else {
             keluar += p.jumlah;
+            stokPerJenis[p.jenis].keluar += p.jumlah;
             if (p.tanggal && p.tanggal.startsWith(bulanSekarang)) {
                 pemakaianBulanIniCount += p.jumlah;
             }
@@ -442,8 +450,25 @@ function updateQuickStats() {
 
     const sisa = masuk - keluar;
 
+    let pakanTersediaText = "";
+    let pakanList = [];
+    for (const [jenis, stok] of Object.entries(stokPerJenis)) {
+        const sisaJenis = stok.masuk - stok.keluar;
+        if (sisaJenis > 0) {
+            pakanList.push(`${jenis} ${sisaJenis.toLocaleString('id-ID')} Kg`);
+        }
+    }
+    
+    if (pakanList.length > 0) {
+        pakanTersediaText = pakanList.join(" dan ");
+    } else {
+        pakanTersediaText = "Tidak ada pakan tersedia";
+    }
+
     if (document.getElementById('totalPakanMasuk'))
         document.getElementById('totalPakanMasuk').innerText = masuk.toLocaleString('id-ID') + ' Kg';
+    if (document.getElementById('detailPakanTersedia'))
+        document.getElementById('detailPakanTersedia').innerText = pakanTersediaText;
     if (document.getElementById('totalPakanKeluar'))
         document.getElementById('totalPakanKeluar').innerText = keluar.toLocaleString('id-ID') + ' Kg';
     if (document.getElementById('sisaStokPakan')) {
