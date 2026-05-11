@@ -8,12 +8,26 @@
                  scrollbar, animasi, dan responsif.
 ========================================================= */
 
+/* =========================================================
+   2. VARIABEL & RESET
+========================================================= */
+.highlight-text-red { color: #ef4444 !important; }
+.highlight-text-green { color: #16a34a !important; }
 
 /* =========================================================
-   📌 HEADER HALAMAN PREDIKSI HASIL
+   3. LAYOUT UTAMA
 ========================================================= */
-/* Blok judul atas berwarna ungu/violet sebagai identitas visual modul prediksi;
-   memiliki ikon grafik transparan di pojok dan efek hover mengambang */
+/* Grid pembagi halaman: kolom kiri (38%) untuk form input, kolom kanan (62%) untuk hasil */
+.prediction-container {
+    display: grid;
+    grid-template-columns: 38% 62%;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* =========================================================
+   4. PANEL KIRI - HEADER (page-header)
+========================================================= */
 .page-header {
     margin-bottom: 2.5rem;
     padding: 2.5rem;
@@ -30,19 +44,11 @@
     cursor: default;
 }
 
-/* =========================================================
-   📌 EFEK HOVER HEADER
-========================================================= */
-/* Header terangkat dan bayangan ungu menguat saat kursor melewatinya */
 .page-header:hover {
     transform: translateY(-6px);
     box-shadow: 0 16px 35px rgba(118, 75, 162, 0.5);
 }
 
-/* =========================================================
-   🎨 DEKORASI WATERMARK IKON GRAFIK
-========================================================= */
-/* Dua ikon grafik naik-turun raksasa di pojok kanan bawah sebagai hiasan latar header */
 .page-header::after {
     content: '📉📈';
     position: absolute;
@@ -52,19 +58,14 @@
     opacity: 0.15;
     transform: rotate(-10deg);
     transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.6s ease;
-    pointer-events: none;         /* Ikon tidak bisa diklik */
+    pointer-events: none;
 }
 
-/* Ikon berputar dan membesar saat header di-hover */
 .page-header:hover::after {
     transform: rotate(5deg) scale(1.15) translateY(-10px);
     opacity: 0.35;
 }
 
-/* =========================================================
-   🔤 JUDUL TEKS HEADER (H2)
-========================================================= */
-/* Teks nama halaman besar dan tebal, berada di atas z-index watermark */
 .page-header h2 {
     font-size: 2.2rem;
     font-weight: 800;
@@ -76,10 +77,6 @@
     z-index: 1;
 }
 
-/* =========================================================
-   📝 PARAGRAF DESKRIPSI HEADER
-========================================================= */
-/* Teks pendukung di bawah judul; dibatasi 80% lebar agar mudah dibaca */
 .page-header p {
     font-size: 1.05rem;
     color: rgba(255, 255, 255, 0.9);
@@ -90,22 +87,9 @@
     z-index: 1;
 }
 
-
 /* =========================================================
-   📐 LAYOUT UTAMA DUA KOLOM (FORM | HASIL GRAFIK)
+   5. PANEL KIRI - FORM CARD (shadow-card)
 ========================================================= */
-/* Grid pembagi halaman: kolom kiri (38%) untuk form input, kolom kanan (62%) untuk hasil */
-.prediction-container {
-    display: grid;
-    grid-template-columns: 38% 62%;
-    gap: 2rem;
-    align-items: start;
-}
-
-/* =========================================================
-   🃏 KARTU FORM PREDIKSI (SHADOW CARD)
-========================================================= */
-/* Kotak ungu bergradien yang membungkus seluruh form variabel prediksi */
 .shadow-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 12px;
@@ -114,148 +98,157 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-
-/* =========================================================
-   ℹ️ BANNER PETUNJUK PENGGUNAAN
-========================================================= */
-/* Kotak info abu di bagian atas form yang menjelaskan langkah-langkah penggunaan */
+/* Info Banner Panduan */
 .info-banner {
-    background: #f8fafc;
-    border-left: 3px solid #cbd5e1;
-    padding: 1rem 1.25rem;
-    border-radius: 6px;
-    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #00b4db, #0083b0);
+    color: white;
+    padding: 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 20px rgba(0, 180, 219, 0.25);
+    position: relative;
+    overflow: hidden;
+    border: none;
 }
 
-/* Judul di dalam banner info */
-.info-banner h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1rem;
-    color: #334155;
-    font-weight: 600;
+.info-banner-decor-1 {
+    position: absolute;
+    right: -20px;
+    top: -40px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
 }
 
-/* Daftar langkah-langkah dalam banner */
-.info-banner ol {
+.info-banner-decor-2 {
+    position: absolute;
+    left: 40%;
+    bottom: -50px;
+    width: 100px;
+    height: 100px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.info-banner-title {
+    margin: 0 0 15px 0;
+    font-size: 1.15rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+}
+
+.info-banner-icon {
+    background: rgba(255, 255, 255, 0.25);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Langkah-langkah dalam Info Banner */
+.guide-steps-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+}
+
+.guide-step {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 14px 18px;
+    border-radius: 12px;
+    display: flex;
+    gap: 12px;
+    align-items: start;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.guide-step-number {
+    background: #ffffff;
+    color: #0083b0;
+    font-weight: 800;
+    border-radius: 50%;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.guide-step-text {
     margin: 0;
-    padding-left: 1.25rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.guide-step-highlight {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+}
+
+.guide-step-example {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: block;
+    margin-top: 8px;
     font-size: 0.85rem;
-    color: #64748b;
+    border-left: 3px solid #ffd700;
+    font-style: normal;
     line-height: 1.6;
 }
 
-
 /* =========================================================
-   📋 SEKSI FORM (FORM SECTION)
+   6. PANEL KIRI - THEORY PANEL
 ========================================================= */
-/* Pembatas jarak antar kelompok input dalam form agar tidak terlalu rapat */
-.form-section {
-    margin-bottom: 2rem;
+.theory-panel {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-left: 4px solid #22c55e;
+    padding: 18px 22px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.1);
 }
 
-/* =========================================================
-   🏷️ LABEL SEKSI FORM
-========================================================= */
-/* Teks judul kelompok input yang lebih besar dan tebal */
-.section-label {
-    font-size: 1rem;
-    color: #0f172a;
-    font-weight: 600;
-    margin-bottom: 0.25rem;
-    display: block;
-}
-
-/* =========================================================
-   📝 DESKRIPSI SEKSI FORM
-========================================================= */
-/* Teks abu kecil di bawah label seksi yang menjelaskan fungsi kelompok input */
-.section-desc {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin-bottom: 1.25rem;
-    line-height: 1.5;
-}
-
-
-/* =========================================================
-   📊 GRID INPUT HISTORIS (H-2, H-1, HARI INI)
-========================================================= */
-/* Tiga kolom sejajar untuk memasukkan data produksi 3 hari berturut-turut */
-.historical-inputs {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-/* =========================================================
-   📋 GRUP INPUT MINI (FORM GROUP MINI)
-========================================================= */
-/* Kontainer satu input historis: label + kotak input tersusun vertikal */
-.form-group-mini {
+.theory-panel-title {
+    margin: 0 0 10px 0;
+    font-size: 1.05rem;
+    color: #166534;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.theory-panel-text {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #15803d;
+    line-height: 1.6;
 }
 
 /* =========================================================
-   🏷️ LABEL INPUT MINI
+   8. PANEL KIRI - TOGGLE TABS
 ========================================================= */
-/* Teks kecil abu di atas setiap kotak input historis */
-.form-group-mini label {
-    font-size: 0.8rem;
-    color: #64748b;
-    margin-bottom: 5px;
-    font-weight: 500;
-}
-
-/* Label dipertebal untuk kolom "Hari Ini" (data hari ini wajib diisi) */
-.form-group-mini .highlight-label {
-    color: #0f172a;
-    font-weight: 600;
-}
-
-/* =========================================================
-   ✏️ KOTAK INPUT HISTORIS (HIST INPUT)
-========================================================= */
-/* Kotak input teks-tengah yang digunakan untuk data produksi historis */
-.hist-input {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    text-align: center;
-    font-size: 0.95rem;
-    color: #334155;
-    transition: all 0.2s ease;
-    background: #fff;
-}
-
-/* Garis tepi berubah biru saat input aktif */
-.hist-input:focus {
-    border-color: #3b82f6;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-/* =========================================================
-   ✏️ INPUT HARI INI (REQUIRED TODAY)
-========================================================= */
-/* Variasi input abu muda yang menandai kolom wajib diisi hari ini */
-.hist-input.required-today {
-    border-color: #94a3b8;
-    background: #f8fafc;
-}
-
-/* Garis normal saat input hari ini aktif */
-.hist-input.required-today:focus {
-    border-color: #3b82f6;
-    background: #fff;
-}
-
-
-/* =========================================================
-   🔘 AREA TAB TOGGLE (PRODUKSI / BIAYA)
-========================================================= */
-/* Saklar tombol yang memungkinkan pengguna berganti antara tab input produksi dan biaya */
 .toggle-tabs {
     display: flex;
     gap: 10px;
@@ -266,10 +259,6 @@
     border: 1px solid #e1e8ed;
 }
 
-/* =========================================================
-   🔘 TOMBOL TAB (TIDAK AKTIF)
-========================================================= */
-/* Tab dalam keadaan tidak aktif: transparan dengan teks abu */
 .tab-btn {
     flex: 1;
     padding: 10px;
@@ -283,70 +272,357 @@
     transition: all 0.3s ease;
 }
 
-/* Hover state: latar abu muda dan teks gelap */
 .tab-btn:hover {
     color: #2c3e50;
     background: #e1e8ed;
 }
 
-/* =========================================================
-   🔘 TOMBOL TAB AKTIF (PRODUKSI)
-========================================================= */
-/* Tab yang sedang dipilih: latar biru dengan teks gelap dan bayangan */
 .tab-btn.active {
     background: #00b4db;
     color: #2c3e50;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* =========================================================
-   🎬 ANIMASI TRANSISI KONTEN TAB (FADE IN)
-========================================================= */
-/* Efek muncul pelan dari atas saat tab baru diaktifkan */
 .historical-tab {
     animation: fadeIn 0.3s ease-in-out;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-5px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* =========================================================
+   9. PANEL KIRI - TAB PRODUKSI & KEUNTUNGAN
+========================================================= */
+.hist-tab-produksi {
+    background: linear-gradient(to bottom right, #ffffff, #f0f8fb);
+    border: 2px solid #bce0fd;
+    padding: 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.08);
+}
+
+.hist-tab-title-produksi {
+    font-size: 1.15rem;
+    color: #d35400;
+    font-weight: 700;
+    border-bottom: 3px solid #f39c12;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.hist-tab-keuntungan {
+    display: none;
+    background: linear-gradient(to bottom right, #ffffff, #f0fcf4);
+    border: 2px solid #c3edd3;
+    padding: 25px;
+    border-radius: 16px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.08);
+}
+
+.hist-tab-title-keuntungan {
+    font-size: 1.15rem;
+    color: #1e5128;
+    font-weight: 700;
+    border-bottom: 3px solid #2ecc71;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.hist-tab-desc {
+    font-size: 0.9rem;
+    color: #576574;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* =========================================================
+   10. PANEL KIRI - HISTORICAL INPUTS GRID
+========================================================= */
+.historical-inputs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.form-group-mini {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-mini label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.hist-input {
+    width: 100%;
+    padding: 0.6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: #334155;
+    transition: all 0.2s ease;
+    background: #fff;
+}
+
+.hist-input:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Input Hari Ini (Required Today) */
+.hist-input-today-label-produksi {
+    font-weight: 700;
+    color: #d35400;
+    background: #ffeaa7;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border-left: 3px solid #e67e22;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.hist-input-today-produksi {
+    border: 2px solid #f39c12;
+    background: #fffcf2;
+    font-size: 1.1rem;
+    padding: 12px;
+    box-shadow: inset 0 0 10px rgba(243, 156, 18, 0.1), 0 0 12px rgba(243, 156, 18, 0.15);
+}
+
+.hist-input-today-label-keuntungan {
+    font-weight: 700;
+    color: #218c46;
+    background: #e8f8f0;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border-left: 3px solid #2ecc71;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.hist-input-today-keuntungan {
+    border: 2px solid #27ae60;
+    background: #f2fbf6;
+    font-size: 1.1rem;
+    padding: 12px;
+    box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.1), 0 0 12px rgba(46, 204, 113, 0.15);
 }
 
 
 /* =========================================================
-   📏 BARIS FORM SEJAJAR (FORM ROW)
+   11. PANEL KIRI - KONFIGURASI SECTION
 ========================================================= */
-/* Dua input sejajar dalam satu baris (misal: masa MA + harga/kg) */
+.config-section {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 1px solid #dcdde1;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.config-section-title {
+    font-size: 1.15rem;
+    color: #2f3640;
+    font-weight: 700;
+    border-bottom: 3px solid #9b59b6;
+    padding-bottom: 8px;
+    margin-bottom: 20px;
+    display: inline-block;
+    letter-spacing: 0.5px;
+}
+
+.config-select {
+    background: #fff;
+    border-color: #9b59b6 !important;
+}
+
+.config-helper-text {
+    font-size: 0.78rem;
+    color: #7f8c8d;
+    margin-top: 4px;
+    display: block;
+}
+
+.price-input {
+    background: #fff;
+    border: 1px solid #ddd !important;
+}
+
+/* =========================================================
+   12. PANEL KIRI - LOAD BATCH BUTTON
+========================================================= */
+.load-batch-wrapper {
+    margin-top: 15px;
+    padding: 12px;
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+}
+
+.btn-load-batch {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+}
+
+.btn-load-batch:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+}
+
+.load-batch-desc {
+    display: block;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: #065f46;
+    text-align: center;
+}
+
+/* =========================================================
+   13. PANEL KIRI - PAKAN INPUT GROUP
+========================================================= */
+.pakan-input-group {
+    margin-top: 20px;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #e1e8ed;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+}
+
+.pakan-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.pakan-label {
+    font-weight: 700;
+    color: #2d3436;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    margin-bottom: 0 !important;
+}
+
+.pakan-label span {
+    font-size: 1.2rem;
+}
+
+.pakan-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #f1f2f6;
+    color: #7f8c8d;
+    transition: all 0.3s ease;
+}
+
+.pakan-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.pakan-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.pakan-input-wrapper input {
+    width: 100%;
+    padding: 12px 60px 12px 15px !important;
+    border-radius: 10px !important;
+    border: 2px solid #dfe6e9 !important;
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.pakan-input-wrapper input:focus {
+    border-color: #fab1a0 !important;
+}
+
+.pakan-unit {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #b2bec3;
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.pakan-presets {
+    display: flex;
+    gap: 5px;
+}
+
+.pakan-btn-preset {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #fab1a0;
+    background: #fff;
+    color: #e17055;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.pakan-btn-preset:hover {
+    background: #fab1a0;
+    color: #fff;
+    transform: translateY(-2px);
+}
+
+.pakan-helper-text {
+    display: block;
+    margin-top: 8px;
+    color: #636e72;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+/* =========================================================
+   14. PANEL KIRI - FORM ROW & FORM GROUP
+========================================================= */
 .form-row {
     display: flex;
     gap: 1.5rem;
     margin-bottom: 1rem;
 }
 
-/* =========================================================
-   📋 GRUP INPUT STANDAR (FORM GROUP)
-========================================================= */
-/* Jarak standar antar grup input dalam form */
 .form-group {
     margin-bottom: 1rem;
 }
 
-/* Input mengambil setengah lebar saat berada dalam form-row */
 .form-group.half {
     flex: 1;
     margin-bottom: 0;
 }
 
-/* =========================================================
-   🏷️ LABEL INPUT STANDAR
-========================================================= */
-/* Label abu kecil di atas setiap kotak input dalam form */
 .form-group label {
     font-size: 0.85rem;
     font-weight: 500;
@@ -355,10 +631,6 @@
     display: block;
 }
 
-/* =========================================================
-   ✏️ SELECT DAN INPUT ANGKA STANDAR
-========================================================= */
-/* Kotak dropdown dan input angka dengan garis abu dan transisi fokus */
 .styled-select,
 .form-group input[type="number"] {
     width: 100%;
@@ -370,7 +642,6 @@
     transition: all 0.2s ease;
 }
 
-/* Garis tepi berubah biru saat input aktif */
 .styled-select:focus,
 .form-group input[type="number"]:focus {
     border-color: #3b82f6;
@@ -378,46 +649,40 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-
 /* =========================================================
-   🚀 TOMBOL JALANKAN PREDIKSI (BTN MA)
+   15. PANEL KIRI - TOMBOL ANALISIS (btn-ma)
 ========================================================= */
-/* Tombol besar biru berteks kapital untuk menjalankan kalkulasi model MA prediksi */
 .btn-ma {
     width: 100%;
     background: linear-gradient(135deg, #00b4db, #0083B0);
     color: white;
-    padding: 1.2rem;
+    padding: 16px;
     border: none;
     border-radius: 12px;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     margin-top: 1rem;
     box-shadow: 0 6px 15px rgba(255, 255, 255, 0.3);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
-/* Tombol naik dan bayangan menguat saat hover */
 .btn-ma:hover {
     background: linear-gradient(135deg, #00b4db, #0083B0);
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(33, 114, 30, 0.45);
 }
 
-/* Tombol kembali ke posisi semula saat ditekan */
 .btn-ma:active {
     transform: translateY(0);
     box-shadow: 0 3px 10px rgba(255, 255, 255, 0.3);
 }
 
-
 /* =========================================================
-   📊 GRID KARTU HASIL STATISTIK (QUICK RESULT CARDS)
+   16. PANEL KANAN - RESULT CARDS GRID
 ========================================================= */
-/* Dua kolom kartu kecil yang menampilkan hasil prediksi: produksi, pendapatan, biaya, keuntungan */
 .result-cards-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -427,17 +692,9 @@
     align-items: stretch;
 }
 
-/* Responsivitas: 1 kolom pada mobile */
-@media (max-width: 600px) {
-    .result-cards-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* =========================================================
-   🃏 KARTU HASIL STATISTIK (RESULT CARD)
+   17. PANEL KANAN - STAT CARD & ICONS
 ========================================================= */
-/* Setiap kotak putih membulat berisi ikon berwarna dan angka hasil prediksi */
 .result-card {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(10px);
@@ -453,14 +710,20 @@
     position: relative;
     overflow: hidden;
     height: 100%;
-    min-height: 140px; /* Memastikan tinggi seragam untuk semua kartu */
+    min-height: 140px;
     box-sizing: border-box;
 }
 
-/* =========================================================
-   📋 INFO TEKS DI DALAM KARTU HASIL
-========================================================= */
-/* Kontainer teks (label + angka) di sebelah kanan ikon dalam kartu */
+.result-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+}
+
+.result-card:hover::before {
+    background: linear-gradient(to bottom, #FF416C, #FF4B2B);
+}
+
 .stat-info {
     flex: 1;
     display: flex;
@@ -468,25 +731,6 @@
     justify-content: center;
 }
 
-/* =========================================================
-   🖱️ EFEK HOVER KARTU HASIL
-========================================================= */
-/* Kartu naik dan bayangan membesar saat kursor melewatinya */
-.result-card:hover {
-    transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
-}
-
-/* Bar merah muncul di kiri bawah kartu saat hover */
-.result-card:hover::before {
-    background: linear-gradient(to bottom, #FF416C, #FF4B2B);
-}
-
-/* =========================================================
-   🖼️ ALAS IKON BERWARNA (STAT ICON)
-========================================================= */
-/* Kotak membulat yang menampung emoji/ikon dalam kartu hasil dengan animasi shine */
 .stat-icon {
     width: 60px;
     height: 60px;
@@ -503,10 +747,6 @@
     z-index: 1;
 }
 
-/* =========================================================
-   ✨ EFEK KILAUAN (SHINE) PADA IKON
-========================================================= */
-/* Garis cahaya putih miring yang melintas berulang di atas ikon secara otomatis */
 .stat-icon::after {
     content: '';
     position: absolute;
@@ -520,252 +760,333 @@
     z-index: -1;
 }
 
-/* =========================================================
-   🎬 ANIMASI KILAUAN IKON (SHINE)
-========================================================= */
-/* Menggerakkan garis cahaya dari kiri ke kanan berulang setiap 3 detik */
 @keyframes shine {
     0%   { left: -100%; }
     20%  { left: 200%; }
     100% { left: 200%; }
 }
 
-/* =========================================================
-   🎨 WARNA ALAS IKON — KUNING (PRODUKSI)
-========================================================= */
-.stat-icon.yellow-bg {
-    background: linear-gradient(135deg, #FDB813 0%, #ff9800 100%);
-    box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4);
-}
+.yellow-bg { background: linear-gradient(135deg, #FDB813 0%, #ff9800 100%); box-shadow: 0 6px 15px rgba(255, 152, 0, 0.4); }
+.green-bg { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 6px 15px rgba(56, 239, 125, 0.4); }
+.red-bg { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); box-shadow: 0 6px 15px rgba(255, 75, 43, 0.4); }
+.blue-bg { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); box-shadow: 0 6px 15px rgba(0, 114, 255, 0.4); }
+
+.result-card h4 { font-size: 0.75rem; color: #475569; margin-bottom: 0.2rem; font-weight: 600; line-height: 1.3; }
+.result-card p { font-size: 1.2rem; font-weight: 700; color: #0f172a; margin: 0; line-height: 1.2; }
+.result-card small { font-size: 0.7rem; color: #64748b; display: block; margin-top: 0.2rem; line-height: 1.4; }
+
+.bg-produksi { background: linear-gradient(135deg, #fffcf2 0%, #fff6e0 100%); border-color: #fde4a9; }
+.bg-produksi:hover { border-color: #f59e0b; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15); }
+.bg-pendapatan { background: linear-gradient(135deg, #f2fbf6 0%, #e3f7ed 100%); border-color: #bcebcf; }
+.bg-pendapatan:hover { border-color: #10b981; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15); }
+.bg-biaya { background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%); border-color: #fecdd3; }
+.bg-biaya:hover { border-color: #ef4444; box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25); }
+.bg-keuntungan { background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%); border-color: #bae6fd; }
+.bg-keuntungan:hover { border-color: #3b82f6; box-shadow: 0 10px 40px rgba(59, 130, 246, 0.25); }
 
 /* =========================================================
-   🎨 WARNA ALAS IKON — HIJAU (PENDAPATAN)
+   18. PANEL KANAN - CHART CONTAINER
 ========================================================= */
-.stat-icon.green-bg {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    box-shadow: 0 6px 15px rgba(56, 239, 125, 0.4);
-}
-
-/* =========================================================
-   🎨 WARNA ALAS IKON — MERAH (BIAYA)
-========================================================= */
-.stat-icon.red-bg {
-    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-    box-shadow: 0 6px 15px rgba(255, 75, 43, 0.4);
-}
-
-/* =========================================================
-   🎨 WARNA ALAS IKON — BIRU (KEUNTUNGAN)
-========================================================= */
-.stat-icon.blue-bg {
-    background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%);
-    box-shadow: 0 6px 15px rgba(0, 114, 255, 0.4);
-}
-
-/* =========================================================
-   🔤 TEKS LABEL DAN NILAI KARTU HASIL
-========================================================= */
-/* Label abu kecil di atas angka besar dalam kartu hasil prediksi */
-.result-card h4 {
-    font-size: 0.75rem;
-    color: #475569;
-    margin-bottom: 0.2rem;
-    font-weight: 600;
-    line-height: 1.3;
-}
-
-/* Angka nominal besar hasil prediksi */
-.result-card p {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0;
-    line-height: 1.2;
-}
-
-/* Keterangan kecil di bawah angka (misal: satuan telur) */
-.result-card small {
-    font-size: 0.7rem;
-    color: #64748b;
-    display: block;
-    margin-top: 0.2rem;
-    line-height: 1.4;
-}
-
-
-/* =========================================================
-   🎨 WARNA LATAR KARTU HASIL — PRODUKSI (KUNING)
-========================================================= */
-/* Gradien kuning muda untuk kartu prediksi jumlah telur */
-.result-card.bg-produksi {
-    background: linear-gradient(135deg, #fffcf2 0%, #fff6e0 100%);
-    border-color: #fde4a9;
-}
-
-.result-card.bg-produksi:hover {
-    border-color: #f59e0b;
-    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.15);
-}
-
-/* =========================================================
-   🎨 WARNA LATAR KARTU HASIL — PENDAPATAN (HIJAU)
-========================================================= */
-/* Gradien hijau muda untuk kartu prediksi total pendapatan */
-.result-card.bg-pendapatan {
-    background: linear-gradient(135deg, #f2fbf6 0%, #e3f7ed 100%);
-    border-color: #bcebcf;
-}
-
-.result-card.bg-pendapatan:hover {
-    border-color: #10b981;
-    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
-}
-
-/* =========================================================
-   🎨 WARNA LATAR KARTU HASIL — BIAYA (MERAH)
-========================================================= */
-/* Gradien merah muda untuk kartu prediksi total biaya produksi */
-.result-card.bg-biaya {
-    background: linear-gradient(135deg, #fff5f5 0%, #ffe4e6 100%);
-    border-color: #fecdd3;
-}
-
-.result-card.bg-biaya:hover {
-    border-color: #ef4444;
-    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.25);
-}
-
-/* =========================================================
-   🎨 WARNA LATAR KARTU HASIL — KEUNTUNGAN (BIRU)
-========================================================= */
-/* Gradien biru muda untuk kartu prediksi keuntungan bersih */
-.result-card.bg-keuntungan {
-    background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%);
-    border-color: #bae6fd;
-}
-
-.result-card.bg-keuntungan:hover {
-    border-color: #3b82f6;
-    box-shadow: 0 10px 40px rgba(59, 130, 246, 0.25);
-}
-
-
-/* =========================================================
-   🔴 TEKS INDIKATOR NEGATIF (MERAH)
-========================================================= */
-/* Memaksa warna merah pada angka yang menunjukkan nilai negatif/kerugian */
-.highlight-text-red {
-    color: #ef4444 !important;
-}
-
-/* =========================================================
-   💚 TEKS INDIKATOR POSITIF (HIJAU)
-========================================================= */
-/* Memaksa warna hijau pada angka yang menunjukkan nilai positif/keuntungan */
-.highlight-text-green {
-    color: #16a34a !important;
-}
-
-
-/* =========================================================
-   📈 PEMBUNGKUS GRAFIK (CHART CONTAINER)
-========================================================= */
-/* Kotak putih dengan shadow lembut yang menjadi wadah kanvas grafik prediksi */
 .chart-container {
-    background: #ffffff;
+    background: linear-gradient(to bottom right, #ffffff, #fdfbfb);
     border-radius: 16px;
-    border: 1px solid #e2e8f0;
-    padding: 2rem;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    border: 2px solid #e1e8ed;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
 }
 
-/* Judul grafik dengan garis bawah pemisah */
 .chart-container h3 {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     font-weight: 700;
-    color: #1e3c72;
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 10px;
+    color: #2c3e50;
+    margin-bottom: 25px;
+    border-bottom: 3px solid #f39c12;
+    padding-bottom: 12px;
     display: inline-block;
 }
 
-/* =========================================================
-   📐 WRAPPER KANVAS GRAFIK
-========================================================= */
-/* Kontainer dengan tinggi tetap 400px untuk kanvas Chart.js */
 .canvas-wrapper {
     position: relative;
     height: 400px;
     width: 100%;
 }
 
-
 /* =========================================================
-   💡 KONTAINER KARTU REKOMENDASI PREDIKTIF
+   19. PANEL KANAN - SUMMARY CONTAINER & TABLE
 ========================================================= */
-/* Pembungkus flex yang menampung semua kartu saran tindakan berdasarkan hasil prediksi */
-.rekomendasi-container {
-    transition: all 0.3s ease;
+.summary-container {
+    margin-top: 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f8fb 100%);
+    border: 2px solid #bce0fd;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.1);
+}
+
+.summary-container-title {
+    margin-bottom: 20px;
+    font-size: 1.25rem;
+    color: #1e3c72;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.summary-container-title span {
+    background: #3498db;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-responsive {
+    overflow-x: auto;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #d2dce6;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.summary-table {
+    font-family: 'Poppins', sans-serif;
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.summary-table th,
+.summary-table td {
+    vertical-align: middle;
+}
+
+.summary-table thead tr {
+    background: linear-gradient(90deg, #34495e, #2c3e50);
+    color: white;
+}
+
+.summary-table th {
+    padding: 15px;
+    font-weight: 600;
+}
+
+.summary-table th:first-child { border-top-left-radius: 10px; }
+.summary-table th:last-child { border-top-right-radius: 10px; }
+
+.table-empty-row {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-style: italic;
+    background-color: #fcfcfc;
 }
 
 /* =========================================================
-   🃏 KARTU REKOMENDASI PREDIKTIF
+   20. PANEL KANAN - DOWNLOAD AREA
 ========================================================= */
-/* Setiap kartu saran tindakan yang muncul setelah prediksi selesai dijalankan */
+.download-area {
+    margin-top: 18px;
+    text-align: right;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.35);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.3px;
+}
+
+.btn-download:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(39,174,96,0.45);
+}
+
+.btn-docs {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    text-decoration: none;
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-docs:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(118,75,162,0.45);
+}
+
+/* =========================================================
+   21. PANEL KANAN - REKOMENDASI CONTAINER
+========================================================= */
+.rekomendasi-container {
+    transition: all 0.3s ease;
+    margin-top: 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f0ff 100%);
+    border: 2px solid #d4bfff;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(155, 89, 182, 0.12);
+}
+
+.rekomendasi-title {
+    margin-bottom: 20px;
+    font-size: 1.25rem;
+    color: #4a1f8a;
+    border-bottom: 3px solid #9b59b6;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.rekomendasi-title span {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 .rekomendasi-card {
     cursor: default;
 }
 
-/* Kartu rekomendasi naik sedikit saat di-hover */
 .rekomendasi-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* =========================================================
-   🎬 ANIMASI MUNCUL KARTU REKOMENDASI (SLIDE IN UP)
-========================================================= */
-/* Setiap kartu rekomendasi muncul dari bawah ke atas saat dirender oleh JavaScript */
 @keyframes slideInUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Terapkan animasi slideInUp ke semua kartu rekomendasi */
 .rekomendasi-card {
     animation: slideInUp 0.4s ease-out forwards;
 }
 
-
 /* =========================================================
-   🕓 KONTAINER HISTORI PREDIKSI
+   22. PANEL KANAN - HISTORY CONTAINER & TABLE
 ========================================================= */
-/* Pembungkus tabel riwayat semua prediksi yang pernah dijalankan */
 .history-container {
     transition: all 0.3s ease;
+    margin-top: 30px;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f4f8 100%);
+    border: 2px solid #c8d6e5;
+    padding: 25px;
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(99, 110, 114, 0.1);
 }
 
-/* =========================================================
-   🏷️ KEPALA KOLOM TABEL HISTORI (STICKY)
-========================================================= */
-/* Header tabel histori selalu terlihat di atas saat area tabel discroll */
+.history-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.history-title {
+    font-size: 1.25rem;
+    color: #2c3e50;
+    border-bottom: 3px solid #636e72;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.history-title span {
+    background: linear-gradient(135deg, #636e72, #2d3436);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-size: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.history-buttons-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn-download-history {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-download-history:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(39,174,96,0.45);
+}
+
+.btn-clear-history {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-clear-history:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(231,76,60,0.45);
+}
+
 .history-container table th {
     position: sticky;
     top: 0;
     z-index: 2;
 }
 
-/* =========================================================
-   🖱️ EFEK HOVER DAN BELANG-BELANG BARIS HISTORI
-========================================================= */
-/* Baris genap sedikit berbeda latar; semua baris berubah biru saat di-hover */
 .history-container table tbody tr {
     transition: background-color 0.2s ease;
 }
@@ -778,40 +1099,18 @@
     background-color: #f1f5f9 !important;
 }
 
+#historyTable thead tr {
+    background: linear-gradient(90deg, #2d3436, #636e72);
+}
 
 /* =========================================================
-   📋 TABEL RINGKASAN (SUMMARY TABLE)
+   23. UTILITY (Scrollbar & Animasi)
 ========================================================= */
-/* Gaya font dan perataan vertikal untuk tabel ringkasan hasil dan histori */
-.summary-table {
-    font-family: 'Poppins', sans-serif;
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.summary-table th,
-.summary-table td {
-    vertical-align: middle;
-}
-
-
-/* =========================================================
-   🗑️ TOMBOL HAPUS SEMUA HISTORI
-========================================================= */
-/* Efek hover tombol hapus histori: naik dan bayangan merah menguat */
-#btnClearHistory:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(231, 76, 60, 0.45) !important;
-}
-
-/* Tombol kembali ke posisi semula saat ditekan */
-#btnClearHistory:active {
-    transform: translateY(0);
-}
-
-
-/* =========================================================
-   🖱️ SCROLLBAR KUSTOM TABEL RESPONSIF (HORIZONTAL)
-========================================================= */
-/* Scrollbar horisontal yang tipis dan elegan untuk tabel yang melebihi lebar layar */
 .table-responsive::-webkit-scrollbar {
     height: 6px;
 }
@@ -830,47 +1129,36 @@
     background: #94a3b8;
 }
 
-
 /* =========================================================
-   📱 RESPONSIF — LAYAR MENENGAH (≤1024px)
+   24. RESPONSIF (Media Queries)
 ========================================================= */
-/* Di tablet/laptop: grid dua kolom berubah menjadi satu kolom bertumpuk */
 @media (max-width: 1024px) {
-    /* Kolom form dan grafik disusun vertikal */
     .prediction-container {
         grid-template-columns: 1fr;
     }
-
-    /* Padding kartu rekomendasi dikecilkan di layar sempit */
     .rekomendasi-card {
         padding: 16px !important;
     }
-
-    /* Font tabel histori diperkecil di layar menengah */
     .history-container table {
         font-size: 0.82rem;
     }
 }
 
-/* =========================================================
-   📱 RESPONSIF — LAYAR KECIL HP (≤768px)
-========================================================= */
-/* Di HP: kartu hasil menjadi satu kolom dan grid input historis jadi dua kolom */
 @media (max-width: 768px) {
-
-    /* Kartu hasil statistik dari 2 kolom jadi 1 kolom */
     .result-cards-grid {
         grid-template-columns: 1fr;
     }
-
-    /* Input historis dari 3 kolom jadi 2 kolom */
     .historical-inputs {
         grid-template-columns: repeat(2, 1fr);
     }
-
-    /* Baris form sejajar disusun vertikal */
     .form-row {
         flex-direction: column;
         gap: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .result-cards-grid {
+        grid-template-columns: 1fr;
     }
 }

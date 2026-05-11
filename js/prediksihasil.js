@@ -412,6 +412,49 @@ function renderHistoricalInputs() {
 }
 
 /**
+ * Mengatur nilai preset konsumsi pakan per ekor
+ * @param {number} val - Nilai pakan dalam gram
+ */
+window.setPresetPakan = function(val) {
+    const input = document.getElementById('pakanPerEkor');
+    if (input) {
+        input.value = val;
+        updatePakanBadge(val);
+    }
+};
+
+/**
+ * Memperbarui badge status berdasarkan nilai konsumsi pakan
+ * @param {number} val - Nilai pakan dalam gram
+ */
+window.updatePakanBadge = function(val) {
+    const badge = document.getElementById('pakanStatus');
+    if (!badge) return;
+
+    if (!val || val <= 0) {
+        badge.innerText = "Belum Diisi";
+        badge.style.background = "#f1f2f6";
+        badge.style.color = "#7f8c8d";
+        return;
+    }
+    
+    const pakan = parseFloat(val);
+    if (pakan < 105) {
+        badge.innerText = "Sangat Hemat";
+        badge.style.background = "#e8f8f0";
+        badge.style.color = "#27ae60";
+    } else if (pakan >= 105 && pakan <= 118) {
+        badge.innerText = "Standar Ideal";
+        badge.style.background = "#fff9db";
+        badge.style.color = "#f59f00";
+    } else {
+        badge.innerText = "Konsumsi Tinggi";
+        badge.style.background = "#fff5f5";
+        badge.style.color = "#fa5252";
+    }
+};
+
+/**
  * Fungsi Utama `calculatePrediction`!
  * Berjalan ketika menekan tombol "Analisis dengan MA".
  * @param {Event} event - Dioper dari eksekusi form 'onsubmit', diproteksi dengan .preventDefault() agar laman web tidak reload patah-patah.
@@ -938,6 +981,182 @@ function renderRekomendasi(rekomendasi) {
     container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+/**
+ * Fungsi Sub-Renderer: ChartJS Maker.
+ * Memuat dua sisi sumbu Axis (Kg vs Rupiah). Sumbu kiri dan Sumbu kanan bertumpang tindih secara canggih.
+ * @param {Array} historyKg - Data produksi aktual (Kg)
+ * @param {Array} historyKeuntungan - Data keuntungan aktual (Rp)
+ * @param {Array} predictKg - Data ramalan produksi 7 hari (Kg)
+ * @param {Array} predictKeuntungan - Data ramalan keuntungan 7 hari (Rp)
+ */
+function updateChart(historyKg, historyKeuntungan, predictKg, predictKeuntungan) {
+    const ctx = document.getElementById('profitChart').getContext('2d');
+
+    // Mencegah 'Glitches' grafik duplikat karena pengguna klik analisis berkali-kali - Destroy jika kanvas bernyawa tua.
+    if (predictionChart) {
+        predictionChart.destroy();
+    }
+
+    let labels = []; // Untuk wadah teks garis x (bawah)
+
+    let dataHistoryKg = [];
+    let dataPredictKg = [];
+    let dataHistoryKeuntungan = [];
+    let dataPredictKeuntungan = [];
+
+    // --- Bagian A: Membuat Tata Riwayat Grafik Historis Kiri ---
+    // (Dari rentang H minus lama sampai Hari Ini=H minus nol/0)
+    for (let i = historyKg.length; i > 0; i--) {
+        labels.push(i === 1 ? "Hari Ini" : `H-${i - 1}`); // Menyusun nama hari bawah
+        dataHistoryKg.push(historyKg[historyKg.length - i]);
+        dataHistoryKeuntungan.push(historyKeuntungan[historyKeuntungan.length - i]);
+
+        // Masa depan bernilai Null supaya tidak muncul titik merah prediksi di alam historis.
+        dataPredictKg.push(null);
+        dataPredictKeuntungan.push(null);
+    }
+
+    // --- TRICK GRAFIK CANGGIH (Penyambung Tali) ---
+    // Paksa agar awal garis Proyeksi (Masa Depan) "Mengakar" bersentuhan menyambung utuh dengan titik penghabisan historis "Hari Ini" 
+    dataPredictKg[dataPredictKg.length - 1] = historyKg[historyKg.length - 1];
+    dataPredictKeuntungan[dataPredictKeuntungan.length - 1] = historyKeuntungan[historyKeuntungan.length - 1];
+
+    // --- Bagian B: Membuat Tata Riwayat Grafik PREDIKSI Kanan (Esok Harinya) ---
+    // Plot hasil ramalan (H+1 sd H+7 ke kanan layar)
+    for (let i = 0; i < predictKg.length; i++) {
+        labels.push(`H+${i + 1}`);
+        dataHistoryKg.push(null);       // Sisi riwayat mati
+        dataHistoryKeuntungan.push(null); // Sisi riwayat mati
+
+        dataPredictKg.push(predictKg[i]); // Hidup
+        dataPredictKeuntungan.push(predictKeuntungan[i]); // Hidup
+    }
+
+    // --- FINALISASI RENDER CHART INSTANCE BARU ---
+    predictionChart = new Chart(ctx, {
+        type: 'line', // Jenis Grafik Garis Sambung
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Aktual Produksi (Kg)',  // Dataset 1: Biru Terang (Timbangan Pasti)
+                    data: dataHistoryKg,
+                    borderColor: '#3498db',
+                    backgroundColor: '#3498db',
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4, // Melengkung mulus bak gelombang air, bukan patah zig-zag
+                    yAxisID: 'y' // Menginduk pada Timbangan Y bagian Kiri
+                },
+                {
+                    label: 'Proyeksi Produksi (Kg)', // Dataset 2: Kuning Terang (Tebakan MA Masa Depan)
+                    data: dataPredictKg,
+                    borderColor: '#f39c12',
+                    backgroundColor: '#f39c12',
+                    borderDash: [5, 5], // Striped / Garis Terputus-putus
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.4,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Aktual Keuntungan (Rp)', // Dataset 3: Hijau Berlatar tipis (Dompet Real)
+                    data: dataHistoryKeuntungan,
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.15)', // Fill bawah
+                    borderWidth: 2,
+                    fill: 'origin', // Pewarnaan transparan dari dasar x mengarsir tembus ketas garis line nya.
+                    pointRadius: 4,
+                    tension: 0.4,
+                    yAxisID: 'y1' // Menginduk pada Skala Uang Y1 bagian Kanan Ujung!
+                },
+                {
+                    label: 'Proyeksi Keuntungan (Rp)', // Dataset 4: Merah (Pertaruhan Rupiahnya)
+                    data: dataPredictKeuntungan,
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    borderDash: [5, 5], // Putus-putus
+                    borderWidth: 2,
+                    fill: 'origin',
+                    pointRadius: 4,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, // Menyesuaikan wadah layar div bungkusnya
+            interaction: {
+                mode: 'index',
+                intersect: false, // Disorot dari jauh aja lgsung muncul semua data vertikal popup nya.
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom', // Kotak keterangan ditaruh dasar bawah
+                    labels: {
+                        usePointStyle: true, // Jadi Ikon titik sircle
+                        boxWidth: 8,
+                        padding: 20
+                    }
+                },
+                // Aturan Khusus Balon PopUp Angka Detail (Hover Tooltip Mode)
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            // Kita punya 4 dataset.
+                            // Idx 0 (His. Kg) dan Idx 1 (Pred. Kg) menggunakan satuan Kilogram serta wujud Butir rahib
+                            if (context.parsed.y !== null) {
+                                if (context.datasetIndex < 2) {
+                                    let butir = Math.round(context.parsed.y * 16);
+                                    label += context.parsed.y.toFixed(2) + ' Kg (' + butir.toLocaleString('id-ID') + ' Butir)';
+                                } else {
+                                    // Idx 2 و Idx 3 memegang satuan Rupiah Rp untuk keuangan/laba bersih.
+                                    label += 'Rp ' + Math.round(context.parsed.y).toLocaleString('id-ID');
+                                }
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            // Struktur Sumbu Ganda (Dual Axes) Skala Kiri VS Kanan 
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left', // Di kiri garis grafis ini
+                    title: {
+                        display: true,
+                        text: 'Produksi (Kg)',
+                        font: { weight: 'bold' }
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right', // Di kanan membentang paralel sepadan sumbu Y kiri
+                    title: {
+                        display: true,
+                        text: 'Finansial (Rp)',
+                        font: { weight: 'bold' }
+                    },
+                    grid: {
+                        drawOnChartArea: false // Mencegah Jala/garis kotak pudar grafik yang bertumpuk kusut 
+                    }
+                }
+            }
+        }
+    });
+}
+
+
 // =========================================
 // 5. FITUR BARU: HISTORI PREDIKSI (FIRESTORE)
 // Penjelasan: Menyimpan, memuat, dan menghapus 
@@ -1335,177 +1554,3 @@ window.downloadPrediksiCSV = function() {
 };
 
 
-/**
- * Fungsi Sub-Renderer: ChartJS Maker.
- * Memuat dua sisi sumbu Axis (Kg vs Rupiah). Sumbu kiri dan Sumbu kanan bertumpang tindih secara canggih.
- * @param {Array} historyKg - Data produksi aktual (Kg)
- * @param {Array} historyKeuntungan - Data keuntungan aktual (Rp)
- * @param {Array} predictKg - Data ramalan produksi 7 hari (Kg)
- * @param {Array} predictKeuntungan - Data ramalan keuntungan 7 hari (Rp)
- */
-function updateChart(historyKg, historyKeuntungan, predictKg, predictKeuntungan) {
-    const ctx = document.getElementById('profitChart').getContext('2d');
-
-    // Mencegah 'Glitches' grafik duplikat karena pengguna klik analisis berkali-kali - Destroy jika kanvas bernyawa tua.
-    if (predictionChart) {
-        predictionChart.destroy();
-    }
-
-    let labels = []; // Untuk wadah teks garis x (bawah)
-
-    let dataHistoryKg = [];
-    let dataPredictKg = [];
-    let dataHistoryKeuntungan = [];
-    let dataPredictKeuntungan = [];
-
-    // --- Bagian A: Membuat Tata Riwayat Grafik Historis Kiri ---
-    // (Dari rentang H minus lama sampai Hari Ini=H minus nol/0)
-    for (let i = historyKg.length; i > 0; i--) {
-        labels.push(i === 1 ? "Hari Ini" : `H-${i - 1}`); // Menyusun nama hari bawah
-        dataHistoryKg.push(historyKg[historyKg.length - i]);
-        dataHistoryKeuntungan.push(historyKeuntungan[historyKeuntungan.length - i]);
-
-        // Masa depan bernilai Null supaya tidak muncul titik merah prediksi di alam historis.
-        dataPredictKg.push(null);
-        dataPredictKeuntungan.push(null);
-    }
-
-    // --- TRICK GRAFIK CANGGIH (Penyambung Tali) ---
-    // Paksa agar awal garis Proyeksi (Masa Depan) "Mengakar" bersentuhan menyambung utuh dengan titik penghabisan historis "Hari Ini" 
-    dataPredictKg[dataPredictKg.length - 1] = historyKg[historyKg.length - 1];
-    dataPredictKeuntungan[dataPredictKeuntungan.length - 1] = historyKeuntungan[historyKeuntungan.length - 1];
-
-    // --- Bagian B: Membuat Tata Riwayat Grafik PREDIKSI Kanan (Esok Harinya) ---
-    // Plot hasil ramalan (H+1 sd H+7 ke kanan layar)
-    for (let i = 0; i < predictKg.length; i++) {
-        labels.push(`H+${i + 1}`);
-        dataHistoryKg.push(null);       // Sisi riwayat mati
-        dataHistoryKeuntungan.push(null); // Sisi riwayat mati
-
-        dataPredictKg.push(predictKg[i]); // Hidup
-        dataPredictKeuntungan.push(predictKeuntungan[i]); // Hidup
-    }
-
-    // --- FINALISASI RENDER CHART INSTANCE BARU ---
-    predictionChart = new Chart(ctx, {
-        type: 'line', // Jenis Grafik Garis Sambung
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Aktual Produksi (Kg)',  // Dataset 1: Biru Terang (Timbangan Pasti)
-                    data: dataHistoryKg,
-                    borderColor: '#3498db',
-                    backgroundColor: '#3498db',
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    tension: 0.4, // Melengkung mulus bak gelombang air, bukan patah zig-zag
-                    yAxisID: 'y' // Menginduk pada Timbangan Y bagian Kiri
-                },
-                {
-                    label: 'Proyeksi Produksi (Kg)', // Dataset 2: Kuning Terang (Tebakan MA Masa Depan)
-                    data: dataPredictKg,
-                    borderColor: '#f39c12',
-                    backgroundColor: '#f39c12',
-                    borderDash: [5, 5], // Striped / Garis Terputus-putus
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    tension: 0.4,
-                    yAxisID: 'y'
-                },
-                {
-                    label: 'Aktual Keuntungan (Rp)', // Dataset 3: Hijau Berlatar tipis (Dompet Real)
-                    data: dataHistoryKeuntungan,
-                    borderColor: '#27ae60',
-                    backgroundColor: 'rgba(39, 174, 96, 0.15)', // Fill bawah
-                    borderWidth: 2,
-                    fill: 'origin', // Pewarnaan transparan dari dasar x mengarsir tembus ketas garis line nya.
-                    pointRadius: 4,
-                    tension: 0.4,
-                    yAxisID: 'y1' // Menginduk pada Skala Uang Y1 bagian Kanan Ujung!
-                },
-                {
-                    label: 'Proyeksi Keuntungan (Rp)', // Dataset 4: Merah (Pertaruhan Rupiahnya)
-                    data: dataPredictKeuntungan,
-                    borderColor: '#e74c3c',
-                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                    borderDash: [5, 5], // Putus-putus
-                    borderWidth: 2,
-                    fill: 'origin',
-                    pointRadius: 4,
-                    tension: 0.4,
-                    yAxisID: 'y1'
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false, // Menyesuaikan wadah layar div bungkusnya
-            interaction: {
-                mode: 'index',
-                intersect: false, // Disorot dari jauh aja lgsung muncul semua data vertikal popup nya.
-            },
-            plugins: {
-                legend: {
-                    position: 'bottom', // Kotak keterangan ditaruh dasar bawah
-                    labels: {
-                        usePointStyle: true, // Jadi Ikon titik sircle
-                        boxWidth: 8,
-                        padding: 20
-                    }
-                },
-                // Aturan Khusus Balon PopUp Angka Detail (Hover Tooltip Mode)
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            let label = context.dataset.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            // Kita punya 4 dataset.
-                            // Idx 0 (His. Kg) dan Idx 1 (Pred. Kg) menggunakan satuan Kilogram serta wujud Butir rahib
-                            if (context.parsed.y !== null) {
-                                if (context.datasetIndex < 2) {
-                                    let butir = Math.round(context.parsed.y * 16);
-                                    label += context.parsed.y.toFixed(2) + ' Kg (' + butir.toLocaleString('id-ID') + ' Butir)';
-                                } else {
-                                    // Idx 2 و Idx 3 memegang satuan Rupiah Rp untuk keuangan/laba bersih.
-                                    label += 'Rp ' + Math.round(context.parsed.y).toLocaleString('id-ID');
-                                }
-                            }
-                            return label;
-                        }
-                    }
-                }
-            },
-            // Struktur Sumbu Ganda (Dual Axes) Skala Kiri VS Kanan 
-            scales: {
-                y: {
-                    type: 'linear',
-                    display: true,
-                    position: 'left', // Di kiri garis grafis ini
-                    title: {
-                        display: true,
-                        text: 'Produksi (Kg)',
-                        font: { weight: 'bold' }
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right', // Di kanan membentang paralel sepadan sumbu Y kiri
-                    title: {
-                        display: true,
-                        text: 'Finansial (Rp)',
-                        font: { weight: 'bold' }
-                    },
-                    grid: {
-                        drawOnChartArea: false // Mencegah Jala/garis kotak pudar grafik yang bertumpuk kusut 
-                    }
-                }
-            }
-        }
-    });
-}
