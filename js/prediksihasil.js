@@ -398,18 +398,41 @@ function renderHistoricalInputs() {
         prodContainer.innerHTML += `
             <div class="form-group-mini" ${colSpanStyle}>
                 <label style="${labelStyleProd}">${labelText}</label>
-                <input type="number" id="hist${i}" class="hist-input" placeholder="-" step="any" min="0" style="${inputStyleProd}" value="${oldProd[i] || ''}">
+                <input type="text" inputmode="numeric" id="hist${i}" class="hist-input" placeholder="-" style="${inputStyleProd}" value="${oldProd[i] || ''}" oninput="formatNumberInput(this)">
             </div>
         `;
 
         profitContainer.innerHTML += `
             <div class="form-group-mini" ${colSpanStyle}>
                 <label style="${labelStyleProfit}">${labelText}</label>
-                <input type="number" id="prof${i}" class="hist-input" placeholder="-" step="any" style="${inputStyleProfit}" value="${oldProfit[i] || ''}">
+                <input type="text" inputmode="numeric" id="prof${i}" class="hist-input" placeholder="-" style="${inputStyleProfit}" value="${oldProfit[i] || ''}" oninput="formatNumberInput(this)">
             </div>
         `;
     }
 }
+
+/**
+ * Memformat angka yang diketik dengan pemisah ribuan (titik) khas Indonesia
+ * dan koma untuk desimal.
+ */
+window.formatNumberInput = function(inputElem) {
+    // Hanya ambil angka dan koma
+    let val = inputElem.value.replace(/[^,\d]/g, '');
+    let parts = val.split(',');
+    
+    // Format bagian bilangan bulat (ribuan dengan titik)
+    let sisa = parts[0].length % 3;
+    let rupiah = parts[0].substr(0, sisa);
+    let ribuan = parts[0].substr(sisa).match(/\d{3}/gi);
+    
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+    
+    // Gabungkan dengan desimal (jika ada)
+    inputElem.value = parts[1] !== undefined ? rupiah + ',' + parts[1] : rupiah;
+};
 
 /**
  * Mengatur nilai preset konsumsi pakan per ekor
@@ -467,8 +490,12 @@ window.calculatePrediction = function(event) {
     const periodeMA = parseInt(document.getElementById('periodeMA').value);
     const populasi = parseInt(document.getElementById('populasi').value); // Ekor
     const pakanPerEkor = parseFloat(document.getElementById('pakanPerEkor').value); // dalam satuan Gram (g)
-    const hargaPakan = parseInt(document.getElementById('hargaPakan').value); // Rp per kg
-    const hargaTelur = parseInt(document.getElementById('hargaTelur').value); // Rp per kg
+    const hargaPakanStr = document.getElementById('hargaPakan').value || '0';
+    const hargaTelurStr = document.getElementById('hargaTelur').value || '0';
+    
+    // Pembersihan karakter titik/koma agar aman diparsing ke angka (mencegah error format Indonesia)
+    const hargaPakan = parseInt(hargaPakanStr.replace(/\./g, '').replace(',', '.')) || 0; // Rp per kg
+    const hargaTelur = parseInt(hargaTelurStr.replace(/\./g, '').replace(',', '.')) || 0; // Rp per papan
 
     // Validasi populasi
     if (!populasi || populasi <= 0) {
@@ -504,7 +531,8 @@ window.calculatePrediction = function(event) {
     let startIndex = totalHistoryDays - periodeMA;
     let isDataValid = true;
     for (let i = startIndex; i < totalHistoryDays; i++) {
-        let val = parseFloat(inputs[i].value);
+        let cleanValStr = (inputs[i].value || '').replace(/\./g, '').replace(',', '.');
+        let val = parseFloat(cleanValStr);
         if (isNaN(val)) {
             isDataValid = false;
             break;
@@ -524,7 +552,8 @@ window.calculatePrediction = function(event) {
 
     // Lakukan validasi produksi keuntungan historis
     for (let i = startIndex; i < totalHistoryDays; i++) {
-        let val = parseFloat(inputsProfit[i].value);
+        let cleanValStr = (inputsProfit[i].value || '').replace(/\./g, '').replace(',', '.');
+        let val = parseFloat(cleanValStr);
         if (isNaN(val)) {
             Swal.fire({
                 icon: 'error',
@@ -546,14 +575,36 @@ window.calculatePrediction = function(event) {
 
     let fullHistoryProfit = [];
     for (let i = startActual; i < totalHistoryDays; i++) {
-        fullHistoryButir.push(parseFloat(inputs[i].value));
-        fullHistoryProfit.push(parseFloat(inputsProfit[i].value));
+        let cleanProdStr = (inputs[i].value || '').replace(/\./g, '').replace(',', '.');
+        let cleanProfStr = (inputsProfit[i].value || '').replace(/\./g, '').replace(',', '.');
+        fullHistoryButir.push(parseFloat(cleanProdStr));
+        fullHistoryProfit.push(parseFloat(cleanProfStr));
     }
 
     // KONVERSI EMAS MA (Butir -> Kilogram)
     // Parameter hitungan kita pakai Kg, namun petani nyaman pakai Butir.
     // Nilai array Butir dipetakan ke wujud Kilogram (Kg) berdasarkan rasio konversi.
     let fullHistoryKg = fullHistoryButir.map(butir => butir / konversiButirPerKg);
+
+    // --- KALKULASI SELISIH OPERASIONAL (OFFSET KEUANGAN) ---
+    // Menghitung selisih rata-rata antara keuntungan aktual (input pengguna) dengan perhitungan teoritis.
+    // Hal ini agar proyeksi laba masa depan mengikuti tren "jumlah pendapatan" historis yang diubah pengguna.
+    let totalOffset = 0;
+    let validOffsetDays = 0;
+    for (let i = 0; i < fullHistoryProfit.length; i++) {
+        if (!isNaN(fullHistoryProfit[i])) {
+            let butirHist = fullHistoryButir[i];
+            let teoritisPendapatan = (butirHist / 30) * hargaTelur; // Harga per papan (30 butir)
+            let teoritisTotalPakanKg = (populasi * pakanPerEkor) / 1000;
+            let teoritisBiayaPakan = teoritisTotalPakanKg * hargaPakan;
+            let teoritisLaba = teoritisPendapatan - teoritisBiayaPakan;
+            
+            let selisih = fullHistoryProfit[i] - teoritisLaba;
+            totalOffset += selisih;
+            validOffsetDays++;
+        }
+    }
+    let avgProfitOffset = validOffsetDays > 0 ? (totalOffset / validOffsetDays) : 0;
 
     // --- STEP 5: MELAKUKAN KALKULASI PINTAR PREDIKSI "HARI ESOK" (H+1) ---
     // Ambil rentang index sepotong sebanyak periode MA terakhir (contoh MA 7 = 7 angka terakhir dari ujung history list)
@@ -568,10 +619,11 @@ window.calculatePrediction = function(event) {
 
     // --- STEP 6: KALKULASI LAPORAN UANG/FINANSIAL HARI ESOK ---
     let prediksiBesokButir = Math.round(prediksiBesokKg * konversiButirPerKg); // Konver kembali ke butir secara integer tak desimal (Dibulatkan)
-    let estimasiPendapatan = prediksiBesokKg * hargaTelur;     // Total Uang Penjualan
-    let totalPakanKg = (populasi * pakanPerEkor) / 1000;       // Butuh pakan berapa sekandang perharinya? (/1000 konversi karena pakan dari input beralias gram)
-    let biayaPakan = totalPakanKg * hargaPakan;                // Biaya Operasional / Modal Cost
-    let keuntungan = estimasiPendapatan - biayaPakan;          // Sisa Laba Bersih Petani (Net Profit)
+    let estimasiPendapatan = (prediksiBesokButir / 30) * hargaTelur;           // Harga Telur/Papan (30 Butir)
+    let totalPakanKg = (populasi * pakanPerEkor) / 1000;                       // Butuh pakan berapa sekandang perharinya? (/1000 konversi karena pakan dari input beralias gram)
+    let biayaPakan = totalPakanKg * hargaPakan;                                // Biaya Operasional / Modal Cost
+    let keuntunganTeoritis = estimasiPendapatan - biayaPakan;                  // Laba murni rumus
+    let keuntungan = keuntunganTeoritis + avgProfitOffset;                     // Sisa Laba Bersih Petani (Net Profit) disesuaikan histori pengguna
 
     // --- STEP 7: MEMASUKKAN NILAI KE PANEL ANTARMUKA (DOM UPGRADE) ---
     // Masukkan data hasil perhitungan ke dalam Text HTML Card sebelah atas Chart.
@@ -621,7 +673,10 @@ window.calculatePrediction = function(event) {
         proyeksi7HariKg.push(nextPredKg); // Simpan hasil angka timbangan esok hari ke antrian plot Chart
 
         // Asumsi operasional pengeluaran akan berjalan statis/konsisten tiap harinya
-        let nextKeuntungan = (nextPredKg * hargaTelur) - biayaPakan;
+        let nextPredButir = Math.round(nextPredKg * konversiButirPerKg);
+        let nextPendapatan = (nextPredButir / 30) * hargaTelur;
+        let nextKeuntunganTeoritis = nextPendapatan - biayaPakan;
+        let nextKeuntungan = nextKeuntunganTeoritis + avgProfitOffset; // Sesuaikan dengan tren histori
         proyeksi7HariKeuntungan.push(nextKeuntungan);
 
         // Kunci Magis Algoritma MA Rantai (Chaining):
@@ -632,6 +687,15 @@ window.calculatePrediction = function(event) {
 
     // Ambil Data Profit manual murni. (Sebelah kiri Chart)
     let historyKeuntunganAct = fullHistoryProfit;
+
+    // --- STEP 8.5: UPDATE ESTIMASI PENDAPATAN MINGGUAN ---
+    let totalPrediksiKg7Hari = proyeksi7HariKg.reduce((a, b) => a + b, 0);
+    let totalPrediksiButir7Hari = Math.round(totalPrediksiKg7Hari * konversiButirPerKg);
+    let estimasiMingguan = (totalPrediksiButir7Hari / 30) * hargaTelur;
+    let outMingguanEl = document.getElementById('outPendapatanMingguan');
+    if (outMingguanEl) {
+        outMingguanEl.textContent = `Rp ${Math.round(estimasiMingguan).toLocaleString('id-ID')} (Estimasi 7 Hari)`;
+    }
 
     // --- STEP 9: JALANKAN PROSESS PENGGAMBARAN KE KANVAS (RENDER GRAFIK CHART.JS) ---
     // Dipecah dan ditransfer menjadi parameter argumen fungsi lain dibawah sana.
@@ -1296,12 +1360,20 @@ function renderHistoryTable(histories) {
                 <div style="margin-top: 4px; line-height: 1.4;" title="${rekTitle}">${rekTitleShort}</div>
             </td>
             <td style="padding: 14px; text-align: center;">
-                <button onclick="viewHistoryDetail('${h.id}')" 
-                    style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 2px 8px rgba(52,152,219,0.3); transition: all 0.2s ease;"
-                    onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(52,152,219,0.4)';"
-                    onmouseleave="this.style.transform=''; this.style.boxShadow='0 2px 8px rgba(52,152,219,0.3)';">
-                    👁️ Lihat
-                </button>
+                <div style="display: flex; gap: 6px; justify-content: center;">
+                    <button onclick="viewHistoryDetail('${h.id}')" title="Lihat Detail"
+                        style="background: linear-gradient(135deg, #3498db, #2980b9); color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 5px rgba(52,152,219,0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;"
+                        onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(52,152,219,0.4)';"
+                        onmouseleave="this.style.transform=''; this.style.boxShadow='0 2px 5px rgba(52,152,219,0.3)';">
+                        👁️
+                    </button>
+                    <button onclick="deleteHistoryItem('${h.id}')" title="Hapus Data"
+                        style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; box-shadow: 0 2px 5px rgba(231,76,60,0.3); transition: all 0.2s ease; display: flex; align-items: center; justify-content: center;"
+                        onmouseenter="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(231,76,60,0.4)';"
+                        onmouseleave="this.style.transform=''; this.style.boxShadow='0 2px 5px rgba(231,76,60,0.3)';">
+                        🗑️
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -1429,6 +1501,44 @@ window.viewHistoryDetail = async function(historyId) {
 };
 
 /**
+ * Menghapus satu item histori prediksi dari Firestore
+ * @param {string} historyId - ID dokumen histori yang akan dihapus
+ */
+window.deleteHistoryItem = async function(historyId) {
+    const result = await Swal.fire({
+        title: 'Hapus Data Ini?',
+        text: 'Data histori ini akan dihapus permanen.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+        const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js");
+        await deleteDoc(doc(db, "prediksi_history", historyId));
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Terhapus!',
+            text: 'Data histori berhasil dihapus.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+
+        // Muat ulang tabel
+        loadPredictionHistory();
+    } catch (error) {
+        console.error("Error deleting history item:", error);
+        Swal.fire('Error', 'Gagal menghapus data: ' + error.message, 'error');
+    }
+};
+
+/**
  * Menghapus seluruh histori prediksi dari Firestore
  */
 window.clearPredictionHistory = async function() {
@@ -1463,6 +1573,9 @@ window.clearPredictionHistory = async function() {
             timer: 2000,
             showConfirmButton: false
         });
+
+        // Panggil fungsi ini agar tabel di layar langsung kosong tanpa perlu reload halaman
+        loadPredictionHistory();
     } catch (error) {
         console.error("Error clearing history:", error);
         Swal.fire('Error', 'Gagal menghapus histori: ' + error.message, 'error');

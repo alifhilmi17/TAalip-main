@@ -15,6 +15,7 @@ import {
     deleteDoc, 
     doc, 
     getDocs, 
+    onSnapshot,
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -27,6 +28,9 @@ let dataAyam = [];
 let dataKesehatan = [];
 const ayamCollection = collection(db, "populasi_ayam");
 const kesehatanCollection = collection(db, "kesehatan_ayam");
+
+let unsubscribeAyam = null;
+let unsubscribeKesehatan = null;
 
 // =========================================
 // 2. MODUL UTILITAS
@@ -61,41 +65,24 @@ function escapeHTML(str) {
 // 3. INISIALISASI PROGRAM & FETCH DATA
 // =========================================
 
-async function loadAyamData() {
-    try {
-        const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
-        const snapshot = await getDocs(q);
-        
-        dataAyam = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Listener Real-time untuk Data Ayam
+    unsubscribeAyam = onSnapshot(query(ayamCollection, orderBy("tglMasuk", "desc")), (snapshot) => {
+        dataAyam = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderTable();
         updateQuickStats();
-    } catch (error) {
-        console.error("Firestore Error: ", error);
-        Swal.fire("Error", "Gagal memuat data dari database: " + error.message, "error");
-    }
-}
+    }, (error) => {
+        console.error("Firestore Error (Ayam): ", error);
+        Swal.fire("Error", "Gagal memuat data ayam.", "error");
+    });
 
-async function loadKesehatanData() {
-    try {
-        const snapshot = await getDocs(kesehatanCollection);
-        dataKesehatan = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
-        
+    // 2. Listener Real-time untuk Data Kesehatan (untuk hitung populasi sehat)
+    unsubscribeKesehatan = onSnapshot(kesehatanCollection, (snapshot) => {
+        dataKesehatan = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         updateQuickStats();
-    } catch (error) {
+    }, (error) => {
         console.error("Firestore Error (Kesehatan): ", error);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-    // Jalankan fetch data secara paralel
-    await Promise.all([loadAyamData(), loadKesehatanData()]);
+    });
 });
 
 /**
@@ -106,6 +93,7 @@ function updateQuickStats(filteredData = null) {
     const dataToCalculate = filteredData || dataAyam;
     let totalBatchAktif = 0;
     let totalSisaAyam = 0;
+    let ayamSakit = 0;
     let setKandang = new Set();
 
     dataToCalculate.forEach(ayam => {
@@ -113,18 +101,23 @@ function updateQuickStats(filteredData = null) {
         // Menghitung batch aktif dan populasi ayam yang masih ada di kandang
         if (status === 'aktif') {
             totalBatchAktif++;
-            totalSisaAyam += parseInt(ayam.sisaAyam) || 0;
+            const sisa = parseInt(ayam.sisaAyam) || 0;
+            totalSisaAyam += sisa;
+            
             if (ayam.kandang) {
                 setKandang.add(ayam.kandang);
             }
+
+            // Hitung ayam sakit HANYA untuk batch ini yang masih aktif
+            const sakitDiBatchIni = dataKesehatan
+                .filter(x => x.batchId === ayam.id && x.status === "Dalam Perawatan")
+                .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
+            
+            ayamSakit += sakitDiBatchIni;
         }
     });
-
-    // Hitung total ayam sakit (Dalam Perawatan) dari data kesehatan
-    const ayamSakit = dataKesehatan.filter(x => x.status === "Dalam Perawatan")
-                                   .reduce((sum, item) => sum + (parseInt(item.jmlSakit) || 0), 0);
     
-    // Total Populasi Ayam Aktif Sehat = Sisa Ayam - Ayam Sakit
+    // Total Populasi Ayam Aktif Sehat = Sisa Ayam - Ayam Sakit (Batch Aktif)
     const totalPopulasiSehat = totalSisaAyam - ayamSakit;
 
     const elTotalBatch = document.getElementById('totalBatch');
@@ -295,8 +288,7 @@ window.saveAyamData = async function(event) {
             });
         }
         
-        // Refresh data setelah selesai menyimpan
-        loadAyamData();
+        // Refresh data tidak perlu dipanggil manual karena sudah pakai onSnapshot
         window.closeAyamModal(); // Tutup modal setelah sukses
     } catch (error) {
         console.error("Error saving document: ", error);
@@ -345,8 +337,7 @@ window.deleteAyam = function(id) {
                 await deleteDoc(doc(db, "populasi_ayam", id)); // Hapus dari Firestore
                 Swal.fire('Terhapus!', 'Data batch telah dihapus.', 'success');
                 
-                // Refresh data setelah menghapus
-                loadAyamData();
+                // Refresh data tidak perlu dipanggil manual karena sudah pakai onSnapshot
             } catch (error) {
                 Swal.fire("Error", "Gagal menghapus data: " + error.message, "error");
             }

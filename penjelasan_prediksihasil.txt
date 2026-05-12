@@ -1,0 +1,93 @@
+====================================================================
+DOKUMENTASI CARA KERJA SISTEM PREDIKSI HASIL (prediksihasil.html)
+Aplikasi Administrasi Peternakan LIBAS
+====================================================================
+
+Dokumen ini menjelaskan secara teknis bagaimana halaman "Prediksi Hasil & Laba" bekerja dari awal pengguna memasukkan data hingga sistem menghasilkan angka proyeksi 7 hari ke depan.
+
+--------------------------------------------------------------------
+1. ALUR KERJA UTAMA (USER FLOW)
+--------------------------------------------------------------------
+1. Pengguna membuka halaman Prediksi Hasil.
+2. Sistem secara otomatis menarik data batch populasi ayam aktif dari database (Firestore).
+3. Sistem membuat input form dinamis (H-1, H-2, dst) sesuai dengan rentang histori yang ditentukan.
+4. Pengguna memasukkan:
+   a. Data Historis Produksi Panen (dalam butir telur).
+   b. Data Historis Laba Keuangan (dalam Rupiah).
+   c. Konfigurasi Variabel: Periode MA, Porsi Pakan, Harga Pakan/Kg, Harga Telur/Papan.
+5. Pengguna menekan tombol "Analisis dengan MA".
+6. Sistem menjalankan fungsi `calculatePrediction()` di file prediksihasil.js.
+
+--------------------------------------------------------------------
+2. TAHAP PEMROSESAN DATA (DI BALIK LAYAR)
+--------------------------------------------------------------------
+Saat tombol Analisis ditekan, sistem melakukan tahapan berikut:
+
+A. VALIDASI & PEMBERSIHAN DATA (Sanitasi)
+Sistem membaca seluruh angka yang diketik oleh pengguna. Karena format uang di Indonesia menggunakan titik sebagai pemisah ribuan (contoh: 25.000), sistem melakukan pembersihan menggunakan perintah:
+`replace(/\./g, '').replace(',', '.')`
+Ini menjamin angka 25.000,50 dibaca komputer dengan tepat sebagai 25000.50 tanpa error (NaN).
+
+B. KONVERSI SATUAN BUTIR KE KILOGRAM (Kg)
+Untuk keperluan matematika baku peternakan, sistem memetakan semua input histori "Butir" menjadi "Kilogram".
+Rumus: Kilogram = Butir / Asumsi (contoh: 16 butir per 1 Kg).
+Jadi 1600 Butir diubah sementara di dalam memori komputer menjadi 100 Kg.
+
+--------------------------------------------------------------------
+3. ALGORITMA PREDIKSI (MOVING AVERAGE)
+--------------------------------------------------------------------
+Sistem ini menggunakan algoritma Simple Moving Average (SMA). 
+
+A. PREDIKSI HARI ESOK (H+1)
+Jika pengguna memilih "Periode MA = 7", sistem akan mengambil 7 data aktual terakhir (dari Hari Ini mundur sampai H-6).
+Rumus: 
+Prediksi Besok (Kg) = (Jumlah Produksi 7 Hari Terakhir) / 7
+
+B. PREDIKSI 7 HARI KE DEPAN (CHAINING MA)
+Bagaimana memprediksi hari lusa (H+2)? Sistem tidak punya data aktual besok. 
+Oleh karena itu, sistem menggunakan teknik rantai (Chaining/Sliding Window):
+- Hasil prediksi H+1 akan dimasukkan ke dalam daftar histori palsu (virtual).
+- Untuk memprediksi H+2, sistem mengambil data historis dari H-5 sampai H+1.
+- Hal ini diulang secara berantai di dalam loop/perulangan sebanyak 7 kali untuk mendapatkan prediksi hingga H+7.
+
+--------------------------------------------------------------------
+4. SISTEM PERHITUNGAN KEUANGAN (FINANSIAL)
+--------------------------------------------------------------------
+Setelah mendapatkan prediksi produksi masa depan dalam Kg, sistem menghitung potensi cuannya.
+
+A. PENDAPATAN KOTOR (Omzet)
+Karena input harga telur menggunakan format "Harga / Papan" (30 Butir), sistem mengonversi hasil prediksi kembali ke Butir.
+Rumus Omzet = (Prediksi Butir / 30) * Harga Telur Per Papan
+
+B. BIAYA PAKAN (Modal Operasional Pokok)
+Rumus Total Pakan = (Populasi Ayam * Porsi Pakan Gram) / 1000
+Rumus Biaya Pakan = Total Pakan Kg * Harga Pakan Per Kg
+
+C. LABA BERSIH TEORETIS & OFFSET HISTORIS (KUNCI AKURASI!)
+Laba Teoretis = Omzet - Biaya Pakan.
+Namun, perhitungan ini sering tidak akurat karena petani mungkin bayar listrik, vitamin, air, dll. 
+Untuk menyamakan proyeksi dengan kenyataan, sistem menghitung "OFFSET" (Selisih Operasional).
+
+Cara Kerja Offset:
+- Sistem melihat tab "Keuntungan (Rp)" yang diinput pengguna.
+- Sistem membandingkan angka pengguna dengan Laba Teoretis harian pada masa lalu.
+- Rata-rata selisih tersebut (Rata-rata Offset) ditambahkan ke proyeksi masa depan.
+Hasil Akhir Laba Masa Depan = Laba Teoretis + Rata-rata Offset.
+(Inilah sebabnya mengapa saat input histori diubah, grafik proyeksi masa depan ikut menyesuaikan dengan pintar).
+
+--------------------------------------------------------------------
+5. REKOMENDASI PREDIKTIF (SISTEM PAKAR MINI)
+--------------------------------------------------------------------
+Berdasarkan hasil kalkulasi di atas, fungsi `generateRekomendasi()` akan mengevaluasi kondisi peternakan:
+
+- Cek Finansial: Jika Laba < 0 (Rugi) -> Beri label 🚨 Merah (Bahaya). Jika margin < 10% dari biaya pakan -> Label ⚠️ Kuning (Tipis).
+- Cek Produksi (HDP): Hen Day Production = (Total Telur / Populasi) * 100%. Jika < 60% -> Beri peringatan karena produksi di bawah standar industri.
+- Cek Tren: Bandingkan hari ini vs kemarin. Jika drop > 10% -> Beri alarm indikasi penyakit/stres.
+
+--------------------------------------------------------------------
+6. PENYIMPANAN & EXPORT
+--------------------------------------------------------------------
+Seluruh hasil prediksi, rekomendasi, dan input pengguna dibundel dalam satu paket (Payload) berformat JSON. Data ini dikirim ke server cloud database (Firebase Firestore) dan langsung dirender ke tabel HTML tanpa me-reload halaman.
+
+Pengguna juga bisa men-download hasil ini sebagai CSV untuk dibuka di Microsoft Excel.
+====================================================================

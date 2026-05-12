@@ -377,6 +377,14 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+/* Hilangkan panah spinner bawaan browser untuk semua input angka */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
 /* Input Hari Ini (Required Today) */
 .hist-input-today-label-produksi {
     font-weight: 700;
@@ -632,7 +640,8 @@
 }
 
 .styled-select,
-.form-group input[type="number"] {
+.form-group input[type="number"],
+.form-group input[type="text"] {
     width: 100%;
     padding: 0.6rem 0.8rem;
     border: 1px solid #cbd5e1;
@@ -643,7 +652,8 @@
 }
 
 .styled-select:focus,
-.form-group input[type="number"]:focus {
+.form-group input[type="number"]:focus,
+.form-group input[type="text"]:focus {
     border-color: #3b82f6;
     outline: none;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);

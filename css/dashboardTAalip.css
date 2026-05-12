@@ -2596,7 +2596,7 @@ ul#announcementList li.announcement-item .action-btn.delete-item-btn:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 9999;
+    z-index: 1000;
     animation: fadeIn 0.3s ease;
 }
 

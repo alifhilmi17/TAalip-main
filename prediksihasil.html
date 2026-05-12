@@ -596,11 +596,11 @@
                     >Harga Pakan/Kg</label
                   >
                   <input
-                    type="number"
+                    type="text" inputmode="numeric"
                     id="hargaPakan"
                     class="price-input"
                     placeholder="Contoh: 8000"
-                    min="1"
+                    oninput="formatNumberInput(this)"
                     required
                   />
                 </div>
@@ -609,11 +609,11 @@
                     >Harga Telur/Papan</label
                   >
                   <input
-                    type="number"
+                    type="text" inputmode="numeric"
                     id="hargaTelur"
                     class="price-input"
                     placeholder="Contoh: 25000"
-                    min="1"
+                    oninput="formatNumberInput(this)"
                     required
                   />
                 </div>
@@ -649,6 +649,16 @@
                 <h4>Estimasi Pendapatan</h4>
                 <p id="outPendapatan">Rp 0</p>
                 <small>Satu Hari ke Depan (Kotor)</small>
+                <small
+                  id="outPendapatanMingguan"
+                  style="
+                    color: #27ae60;
+                    font-weight: bold;
+                    display: block;
+                    margin-top: 4px;
+                  "
+                  >Rp 0 (Estimasi 7 Hari)</small
+                >
               </div>
             </div>
             <!-- Kartu 3: Proyeksi Keuntungan Bersih -->
@@ -777,8 +787,8 @@
                     <th style="width: 10%">MA</th>
                     <th style="width: 15%">Prediksi Produksi</th>
                     <th style="width: 17%">Proyeksi Laba</th>
-                    <th style="width: 25%">Rekomendasi Utama</th>
-                    <th style="width: 10%; text-align: center">Detail</th>
+                    <th style="width: 23%">Rekomendasi Utama</th>
+                    <th style="width: 12%; text-align: center">Aksi</th>
                   </tr>
                 </thead>
                 <tbody id="historyTableBody">

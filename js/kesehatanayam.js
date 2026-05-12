@@ -120,14 +120,16 @@ function loadBatchOptions() {
     kesBatch.innerHTML = '<option value="" disabled selected>Pilih Batch...</option>';
     vakBatch.innerHTML = '<option value="" disabled selected>Pilih Batch Target...</option>';
 
-    dataAyam.forEach(ayam => {
+    // Hanya tampilkan batch yang statusnya "Aktif"
+    dataAyam.filter(a => (a.status || "").toLowerCase() === "aktif").forEach(ayam => {
         const customId = ayam.customId || ayam.id.substring(0, 5);
-        const optText = `${customId} (${ayam.kandang})`;
+        const optText = `${customId} (${ayam.kandang}) - Sisa: ${ayam.sisaAyam}`;
 
         const opt1 = document.createElement('option');
         opt1.value = ayam.id;
         opt1.textContent = optText;
         opt1.dataset.kandang = ayam.kandang;
+        opt1.dataset.sisa = ayam.sisaAyam; // Simpan sisa ayam untuk validasi
         kesBatch.appendChild(opt1);
 
         const opt2 = document.createElement('option');
@@ -206,6 +208,14 @@ window.saveKesehatan = async function(e) {
     const jmlSakit = parseInt(document.getElementById('kesJmlSakit').value) || 0;
     // Simpan jmlMati sesuai input manual pengguna (tidak di-override)
     const jmlMati = parseInt(document.getElementById('kesJmlMati').value) || 0;
+    const sisaAyam = parseInt(batchSelect.options[batchSelect.selectedIndex].dataset.sisa) || 0;
+
+    // VALIDASI: Total yang dilaporkan (sakit + mati) tidak boleh melebihi sisa populasi
+    // Catatan: jmlSakit adalah ayam yang masih hidup tapi sakit, jmlMati adalah yang benar-benar hilang.
+    if (jmlSakit + jmlMati > sisaAyam && status !== "Sembuh") {
+        Swal.fire("Validasi Gagal", `Jumlah total (Sakit: ${jmlSakit} + Mati: ${jmlMati}) melebihi sisa ayam di batch ini (${sisaAyam} ekor).`, "warning");
+        return;
+    }
 
     // Membentuk paket data kesehatan
     const payload = {
@@ -222,16 +232,50 @@ window.saveKesehatan = async function(e) {
     };
 
     try {
+        // --- LOGIKA POTONG STOK OTOMATIS ---
+        const batchRef = doc(db, "populasi_ayam", batchId);
+        const batchData = dataAyam.find(a => a.id === batchId);
+        
+        if (batchData) {
+            let sisaSekarang = parseInt(batchData.sisaAyam) || 0;
+            let totalPengurangan = jmlMati;
+
+            // Jika status "Mati Semua", maka ayam yang sakit juga dianggap mati/hilang dari populasi aktif
+            if (status === "Mati Semua") {
+                totalPengurangan = jmlSakit + jmlMati;
+            }
+
+            if (id) {
+                // Jika EDIT: Hitung selisih dari data lama
+                const oldItem = dataKesehatan.find(x => x.id === id);
+                let oldPengurangan = (oldItem.jmlMati || 0);
+                if (oldItem.status === "Mati Semua") {
+                    oldPengurangan = (oldItem.jmlSakit || 0) + (oldItem.jmlMati || 0);
+                }
+                
+                const delta = totalPengurangan - oldPengurangan;
+                sisaSekarang -= delta;
+            } else {
+                // Jika BARU: Langsung kurangi
+                sisaSekarang -= totalPengurangan;
+            }
+
+            // Update sisa ayam di koleksi populasi_ayam
+            await updateDoc(batchRef, { 
+                sisaAyam: Math.max(0, sisaSekarang),
+                updatedAt: new Date().toISOString()
+            });
+        }
+        // ----------------------------------
+
         if (id) {
-            // Update jika ada ID (Mode Edit)
             await updateDoc(doc(db, "kesehatan_ayam", id), payload);
         } else {
-            // Add baru (Mode Tambah)
             payload.createdAt = new Date().toISOString();
             await addDoc(kesCollection, payload);
         }
         window.closeKesehatanModal();
-        Swal.fire("Berhasil", "Data kesehatan berhasil disimpan!", "success");
+        Swal.fire("Berhasil", "Data kesehatan disimpan & stok ayam otomatis diperbarui!", "success");
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     }

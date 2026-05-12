@@ -82,13 +82,13 @@ let financeChartInstance = null;
 let currentUserName = "Pengguna";
 let currentUserRole = "petugas"; // 'admin' atau 'petugas'
 
-// Deteksi role pengguna saat halaman dimuat
+// Deteksi role dan inisialisasi data saat halaman dimuat
 document.addEventListener("DOMContentLoaded", () => {
+    // 1. Sinkronisasi Autentikasi & Role
     onAuthStateChanged(auth, async (user) => {
         if (!user) return;
         try {
             const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js");
-            // Cek koleksi admin terlebih dahulu
             const adminSnap = await getDoc(doc(db, "admin", user.uid));
             if (adminSnap.exists()) {
                 currentUserRole = "admin";
@@ -105,119 +105,88 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             console.warn("Gagal deteksi role:", err);
         }
-        // Tampilkan/sembunyikan form input pengumuman berdasarkan role
         applyAnnouncementRoleUI();
-        // Re-render pengumuman agar tombol konfirmasi muncul dengan nama yang benar
         renderAnnouncements();
     });
-});
 
-// =========================================
-// 4. INISIALISASI & LISTENERS
-// =========================================
-document.addEventListener("DOMContentLoaded", () => {
-    // A. Schedules: Mendengarkan perubahan data jadwal secara real-time
+    // 2. Listeners Real-time (Firestore)
     onSnapshot(query(collection(db, "schedules"), orderBy("createdAt", "desc")), (snap) => {
         state.schedules = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderSchedule(); // Perbarui tabel jadwal di UI
+        renderSchedule();
     });
 
-    // B. Activities: Mendengarkan daftar aktivitas harian
     onSnapshot(query(collection(db, "daily_activities"), orderBy("createdAt", "desc")), (snap) => {
         state.activities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderActivities(); // Perbarui daftar ceklis aktivitas
+        renderActivities();
     });
 
-    // C. Announcements: Mendengarkan pengumuman atau notifikasi sistem
     onSnapshot(query(collection(db, "announcements"), orderBy("createdAt", "desc")), (snap) => {
         state.announcements = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderAnnouncements(); // Perbarui tampilan pengumuman
+        renderAnnouncements();
     });
 
-    // G. Data Pakan: Mendengarkan aliran masuk dan keluar pakan (Penting untuk Alert Realtime)
     onSnapshot(collection(db, "stok_pakan"), (snap) => {
         state.pakan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         updateDashboardAggregates();
     });
 
-    // H. Data Kesehatan: Mendengarkan data mortalitas dari koleksi kesehatan_ayam (Penting untuk Alert Realtime)
-    onSnapshot(collection(db, "kesehatan_ayam"), (snap) => {
+    onSnapshot(query(collection(db, "kesehatan_ayam"), orderBy("tanggal", "desc")), (snap) => {
         state.kesehatan = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         updateDashboardAggregates();
     });
 
-    // --- Pengambilan Data Historis (Sekali jalan / getDocs) ---
-    async function loadHistoricalData() {
-        try {
-            // D. Data Produksi
-            const prodSnap = await getDocs(collection(db, "produksi_harian"));
-            state.produksi = prodSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    onSnapshot(collection(db, "prediksi_history"), (snap) => {
+        const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        all.sort((a, b) => (b.createdAt || b.tanggal || "").localeCompare(a.createdAt || a.tanggal || ""));
+        state.prediksi = all.slice(0, 1);
+        renderPrediksiWidget();
+    });
 
-            // E. Data Keuangan
-            const keuSnap = await getDocs(collection(db, "keuangan"));
-            state.keuangan = keuSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    onSnapshot(collection(db, "vaksinasi_ayam"), (snap) => {
+        state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderVaccinationWidget();
+        renderAlertBanners();
+    });
 
-            // F. Data Ayam
-            const ayamSnap = await getDocs(collection(db, "populasi_ayam"));
-            state.ayam = ayamSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            // I. Data Prediksi (Fase 2)
-            const predSnap = await getDocs(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"), limit(1)));
-            state.prediksi = predSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-            // Perbarui antarmuka setelah data historis dimuat
-            updateDashboardAggregates();
-            renderPrediksiWidget();
-        } catch (error) {
-            console.error("Gagal memuat data historis:", error);
-        }
-    }
-    
-    // Panggil fungsi pengambilan
-    loadHistoricalData();
-
-    // J. Data Reminders Pakan
     onSnapshot(collection(db, "restock_reminders"), (snap) => {
         state.reminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         updateFase3Features();
     });
 
-    // K. Listener Settings Pakan Alert
     onSnapshot(doc(db, "settings", "pakan_alert"), (docSnap) => {
         if (docSnap.exists()) {
             state.alertLimits = docSnap.data();
             updateFase3Features();
         }
     });
-});
 
-// =========================================================
-// 5. INITIALIZE ALL FASE 3 FEATURES
-// =========================================================
+    // 3. Pengambilan Data Historis (Sekali jalan)
+    async function loadHistoricalData() {
+        try {
+            const prodSnap = await getDocs(collection(db, "produksi_harian"));
+            state.produksi = prodSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-// Add vaccination listener to existing DOMContentLoaded
-document.addEventListener("DOMContentLoaded", () => {
-    // Add vaccination listener
-    onSnapshot(collection(db, "vaksinasi_ayam"), (snap) => {
-        state.vaksinasi = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderVaccinationWidget();
-        renderAlertBanners(); // Re-render banner saat data vaksinasi berubah
-    });
-});
+            const keuSnap = await getDocs(collection(db, "keuangan"));
+            state.keuangan = keuSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-// Update features when data changes
-function updateFase3Features() {
-    checkFeedStockAlerts();
-    renderVaccinationWidget();
-    renderAlertBanners();
-}
+            const ayamSnap = await getDocs(collection(db, "populasi_ayam"));
+            state.ayam = ayamSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-// Initialize FASE 3 features on page load
-document.addEventListener("DOMContentLoaded", () => {
+            updateDashboardAggregates();
+        } catch (error) {
+            console.error("Gagal memuat data historis:", error);
+        }
+    }
+    
+    loadHistoricalData();
+
+    // 4. Inisialisasi Fitur Fase 3 (dengan sedikit delay agar data siap)
     setTimeout(() => {
         updateFase3Features();
-    }, 1000);
+    }, 1200);
 });
+
+console.log("🚀 Dashboard Module Initialized: Role Detection, Sync Listeners, and Data Aggregates active.");
 
 console.log("🚀 FASE 3 Features Loaded: Quick Actions, Alert Banner, Feed Alerts, Vaccination Schedule, goToProfile fix, Activity Progress Bar");// =========================================================
 // 6. DYNAMIC ALERT BANNER
@@ -467,28 +436,18 @@ function updateDashboardAggregates() {
         }
     });
 
-    // Menampilkan pendapatan & pengeluaran ke dashboard
+    // Menampilkan pendapatan & pengeluaran ke dashboard (Selalu Fokus Bulan Ini)
     const pendapatanEl = document.getElementById('stat-pendapatan');
     const pengeluaranEl = document.getElementById('stat-pengeluaran');
 
     if (pendapatanEl) {
-        if (incomeBulanIni === 0 && incomeGlobal > 0) {
-            pendapatanEl.textContent = `Rp ${incomeGlobal.toLocaleString('id-ID')}`;
-            pendapatanEl.previousElementSibling.textContent = "Total Pendapatan";
-        } else {
-            pendapatanEl.textContent = `Rp ${incomeBulanIni.toLocaleString('id-ID')}`;
-            pendapatanEl.previousElementSibling.textContent = "Pendapatan Bulan Ini";
-        }
+        pendapatanEl.textContent = `Rp ${incomeBulanIni.toLocaleString('id-ID')}`;
+        pendapatanEl.previousElementSibling.textContent = "Pendapatan Bulan Ini";
     }
 
     if (pengeluaranEl) {
-        if (expenseBulanIni === 0 && expenseGlobal > 0) {
-            pengeluaranEl.textContent = `Rp ${expenseGlobal.toLocaleString('id-ID')}`;
-            pengeluaranEl.previousElementSibling.textContent = "Total Pengeluaran";
-        } else {
-            pengeluaranEl.textContent = `Rp ${expenseBulanIni.toLocaleString('id-ID')}`;
-            pengeluaranEl.previousElementSibling.textContent = "Pengeluaran Bulan Ini";
-        }
+        pengeluaranEl.textContent = `Rp ${expenseBulanIni.toLocaleString('id-ID')}`;
+        pengeluaranEl.previousElementSibling.textContent = "Pengeluaran Bulan Ini";
     }
 
     // 4. Perhitungan Statistik Sisa Pakan
@@ -503,8 +462,6 @@ function updateDashboardAggregates() {
 
     // 5. Perhitungan Statistik Mortalitas (Kematian Ayam)
     // Aturan: "Mati Semua" = jmlSakit + jmlMati (semua yg sakit mati + yg sudah mati sebelumnya)
-    // Contoh: 15 sakit + 5 sudah mati = 20 total kematian
-    // Status lain → gunakan jmlMati saja yang tercatat manual
     const totalMortalitas = state.kesehatan.reduce((sum, item) => {
         if (item.status === 'Mati Semua') {
             return sum + (parseInt(item.jmlSakit) || 0) + (parseInt(item.jmlMati) || 0);
@@ -912,7 +869,7 @@ function renderVaccinationWidget() {
                     <!-- Baris 1: Jenis vaksin + badge urgensi -->
                     <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: nowrap;">
                         <span style="font-size: 0.78rem; opacity: 0.9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;">
-                            💉 ${vaksin.jenis || 'Vaksin'}
+                            💉 ${escapeHTML(vaksin.jenis) || 'Vaksin'}
                         </span>
                         <span style="
                             background: ${urgencyColor};
@@ -928,11 +885,11 @@ function renderVaccinationWidget() {
 
                     <!-- Baris 2: Nomor batch -->
                     <p style="margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: 0.3px; line-height: 1.2;">
-                        ${batchNum}
+                        ${escapeHTML(batchNum)}
                     </p>
 
                     <!-- Baris 3: Nama kandang (jika ada) -->
-                    ${batchKandang ? `<p style="margin: 0; font-size: 0.75rem; opacity: 0.75; line-height: 1.2;">${batchKandang}</p>` : ''}
+                    ${batchKandang ? `<p style="margin: 0; font-size: 0.75rem; opacity: 0.75; line-height: 1.2;">${escapeHTML(batchKandang)}</p>` : ''}
 
                     <!-- Baris 4: Tanggal -->
                     <p style="margin: 0; font-size: 0.75rem; opacity: 0.8;">
@@ -1451,10 +1408,10 @@ function renderSchedule() {
     state.schedules.forEach((item) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td>${item.tanggal}</td>
-            <td>${item.waktu}</td>
-            <td>${item.agenda}</td>
-            <td>${item.ruangan}</td>
+            <td>${escapeHTML(item.tanggal)}</td>
+            <td>${escapeHTML(item.waktu)}</td>
+            <td>${escapeHTML(item.agenda)}</td>
+            <td>${escapeHTML(item.ruangan)}</td>
             <td>
                 <button class="delete-btn" onclick="deleteScheduleItem('${item.id}')">🗑</button>
             </td>

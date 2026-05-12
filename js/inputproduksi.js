@@ -12,6 +12,7 @@ import {
     deleteDoc, 
     doc, 
     getDocs, 
+    onSnapshot,
     query, 
     orderBy 
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
@@ -24,6 +25,8 @@ let collapsedBatches = new Set();
 
 const produksiCollection = collection(db, "produksi_harian");
 const ayamCollection = collection(db, "populasi_ayam");
+
+let unsubscribeAyam = null;
 
 // =========================================
 // 1. UTILITAS & FORMATTING
@@ -53,26 +56,31 @@ async function loadProduksiData() {
     }
 }
 
-async function loadAyamData() {
-    try {
-        const snapshot = await getDocs(ayamCollection);
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. Fetch data produksi (bisa tetap getDocs atau ganti onSnapshot jika ingin real-time)
+    await loadProduksiData();
+
+    // 2. Real-time listener untuk Data Ayam (Batch)
+    unsubscribeAyam = onSnapshot(ayamCollection, (snapshot) => {
         dataAyam = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
-        // Jika modal sedang terbuka, refresh opsi
-        if (document.getElementById('produksiModal').classList.contains('show')) {
+        // Update dropdown jika modal sedang terbuka
+        const modal = document.getElementById('produksiModal');
+        if (modal && modal.classList.contains('show')) {
             const currentSelected = document.getElementById('batchProduksi').value;
             loadBatchOptions(currentSelected);
+            // Update juga field sisa ayam yang tampil jika ada batch terpilih
+            if (currentSelected) {
+                const batch = dataAyam.find(a => a.id === currentSelected);
+                if (batch) {
+                    document.getElementById('totalAyamInput').value = batch.sisaAyam || 0;
+                }
+            }
         }
-    } catch (error) {
+        updateQuickStats();
+    }, (error) => {
         console.error("Firestore Error (Ayam): ", error);
-        Swal.fire("Error", "Gagal memuat data ayam: " + error.message, "error");
-    }
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-    // Jalankan fetch data secara paralel
-    await Promise.all([loadProduksiData(), loadAyamData()]);
-    updateQuickStats(); // Jalankan statistik setelah kedua data tersedia
+    });
 });
 
 // =========================================
@@ -270,61 +278,65 @@ window.saveProduksiData = async function(event) {
     const sisaAyam  = batchData ? (parseInt(batchData.sisaAyam) || 0) : 0;
 
     // ── VALIDASI DATA INTEGRITY ───────────────────────────────────
-    if (sisaAyam > 0) {
-
+    if (totalAyam > 0) {
         // 1. Total telur tidak boleh melebihi jumlah ayam
-        if (totalTelur > sisaAyam) {
+        if (totalTelur > totalAyam) {
             Swal.fire({
                 icon: 'error',
-                title: 'Data Tidak Logis',
-                html: `Total telur <strong>${totalTelur.toLocaleString('id-ID')} butir</strong> melebihi jumlah ayam yang ada: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.<br><br>
-                       Seekor ayam hanya bisa menghasilkan maksimal 1 telur per hari.`,
+                title: 'Data Tidak Logis!',
+                html: `
+                    <div style="text-align: left;">
+                        <p>Total produksi telur (<b>${totalTelur} butir</b>) melebihi jumlah populasi ayam (<b>${totalAyam} ekor</b>).</p>
+                        <hr>
+                        <p><small><i>Catatan: Secara biologis, seekor ayam maksimal hanya bertelur 1 butir per hari. Harap periksa kembali input Anda.</i></small></p>
+                    </div>
+                `,
                 confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Perbaiki Data'
+                confirmButtonText: 'Perbaiki Input'
             });
             return;
         }
 
         // 2. Ayam tidak bertelur tidak boleh melebihi jumlah ayam
-        if (ayamTidakBertelur > sisaAyam) {
+        if (ayamTidakBertelur > totalAyam) {
             Swal.fire({
                 icon: 'error',
-                title: 'Data Tidak Logis',
-                html: `Jumlah ayam tidak bertelur <strong>${ayamTidakBertelur.toLocaleString('id-ID')} ekor</strong> melebihi total ayam yang ada: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.`,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Perbaiki Data'
+                title: 'Data Tidak Logis!',
+                text: `Jumlah ayam tidak bertelur (${ayamTidakBertelur} ekor) tidak mungkin melebihi total populasi ayam (${totalAyam} ekor).`,
+                confirmButtonColor: '#ef4444'
             });
             return;
         }
 
-        // 3. Ayam bertelur + tidak bertelur tidak boleh melebihi total ayam
-        const ayamBertelur = totalTelur; // 1 telur per ayam
-        if (ayamBertelur + ayamTidakBertelur > sisaAyam) {
+        // 3. Gabungan ayam bertelur (asumsi 1 butir = 1 ayam) + tidak bertelur
+        if (totalTelur + ayamTidakBertelur > totalAyam) {
             Swal.fire({
                 icon: 'error',
-                title: 'Data Tidak Konsisten',
-                html: `Jumlah ayam bertelur (${ayamBertelur.toLocaleString('id-ID')}) + tidak bertelur (${ayamTidakBertelur.toLocaleString('id-ID')}) = <strong>${(ayamBertelur + ayamTidakBertelur).toLocaleString('id-ID')} ekor</strong>, melebihi total ayam: <strong>${sisaAyam.toLocaleString('id-ID')} ekor</strong>.`,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Perbaiki Data'
+                title: 'Ketidakkonsistenan Data!',
+                html: `
+                    <div style="text-align: left;">
+                        <p>Total ayam terdeteksi: <b>${totalTelur + ayamTidakBertelur} ekor</b></p>
+                        <ul>
+                            <li>Bertelur: ${totalTelur} ekor</li>
+                            <li>Tidak Bertelur: ${ayamTidakBertelur} ekor</li>
+                        </ul>
+                        <p>Sedangkan populasi di database hanya: <b>${totalAyam} ekor</b>.</p>
+                    </div>
+                `,
+                confirmButtonColor: '#ef4444'
             });
             return;
         }
-
-        // 4. Peringatan jika rasio produksi sangat tinggi (> 95%) — minta konfirmasi
-        const rasio = (totalTelur / sisaAyam) * 100;
-        if (rasio > 95 && totalTelur > 0) {
-            const konfirmasi = await Swal.fire({
-                icon: 'warning',
-                title: 'Rasio Produksi Sangat Tinggi',
-                html: `Rasio produksi <strong>${rasio.toFixed(1)}%</strong> (${totalTelur} telur dari ${sisaAyam} ayam) tergolong sangat tinggi.<br><br>
-                       Apakah data ini sudah benar?`,
-                showCancelButton: true,
-                confirmButtonColor: '#f59e0b',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'Ya, Data Sudah Benar',
-                cancelButtonText: 'Periksa Lagi'
+    } else {
+        // Jika total ayam 0, tidak boleh ada produksi
+        if (totalTelur > 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Batch Kosong',
+                text: 'Tidak bisa menginput produksi pada batch yang sudah tidak memiliki ayam.',
+                confirmButtonColor: '#ef4444'
             });
-            if (!konfirmasi.isConfirmed) return;
+            return;
         }
     }
 
