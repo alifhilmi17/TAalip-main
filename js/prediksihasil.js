@@ -476,6 +476,35 @@ window.updatePakanBadge = function(val) {
         badge.style.color = "#fa5252";
     }
 };
+/**
+ * Fungsi untuk menganimasi perubahan angka (Count Up)
+ */
+function animateValue(obj, start, end, duration, prefix = '', suffix = '', isCurrency = false) {
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const current = progress * (end - start) + start;
+        
+        let valueStr = '';
+        if (isCurrency) {
+            valueStr = prefix + Math.floor(current).toLocaleString('id-ID') + suffix;
+        } else {
+            if (end % 1 !== 0) {
+                valueStr = prefix + current.toFixed(2) + suffix;
+            } else {
+                valueStr = prefix + Math.floor(current).toLocaleString('id-ID') + suffix;
+            }
+        }
+        
+        obj.textContent = valueStr;
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        }
+    };
+    window.requestAnimationFrame(step);
+}
 
 /**
  * Fungsi Utama `calculatePrediction`!
@@ -625,13 +654,18 @@ window.calculatePrediction = function(event) {
     let keuntunganTeoritis = estimasiPendapatan - biayaPakan;                  // Laba murni rumus
     let keuntungan = keuntunganTeoritis + avgProfitOffset;                     // Sisa Laba Bersih Petani (Net Profit) disesuaikan histori pengguna
 
-    // --- STEP 7: MEMASUKKAN NILAI KE PANEL ANTARMUKA (DOM UPGRADE) ---
-    // Masukkan data hasil perhitungan ke dalam Text HTML Card sebelah atas Chart.
-    document.getElementById('outProduksi').textContent = `${prediksiBesokKg.toFixed(2)} Kg`;
-    document.getElementById('outButir').textContent = `${prediksiBesokButir.toLocaleString('id-ID')} Butir`;
-    document.getElementById('outPendapatan').textContent = `Rp ${Math.round(estimasiPendapatan).toLocaleString('id-ID')}`;
-    document.getElementById('outBiayaPakan').textContent = `Rp ${Math.round(biayaPakan).toLocaleString('id-ID')}`;
-    document.getElementById('outKeuntungan').textContent = `Rp ${Math.round(keuntungan).toLocaleString('id-ID')}`;
+    // --- STEP 7: MEMASUKKAN NILAI KE PANEL ANTARMUKA (DOM UPGRADE) DENGAN ANIMASI ---
+    const outProdEl = document.getElementById('outProduksi');
+    const outButirEl = document.getElementById('outButir');
+    const outPendEl = document.getElementById('outPendapatan');
+    const outBiayaEl = document.getElementById('outBiayaPakan');
+    const outKeuntunganEl = document.getElementById('outKeuntungan');
+
+    animateValue(outProdEl, 0, prediksiBesokKg, 1000, '', ' Kg');
+    animateValue(outButirEl, 0, prediksiBesokButir, 1000, '', ' Butir');
+    animateValue(outPendEl, 0, estimasiPendapatan, 1200, 'Rp ', '', true);
+    animateValue(outBiayaEl, 0, biayaPakan, 1200, 'Rp ', '', true);
+    animateValue(outKeuntunganEl, 0, keuntungan, 1500, 'Rp ', '', true);
 
     // Fitur Tambahan Cerdas: Jika keuntungannya (Laba Besih) MINUS (Negatif/Rugi)
     // maka kita merubah tema warna kotak Margin nya dari Biru/Hijau, langsung menjadi MERAH SIAGA BENCANA!
@@ -720,8 +754,7 @@ window.calculatePrediction = function(event) {
                     <span style="background: #34495e; color: white; padding: 4px 10px; border-radius: 6px;">H+${i + 1}</span>
                 </td>
                 <td style="padding: 16px; color: #2c3e50; border-right: 1px solid rgba(0,0,0,0.05);">
-                    <span style="font-weight: 700; color: #2980b9; font-size: 1.05rem;">${pKg.toFixed(2)} Kg</span> 
-                    <span style="font-size: 0.85rem; color: #7f8c8d; margin-left: 6px; font-weight: 500;">(~${butir.toLocaleString('id-ID')} Butir)</span>
+                    <span style="font-weight: 700; color: #2980b9; font-size: 1.05rem;">${pKg.toFixed(2)} Kg ${butir.toLocaleString('id-ID')} Butir</span>
                 </td>
                 <td style="padding: 16px; ${profitStyle} font-size: 1.05rem;">
                     Rp ${rpFormat}
@@ -1349,8 +1382,7 @@ function renderHistoryTable(histories) {
                 </span>
             </td>
             <td style="padding: 14px; color: #2c3e50;">
-                <span style="font-weight: 700; color: #2980b9;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} Kg</span>
-                <div style="font-size: 0.78rem; color: #95a5a6;">(~${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir)</div>
+                <span style="font-weight: 700; color: #2980b9;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} Kg ${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir</span>
             </td>
             <td style="padding: 14px; ${profitStyle} font-size: 0.95rem;">
                 Rp ${Math.round(h.keuntungan || 0).toLocaleString('id-ID')}
@@ -1445,15 +1477,17 @@ window.viewHistoryDetail = async function(historyId) {
         let proj7HTML = '';
         if (h.proyeksi7HariKg && h.proyeksi7HariKg.length > 0) {
             proj7HTML = '<table style="width:100%; border-collapse:collapse; margin-top:10px; font-size:0.82rem;">';
-            proj7HTML += '<tr style="background:#34495e; color:white;"><th style="padding:8px; border-radius: 6px 0 0 0;">Hari</th><th style="padding:8px;">Produksi</th><th style="padding:8px; border-radius: 0 6px 0 0;">Laba</th></tr>';
+            proj7HTML += '<tr style="background: linear-gradient(90deg, #34495e, #2c3e50); color:white;"><th style="padding:12px 8px; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">Hari</th><th style="padding:12px 8px; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">Produksi</th><th style="padding:12px 8px; font-size:0.8rem; text-transform:uppercase; letter-spacing:0.5px;">Laba</th></tr>';
             for (let i = 0; i < h.proyeksi7HariKg.length; i++) {
                 const kg = h.proyeksi7HariKg[i];
                 const profit = h.proyeksi7HariKeuntungan[i];
                 const pStyle = profit < 0 ? 'color:#e74c3c;font-weight:700;' : 'color:#27ae60;font-weight:700;';
-                proj7HTML += `<tr style="border-bottom:1px solid #eee;">
-                    <td style="padding:6px 8px; text-align:center; font-weight:600;">H+${i+1}</td>
-                    <td style="padding:6px 8px; color:#2980b9; font-weight:600;">${kg.toFixed(2)} Kg</td>
-                    <td style="padding:6px 8px; ${pStyle}">Rp ${Math.round(profit).toLocaleString('id-ID')}</td>
+                const factor = h.prediksiBesokKg > 0 ? (h.prediksiBesokButir / h.prediksiBesokKg) : 16;
+                const butir = Math.round(kg * factor);
+                proj7HTML += `<tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:12px 8px; text-align:center; font-weight:600; color:#475569; background:#f8fafc;">H+${i+1}</td>
+                    <td style="padding:12px 8px; color:#0284c7; font-weight:600;">${kg.toFixed(2)} Kg <span style="font-size:0.75rem; color:#64748b; font-weight:400; margin-left:4px;">(${butir.toLocaleString('id-ID')} Butir)</span></td>
+                    <td style="padding:12px 8px; ${pStyle}">Rp ${Math.round(profit).toLocaleString('id-ID')}</td>
                 </tr>`;
             }
             proj7HTML += '</table>';
@@ -1464,32 +1498,50 @@ window.viewHistoryDetail = async function(historyId) {
         Swal.fire({
             title: `📊 Detail Prediksi`,
             html: `
-                <div style="text-align: left; max-height: 65vh; overflow-y: auto; padding: 5px;">
-                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
-                        <div style="font-size: 0.85rem; opacity: 0.9;">📅 ${tglStr} — 🕐 ${waktuStr}</div>
-                        <div style="font-size: 0.85rem; opacity: 0.9; margin-top: 4px;">🐔 ${h.batchLabel || '-'} | MA-${h.periodeMA} | ${(h.populasi || 0).toLocaleString('id-ID')} Ekor</div>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
-                        <div style="background: #fffcf2; border: 1px solid #fde4a9; padding: 12px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #92400e;">Prediksi Produksi</div>
-                            <div style="font-size: 1.1rem; font-weight: 700; color: #d97706;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} Kg</div>
-                            <div style="font-size: 0.72rem; color: #92400e;">(~${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir)</div>
+                <div style="text-align: left; max-height: 70vh; overflow-y: auto; padding: 5px; font-family: 'Poppins', sans-serif;">
+                    <!-- Banner Informasi Utama -->
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px;">
+                            <div style="font-size: 0.85rem; font-weight: 600;">📅 ${tglStr}</div>
+                            <div style="font-size: 0.85rem; font-weight: 600;">🕐 ${waktuStr}</div>
                         </div>
-                        <div style="background: ${h.keuntungan < 0 ? '#fff5f5' : '#f0fdf4'}; border: 1px solid ${h.keuntungan < 0 ? '#fecdd3' : '#bcebcf'}; padding: 12px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 0.75rem; color: #475569;">${h.keuntungan < 0 ? 'Proyeksi Kerugian' : 'Proyeksi Keuntungan'}</div>
-                            <div style="font-size: 1.1rem; font-weight: 700; ${profitStyle}">Rp ${Math.round(h.keuntungan || 0).toLocaleString('id-ID')}</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div style="font-size: 0.8rem; opacity: 0.9;">📦 <b>Batch:</b> ${h.batchLabel || '-'}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">📈 <b>Metode:</b> MA-${h.periodeMA} Hari</div>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">🐓 <b>Populasi:</b> ${(h.populasi || 0).toLocaleString('id-ID')} Ekor</div>
                         </div>
                     </div>
 
-                    <h4 style="font-size: 0.95rem; color: #2c3e50; margin-bottom: 10px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px;">📅 Proyeksi 7 Hari</h4>
-                    ${proj7HTML}
+                    <!-- Kartu Ringkasan Hasil -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                        <!-- Kartu Produksi -->
+                        <div style="background: #f0f8ff; border: 1.5px solid #bae6fd; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.05);">
+                            <div style="font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Prediksi Produksi</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; color: #0284c7;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} <span style="font-size: 0.9rem;">Kg</span></div>
+                            <div style="font-size: 0.85rem; font-weight: 600; color: #0369a1; margin-top: 2px;">${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir</div>
+                        </div>
+                        <!-- Kartu Laba -->
+                        <div style="background: ${h.keuntungan < 0 ? '#fff5f5' : '#f0fdf4'}; border: 1.5px solid ${h.keuntungan < 0 ? '#fecdd3' : '#bcebcf'}; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
+                            <div style="font-size: 0.75rem; color: ${h.keuntungan < 0 ? '#991b1b' : '#166534'}; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">${h.keuntungan < 0 ? 'Proyeksi Rugi' : 'Proyeksi Laba'}</div>
+                            <div style="font-size: 1.2rem; font-weight: 800; ${profitStyle}">Rp ${Math.round(Math.abs(h.keuntungan || 0)).toLocaleString('id-ID')}</div>
+                            <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">Estimasi Per Hari</div>
+                        </div>
+                    </div>
 
-                    <h4 style="font-size: 0.95rem; color: #4a1f8a; margin: 16px 0 10px; border-bottom: 2px solid #d4bfff; padding-bottom: 6px;">🧠 Rekomendasi Prediktif</h4>
-                    ${rekHTML || '<p style="color: #7f8c8d; font-style: italic;">Tidak ada rekomendasi.</p>'}
+                    <!-- Tabel Proyeksi -->
+                    <h4 style="font-size: 0.95rem; color: #2c3e50; margin-bottom: 12px; border-left: 4px solid #667eea; padding-left: 10px; font-weight: 700;">📅 Proyeksi 7 Hari Kedepan</h4>
+                    <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 20px;">
+                        ${proj7HTML}
+                    </div>
+
+                    <!-- Rekomendasi -->
+                    <h4 style="font-size: 0.95rem; color: #4a1f8a; margin: 25px 0 12px; border-left: 4px solid #9b59b6; padding-left: 10px; font-weight: 700;">🧠 Rekomendasi & Tindakan</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${rekHTML || '<p style="color: #7f8c8d; font-style: italic; text-align: center; padding: 20px;">Tidak ada rekomendasi tersimpan.</p>'}
+                    </div>
                 </div>
             `,
-            width: '700px',
+            width: '650px',
             showConfirmButton: true,
             confirmButtonText: 'Tutup',
             confirmButtonColor: '#667eea'
