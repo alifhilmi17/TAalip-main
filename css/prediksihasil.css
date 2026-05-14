@@ -565,32 +565,29 @@ input[type="number"]::-webkit-inner-spin-button {
 .pakan-input-wrapper {
     position: relative;
     flex: 1;
+    min-width: 0;
 }
 
 .pakan-input-wrapper input {
     width: 100%;
-    padding: 12px 60px 12px 15px !important;
+    padding: 12px 15px !important;
     border-radius: 10px !important;
     border: 2px solid #dfe6e9 !important;
     font-size: 1rem !important;
     font-weight: 600 !important;
+    color: #2d3436 !important;
+    background: #ffffff !important;
     outline: none;
     transition: border-color 0.3s;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .pakan-input-wrapper input:focus {
     border-color: #fab1a0 !important;
 }
 
-.pakan-unit {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #b2bec3;
-    font-weight: 600;
-    pointer-events: none;
-}
+
 
 .pakan-presets {
     display: flex;
