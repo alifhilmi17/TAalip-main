@@ -954,13 +954,14 @@ function renderPrediksiWidget() {
         prediksiEggs.textContent = `${(latest.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir`;
         prediksiIncome.textContent = `Rp ${(latest.estimasiPendapatan || 0).toLocaleString('id-ID')}`;
         
-        // Hitung akurasi berdasarkan keuntungan (jika untung = tinggi, rugi = rendah)
-        let akurasi = 0;
-        if (latest.keuntungan && latest.estimasiPendapatan) {
+        // Hitung akurasi (Gunakan akurasi asli dari database jika ada)
+        let akurasi = latest.akurasiModel !== undefined && latest.akurasiModel !== null ? latest.akurasiModel : 0;
+        if (akurasi === 0 && latest.keuntungan && latest.estimasiPendapatan && !latest.hasOwnProperty('akurasiModel')) {
+            // Fallback backward compatibility untuk data lama
             const rasio = (latest.keuntungan / latest.estimasiPendapatan) * 100;
-            akurasi = Math.max(0, Math.min(100, 50 + rasio)); // Scale 0-100
+            akurasi = Math.max(0, Math.min(100, 50 + rasio));
         }
-        prediksiAccuracy.textContent = `${Math.round(akurasi)}%`;
+        prediksiAccuracy.textContent = latest.akurasiModel !== null ? `${Math.round(akurasi)}%` : 'N/A';
     }
 }
 
@@ -1486,11 +1487,13 @@ window.openModalPrediksi = function() {
         }
         
         // Hitung akurasi
-        let akurasi = 0;
-        if (data.keuntungan && data.estimasiPendapatan) {
+        let akurasi = data.akurasiModel !== undefined && data.akurasiModel !== null ? data.akurasiModel : 0;
+        if (akurasi === 0 && data.keuntungan && data.estimasiPendapatan && !data.hasOwnProperty('akurasiModel')) {
             const rasio = (data.keuntungan / data.estimasiPendapatan) * 100;
             akurasi = Math.max(0, Math.min(100, 50 + rasio));
         }
+        
+        let maeText = data.maeButir !== undefined && data.maeButir !== null ? `Error: ± ${Math.round(data.maeButir)} Butir` : 'Tingkat kepercayaan prediksi';
         
         content.innerHTML = `
             <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #667eea;">
@@ -1511,8 +1514,8 @@ window.openModalPrediksi = function() {
                 </div>
                 <div style="padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; color: white;">
                     <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">📊 Akurasi Model</p>
-                    <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">${Math.round(akurasi)}%</p>
-                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Tingkat kepercayaan prediksi</p>
+                    <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">${data.akurasiModel !== null ? Math.round(akurasi) + '%' : 'N/A'}</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">${maeText}</p>
                 </div>
             </div>
             

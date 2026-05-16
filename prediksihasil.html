@@ -596,7 +596,8 @@
                     >Harga Pakan/Kg</label
                   >
                   <input
-                    type="text" inputmode="numeric"
+                    type="text"
+                    inputmode="numeric"
                     id="hargaPakan"
                     class="price-input"
                     placeholder="Contoh: 8000"
@@ -609,7 +610,8 @@
                     >Harga Telur/Papan</label
                   >
                   <input
-                    type="text" inputmode="numeric"
+                    type="text"
+                    inputmode="numeric"
                     id="hargaTelur"
                     class="price-input"
                     placeholder="Contoh: 25000"
@@ -677,6 +679,22 @@
                 <h4>Biaya Pakan Harian</h4>
                 <p id="outBiayaPakan">Rp 0</p>
                 <small>Total Kebutuhan Biaya Pokok (Modal)</small>
+              </div>
+            </div>
+            
+            <!-- Kartu 5: Akurasi Model & MAE -->
+            <div class="stat-card result-card bg-akurasi akurasi-card-layout" style="grid-column: 1 / -1; display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 1rem;">
+              <div class="akurasi-left" style="display: flex; gap: 1.5rem; align-items: center; min-width: 250px;">
+                <div class="stat-icon purple-bg">📊</div>
+                <div class="stat-info">
+                  <h4 style="white-space: nowrap;">Akurasi Prediksi Model</h4>
+                  <p id="outAkurasi" style="color: #7e22ce;">0%</p>
+                  <small>Berdasarkan selisih hasil prediksi historis</small>
+                </div>
+              </div>
+              <div class="mae-container" style="text-align: right; min-width: 200px; flex-grow: 1;">
+                <small style="color: #64748b; font-weight: 600; display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px;">Mean Absolute Error</small>
+                <span id="outMae" style="font-size: 1.3rem; font-weight: 800; color: #475569; background: white; padding: 4px 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-block;">0 Butir</span>
               </div>
             </div>
           </div>

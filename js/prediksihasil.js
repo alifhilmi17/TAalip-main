@@ -646,6 +646,42 @@ window.calculatePrediction = function(event) {
     // Rata-rata periode ini adalah Hasil Ramalan Produksi HARI ESOK (Hari + 1).
     let prediksiBesokKg = sumKg / periodeMA;
 
+    // --- STEP 5.5: KALKULASI MAE & AKURASI MODEL (BACKTESTING) ---
+    let totalErrorButir = 0;
+    let totalPercentageError = 0;
+    let validTestCount = 0;
+
+    // Kita butuh minimal (periodeMA + 1) data untuk bisa menghitung error histori
+    if (fullHistoryButir.length > periodeMA) {
+        for (let i = periodeMA; i < fullHistoryButir.length; i++) {
+            // Ambil window sebelumnya sebanyak periodeMA
+            let windowButir = fullHistoryButir.slice(i - periodeMA, i);
+            let sumWindow = windowButir.reduce((a, b) => a + b, 0);
+            let predButir = sumWindow / periodeMA;
+            let actualButir = fullHistoryButir[i];
+
+            let error = Math.abs(actualButir - predButir);
+            totalErrorButir += error;
+
+            if (actualButir > 0) {
+                totalPercentageError += (error / actualButir);
+            }
+            validTestCount++;
+        }
+    }
+
+    let maeButir = 0;
+    let akurasiModel = 0; // Persentase akurasi
+    let isAkurasiValid = false;
+
+    if (validTestCount > 0) {
+        maeButir = totalErrorButir / validTestCount;
+        let mape = (totalPercentageError / validTestCount) * 100;
+        akurasiModel = 100 - mape;
+        if (akurasiModel < 0) akurasiModel = 0;
+        isAkurasiValid = true;
+    }
+
     // --- STEP 6: KALKULASI LAPORAN UANG/FINANSIAL HARI ESOK ---
     let prediksiBesokButir = Math.round(prediksiBesokKg * konversiButirPerKg); // Konver kembali ke butir secara integer tak desimal (Dibulatkan)
     let estimasiPendapatan = (prediksiBesokButir / 30) * hargaTelur;           // Harga Telur/Papan (30 Butir)
@@ -660,12 +696,24 @@ window.calculatePrediction = function(event) {
     const outPendEl = document.getElementById('outPendapatan');
     const outBiayaEl = document.getElementById('outBiayaPakan');
     const outKeuntunganEl = document.getElementById('outKeuntungan');
+    const outMaeEl = document.getElementById('outMae');
+    const outAkurasiEl = document.getElementById('outAkurasi');
 
     animateValue(outProdEl, 0, prediksiBesokKg, 1000, '', ' Kg');
     animateValue(outButirEl, 0, prediksiBesokButir, 1000, '', ' Butir');
     animateValue(outPendEl, 0, estimasiPendapatan, 1200, 'Rp ', '', true);
     animateValue(outBiayaEl, 0, biayaPakan, 1200, 'Rp ', '', true);
     animateValue(outKeuntunganEl, 0, keuntungan, 1500, 'Rp ', '', true);
+
+    if (outMaeEl && outAkurasiEl) {
+        if (isAkurasiValid) {
+            animateValue(outMaeEl, 0, maeButir, 1000, '± ', ' Butir');
+            animateValue(outAkurasiEl, 0, akurasiModel, 1000, '', '%');
+        } else {
+            outMaeEl.textContent = "N/A (Data Kurang)";
+            outAkurasiEl.textContent = "N/A (Data Kurang)";
+        }
+    }
 
     // Fitur Tambahan Cerdas: Jika keuntungannya (Laba Besih) MINUS (Negatif/Rugi)
     // maka kita merubah tema warna kotak Margin nya dari Biru/Hijau, langsung menjadi MERAH SIAGA BENCANA!
@@ -796,6 +844,8 @@ window.calculatePrediction = function(event) {
         estimasiPendapatan,
         biayaPakan,
         keuntungan,
+        maeButir: isAkurasiValid ? maeButir : null,
+        akurasiModel: isAkurasiValid ? akurasiModel : null,
         proyeksi7HariKg,
         proyeksi7HariKeuntungan,
         rekomendasi
@@ -1495,6 +1545,15 @@ window.viewHistoryDetail = async function(historyId) {
 
         const profitStyle = h.keuntungan < 0 ? 'color: #e74c3c;' : 'color: #27ae60;';
 
+        // Add MAE & Akurasi logic
+        let akurasi = h.akurasiModel !== undefined && h.akurasiModel !== null ? h.akurasiModel : 0;
+        if (akurasi === 0 && h.keuntungan && h.estimasiPendapatan && !h.hasOwnProperty('akurasiModel')) {
+            const rasio = (h.keuntungan / h.estimasiPendapatan) * 100;
+            akurasi = Math.max(0, Math.min(100, 50 + rasio));
+        }
+        let maeText = h.maeButir !== undefined && h.maeButir !== null ? `± ${Math.round(h.maeButir)} Butir` : '-';
+        let akurasiText = h.akurasiModel !== null ? `${Math.round(akurasi)}%` : 'N/A';
+
         Swal.fire({
             title: `📊 Detail Prediksi`,
             html: `
@@ -1513,18 +1572,24 @@ window.viewHistoryDetail = async function(historyId) {
                     </div>
 
                     <!-- Kartu Ringkasan Hasil -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                         <!-- Kartu Produksi -->
                         <div style="background: #f0f8ff; border: 1.5px solid #bae6fd; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.05);">
-                            <div style="font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Prediksi Produksi</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; color: #0284c7;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} <span style="font-size: 0.9rem;">Kg</span></div>
-                            <div style="font-size: 0.85rem; font-weight: 600; color: #0369a1; margin-top: 2px;">${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir</div>
+                            <div style="font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Produksi</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #0284c7;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} <span style="font-size: 0.8rem;">Kg</span></div>
+                            <div style="font-size: 0.8rem; font-weight: 600; color: #0369a1; margin-top: 2px;">${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Btr</div>
                         </div>
                         <!-- Kartu Laba -->
                         <div style="background: ${h.keuntungan < 0 ? '#fff5f5' : '#f0fdf4'}; border: 1.5px solid ${h.keuntungan < 0 ? '#fecdd3' : '#bcebcf'}; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
-                            <div style="font-size: 0.75rem; color: ${h.keuntungan < 0 ? '#991b1b' : '#166534'}; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">${h.keuntungan < 0 ? 'Proyeksi Rugi' : 'Proyeksi Laba'}</div>
-                            <div style="font-size: 1.2rem; font-weight: 800; ${profitStyle}">Rp ${Math.round(Math.abs(h.keuntungan || 0)).toLocaleString('id-ID')}</div>
-                            <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">Estimasi Per Hari</div>
+                            <div style="font-size: 0.75rem; color: ${h.keuntungan < 0 ? '#991b1b' : '#166534'}; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">${h.keuntungan < 0 ? 'Rugi' : 'Laba'}</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; ${profitStyle}">Rp ${Math.round(Math.abs(h.keuntungan || 0)).toLocaleString('id-ID')}</div>
+                            <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">Estimasi H+1</div>
+                        </div>
+                        <!-- Kartu Akurasi -->
+                        <div style="background: #faf5ff; border: 1.5px solid #e9d5ff; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
+                            <div style="font-size: 0.75rem; color: #7e22ce; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Akurasi</div>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #9333ea;">${akurasiText}</div>
+                            <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">MAE: ${maeText}</div>
                         </div>
                     </div>
 

@@ -819,6 +819,25 @@ input[type="number"]::-webkit-inner-spin-button {
 .bg-keuntungan { background: linear-gradient(135deg, #f0f8ff 0%, #e0f2fe 100%); border-color: #bae6fd; }
 .bg-keuntungan:hover { border-color: #3b82f6; box-shadow: 0 10px 40px rgba(59, 130, 246, 0.25); }
 
+.purple-bg { background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%); box-shadow: 0 6px 15px rgba(139, 92, 246, 0.4); }
+
+.bg-akurasi { background: linear-gradient(to right, rgba(255,255,255,0.7), rgba(243, 232, 255, 0.5)); border-color: #e9d5ff; }
+.bg-akurasi:hover { border-color: #c084fc; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.25); }
+
+.akurasi-card-layout { 
+    grid-column: 1 / -1 !important; 
+    display: flex !important; 
+    flex-direction: row;
+    justify-content: space-between; 
+    align-items: center; 
+    width: 100%;
+}
+.akurasi-left { display: flex; gap: 1.5rem; align-items: center; flex: 1; }
+
+.mae-container { text-align: right; padding-right: 10px; min-width: max-content; }
+.mae-container small { color: #64748b; font-weight: 600; display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
+.mae-container span { font-size: 1.3rem; font-weight: 800; color: #475569; background: white; padding: 4px 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-block; white-space: nowrap; }
+
 /* =========================================================
    18. PANEL KANAN - CHART CONTAINER
 ========================================================= */
@@ -1186,6 +1205,17 @@ input[type="number"]::-webkit-inner-spin-button {
     .result-cards-grid {
         grid-template-columns: 1fr;
     }
+    .akurasi-card-layout {
+        grid-column: 1 / -1 !important; 
+        flex-direction: column !important;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .mae-container {
+        text-align: left;
+        padding-right: 0;
+        margin-left: calc(60px + 1.5rem); /* Align with text by offsetting icon size + gap */
+    }
     .historical-inputs {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1196,7 +1226,23 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 @media (max-width: 600px) {
-    .result-cards-grid {
+    .historical-inputs {
         grid-template-columns: 1fr;
+    }
+    .canvas-wrapper {
+        height: 300px;
+    }
+    .mae-container {
+        margin-left: 0;
+        text-align: center;
+        width: 100%;
+        margin-top: 10px;
+    }
+    .akurasi-left {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        gap: 0.8rem;
     }
 }

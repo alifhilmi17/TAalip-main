@@ -481,7 +481,7 @@
                   Monitor kondisi ayam
                 </p>
               </button>
-              
+
               <!-- Tombol Rekap Harian (Full Width di dalam Grid) -->
               <button
                 onclick="openUserDailyRecap()"
@@ -489,8 +489,8 @@
                   grid-column: span 2;
                   margin-top: 0.4rem;
                   padding: 0.8rem;
-                  background: rgba(255,255,255,0.2);
-                  border: 1px solid rgba(255,255,255,0.3);
+                  background: rgba(255, 255, 255, 0.2);
+                  border: 1px solid rgba(255, 255, 255, 0.3);
                   border-radius: 10px;
                   color: white;
                   font-weight: 600;
@@ -1179,10 +1179,17 @@
     <!-- ========================= MODAL REKAP HARIAN (USER) ========================== -->
     <div class="recap-modal-overlay" id="userRecapModalOverlay">
       <div class="recap-modal-card">
-        <button class="recap-close-btn" onclick="closeUserDailyRecap()">×</button>
+        <button class="recap-close-btn" onclick="closeUserDailyRecap()">
+          ×
+        </button>
         <div class="recap-modal-header">
           <h2>Rekap Harian Kandang</h2>
-          <input type="date" id="userRecapDate" class="recap-date-picker" onchange="openUserDailyRecap(this.value)" />
+          <input
+            type="date"
+            id="userRecapDate"
+            class="recap-date-picker"
+            onchange="openUserDailyRecap(this.value)"
+          />
         </div>
         <div class="recap-modal-body">
           <div class="recap-stat-grid">
@@ -1211,7 +1218,9 @@
             <h4>Pekerjaan Besok</h4>
             <p id="ur-besok">Memuat data...</p>
           </div>
-          <button class="recap-action-btn" onclick="closeUserDailyRecap()">Saya Mengerti</button>
+          <button class="recap-action-btn" onclick="closeUserDailyRecap()">
+            Saya Mengerti
+          </button>
         </div>
       </div>
     </div>
