@@ -13,7 +13,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 
 // 3. Mengimpor fungsi Firestore untuk penyimpanan database data profil/teks
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+import { getFirestore, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
 /* 
    Objek konfigurasi koneksi yang didapatkan dari platform Firebase Console.
@@ -39,3 +39,12 @@ export const auth = getAuth(app);
 // 6. Mengekspor variabel 'db' (Layanan Firestore) 
 // untuk dipakai menyimpan data biodata user dll
 export const db = getFirestore(app);
+
+// 7. Mengaktifkan Dukungan Offline (IndexedDB Persistence)
+enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code == 'failed-precondition') {
+        console.warn("Offline Support: Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+    } else if (err.code == 'unimplemented') {
+        console.warn("Offline Support: The current browser does not support all of the features required to enable persistence.");
+    }
+});

@@ -241,3 +241,69 @@ function redirectBasedOnRole(isAdmin) {
         }
     }
 }
+
+// =========================================================
+// FITUR DUKUNGAN OFFLINE SEDERHANA (OFFLINE SUPPORT)
+// =========================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Membuat elemen banner offline
+    const offlineBanner = document.createElement('div');
+    offlineBanner.id = 'globalOfflineBanner';
+    offlineBanner.innerHTML = `
+        <div style="background-color: #ef4444; color: white; text-align: center; padding: 10px; font-family: 'Poppins', sans-serif; font-size: 14px; font-weight: 500; z-index: 9999; position: fixed; top: 0; left: 0; width: 100%; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <span>⚠️</span> Anda sedang offline. Koneksi internet terputus, menggunakan data tersimpan.
+        </div>
+    `;
+    offlineBanner.style.display = navigator.onLine ? 'none' : 'block';
+    
+    // Pastikan body memiliki margin-top jika banner muncul agar tidak menutupi header
+    if (!navigator.onLine) {
+        document.body.style.paddingTop = '40px';
+    }
+
+    document.body.prepend(offlineBanner);
+
+    // Event listener ketika internet putus
+    window.addEventListener('offline', () => {
+        const banner = document.getElementById('globalOfflineBanner');
+        if (banner) {
+            banner.style.display = 'block';
+            document.body.style.paddingTop = '40px'; // Memberi ruang agar UI tidak tertutup
+            
+            // Tampilkan notifikasi instan jika sweetalert tersedia
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: 'Koneksi Terputus!',
+                    text: 'Aplikasi beralih ke Mode Offline',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+    });
+
+    // Event listener ketika internet kembali terhubung
+    window.addEventListener('online', () => {
+        const banner = document.getElementById('globalOfflineBanner');
+        if (banner) {
+            banner.style.display = 'none';
+            document.body.style.paddingTop = '0';
+            
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Kembali Online',
+                    text: 'Data telah disinkronkan',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+            }
+        }
+    });
+});
+
