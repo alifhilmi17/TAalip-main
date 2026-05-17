@@ -27,13 +27,6 @@ import { db, auth } from "../firebase.component/firebase-init.js";
  * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
  * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
  */
-function escapeHTML(str) {
-    if (!str) return '-';
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
-}
 
 // =========================================
 // 1. PENGENDALI SIDEBAR & NAVIGASI

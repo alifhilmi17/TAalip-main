@@ -40,26 +40,11 @@ let unsubscribeKesehatan = null;
  * @param {string} tglString - String tanggal format ISO (YYYY-MM-DD)
  * @returns {string} Tanggal terformat (Contoh: 1 Jan 2024)
  */
-function formatTanggal(tglString) {
-    if (!tglString) return "-";
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal, bukan UTC midnight
-    // (mencegah tanggal meleset 1 hari di timezone UTC+7)
-    const safeDate = tglString.includes('T') ? tglString : tglString + 'T00:00:00';
-    return new Date(safeDate).toLocaleDateString('id-ID', options);
-}
 
 /**
  * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
  * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
  */
-function escapeHTML(str) {
-    if (!str) return '-';
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
-}
 
 // =========================================
 // 3. INISIALISASI PROGRAM & FETCH DATA

@@ -33,11 +33,6 @@ const pakanCollection = collection(db, "stok_pakan");
 // ==========================================
 // 1. UTILITAS
 // ==========================================
-function formatTanggal(tglString) {
-    if (!tglString) return "-";
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    return new Date(tglString + 'T00:00:00').toLocaleDateString('id-ID', options);
-}
 
 /** Ambil bulan saat ini dalam format YYYY-MM */
 function getBulanIni() {
@@ -49,13 +44,6 @@ function getBulanIni() {
  * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).
  * Mengubah karakter khusus HTML menjadi entitas karakter (escape).
  */
-function escapeHTML(str) {
-    if (!str) return '-';
-    if (typeof str !== 'string') return str;
-    return str.replace(/[&<>'"]/g, tag => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-    }[tag] || tag));
-}
 
 // ==========================================
 // 2. INISIALISASI AUTH & FIREBASE LISTENER

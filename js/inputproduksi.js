@@ -31,14 +31,6 @@ let unsubscribeAyam = null;
 // =========================================
 // 1. UTILITAS & FORMATTING
 // =========================================
-function formatTanggal(tglString) {
-    if (!tglString) return "-";
-    const options = { day: 'numeric', month: 'short', year: 'numeric' };
-    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal, bukan UTC midnight
-    // (mencegah tanggal meleset 1 hari di timezone UTC+7)
-    const safeDate = tglString.includes('T') ? tglString : tglString + 'T00:00:00';
-    return new Date(safeDate).toLocaleDateString('id-ID', options);
-}
 
 // =========================================
 // 2. INISIALISASI & FETCH DATA

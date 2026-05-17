@@ -347,25 +347,25 @@ function renderHistoricalInputs() {
         // Definisi gaya visual untuk baris "Hari Ini" agar menonjol
         let isToday = (i === 0);
 
-        let labelStyleProd = isToday ? 'font-weight: 700; color: #d35400; background: #ffeaa7; padding: 3px 10px; border-radius: 6px; border-left: 3px solid #e67e22; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block; margin-bottom: 8px;' : '';
-        let inputStyleProd = isToday ? 'border: 2px solid #f39c12; background: #fffcf2; font-size: 1.1rem; padding: 12px; box-shadow: inset 0 0 10px rgba(243, 156, 18, 0.1), 0 0 12px rgba(243, 156, 18, 0.15);' : '';
+        let labelClassProd = isToday ? 'hist-input-today-label-produksi' : '';
+        let inputClassProd = isToday ? 'hist-input-today-produksi' : '';
 
-        let labelStyleProfit = isToday ? 'font-weight: 700; color: #218c46; background: #e8f8f0; padding: 3px 10px; border-radius: 6px; border-left: 3px solid #2ecc71; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: inline-block; margin-bottom: 8px;' : '';
-        let inputStyleProfit = isToday ? 'border: 2px solid #27ae60; background: #f2fbf6; font-size: 1.1rem; padding: 12px; box-shadow: inset 0 0 10px rgba(46, 204, 113, 0.1), 0 0 12px rgba(46, 204, 113, 0.15);' : '';
+        let labelClassProfit = isToday ? 'hist-input-today-label-keuntungan' : '';
+        let inputClassProfit = isToday ? 'hist-input-today-keuntungan' : '';
 
-        let colSpanStyle = isToday ? 'style="grid-column: span 2;"' : '';
+        let colSpanClass = isToday ? 'grid-column-span-2' : '';
 
         prodContainer.innerHTML += `
-            <div class="form-group-mini" ${colSpanStyle}>
-                <label style="${labelStyleProd}">${labelText}</label>
-                <input type="text" inputmode="numeric" id="hist${i}" class="hist-input" placeholder="-" style="${inputStyleProd}" value="${oldProd[i] || ''}" oninput="formatNumberInput(this)">
+            <div class="form-group-mini ${colSpanClass}">
+                <label class="${labelClassProd}">${labelText}</label>
+                <input type="text" inputmode="numeric" id="hist${i}" class="hist-input ${inputClassProd}" placeholder="-" value="${oldProd[i] || ''}" oninput="window.formatNumberInput(this)">
             </div>
         `;
 
         profitContainer.innerHTML += `
-            <div class="form-group-mini" ${colSpanStyle}>
-                <label style="${labelStyleProfit}">${labelText}</label>
-                <input type="text" inputmode="numeric" id="prof${i}" class="hist-input" placeholder="-" style="${inputStyleProfit}" value="${oldProfit[i] || ''}" oninput="formatNumberInput(this)">
+            <div class="form-group-mini ${colSpanClass}">
+                <label class="${labelClassProfit}">${labelText}</label>
+                <input type="text" inputmode="numeric" id="prof${i}" class="hist-input ${inputClassProfit}" placeholder="-" value="${oldProfit[i] || ''}" oninput="window.formatNumberInput(this)">
             </div>
         `;
     }
@@ -375,24 +375,6 @@ function renderHistoricalInputs() {
  * Memformat angka yang diketik dengan pemisah ribuan (titik) khas Indonesia
  * dan koma untuk desimal.
  */
-window.formatNumberInput = function(inputElem) {
-    // Hanya ambil angka dan koma
-    let val = inputElem.value.replace(/[^,\d]/g, '');
-    let parts = val.split(',');
-    
-    // Format bagian bilangan bulat (ribuan dengan titik)
-    let sisa = parts[0].length % 3;
-    let rupiah = parts[0].substr(0, sisa);
-    let ribuan = parts[0].substr(sisa).match(/\d{3}/gi);
-    
-    if (ribuan) {
-        let separator = sisa ? '.' : '';
-        rupiah += separator + ribuan.join('.');
-    }
-    
-    // Gabungkan dengan desimal (jika ada)
-    inputElem.value = parts[1] !== undefined ? rupiah + ',' + parts[1] : rupiah;
-};
 
 /**
  * Mengatur nilai preset konsumsi pakan per ekor
@@ -596,51 +578,15 @@ window.calculatePrediction = function(event) {
     let avgProfitOffset = validOffsetDays > 0 ? (totalOffset / validOffsetDays) : 0;
 
     // --- STEP 5: MELAKUKAN KALKULASI PINTAR PREDIKSI "HARI ESOK" (H+1) ---
-    // Ambil rentang index sepotong sebanyak periode MA terakhir (contoh MA 7 = 7 angka terakhir dari ujung history list)
-    let sliceForPredict = fullHistoryKg.slice(-periodeMA);
-
-    // a. Menjumlahkan (Summation) nilai dari himpunan tsb
-    let sumKg = sliceForPredict.reduce((a, b) => a + b, 0);
-
-    // b. Rumus Inti "Moving Average" : Cari Rata-Ratanya. 
-    // Rata-rata periode ini adalah Hasil Ramalan Produksi HARI ESOK (Hari + 1).
-    let prediksiBesokKg = sumKg / periodeMA;
+    // MENGGUNAKAN PURE FUNCTION DARI ma-core.js (Clean Code & DRY)
+    let maResult = window.calculateMovingAverage(fullHistoryKg, periodeMA, 7);
+    let prediksiBesokKg = maResult.prediksiBesok;
 
     // --- STEP 5.5: KALKULASI MAE & AKURASI MODEL (BACKTESTING) ---
-    let totalErrorButir = 0;
-    let totalPercentageError = 0;
-    let validTestCount = 0;
-
-    // Kita butuh minimal (periodeMA + 1) data untuk bisa menghitung error histori
-    if (fullHistoryButir.length > periodeMA) {
-        for (let i = periodeMA; i < fullHistoryButir.length; i++) {
-            // Ambil window sebelumnya sebanyak periodeMA
-            let windowButir = fullHistoryButir.slice(i - periodeMA, i);
-            let sumWindow = windowButir.reduce((a, b) => a + b, 0);
-            let predButir = sumWindow / periodeMA;
-            let actualButir = fullHistoryButir[i];
-
-            let error = Math.abs(actualButir - predButir);
-            totalErrorButir += error;
-
-            if (actualButir > 0) {
-                totalPercentageError += (error / actualButir);
-            }
-            validTestCount++;
-        }
-    }
-
-    let maeButir = 0;
-    let akurasiModel = 0; // Persentase akurasi
-    let isAkurasiValid = false;
-
-    if (validTestCount > 0) {
-        maeButir = totalErrorButir / validTestCount;
-        let mape = (totalPercentageError / validTestCount) * 100;
-        akurasiModel = 100 - mape;
-        if (akurasiModel < 0) akurasiModel = 0;
-        isAkurasiValid = true;
-    }
+    let evalResult = window.evaluateModelAccuracy(fullHistoryButir, periodeMA);
+    let maeButir = evalResult.mae;
+    let akurasiModel = evalResult.akurasi;
+    let isAkurasiValid = evalResult.isAkurasiValid;
 
     // --- STEP 6: KALKULASI LAPORAN UANG/FINANSIAL HARI ESOK ---
     let prediksiBesokButir = Math.round(prediksiBesokKg * konversiButirPerKg); // Konver kembali ke butir secara integer tak desimal (Dibulatkan)
@@ -700,31 +646,20 @@ window.calculatePrediction = function(event) {
     }
 
     // --- STEP 8: PREDIKSI MASA DEPAN (MERAMAL 7 HARI KEDEPAN SEKALIGUS) ---
-    let proyeksi7HariKg = [];
+    // Menggunakan hasil prediksi berantai dari ma-core.js
+    let proyeksi7HariKg = maResult.proyeksiMasaDepan;
     let proyeksi7HariKeuntungan = [];
 
-    // Klone memori array (Spread copy array [...]) untuk dimanipulasi sementara dalam memory perulangan.
-    let tempHistory = [...fullHistoryKg];
-
-    for (let i = 0; i < 7; i++) { // Loop lompat simulasi dimensi hari+1 s.d hari+7
-        // Cari Rata2 MA dari rentang 7 data terbaru (Yang selalu bergeser ke kanan hari demi harinya)
-        let currentWindow = tempHistory.slice(-periodeMA);
-        let currSum = currentWindow.reduce((a, b) => a + b, 0);
-        let nextPredKg = currSum / periodeMA;
-
-        proyeksi7HariKg.push(nextPredKg); // Simpan hasil angka timbangan esok hari ke antrian plot Chart
-
+    for (let i = 0; i < 7; i++) { 
+        let nextPredKg = proyeksi7HariKg[i];
+        
         // Asumsi operasional pengeluaran akan berjalan statis/konsisten tiap harinya
         let nextPredButir = Math.round(nextPredKg * konversiButirPerKg);
         let nextPendapatan = (nextPredButir / 30) * hargaTelur;
         let nextKeuntunganTeoritis = nextPendapatan - biayaPakan;
         let nextKeuntungan = nextKeuntunganTeoritis + avgProfitOffset; // Sesuaikan dengan tren histori
+        
         proyeksi7HariKeuntungan.push(nextKeuntungan);
-
-        // Kunci Magis Algoritma MA Rantai (Chaining):
-        // Mendorong nilai prediksi H+ sekian ini, masuk ke barisan SEJARAH TERBARU dalam antrian virtual!
-        // Supaya saat prediksi "H+ besok"nya lagi, hari yang diprediksikan itu menggunakan hasil tebakan hari sebelumnya ini pula. (Moving Window)
-        tempHistory.push(nextPredKg);
     }
 
     // Ambil Data Profit manual murni. (Sebelah kiri Chart)
@@ -752,19 +687,19 @@ window.calculatePrediction = function(event) {
             let butir = Math.round(pKg * konversiButirPerKg);
             let profit = proyeksi7HariKeuntungan[i];
             let rpFormat = Math.round(profit).toLocaleString('id-ID');
-            let profitStyle = profit < 0 ? "color: #e74c3c; font-weight: 700;" : "color: #27ae60; font-weight: 700;";
+            let profitClass = profit < 0 ? "profit-negatif" : "profit-positif";
 
             let tr = document.createElement('tr');
-            tr.style.borderBottom = "1px solid #f1f2f6";
+            tr.className = "prediksi-row";
 
             tr.innerHTML = `
-                <td style="padding: 16px; color: #2c3e50; font-weight: 700; border-right: 1px solid rgba(0,0,0,0.05); text-align: center; background: rgba(255,255,255,0.4);">
-                    <span style="background: #34495e; color: white; padding: 4px 10px; border-radius: 6px;">H+${i + 1}</span>
+                <td class="prediksi-cell-hari">
+                    <span class="prediksi-badge-hari">H+${i + 1}</span>
                 </td>
-                <td style="padding: 16px; color: #2c3e50; border-right: 1px solid rgba(0,0,0,0.05);">
-                    <span style="font-weight: 700; color: #2980b9; font-size: 1.05rem;">${pKg.toFixed(2)} Kg ${butir.toLocaleString('id-ID')} Butir</span>
+                <td class="prediksi-cell-produksi">
+                    <span class="prediksi-text-produksi">${pKg.toFixed(2)} Kg ${butir.toLocaleString('id-ID')} Butir</span>
                 </td>
-                <td style="padding: 16px; ${profitStyle} font-size: 1.05rem;">
+                <td class="prediksi-cell-keuntungan ${profitClass}">
                     Rp ${rpFormat}
                 </td>
             `;
