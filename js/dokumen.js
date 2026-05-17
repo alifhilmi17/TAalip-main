@@ -640,25 +640,6 @@ window.bersihkanLog = async function() {
     });
 };
 
-window.toggleSidebarMenu = function(id) {
-    const el = document.getElementById(id);
-    if(!el) return;
-    const isHidden = el.getAttribute('aria-hidden') === 'true';
-    const parentButton = el.previousElementSibling;
-    
-    // Toggle ARIA attributes
-    el.setAttribute('aria-hidden', !isHidden);
-    parentButton.setAttribute('aria-expanded', isHidden);
-    
-    // Toggle CSS classes for visual feedback
-    if (isHidden) {
-        el.classList.add('show');
-        parentButton.classList.add('active-parent');
-    } else {
-        el.classList.remove('show');
-        parentButton.classList.remove('active-parent');
-    }
-};
 
 window.eksporGabunganCSV = async function() {
     const modules = [

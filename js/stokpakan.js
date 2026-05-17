@@ -538,15 +538,3 @@ window.downloadLaporanCSV = function(mode = 'masuk') {
 // ==========================================
 // 14. SIDEBAR TOGGLE
 // ==========================================
-window.toggleSidebarMenu = function(id) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const isHidden = el.getAttribute('aria-hidden') === 'true';
-    el.setAttribute('aria-hidden', String(!isHidden));
-    el.previousElementSibling.setAttribute('aria-expanded', String(isHidden));
-    if (isHidden) {
-        el.classList.add('open');
-    } else {
-        el.classList.remove('open');
-    }
-};

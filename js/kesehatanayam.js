@@ -21,16 +21,6 @@ import { db } from "../firebase.component/firebase-init.js";
 // ==========================================
 // 1. MANAJEMEN SIDEBAR & AUTH
 // ==========================================
-window.toggleSidebarMenu = function(submenuId) {
-    const submenu = document.getElementById(submenuId);
-    if (!submenu) return;
-    const isHidden = submenu.getAttribute("aria-hidden") === "true";
-    const parentButton = submenu.previousElementSibling;
-    submenu.setAttribute("aria-hidden", !isHidden);
-    parentButton.setAttribute("aria-expanded", isHidden);
-    if (isHidden) parentButton.classList.add("active-parent");
-    else parentButton.classList.remove("active-parent");
-};
 
 /**
  * Utilitas untuk mengamankan input teks dari serangan XSS (Cross-Site Scripting).

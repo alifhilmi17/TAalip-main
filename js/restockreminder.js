@@ -240,24 +240,4 @@ window.deleteReminder = function(id) {
     });
 };
 
-window.logoutUser = function() {
-    Swal.fire({
-        title: 'Konfirmasi Logout',
-        text: 'Apakah Anda yakin ingin keluar dari sistem?',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#ff6b6b',
-        cancelButtonText: 'Batal',
-        confirmButtonText: 'Ya, Keluar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            auth.signOut().then(() => {
-                window.location.href = "login.html";
-            });
-        }
-    });
-};
 
-window.goToProfile = function() {
-    window.location.href = "editProfileTAalip.html";
-};

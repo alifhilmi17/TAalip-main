@@ -568,9 +568,3 @@ window.downloadLaporanCSV = function() {
 };
 
 // Sidebar
-window.toggleSidebarMenu = function(id) {
-    const el = document.getElementById(id);
-    const isHidden = el.getAttribute('aria-hidden') === 'true';
-    el.setAttribute('aria-hidden', !isHidden);
-    el.previousElementSibling.setAttribute('aria-expanded', isHidden);
-};

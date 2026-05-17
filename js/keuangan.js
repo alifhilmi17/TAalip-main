@@ -297,10 +297,3 @@ function downloadLaporanCSV() {
  * Fungsi utilitas untuk sidebar (submenu) - Digunakan oleh button onclick
  * Tetap biarkan window-scoped karena diatur di HTML global sidebar
  */
-window.toggleSidebarMenu = function(id) {
-    const el = document.getElementById(id);
-    if(!el) return;
-    const isHidden = el.getAttribute('aria-hidden') === 'true';
-    el.setAttribute('aria-hidden', !isHidden);
-    el.previousElementSibling.setAttribute('aria-expanded', isHidden);
-};

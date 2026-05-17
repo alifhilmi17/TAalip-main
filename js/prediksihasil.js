@@ -33,23 +33,6 @@ import { db } from "../firebase.component/firebase-init.js";
 /**
  * Membuka/menutup sistem menu list (accordion style) di sidebar samping.
  */
-window.toggleSidebarMenu = function(submenuId) {
-    const submenu = document.getElementById(submenuId);
-    if (submenu.classList.contains('show')) {
-        submenu.classList.remove('show');
-    }
-    const isHidden = submenu.getAttribute("aria-hidden") === "true";
-    const parentButton = submenu.previousElementSibling;
-
-    submenu.setAttribute("aria-hidden", !isHidden);
-    parentButton.setAttribute("aria-expanded", isHidden);
-
-    if (isHidden) {
-        parentButton.classList.add("active-parent");
-    } else {
-        parentButton.classList.remove("active-parent");
-    }
-};
 
 /**
  * Fungsi untuk berpindah tab antara input Produksi dan Keuntungan
@@ -76,33 +59,10 @@ window.switchHistoricalTab = function(tabName, btnElement) {
 /**
  * Fungsi sekunder apabila ikon pensil di Profil diklik.
  */
-window.goToProfile = function() {
-    Swal.fire({
-        icon: 'info',
-        title: 'Profil Pengguna',
-        text: 'Fitur profil belum diimplementasikan 🐔',
-        confirmButtonColor: '#fb8500'
-    });
-};
 
 /**
  * Fungsi untuk mengeluarkan (logout) pengguna dan mereturn mereka ke layar Login.
  */
-window.logoutUser = function() {
-    Swal.fire({
-        title: "Yakin ingin logout?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, logout",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.href = "login.html";
-        }
-    });
-};
 
 // =========================================
 // 2. KONTROLER ALGORITMA MOVING AVERAGE (MA CORE)

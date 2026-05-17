@@ -408,18 +408,3 @@ window.downloadLaporanCSV = function() {
 };
 
 // Fungsi Sidebar (Mewarisi global jika perlu, tapi ini spesifik)
-window.toggleSidebarMenu = function(submenuId) {
-    const submenu = document.getElementById(submenuId);
-    if (!submenu) return;
-    const isHidden = submenu.getAttribute("aria-hidden") === "true";
-    const parentButton = submenu.previousElementSibling;
-
-    submenu.setAttribute("aria-hidden", !isHidden);
-    parentButton.setAttribute("aria-expanded", isHidden);
-
-    if (isHidden) {
-        parentButton.classList.add("active-parent");
-    } else {
-        parentButton.classList.remove("active-parent");
-    }
-};
