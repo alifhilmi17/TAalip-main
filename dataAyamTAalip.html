@@ -1,352 +1,271 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <!-- ========================= META & TITLE ========================== -->
-    <!-- Konfigurasi dasar dokumen dan penamaan judul tab spesifik halaman -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manajemen Data Ayam - LIBAS</title>
 
-    <!-- ========================= FONT & ANIMASI ========================== -->
-    <!-- Menggunakan jenis huruf eksternal Poppins dan komponen animasi pergerakan -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+<head>
+  <!-- ========================= META & TITLE ========================== -->
+  <!-- Konfigurasi dasar dokumen dan penamaan judul tab spesifik halaman -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manajemen Data Ayam - LIBAS</title>
 
-    <!-- ========================= CSS KUSTOM ========================== -->
-    <!-- Mewarisi kerangka layout dashboard serta gaya spesifik untuk tabel data ayam -->
-    <link rel="stylesheet" href="css/dashboardTAalip.css" />
-    <link rel="stylesheet" href="css/dataAyamTAalip.css" />
+  <!-- ========================= FONT & ANIMASI ========================== -->
+  <!-- Menggunakan jenis huruf eksternal Poppins dan komponen animasi pergerakan -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <!-- ========================= LIBRARY ========================== -->
-    <!-- Mengimpor notifikasi dialog peringatan yang interaktif (SweetAlert2) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  </head>
+  <!-- ========================= CSS KUSTOM ========================== -->
+  <!-- Mewarisi kerangka layout dashboard serta gaya spesifik untuk tabel data ayam -->
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="css/dataAyamTAalip.css" />
 
-  <body>
-    <!-- ========================= SIDEBAR ========================== -->
-    <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-    <aside class="sidebar" aria-label="Sidebar Navigasi">
-      <div class="sidebar-content">
-        <!-- ===== LOGO ===== -->
-        <h2 class="logo">🐔 LIBAS</h2>
+  <!-- ========================= LIBRARY ========================== -->
+  <!-- Mengimpor notifikasi dialog peringatan yang interaktif (SweetAlert2) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-        <!-- ===== NAVIGASI UTAMA ===== -->
-        <nav class="main-nav">
-          <!-- ===== MENU Dashboard ===== -->
-          <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+<body>
+  <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
 
-          <!-- ===== SUBMENU Data Ayam ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('ternakSubmenu')"
-            aria-expanded="true"
-          >
-            📊 Data Ayam <span class="arrow">▸</span>
-          </button>
-          <div class="submenu open" id="ternakSubmenu" aria-hidden="false">
-            <a href="dataAyamTAalip.html" class="active">🐓 Data Ayam</a>
-            <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
-          </div>
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-          <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('kelolaSubmenu')"
-            aria-expanded="false"
-          >
-            Rekomendasi Prediktif <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-            <a href="prediksihasil.html"> Prediksi Hasil </a>
-          </div>
-
-          <!-- ===== SUBMENU Produksi ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('produksiSubmenu')"
-            aria-expanded="false"
-          >
-            🥚 Produksi <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-            <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-          </div>
-
-          <!-- ===== SUBMENU Persediaan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('persediaanSubmenu')"
-            aria-expanded="false"
-          >
-            📦 Persediaan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-            <a href="stokpakan.html">🥬 Stok Pakan</a>
-            <a href="restockreminder.html">⏰ Restock Reminder</a>
-          </div>
-
-          <!-- ===== SUBMENU Keuangan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('keuanganSubmenu')"
-            aria-expanded="false"
-          >
-            💵 Keuangan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-            <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-          </div>
-
-          <!-- ===== SUBMENU Dokumen ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('dokumenSubmenu')"
-            aria-expanded="false"
-          >
-            📂 Dokumen <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-            <a href="dokumen.html">📄 Pusat Dokumen</a>
-          </div>
-
-          <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
-          <div
-            id="adminSwitchContainer"
-            style="display: none; margin-top: 1.5rem"
-          >
-            <a
-              href="admin.frontend/admin-core/admin.html"
-              class="admin-back-btn"
-              title="Kembali ke Panel Kontrol"
-            >
-              🛡️ Kembali ke Admin
-            </a>
-          </div>
-        </nav>
-
-        <!-- ===== PROFIL PENGGUNA ===== -->
-        <div class="sidebar-profile">
-          <img
-            src="images/profilepicture.png"
-            alt="Foto Profil Peternak"
-            class="profile-pic"
-            onclick="goToProfile()"
-          />
-          <div class="profile-name-container">
-            <p class="profile-name"></p>
-            <a
-              href="editProfileTAalip.html"
-              class="edit-profile-icon"
-              title="Edit Profil"
-              >&#x270E;</a
-            >
-          </div>
-          <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ========================= KONTEN UTAMA ========================== -->
-    <!-- Berfokus pada antarmuka statistik dan tabel daftar data ayam -->
-    <main class="main-content">
-      <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
-      <header class="mobile-header">
-        <div class="mobile-logo">🐔 LIBAS</div>
-        <button
-          class="menu-toggle"
-          onclick="
-            document.querySelector('.sidebar').classList.toggle('active')
-          "
-          aria-label="Toggle Sidebar"
-        >
-          ☰
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="true">
+          📊 Data Ayam <span class="arrow">▸</span>
         </button>
-      </header>
-
-      <!-- ===== HEADER MANAJEMEN AYAM ===== -->
-      <header class="page-header animate__animated animate__fadeInDown">
-        <div class="header-text">
-          <h2>📊 Manajemen Data Ayam</h2>
-          <p>Kelola batch ayam, populasi, dan lokasi kandang</p>
+        <div class="submenu open" id="ternakSubmenu" aria-hidden="false">
+          <a href="dataAyamTAalip.html" class="active">🐓 Data Ayam</a>
+          <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
         </div>
-        <button
-          class="btn-primary animate__animated animate__pulse animate__infinite"
-          onclick="openAyamModal()"
-        >
-          ➕ Tambah Batch Ayam
+
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
         </button>
-      </header>
-
-      <!-- ===== KARTU RINGKASAN DATA AYAM ===== -->
-      <section
-        class="quick-stats ayam-stats animate__animated animate__fadeInUp"
-      >
-        <div class="stat-card">
-          <div class="stat-icon">🐣</div>
-          <div class="stat-info">
-            <h4>Total Batch Aktif</h4>
-            <p id="totalBatch">0</p>
-          </div>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html"> Prediksi Hasil </a>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">🐓</div>
-          <div class="stat-info">
-            <h4>Total Populasi Ayam</h4>
-            <p id="totalPopulasi">0 Ekor</p>
-          </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Harian</a>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon">🏠</div>
-          <div class="stat-info">
-            <h4>Kandang Terisi</h4>
-            <p id="kandangTerisi">0 Kandang</p>
-          </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html">🥬 Stok Pakan</a>
+          <a href="restockreminder.html">⏰ Restock Reminder</a>
         </div>
-      </section>
 
-      <!-- ===== TABEL DATA AYAM ===== -->
-      <section class="data-ayam-section animate__animated animate__fadeInUp">
-        <div class="table-container shadow-card">
-          <div class="table-header">
-            <h3>📋 Daftar Populasi Ayam Terkini</h3>
-            <div style="display: flex; gap: 10px; align-items: center">
-              <input
-                type="text"
-                id="searchAyam"
-                placeholder="Cari Batch / Kandang..."
-                onkeyup="searchTable()"
-              />
-              <button
-                class="btn-export"
-                onclick="downloadLaporanCSV()"
-                title="Unduh Laporan Data Ayam"
-              >
-                📥 Ekspor CSV
-              </button>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table" id="ayamTable">
-              <thead>
-                <tr>
-                  <th>ID Batch</th>
-                  <th>Tanggal Masuk</th>
-                  <th>Jenis Telur Ayam</th>
-                  <th>Populasi Awal</th>
-                  <th>Sisa Ayam</th>
-                  <th>Kandang</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="ayamTableBody">
-                <!-- Data akan dimuat melalui JavaScript -->
-              </tbody>
-            </table>
-            <div id="emptyState" class="empty-state">
-              <span class="empty-icon">📂</span>
-              <p>Belum ada data ayam. Silakan tambah data baru!</p>
-            </div>
-          </div>
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
         </div>
-      </section>
-    </main>
 
-    <!-- ========================= MODAL TAMBAH/EDIT DATA ========================== -->
-    <!-- Formulir pop-up/overlay mengambang untuk mengolah data input ternak ayam -->
-    <div id="ayamModal" class="modal">
-      <div class="modal-content animate__animated animate__zoomIn">
-        <div class="modal-header">
-          <h3 id="modalTitle">Tambah Batch Ayam</h3>
-          <button class="close-btn" onclick="closeAyamModal()">&times;</button>
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html">📄 Pusat Dokumen</a>
         </div>
-        <form id="ayamForm" onsubmit="saveAyamData(event)">
-          <input type="hidden" id="ayamId" />
 
-          <div class="form-group">
-            <label for="tglMasuk">Tanggal Masuk</label>
-            <input type="date" id="tglMasuk" required />
-          </div>
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
+          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+            🛡️ Kembali ke Admin
+          </a>
+        </div>
+      </nav>
 
-          <div class="form-group">
-            <label for="jenisAyam">Jenis Telur Ayam</label>
-            <select id="jenisAyam" required>
-              <option value="" disabled selected>Pilih Jenis Telur Ayam</option>
-              <option value="Remban">Jenis Telur Ayam (Remban)</option>
-              <option value="Bujang">Jenis Telur Ayam (Bujang)</option>
-              <!--<option value="Ayam Kampung">Ayam Kampung</option>-->
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="jumlahAwal">Populasi Awal (Ekor)</label>
-            <input
-              type="number"
-              id="jumlahAwal"
-              placeholder="Contoh: 1000"
-              min="1"
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="sisaAyam">Sisa Ayam Saat Ini</label>
-            <input
-              type="number"
-              id="sisaAyam"
-              placeholder="Contoh: 980"
-              min="0"
-              required
-            />
-            <small class="hint-text"
-              >*Isi sama dengan populasi awal jika baru masuk</small
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="kandang">Lokasi Kandang</label>
-            <select id="kandang" required>
-              <option value="" disabled selected>Pilih Kandang</option>
-              <option value="Kandang A (Utara)">Kandang A (Utara)</option>
-              <option value="Kandang B (Timur)">Kandang B (Timur)</option>
-              <!--<option value="Kandang C (Selatan)">Kandang C (Selatan)</option>-->
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="statusAyam">Status</label>
-            <select id="statusAyam" required>
-              <option value="Aktif">Aktif</option>
-              <!-- <option value="Panen">Panen</option> -->
-              <option value="Afkir">Afkir</option>
-            </select>
-          </div>
-
-          <div class="modal-actions">
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="closeAyamModal()"
-            >
-              Batal
-            </button>
-            <button type="submit" class="btn-primary">💾 Simpan Data</button>
-          </div>
-        </form>
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name"></p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
       </div>
     </div>
+  </aside>
 
-    <!-- ========================= SCRIPT UTAMA ========================== -->
-    <!-- File logika penggerak tabel interaktif, fungsi cari, dan kalkulasi total populasi ayam -->
-    <script type="module" src="js/dataAyamTAalip.js"></script>
-    <!-- Skrip Utama Sinkronasi Autentikasi -->
-    <script type="module" src="firebase.component/auth-state.js"></script>
-      <script src="js/ui-utils.js"></script>
+  <!-- ========================= KONTEN UTAMA ========================== -->
+  <!-- Berfokus pada antarmuka statistik dan tabel daftar data ayam -->
+  <main class="main-content">
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🐔 LIBAS</div>
+      <button class="menu-toggle" onclick="
+            document.querySelector('.sidebar').classList.toggle('active')
+          " aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
+
+    <!-- ===== HEADER MANAJEMEN AYAM ===== -->
+    <header class="page-header animate__animated animate__fadeInDown">
+      <div class="header-text">
+        <h2>📊 Manajemen Data Ayam</h2>
+        <p>Kelola batch ayam, populasi, dan lokasi kandang</p>
+      </div>
+      <button class="btn-primary animate__animated animate__pulse animate__infinite" onclick="openAyamModal()">
+        ➕ Tambah Batch Ayam
+      </button>
+    </header>
+
+    <!-- ===== KARTU RINGKASAN DATA AYAM ===== -->
+    <section class="quick-stats ayam-stats animate__animated animate__fadeInUp">
+      <div class="stat-card">
+        <div class="stat-icon">🐣</div>
+        <div class="stat-info">
+          <h4>Total Batch Aktif</h4>
+          <p id="totalBatch">0</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🐓</div>
+        <div class="stat-info">
+          <h4>Total Populasi Ayam</h4>
+          <p id="totalPopulasi">0 Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏠</div>
+        <div class="stat-info">
+          <h4>Kandang Terisi</h4>
+          <p id="kandangTerisi">0 Kandang</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TABEL DATA AYAM ===== -->
+    <section class="data-ayam-section animate__animated animate__fadeInUp">
+      <div class="table-container shadow-card">
+        <div class="table-header">
+          <h3>📋 Daftar Populasi Ayam Terkini</h3>
+          <div style="display: flex; gap: 10px; align-items: center">
+            <input type="text" id="searchAyam" placeholder="Cari Batch / Kandang..." onkeyup="searchTable()" />
+            <button class="btn-export" onclick="downloadLaporanCSV()" title="Unduh Laporan Data Ayam">
+              📥 Ekspor CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table" id="ayamTable">
+            <thead>
+              <tr>
+                <th>ID Batch</th>
+                <th>Tanggal Masuk</th>
+                <th>Jenis Telur Ayam</th>
+                <th>Populasi Awal</th>
+                <th>Sisa Ayam</th>
+                <th>Kandang</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="ayamTableBody">
+              <!-- Data akan dimuat melalui JavaScript -->
+            </tbody>
+          </table>
+          <div id="emptyState" class="empty-state">
+            <span class="empty-icon">📂</span>
+            <p>Belum ada data ayam. Silakan tambah data baru!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================= MODAL TAMBAH/EDIT DATA ========================== -->
+  <!-- Formulir pop-up/overlay mengambang untuk mengolah data input ternak ayam -->
+  <div id="ayamModal" class="modal">
+    <div class="modal-content animate__animated animate__zoomIn">
+      <div class="modal-header">
+        <h3 id="modalTitle">Tambah Batch Ayam</h3>
+        <button class="close-btn" onclick="closeAyamModal()">&times;</button>
+      </div>
+      <form id="ayamForm" onsubmit="saveAyamData(event)">
+        <input type="hidden" id="ayamId" />
+
+        <div class="form-group">
+          <label for="tglMasuk">Tanggal Masuk</label>
+          <input type="date" id="tglMasuk" required />
+        </div>
+
+        <div class="form-group">
+          <label for="jenisAyam">Jenis Telur Ayam</label>
+          <select id="jenisAyam" required>
+            <option value="" disabled selected>Pilih Jenis Telur Ayam</option>
+            <option value="Remban">Jenis Telur Ayam (Remban)</option>
+            <option value="Bujang">Jenis Telur Ayam (Bujang)</option>
+            <!--<option value="Ayam Kampung">Ayam Kampung</option>-->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="jumlahAwal">Populasi Awal (Ekor)</label>
+          <input type="number" id="jumlahAwal" placeholder="Contoh: 1000" min="1" required />
+        </div>
+
+        <div class="form-group">
+          <label for="sisaAyam">Sisa Ayam Saat Ini</label>
+          <input type="number" id="sisaAyam" placeholder="Contoh: 980" min="0" required />
+          <small class="hint-text">*Isi sama dengan populasi awal jika baru masuk</small>
+        </div>
+
+        <div class="form-group">
+          <label for="kandang">Lokasi Kandang</label>
+          <select id="kandang" required>
+            <option value="" disabled selected>Pilih Kandang</option>
+            <option value="Kandang A (Utara)">Kandang A (Utara)</option>
+            <option value="Kandang B (Timur)">Kandang B (Timur)</option>
+            <!--<option value="Kandang C (Selatan)">Kandang C (Selatan)</option>-->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="statusAyam">Status</label>
+          <select id="statusAyam" required>
+            <option value="Aktif">Aktif</option>
+            <!-- <option value="Panen">Panen</option> -->
+            <option value="Afkir">Afkir</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeAyamModal()">
+            Batal
+          </button>
+          <button type="submit" class="btn-primary">💾 Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================= SCRIPT UTAMA ========================== -->
+  <!-- File logika penggerak tabel interaktif, fungsi cari, dan kalkulasi total populasi ayam -->
+  <script type="module" src="js/dataAyamTAalip.js"></script>
+  <!-- Skrip Utama Sinkronasi Autentikasi -->
+  <script type="module" src="firebase.component/auth-state.js"></script>
+  <script src="js/ui-utils.js"></script>
 </body>
+
 </html>

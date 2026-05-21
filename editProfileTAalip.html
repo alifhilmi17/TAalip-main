@@ -23,21 +23,21 @@
     <!-- ========================= WADAH KESELURUHAN EDIT PROFIL ========================== -->
     <!-- Kontainer utama dengan sentuhan animasi ringan ('FadeIn') sewaktu pertama kali terbuka -->
     <div class="edit-profile-container animate__animated animate__fadeIn">
-        
+
         <!-- ========================= HEADER KEPALA PROFIL ========================== -->
         <!-- Bagian atas kartu form yang berisi foto, tombol balik, dan warna gradasi judul -->
         <div class="profile-header">
             <!-- Elemen kosongan untuk membuat desain motif arsiran atau overlay pudar. -->
             <div class="header-overlay"></div>
-            
+
             <!-- Tombol Navigasi Cepat untuk Pindah ke Halaman Dasbor Utama -->
             <a href="dashboardTAalip.html" class="back-btn" title="Kembali ke Dashboard">&#8592; Kembali</a>
-            
+
             <!-- Elemen Lingkaran Foto Diri (Avatar) -->
             <div class="profile-avatar-container">
                 <!-- Frame bundar penampil foto wajah Profil -->
                 <img src="images/profilepicture.png" alt="Foto Profil Anda" id="profileImagePreview">
-                
+
                 <!-- Ikon Tombol Kamera tersembunyi yang merangsang input file upload saat diklik -->
                 <label for="profileImageUpload" class="camera-icon" title="Ubah Foto Profil">📷</label>
                 <!-- Area Pilih File Sesungguhnya (Sengaja digelapkan/disembunyikan dari visual 'display: none') -->
@@ -54,26 +54,26 @@
         <form id="editProfileForm" class="profile-form">
             <!-- Pengelompokan baris masukan menjadi format CSS Grid (Kiri vs Kanan) -->
             <div class="form-grid">
-                
+
                 <!-- 1. Kolom Sebelah Kiri: Area Perubahan Informasi Pribadi (Biodata) -->
                 <div class="form-section">
                     <h3>Informasi Dasar</h3>
-                    
+
                     <div class="input-group">
                         <label for="fullName">Nama Lengkap</label>
                         <input type="text" id="fullName" placeholder="Masukkan nama lengkap" required>
                     </div>
-                    
+
                     <div class="input-group">
                         <label for="username">Username Kredensial</label>
                         <input type="text" id="username" placeholder="Masukkan username" required>
                     </div>
-                    
+
                     <div class="input-group">
                         <label for="emailAddr">Alamat Email Akses</label>
                         <input type="email" id="emailAddr" placeholder="contoh@email.com" required>
                     </div>
-                    
+
                     <div class="input-group">
                         <label for="phoneNum">Nomor Telepon Seluler</label>
                         <input type="tel" id="phoneNum" placeholder="08xxxxxxxxxx" value="081234567890">
@@ -83,18 +83,20 @@
                 <!-- 2. Kolom Sebelah Kanan: Area Sensitif (Ganti Kunci Rahasia / Password) -->
                 <div class="form-section password-section">
                     <h3>Ganti Password <span class="badge-optional">(Opsional)</span></h3>
-                    <p class="section-desc">Peringatan: Kosongkan bagian ini jika Anda tidak ingin merubah sandi saat ini.</p>
-                    
+                    <p class="section-desc">Peringatan: Kosongkan bagian ini jika Anda tidak ingin merubah sandi saat
+                        ini.</p>
+
                     <div class="input-group">
                         <label for="currentPass">Kata Sandi (Password) Saat Ini</label>
                         <input type="password" id="currentPass" placeholder="Ketik kata sandi lama untuk diverifikasi">
                     </div>
-                    
+
                     <div class="input-group">
                         <label for="newPass">Kata Sandi Baru</label>
-                        <input type="password" id="newPass" placeholder="Buat kata sandi baru (Abaikan Jika Tidak Diubah)">
+                        <input type="password" id="newPass"
+                            placeholder="Buat kata sandi baru (Abaikan Jika Tidak Diubah)">
                     </div>
-                    
+
                     <div class="input-group">
                         <label for="confirmPass">Konfirmasi Kata Sandi Baru</label>
                         <input type="password" id="confirmPass" placeholder="Ketik ulang kata sandi baru sekali lagi">

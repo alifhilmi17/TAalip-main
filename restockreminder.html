@@ -18,18 +18,76 @@
     <!-- ========================= LIBRARY ========================== -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        .reminder-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .reminder-card.tinggi { border-left-color: #ef4444; background: #fef2f2; }
-        .reminder-card.selesai { border-left-color: #10b981; opacity: 0.7; }
-        .reminder-info h4 { margin: 0 0 5px 0; color: #1e293b; font-size: 1.1rem; }
-        .reminder-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
-        .reminder-meta { display: flex; gap: 15px; margin-top: 10px; font-size: 0.8rem; font-weight: 600; }
-        .badge { padding: 4px 10px; border-radius: 20px; }
-        .badge-tinggi { background: #fee2e2; color: #ef4444; }
-        .badge-sedang { background: #fef3c7; color: #d97706; }
-        .badge-selesai { background: #d1fae5; color: #059669; }
-        .badge-pending { background: #e0e7ff; color: #4338ca; }
-        .admin-only { display: none; }
+        .reminder-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #f59e0b;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reminder-card.tinggi {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .reminder-card.selesai {
+            border-left-color: #10b981;
+            opacity: 0.7;
+        }
+
+        .reminder-info h4 {
+            margin: 0 0 5px 0;
+            color: #1e293b;
+            font-size: 1.1rem;
+        }
+
+        .reminder-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        .reminder-meta {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-tinggi {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .badge-sedang {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-selesai {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-pending {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .admin-only {
+            display: none;
+        }
     </style>
 </head>
 
@@ -40,7 +98,7 @@
             <h2 class="logo">🐔 LIBAS</h2>
             <nav class="main-nav">
                 <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
-                
+
                 <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
                     📊 Data Ayam <span class="arrow">▸</span>
                 </button>
@@ -86,14 +144,16 @@
                 </div>
 
                 <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem;">
-                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn"
+                        title="Kembali ke Panel Kontrol">
                         🛡️ Kembali ke Admin
                     </a>
                 </div>
             </nav>
 
             <div class="sidebar-profile">
-                <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+                <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic"
+                    onclick="goToProfile()" />
                 <div class="profile-name-container">
                     <p class="profile-name"></p>
                     <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
@@ -174,13 +234,13 @@
     <!-- Script Utama -->
     <script type="module" src="js/restockreminder.js"></script>
     <script>
-        window.toggleSidebarMenu = function(id) {
+        window.toggleSidebarMenu = function (id) {
             const el = document.getElementById(id);
             if (!el) return;
             const isHidden = el.getAttribute('aria-hidden') === 'true';
             el.setAttribute('aria-hidden', String(!isHidden));
             el.previousElementSibling.setAttribute('aria-expanded', String(isHidden));
-            if (isHidden) { el.classList.add('open'); } 
+            if (isHidden) { el.classList.add('open'); }
             else { el.classList.remove('open'); }
         };
     </script>

@@ -78,7 +78,8 @@
 
                 <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
                 <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem;">
-                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn"
+                        title="Kembali ke Panel Kontrol">
                         🛡️ Kembali ke Admin
                     </a>
                 </div>
@@ -86,7 +87,8 @@
 
             <!-- ===== PROFIL PENGGUNA ===== -->
             <div class="sidebar-profile">
-                <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+                <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic"
+                    onclick="goToProfile()" />
                 <div class="profile-name-container">
                     <p class="profile-name"></p>
                     <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
@@ -108,7 +110,8 @@
             </div>
             <div class="header-actions">
                 <!-- Tombol Utama: Membuka modal pilihan tipe transaksi -->
-                <button class="btn-primary animate__animated animate__pulse animate__infinite" onclick="openChoiceModal()">
+                <button class="btn-primary animate__animated animate__pulse animate__infinite"
+                    onclick="openChoiceModal()">
                     ➕ Catat Transaksi Pakan
                 </button>
             </div>
@@ -121,7 +124,8 @@
                 <div class="stat-info">
                     <h4>Total Pakan Masuk</h4>
                     <p id="totalPakanMasuk">0 Kg</p>
-                    <p id="detailPakanTersedia" style="font-size: 0.8rem; color: #64748b; margin-top: 4px; font-weight: 500;"></p>
+                    <p id="detailPakanTersedia"
+                        style="font-size: 0.8rem; color: #64748b; margin-top: 4px; font-weight: 500;"></p>
                 </div>
             </div>
             <div class="stat-card">
@@ -164,14 +168,14 @@
                     <h3>📥 Riwayat Stok Pakan (Masuk)</h3>
                     <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                         <label for="filterBulanPakan" style="font-weight: 600;">Filter Bulan:</label>
-                        <input type="month" id="filterBulanPakan" onchange="filterData()"
-                            title="Filter Bulan"
+                        <input type="month" id="filterBulanPakan" onchange="filterData()" title="Filter Bulan"
                             style="padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins', sans-serif;">
                         <button class="btn-secondary" onclick="resetFilter()"
                             style="padding: 8px 12px; border-radius: 8px; border: none; background: #e2e8f0; cursor: pointer; font-family: 'Poppins', sans-serif;">
                             Semua Data
                         </button>
-                        <button class="btn-export" onclick="downloadLaporanCSV('masuk')" title="Unduh Laporan Pakan Masuk">
+                        <button class="btn-export" onclick="downloadLaporanCSV('masuk')"
+                            title="Unduh Laporan Pakan Masuk">
                             📥 Ekspor CSV
                         </button>
                     </div>
@@ -201,7 +205,8 @@
         </section>
 
         <!-- ===== TABEL RIWAYAT PEMAKAIAN (FILTERED BY KELUAR) ===== -->
-        <section class="data-pakan-section animate__animated animate__fadeInUp" id="sectionPemakaian" style="display: none;">
+        <section class="data-pakan-section animate__animated animate__fadeInUp" id="sectionPemakaian"
+            style="display: none;">
             <div class="table-container shadow-card pemakaian-card">
                 <div class="table-header">
                     <h3>📤 Riwayat Pemakaian Pakan (Keluar)</h3>
@@ -214,7 +219,8 @@
                             style="padding: 8px 12px; border-radius: 8px; border: none; background: #e2e8f0; cursor: pointer; font-family: 'Poppins', sans-serif;">
                             Semua Data
                         </button>
-                        <button class="btn-export btn-export-orange" onclick="downloadLaporanCSV('keluar')" title="Unduh Laporan Pemakaian">
+                        <button class="btn-export btn-export-orange" onclick="downloadLaporanCSV('keluar')"
+                            title="Unduh Laporan Pemakaian">
                             📥 Ekspor CSV
                         </button>
                     </div>

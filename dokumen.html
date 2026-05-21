@@ -1,683 +1,519 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <!-- ========================= META & TITLE ========================== -->
-    <!-- Pengaturan dasar halaman dan judul tab browser -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pusat Dokumen & Laporan - LIBAS</title>
-    <meta
-      name="description"
-      content="Kelola dan ekspor seluruh laporan data peternakan Anda dalam satu halaman terpadu - LIBAS."
-    />
 
-    <!-- ========================= FONT & ANIMASI ========================== -->
-    <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+<head>
+  <!-- ========================= META & TITLE ========================== -->
+  <!-- Pengaturan dasar halaman dan judul tab browser -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pusat Dokumen & Laporan - LIBAS</title>
+  <meta name="description"
+    content="Kelola dan ekspor seluruh laporan data peternakan Anda dalam satu halaman terpadu - LIBAS." />
 
-    <!-- ========================= CSS KUSTOM ========================== -->
-    <!-- Memuat gaya desain bersama dari dashboard dan gaya spesifik halaman dokumen -->
-    <link rel="stylesheet" href="css/dashboardTAalip.css" />
-    <link rel="stylesheet" href="css/dokumen.css" />
+  <!-- ========================= FONT & ANIMASI ========================== -->
+  <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <!-- ========================= LIBRARY ========================== -->
-    <!-- SweetAlert2 untuk popup notifikasi interaktif -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- ========================= CSS KUSTOM ========================== -->
+  <!-- Memuat gaya desain bersama dari dashboard dan gaya spesifik halaman dokumen -->
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="css/dokumen.css" />
 
-    <!-- ExcelJS untuk ekspor file Excel (.xlsx) dengan desain profesional -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-  </head>
+  <!-- ========================= LIBRARY ========================== -->
+  <!-- SweetAlert2 untuk popup notifikasi interaktif -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <body>
-    <!-- ========================= SIDEBAR ========================== -->
-    <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-    <aside class="sidebar" aria-label="Sidebar Navigasi">
-      <div class="sidebar-content">
-        <!-- ===== LOGO ===== -->
-        <h2 class="logo">🐔 LIBAS</h2>
+  <!-- ExcelJS untuk ekspor file Excel (.xlsx) dengan desain profesional -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+</head>
 
-        <!-- ===== NAVIGASI UTAMA ===== -->
-        <nav class="main-nav">
-          <!-- ===== MENU Dashboard ===== -->
-          <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+<body>
+  <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
 
-          <!-- ===== SUBMENU Data Ayam ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('ternakSubmenu')"
-            aria-expanded="false"
-          >
-            📊 Data Ayam <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-            <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
-            <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
-          </div>
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-          <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('kelolaSubmenu')"
-            aria-expanded="false"
-          >
-            Rekomendasi Prediktif <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-            <a href="prediksihasil.html"> Prediksi Hasil </a>
-          </div>
-
-          <!-- ===== SUBMENU Produksi ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('produksiSubmenu')"
-            aria-expanded="false"
-          >
-            🥚 Produksi <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-            <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-          </div>
-
-          <!-- ===== SUBMENU Persediaan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('persediaanSubmenu')"
-            aria-expanded="false"
-          >
-            📦 Persediaan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-            <a href="stokpakan.html">🥬 Stok Pakan</a>
-            <a href="restockreminder.html">⏰ Restock Reminder</a>
-          </div>
-
-          <!-- ===== SUBMENU Keuangan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('keuanganSubmenu')"
-            aria-expanded="false"
-          >
-            💵 Keuangan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-            <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-          </div>
-
-          <!-- ===== SUBMENU Dokumen ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('dokumenSubmenu')"
-            aria-expanded="false"
-          >
-            📂 Dokumen <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-            <a href="dokumen.html" class="active">📄 Pusat Dokumen</a>
-          </div>
-
-          <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
-          <div
-            id="adminSwitchContainer"
-            style="display: none; margin-top: 1.5rem"
-          >
-            <a
-              href="admin.frontend/admin-core/admin.html"
-              class="admin-back-btn"
-              title="Kembali ke Panel Kontrol"
-            >
-              🛡️ Kembali ke Admin
-            </a>
-          </div>
-        </nav>
-
-        <!-- ===== PROFIL PENGGUNA ===== -->
-        <div class="sidebar-profile">
-          <img
-            src="images/profilepicture.png"
-            alt="Foto Profil Peternak"
-            class="profile-pic"
-            onclick="goToProfile()"
-          />
-          <div class="profile-name-container">
-            <p class="profile-name"></p>
-            <a
-              href="editProfileTAalip.html"
-              class="edit-profile-icon"
-              title="Edit Profil"
-              >&#x270E;</a
-            >
-          </div>
-          <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ========================= KONTEN UTAMA ========================== -->
-    <main class="main-content">
-      <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
-      <header class="mobile-header">
-        <div class="mobile-logo">🐔 LIBAS</div>
-        <button
-          class="menu-toggle"
-          onclick="
-            document.querySelector('.sidebar').classList.toggle('active')
-          "
-          aria-label="Toggle Sidebar"
-        >
-          ☰
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
         </button>
-      </header>
-
-      <!-- ===== HEADER HALAMAN ===== -->
-      <header class="page-header animate__animated animate__fadeInDown">
-        <div class="header-text">
-          <h1>📂 Pusat Dokumen & Laporan</h1>
-          <p>
-            Kelola, pratinjau, dan ekspor seluruh laporan data peternakan Anda
-            dari satu tempat terpadu.
-          </p>
-        </div>
-        <div class="header-meta">
-          <span id="tanggalHariIni" class="date-badge"
-            >📅 Memuat tanggal...</span
-          >
-        </div>
-      </header>
-
-      <!-- ===== KARTU RINGKASAN DOKUMEN ===== -->
-      <section class="doc-summary-grid animate__animated animate__fadeInUp">
-        <!-- Kartu jumlah data produksi -->
-        <div class="doc-summary-card" id="card-produksi">
-          <div class="doc-summary-icon">🥚</div>
-          <div class="doc-summary-info">
-            <h4>Data Produksi</h4>
-            <p id="count-produksi">0 Entri</p>
-          </div>
-        </div>
-        <!-- Kartu jumlah data stok pakan -->
-        <div class="doc-summary-card" id="card-pakan">
-          <div class="doc-summary-icon">🌾</div>
-          <div class="doc-summary-info">
-            <h4>Data Stok Pakan</h4>
-            <p id="count-pakan">0 Entri</p>
-          </div>
-        </div>
-        <!-- Kartu jumlah data keuangan -->
-        <div class="doc-summary-card" id="card-keuangan">
-          <div class="doc-summary-icon">💰</div>
-          <div class="doc-summary-info">
-            <h4>Data Keuangan</h4>
-            <p id="count-keuangan">0 Entri</p>
-          </div>
-        </div>
-        <!-- Kartu jumlah data ayam -->
-        <div class="doc-summary-card" id="card-ayam">
-          <div class="doc-summary-icon">🐓</div>
-          <div class="doc-summary-info">
-            <h4>Data Ayam</h4>
-            <p id="count-ayam">0 Entri</p>
-          </div>
-        </div>
-        <!-- Kartu jumlah data kesehatan -->
-        <div class="doc-summary-card" id="card-kesehatan">
-          <div class="doc-summary-icon">🩺</div>
-          <div class="doc-summary-info">
-            <h4>Data Kesehatan</h4>
-            <p id="count-kesehatan">0 Entri</p>
-          </div>
-        </div>
-        <!-- Kartu jumlah data vaksinasi -->
-        <div class="doc-summary-card" id="card-vaksinasi">
-          <div class="doc-summary-icon">💉</div>
-          <div class="doc-summary-info">
-            <h4>Data Vaksinasi</h4>
-            <p id="count-vaksinasi">0 Entri</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== AREA EKSPOR LAPORAN ===== -->
-      <section class="ekspor-section animate__animated animate__fadeInUp">
-        <h2 class="section-title">📤 Ekspor Laporan</h2>
-        <p class="section-desc">
-          Unduh data dari setiap modul dalam format Excel (.xlsx) atau cetak sebagai
-          pratinjau laporan.
-        </p>
-
-        <div class="ekspor-grid">
-          <!-- ==== KARTU EKSPOR PRODUKSI ==== -->
-          <div class="ekspor-card ekspor-produksi">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">🥚</span>
-              <h3>Laporan Produksi Harian</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi riwayat input produksi telur harian termasuk jumlah butir,
-              mortalitas, dan catatan panen.
-            </p>
-            <div class="ekspor-preview" id="preview-produksi">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data produksi untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('produksi')"
-                id="btn-preview-produksi"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('produksi')"
-                id="btn-ekspor-produksi"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('produksi')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR STOK PAKAN ==== -->
-          <div class="ekspor-card ekspor-pakan">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">🌾</span>
-              <h3>Laporan Stok Pakan</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi seluruh catatan transaksi stok pakan (masuk dan keluar)
-              beserta saldo pakan saat ini.
-            </p>
-            <div class="ekspor-preview" id="preview-pakan">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data stok pakan untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('pakan')"
-                id="btn-preview-pakan"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('pakan')"
-                id="btn-ekspor-pakan"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('pakan')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR KEUANGAN ==== -->
-          <div class="ekspor-card ekspor-keuangan">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">💰</span>
-              <h3>Laporan Keuangan</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi seluruh riwayat transaksi pemasukan dan pengeluaran serta
-              kalkulasi saldo bersih peternakan.
-            </p>
-            <div class="ekspor-preview" id="preview-keuangan">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data keuangan untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('keuangan')"
-                id="btn-preview-keuangan"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('keuangan')"
-                id="btn-ekspor-keuangan"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('keuangan')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR DATA AYAM ==== -->
-          <div class="ekspor-card ekspor-ayam">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">🐓</span>
-              <h3>Laporan Data Ayam</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi data populasi ayam aktif, jenis kandang, usia ayam, serta
-              total mortalitas tercatat.
-            </p>
-            <div class="ekspor-preview" id="preview-ayam">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data ayam untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('ayam')"
-                id="btn-preview-ayam"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('ayam')"
-                id="btn-ekspor-ayam"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('ayam')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR KESEHATAN ==== -->
-          <div class="ekspor-card ekspor-kesehatan">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">🩺</span>
-              <h3>Laporan Kesehatan Ayam</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi catatan medis harian ayam, gejala penyakit, dan tindakan
-              pengobatan yang diberikan.
-            </p>
-            <div class="ekspor-preview" id="preview-kesehatan">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data kesehatan untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('kesehatan')"
-                id="btn-preview-kesehatan"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('kesehatan')"
-                id="btn-ekspor-kesehatan"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('kesehatan')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR VAKSINASI ==== -->
-          <div class="ekspor-card ekspor-vaksinasi">
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">💉</span>
-              <h3>Laporan Vaksinasi</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi riwayat pemberian vaksin, jenis vaksin, dan jadwal
-              vaksinasi yang telah dilakukan.
-            </p>
-            <div class="ekspor-preview" id="preview-vaksinasi">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data vaksinasi untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('vaksinasi')"
-                id="btn-preview-vaksinasi"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('vaksinasi')"
-                id="btn-ekspor-vaksinasi"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('vaksinasi')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-
-          <!-- ==== KARTU EKSPOR PREDIKSI ==== -->
-          <div
-            class="ekspor-card ekspor-prediksi"
-            style="border-top: 4px solid #9b59b6"
-          >
-            <div class="ekspor-card-header">
-              <span class="ekspor-card-icon">🧠</span>
-              <h3>Laporan Hasil Prediksi</h3>
-            </div>
-            <p class="ekspor-card-desc">
-              Berisi riwayat analisis prediksi Moving Average (MA): proyeksi
-              produksi, laba/rugi, dan rekomendasi tindakan prediktif.
-            </p>
-            <div class="ekspor-preview" id="preview-prediksi">
-              <!-- Diisi via JavaScript -->
-              <p class="empty-preview">
-                Belum ada data prediksi untuk ditampilkan.
-              </p>
-            </div>
-            <div class="ekspor-card-actions">
-              <button
-                class="btn-ekspor btn-preview"
-                onclick="bukaModalPreview('prediksi')"
-                id="btn-preview-prediksi"
-              >
-                👁️ Lihat Data
-              </button>
-              <button
-                class="btn-ekspor btn-csv"
-                onclick="eksporCSV('prediksi')"
-                id="btn-ekspor-prediksi"
-              >
-                📥 EXCEL
-              </button>
-              <button
-                class="btn-ekspor btn-print"
-                onclick="cetakLaporan('prediksi')"
-              >
-                🖨️ Cetak
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== AREA EKSPOR SEMUA SEKALIGUS ===== -->
-      <section class="ekspor-all-section animate__animated animate__fadeInUp">
-        <div class="ekspor-all-card">
-          <div class="ekspor-all-info">
-            <span class="ekspor-all-icon">📦</span>
-            <div>
-              <h3>Ekspor &amp; Cetak Laporan Terpadu</h3>
-              <p>
-                Gabungkan seluruh data semua modul menjadi satu file laporan
-                lengkap, atau unduh tiap CSV secara terpisah.
-              </p>
-            </div>
-          </div>
-          <div class="ekspor-all-actions">
-            <!-- Tombol 1: Unduh semua sebagai file Excel terpisah (sudah ada) -->
-            <button
-              class="btn-ekspor-all btn-all-separate"
-              onclick="eksporSemuaCSV()"
-              id="btn-ekspor-semua"
-              title="Unduh 4 file Excel, satu per modul"
-            >
-              📤 Ekspor Excel Terpisah
-            </button>
-            <!-- Tombol 2: Unduh 1 file Excel gabungan semua modul -->
-            <button
-              class="btn-ekspor-all btn-all-merged"
-              onclick="eksporGabunganCSV()"
-              id="btn-ekspor-gabungan"
-              title="Unduh 1 file Excel berisi seluruh data semua modul"
-            >
-              📋 Unduh 1 File Excel Gabungan
-            </button>
-            <!-- Tombol 3: Cetak semua laporan dalam 1 halaman cetak -->
-            <button
-              class="btn-ekspor-all btn-all-print"
-              onclick="cetakLaporanTerpadu()"
-              id="btn-cetak-terpadu"
-              title="Buka pratinjau cetak dengan semua laporan dalam satu halaman"
-            >
-              🖨️ Cetak Laporan Terpadu
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== RIWAYAT AKTIVITAS DOKUMEN ===== -->
-      <section class="log-section animate__animated animate__fadeInUp">
-        <h2 class="section-title">🕓 Riwayat Aktivitas Ekspor</h2>
-        <p class="section-desc">
-          Mencatat setiap aktivitas ekspor dokumen yang tersimpan secara permanen di database cloud.
-        </p>
-        <div class="log-container">
-          <ul id="logList">
-            <li class="log-empty">Memuat riwayat aktivitas...</li>
-          </ul>
-          <button
-            class="btn-clear-log"
-            onclick="bersihkanLog()"
-            id="btn-clear-log"
-          >
-            🗑️ Bersihkan Log
-          </button>
-        </div>
-      </section>
-    </main>
-
-    <!-- ========================= MODAL PRATINJAU DATA ========================== -->
-    <!-- Modal overlay yang tampil saat pengguna menekan tombol "👁 Lihat Data" -->
-    <div
-      id="modalPreview"
-      class="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modalPreviewTitle"
-    >
-      <div class="modal-container">
-        <!-- ===== HEADER MODAL ===== -->
-        <div class="modal-header" id="modalHeaderBar">
-          <div class="modal-header-left">
-            <span id="modalPreviewIcon" class="modal-icon">📄</span>
-            <div>
-              <h2 id="modalPreviewTitle">Pratinjau Data</h2>
-              <p id="modalPreviewSubtitle" class="modal-subtitle">
-                Menampilkan seluruh data tersimpan
-              </p>
-            </div>
-          </div>
-          <button
-            class="modal-close-btn"
-            onclick="tutupModalPreview()"
-            aria-label="Tutup Pratinjau"
-          >
-            ✕
-          </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
+          <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
         </div>
 
-        <!-- ===== TOOLBAR MODAL ===== -->
-        <div class="modal-toolbar">
-          <div class="modal-search-wrap">
-            <span class="modal-search-icon">🔍</span>
-            <input
-              type="text"
-              id="modalSearchInput"
-              class="modal-search-input"
-              placeholder="Cari data..."
-              oninput="filterTabelModal(this.value)"
-            />
-          </div>
-          <span id="modalRowCount" class="modal-row-count">0 entri</span>
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html"> Prediksi Hasil </a>
         </div>
 
-        <!-- ===== TABEL DATA ===== -->
-        <div class="modal-body">
-          <div class="modal-table-wrap">
-            <table id="modalTable" class="modal-table">
-              <thead id="modalTableHead"></thead>
-              <tbody id="modalTableBody"></tbody>
-            </table>
-            <p id="modalEmptyMsg" class="modal-empty" style="display: none">
-              Tidak ada data yang cocok.
-            </p>
-          </div>
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Harian</a>
         </div>
 
-        <!-- ===== FOOTER MODAL ===== -->
-        <div class="modal-footer">
-          <button class="modal-btn-csv" id="modalBtnCSV">📥 Ekspor Excel</button>
-          <button class="modal-btn-print" id="modalBtnPrint">🖨️ Cetak</button>
-          <button class="modal-btn-close" onclick="tutupModalPreview()">
-            ✕ Tutup
-          </button>
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html">🥬 Stok Pakan</a>
+          <a href="restockreminder.html">⏰ Restock Reminder</a>
         </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html" class="active">📄 Pusat Dokumen</a>
+        </div>
+
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
+          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+            🛡️ Kembali ke Admin
+          </a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name"></p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
       </div>
     </div>
+  </aside>
 
-    <!-- ========================= SCRIPT UTAMA ========================== -->
-    <!-- Memuat logika JavaScript khusus halaman dokumen -->
-    <script type="module" src="js/dokumen.js"></script>
+  <!-- ========================= KONTEN UTAMA ========================== -->
+  <main class="main-content">
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🐔 LIBAS</div>
+      <button class="menu-toggle" onclick="
+            document.querySelector('.sidebar').classList.toggle('active')
+          " aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
 
-    <!-- Skrip Utama Sinkronasi Autentikasi -->
-    <script type="module" src="firebase.component/auth-state.js"></script>
-      <script src="js/ui-utils.js"></script>
+    <!-- ===== HEADER HALAMAN ===== -->
+    <header class="page-header animate__animated animate__fadeInDown">
+      <div class="header-text">
+        <h1>📂 Pusat Dokumen & Laporan</h1>
+        <p>
+          Kelola, pratinjau, dan ekspor seluruh laporan data peternakan Anda
+          dari satu tempat terpadu.
+        </p>
+      </div>
+      <div class="header-meta">
+        <span id="tanggalHariIni" class="date-badge">📅 Memuat tanggal...</span>
+      </div>
+    </header>
+
+    <!-- ===== KARTU RINGKASAN DOKUMEN ===== -->
+    <section class="doc-summary-grid animate__animated animate__fadeInUp">
+      <!-- Kartu jumlah data produksi -->
+      <div class="doc-summary-card" id="card-produksi">
+        <div class="doc-summary-icon">🥚</div>
+        <div class="doc-summary-info">
+          <h4>Data Produksi</h4>
+          <p id="count-produksi">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data stok pakan -->
+      <div class="doc-summary-card" id="card-pakan">
+        <div class="doc-summary-icon">🌾</div>
+        <div class="doc-summary-info">
+          <h4>Data Stok Pakan</h4>
+          <p id="count-pakan">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data keuangan -->
+      <div class="doc-summary-card" id="card-keuangan">
+        <div class="doc-summary-icon">💰</div>
+        <div class="doc-summary-info">
+          <h4>Data Keuangan</h4>
+          <p id="count-keuangan">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data ayam -->
+      <div class="doc-summary-card" id="card-ayam">
+        <div class="doc-summary-icon">🐓</div>
+        <div class="doc-summary-info">
+          <h4>Data Ayam</h4>
+          <p id="count-ayam">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data kesehatan -->
+      <div class="doc-summary-card" id="card-kesehatan">
+        <div class="doc-summary-icon">🩺</div>
+        <div class="doc-summary-info">
+          <h4>Data Kesehatan</h4>
+          <p id="count-kesehatan">0 Entri</p>
+        </div>
+      </div>
+      <!-- Kartu jumlah data vaksinasi -->
+      <div class="doc-summary-card" id="card-vaksinasi">
+        <div class="doc-summary-icon">💉</div>
+        <div class="doc-summary-info">
+          <h4>Data Vaksinasi</h4>
+          <p id="count-vaksinasi">0 Entri</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== AREA EKSPOR LAPORAN ===== -->
+    <section class="ekspor-section animate__animated animate__fadeInUp">
+      <h2 class="section-title">📤 Ekspor Laporan</h2>
+      <p class="section-desc">
+        Unduh data dari setiap modul dalam format Excel (.xlsx) atau cetak sebagai
+        pratinjau laporan.
+      </p>
+
+      <div class="ekspor-grid">
+        <!-- ==== KARTU EKSPOR PRODUKSI ==== -->
+        <div class="ekspor-card ekspor-produksi">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🥚</span>
+            <h3>Laporan Produksi Harian</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi riwayat input produksi telur harian termasuk jumlah butir,
+            mortalitas, dan catatan panen.
+          </p>
+          <div class="ekspor-preview" id="preview-produksi">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data produksi untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('produksi')" id="btn-preview-produksi">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('produksi')" id="btn-ekspor-produksi">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('produksi')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR STOK PAKAN ==== -->
+        <div class="ekspor-card ekspor-pakan">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🌾</span>
+            <h3>Laporan Stok Pakan</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi seluruh catatan transaksi stok pakan (masuk dan keluar)
+            beserta saldo pakan saat ini.
+          </p>
+          <div class="ekspor-preview" id="preview-pakan">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data stok pakan untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('pakan')" id="btn-preview-pakan">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('pakan')" id="btn-ekspor-pakan">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('pakan')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR KEUANGAN ==== -->
+        <div class="ekspor-card ekspor-keuangan">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">💰</span>
+            <h3>Laporan Keuangan</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi seluruh riwayat transaksi pemasukan dan pengeluaran serta
+            kalkulasi saldo bersih peternakan.
+          </p>
+          <div class="ekspor-preview" id="preview-keuangan">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data keuangan untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('keuangan')" id="btn-preview-keuangan">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('keuangan')" id="btn-ekspor-keuangan">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('keuangan')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR DATA AYAM ==== -->
+        <div class="ekspor-card ekspor-ayam">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🐓</span>
+            <h3>Laporan Data Ayam</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi data populasi ayam aktif, jenis kandang, usia ayam, serta
+            total mortalitas tercatat.
+          </p>
+          <div class="ekspor-preview" id="preview-ayam">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data ayam untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('ayam')" id="btn-preview-ayam">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('ayam')" id="btn-ekspor-ayam">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('ayam')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR KESEHATAN ==== -->
+        <div class="ekspor-card ekspor-kesehatan">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🩺</span>
+            <h3>Laporan Kesehatan Ayam</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi catatan medis harian ayam, gejala penyakit, dan tindakan
+            pengobatan yang diberikan.
+          </p>
+          <div class="ekspor-preview" id="preview-kesehatan">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data kesehatan untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('kesehatan')" id="btn-preview-kesehatan">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('kesehatan')" id="btn-ekspor-kesehatan">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('kesehatan')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR VAKSINASI ==== -->
+        <div class="ekspor-card ekspor-vaksinasi">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">💉</span>
+            <h3>Laporan Vaksinasi</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi riwayat pemberian vaksin, jenis vaksin, dan jadwal
+            vaksinasi yang telah dilakukan.
+          </p>
+          <div class="ekspor-preview" id="preview-vaksinasi">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data vaksinasi untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('vaksinasi')" id="btn-preview-vaksinasi">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('vaksinasi')" id="btn-ekspor-vaksinasi">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('vaksinasi')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+
+        <!-- ==== KARTU EKSPOR PREDIKSI ==== -->
+        <div class="ekspor-card ekspor-prediksi" style="border-top: 4px solid #9b59b6">
+          <div class="ekspor-card-header">
+            <span class="ekspor-card-icon">🧠</span>
+            <h3>Laporan Hasil Prediksi</h3>
+          </div>
+          <p class="ekspor-card-desc">
+            Berisi riwayat analisis prediksi Moving Average (MA): proyeksi
+            produksi, laba/rugi, dan rekomendasi tindakan prediktif.
+          </p>
+          <div class="ekspor-preview" id="preview-prediksi">
+            <!-- Diisi via JavaScript -->
+            <p class="empty-preview">
+              Belum ada data prediksi untuk ditampilkan.
+            </p>
+          </div>
+          <div class="ekspor-card-actions">
+            <button class="btn-ekspor btn-preview" onclick="bukaModalPreview('prediksi')" id="btn-preview-prediksi">
+              👁️ Lihat Data
+            </button>
+            <button class="btn-ekspor btn-csv" onclick="eksporCSV('prediksi')" id="btn-ekspor-prediksi">
+              📥 EXCEL
+            </button>
+            <button class="btn-ekspor btn-print" onclick="cetakLaporan('prediksi')">
+              🖨️ Cetak
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== AREA EKSPOR SEMUA SEKALIGUS ===== -->
+    <section class="ekspor-all-section animate__animated animate__fadeInUp">
+      <div class="ekspor-all-card">
+        <div class="ekspor-all-info">
+          <span class="ekspor-all-icon">📦</span>
+          <div>
+            <h3>Ekspor &amp; Cetak Laporan Terpadu</h3>
+            <p>
+              Gabungkan seluruh data semua modul menjadi satu file laporan
+              lengkap, atau unduh tiap CSV secara terpisah.
+            </p>
+          </div>
+        </div>
+        <div class="ekspor-all-actions">
+          <!-- Tombol 1: Unduh semua sebagai file Excel terpisah (sudah ada) -->
+          <button class="btn-ekspor-all btn-all-separate" onclick="eksporSemuaCSV()" id="btn-ekspor-semua"
+            title="Unduh 4 file Excel, satu per modul">
+            📤 Ekspor Excel Terpisah
+          </button>
+          <!-- Tombol 2: Unduh 1 file Excel gabungan semua modul -->
+          <button class="btn-ekspor-all btn-all-merged" onclick="eksporGabunganCSV()" id="btn-ekspor-gabungan"
+            title="Unduh 1 file Excel berisi seluruh data semua modul">
+            📋 Unduh 1 File Excel Gabungan
+          </button>
+          <!-- Tombol 3: Cetak semua laporan dalam 1 halaman cetak -->
+          <button class="btn-ekspor-all btn-all-print" onclick="cetakLaporanTerpadu()" id="btn-cetak-terpadu"
+            title="Buka pratinjau cetak dengan semua laporan dalam satu halaman">
+            🖨️ Cetak Laporan Terpadu
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RIWAYAT AKTIVITAS DOKUMEN ===== -->
+    <section class="log-section animate__animated animate__fadeInUp">
+      <h2 class="section-title">🕓 Riwayat Aktivitas Ekspor</h2>
+      <p class="section-desc">
+        Mencatat setiap aktivitas ekspor dokumen yang tersimpan secara permanen di database cloud.
+      </p>
+      <div class="log-container">
+        <ul id="logList">
+          <li class="log-empty">Memuat riwayat aktivitas...</li>
+        </ul>
+        <button class="btn-clear-log" onclick="bersihkanLog()" id="btn-clear-log">
+          🗑️ Bersihkan Log
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================= MODAL PRATINJAU DATA ========================== -->
+  <!-- Modal overlay yang tampil saat pengguna menekan tombol "👁 Lihat Data" -->
+  <div id="modalPreview" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalPreviewTitle">
+    <div class="modal-container">
+      <!-- ===== HEADER MODAL ===== -->
+      <div class="modal-header" id="modalHeaderBar">
+        <div class="modal-header-left">
+          <span id="modalPreviewIcon" class="modal-icon">📄</span>
+          <div>
+            <h2 id="modalPreviewTitle">Pratinjau Data</h2>
+            <p id="modalPreviewSubtitle" class="modal-subtitle">
+              Menampilkan seluruh data tersimpan
+            </p>
+          </div>
+        </div>
+        <button class="modal-close-btn" onclick="tutupModalPreview()" aria-label="Tutup Pratinjau">
+          ✕
+        </button>
+      </div>
+
+      <!-- ===== TOOLBAR MODAL ===== -->
+      <div class="modal-toolbar">
+        <div class="modal-search-wrap">
+          <span class="modal-search-icon">🔍</span>
+          <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="Cari data..."
+            oninput="filterTabelModal(this.value)" />
+        </div>
+        <span id="modalRowCount" class="modal-row-count">0 entri</span>
+      </div>
+
+      <!-- ===== TABEL DATA ===== -->
+      <div class="modal-body">
+        <div class="modal-table-wrap">
+          <table id="modalTable" class="modal-table">
+            <thead id="modalTableHead"></thead>
+            <tbody id="modalTableBody"></tbody>
+          </table>
+          <p id="modalEmptyMsg" class="modal-empty" style="display: none">
+            Tidak ada data yang cocok.
+          </p>
+        </div>
+      </div>
+
+      <!-- ===== FOOTER MODAL ===== -->
+      <div class="modal-footer">
+        <button class="modal-btn-csv" id="modalBtnCSV">📥 Ekspor Excel</button>
+        <button class="modal-btn-print" id="modalBtnPrint">🖨️ Cetak</button>
+        <button class="modal-btn-close" onclick="tutupModalPreview()">
+          ✕ Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= SCRIPT UTAMA ========================== -->
+  <!-- Memuat logika JavaScript khusus halaman dokumen -->
+  <script type="module" src="js/dokumen.js"></script>
+
+  <!-- Skrip Utama Sinkronasi Autentikasi -->
+  <script type="module" src="firebase.component/auth-state.js"></script>
+  <script src="js/ui-utils.js"></script>
 </body>
+
 </html>

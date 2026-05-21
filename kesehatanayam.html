@@ -1,547 +1,427 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <!-- ========================== -->
-    <!-- BAGIAN KEPALA (HEAD)       -->
-    <!-- Menyimpan metadata, serta mengaitkan font dan stylesheet -->
-    <!-- ========================== -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kesehatan Ayam & Vaksinasi - LIBAS</title>
 
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+<head>
+  <!-- ========================== -->
+  <!-- BAGIAN KEPALA (HEAD)       -->
+  <!-- Menyimpan metadata, serta mengaitkan font dan stylesheet -->
+  <!-- ========================== -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kesehatan Ayam & Vaksinasi - LIBAS</title>
 
-    <link rel="stylesheet" href="css/dashboardTAalip.css" />
-    <link rel="stylesheet" href="css/kesehatanayam.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  </head>
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="css/kesehatanayam.css" />
 
-  <body>
-    <!-- ========================= SIDEBAR ========================== -->
-    <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-    <aside class="sidebar" aria-label="Sidebar Navigasi">
-      <div class="sidebar-content">
-        <!-- ===== LOGO ===== -->
-        <h2 class="logo">🐔 LIBAS</h2>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-        <!-- ===== NAVIGASI UTAMA ===== -->
-        <nav class="main-nav">
-          <!-- ===== MENU Dashboard ===== -->
-          <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+<body>
+  <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
 
-          <!-- ===== SUBMENU Data Ayam ===== -->
-          <button
-            class="has-submenu active-parent"
-            onclick="toggleSidebarMenu('ternakSubmenu')"
-            aria-expanded="true"
-          >
-            📊 Data Ayam <span class="arrow">▸</span>
-          </button>
-          <div class="submenu open" id="ternakSubmenu" aria-hidden="false">
-            <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
-            <a href="kesehatanayam.html" class="active">Data Kesehatan Ayam</a>
-          </div>
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-          <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('kelolaSubmenu')"
-            aria-expanded="false"
-          >
-            Rekomendasi Prediktif <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-            <a href="prediksihasil.html"> Prediksi Hasil </a>
-          </div>
-
-          <!-- ===== SUBMENU Produksi ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('produksiSubmenu')"
-            aria-expanded="false"
-          >
-            🥚 Produksi <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-            <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-          </div>
-
-          <!-- ===== SUBMENU Persediaan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('persediaanSubmenu')"
-            aria-expanded="false"
-          >
-            📦 Persediaan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-            <a href="stokpakan.html">🥬 Stok Pakan</a>
-            <a href="restockreminder.html">⏰ Restock Reminder</a>
-          </div>
-
-          <!-- ===== SUBMENU Keuangan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('keuanganSubmenu')"
-            aria-expanded="false"
-          >
-            💵 Keuangan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-            <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-          </div>
-
-          <!-- ===== SUBMENU Dokumen ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('dokumenSubmenu')"
-            aria-expanded="false"
-          >
-            📂 Dokumen <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-            <a href="dokumen.html">📄 Pusat Dokumen</a>
-          </div>
-
-          <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
-          <div
-            id="adminSwitchContainer"
-            style="display: none; margin-top: 1.5rem"
-          >
-            <a
-              href="admin.frontend/admin-core/admin.html"
-              class="admin-back-btn"
-              title="Kembali ke Panel Kontrol"
-            >
-              🛡️ Kembali ke Admin
-            </a>
-          </div>
-        </nav>
-
-        <!-- ===== PROFIL PENGGUNA ===== -->
-        <div class="sidebar-profile">
-          <img
-            src="images/profilepicture.png"
-            alt="Foto Profil Peternak"
-            class="profile-pic"
-            onclick="goToProfile()"
-          />
-          <div class="profile-name-container">
-            <p class="profile-name"></p>
-            <a
-              href="editProfileTAalip.html"
-              class="edit-profile-icon"
-              title="Edit Profil"
-              >&#x270E;</a
-            >
-          </div>
-          <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu active-parent" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="true">
+          📊 Data Ayam <span class="arrow">▸</span>
+        </button>
+        <div class="submenu open" id="ternakSubmenu" aria-hidden="false">
+          <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
+          <a href="kesehatanayam.html" class="active">Data Kesehatan Ayam</a>
         </div>
-      </div>
-    </aside>
 
-    <!-- ========================= KONTEN UTAMA ========================== -->
-    <!-- Bagian ini membungkus seluruh elemen khusus pada halaman kesehatan -->
-    <main class="main-content">
-      <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
-      <header class="mobile-header">
-        <div class="mobile-logo">🐔 LIBAS</div>
-        <button
-          class="menu-toggle"
-          onclick="
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html"> Prediksi Hasil </a>
+        </div>
+
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html">🥬 Stok Pakan</a>
+          <a href="restockreminder.html">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html">📄 Pusat Dokumen</a>
+        </div>
+
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
+          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+            🛡️ Kembali ke Admin
+          </a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name"></p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================= KONTEN UTAMA ========================== -->
+  <!-- Bagian ini membungkus seluruh elemen khusus pada halaman kesehatan -->
+  <main class="main-content">
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🐔 LIBAS</div>
+      <button class="menu-toggle" onclick="
             document.querySelector('.sidebar').classList.toggle('active')
-          "
-          aria-label="Toggle Sidebar"
-        >
-          ☰
-        </button>
-      </header>
+          " aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
 
-      <!-- Header (Kop Halaman) -->
-      <!-- Menampilkan judul halaman, deskripsi singkat, dan tombol-tombol pintasan aksi -->
-      <header class="page-header animate__animated animate__fadeInDown">
-        <div class="header-text">
-          <h2>🏥 Kesehatan & Vaksinasi</h2>
-          <p>
-            Kelola riwayat medis, pantau kesehatan, dan jadwalkan vaksinasi
-            secara terstruktur.
-          </p>
-        </div>
-
-        <!-- Area tombol tindakan pemicu interaksi form/modal -->
-        <div class="header-actions">
-          <button
-            class="btn-warning animate__animated animate__pulse animate__infinite pulse-soft"
-            onclick="openKesehatanModal()"
-          >
-            🩺 Catat Kesehatan
-          </button>
-          <button
-            class="btn-success animate__animated animate__pulse animate__infinite pulse-soft"
-            onclick="openVaksinModal()"
-          >
-            💉 Jadwal Vaksin
-          </button>
-        </div>
-      </header>
-
-      <!-- Ringkasan Statistik (Quick Stats) -->
-      <!-- Panel informasi cerdas yang otomatis mengkalkulasi angkat penting seperti hewan sakit, mati, & jadwal vaksin -->
-      <section class="quick-stats animate__animated animate__fadeInUp">
-        <div class="stat-card">
-          <div class="stat-icon warning-icon">🤒</div>
-          <div class="stat-info">
-            <h4>Ayam Sakit (Dirawat)</h4>
-            <p id="statAyamSakit">0 Ekor</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon danger-icon">💀</div>
-          <div class="stat-info">
-            <h4>Total Kematian</h4>
-            <p id="statAyamMati">0 Ekor</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon success-icon">💉</div>
-          <div class="stat-info">
-            <h4>Vaksin Terjadwal</h4>
-            <p id="statVaksinMendatang">0 Jadwal</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Navigasi Tab (Peralihan Layar) -->
-      <!-- Tombol untuk memisahkan fokus layar: antara data rekam medis penyakit atau data riwayat vaksin -->
-      <div class="tabs-container animate__animated animate__fadeInUp">
-        <button class="tab-btn active" onclick="switchTab('kesehatan')">
-          Riwayat Kesehatan (Medis)
-        </button>
-        <button class="tab-btn" onclick="switchTab('vaksin')">
-          Jadwal & Catatan Vaksinasi
-        </button>
+    <!-- Header (Kop Halaman) -->
+    <!-- Menampilkan judul halaman, deskripsi singkat, dan tombol-tombol pintasan aksi -->
+    <header class="page-header animate__animated animate__fadeInDown">
+      <div class="header-text">
+        <h2>🏥 Kesehatan & Vaksinasi</h2>
+        <p>
+          Kelola riwayat medis, pantau kesehatan, dan jadwalkan vaksinasi
+          secara terstruktur.
+        </p>
       </div>
 
-      <!-- TAB 1: KESEHATAN (MEDIS) -->
-      <!-- Memuat tabel berisi rekap kasus penyakit ayam lengkap dengan gejala dan penanganannya -->
-      <section
-        id="tabKesehatan"
-        class="tab-content active animate__animated animate__fadeIn"
-      >
-        <div class="table-container shadow-card">
-          <div class="table-header">
-            <h3>📋 Histori Perawatan & Kesehatan Ayam</h3>
-            <div class="table-actions">
-              <label for="filterKesehatanTanggal" class="filter-label"
-                >Tanggal:</label
-              >
-              <input
-                type="date"
-                id="filterKesehatanTanggal"
-                class="filter-input"
-                onchange="renderKesehatanTable()"
-                title="Filter Tanggal"
-              />
-              <button
-                class="btn-export"
-                onclick="exportKesehatanCSV()"
-                title="Ekspor Data Kesehatan"
-              >
-                📥 Eksport CSV
-              </button>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Batch / Kandang</th>
-                  <th>Gejala</th>
-                  <th>Jumlah Sakit / Mati</th>
-                  <th>Penanganan</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="kesehatanTableBody">
-                <!-- Data JS -->
-              </tbody>
-            </table>
-            <div id="kesehatanEmpty" class="empty-state">
-              <span class="empty-icon">🩺</span>
-              <p>Belum ada catatan kesehatan. Silakan tambah data!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- TAB 2: VAKSINASI -->
-      <!-- Memuat tabel riwayat program vaksin, menunjukkan status terjadwal, selesai, metode, serta jenisnya -->
-      <section
-        id="tabVaksin"
-        class="tab-content animate__animated animate__fadeIn"
-        style="display: none"
-      >
-        <div class="table-container shadow-card">
-          <div class="table-header">
-            <h3>📅 Jadwal & Riwayat Vaksinasi</h3>
-            <div class="table-actions">
-              <label for="filterVaksinStatus" class="filter-label"
-                >Status:</label
-              >
-              <select
-                id="filterVaksinStatus"
-                class="filter-input"
-                onchange="renderVaksinTable()"
-              >
-                <option value="all">Semua Status</option>
-                <option value="Terjadwal">Terjadwal</option>
-                <option value="Selesai">Selesai</option>
-              </select>
-              <button
-                class="btn-export"
-                onclick="exportVaksinCSV()"
-                title="Ekspor Data Vaksin"
-              >
-                📥 Eksport CSV
-              </button>
-            </div>
-          </div>
-          <div class="table-responsive">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Jadwal Vaksin</th>
-                  <th>Batch / Kandang</th>
-                  <th>Jenis Vaksin</th>
-                  <th>Metode</th>
-                  <th>Catatan</th>
-                  <th>Status</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="vaksinTableBody">
-                <!-- Data JS -->
-              </tbody>
-            </table>
-            <div id="vaksinEmpty" class="empty-state">
-              <span class="empty-icon">💉</span>
-              <p>Belum ada jadwal vaksinasi. Silakan buat jadwal!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- ========================= MODAL / DIALOG TAMBAH DATA KESEHATAN ========================== -->
-    <!-- Elemen form melayang (overlay popup) yang tersembunyi hingga tombol "Catat Kesehatan" dipanggil -->
-    <div id="kesehatanModal" class="modal">
-      <div class="modal-content animate__animated animate__zoomIn">
-        <div class="modal-header">
-          <h3 id="modalKesehatanTitle">Catat Kesehatan Ayam</h3>
-          <button class="close-btn" onclick="closeKesehatanModal()">
-            &times;
-          </button>
-        </div>
-
-        <!-- Form penginputan detail medis penyakit ayam -->
-        <form id="kesehatanForm" onsubmit="saveKesehatan(event)">
-          <input type="hidden" id="kesehatanId" />
-
-          <div class="form-group">
-            <label for="kesTanggal">Tanggal Pencatatan</label>
-            <input type="date" id="kesTanggal" required />
-          </div>
-
-          <div class="form-group">
-            <label for="kesBatch">Batch Ayam</label>
-            <select id="kesBatch" required onchange="onBatchSakitChange()">
-              <option value="" disabled selected>Pilih Batch...</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="kesKandang">Kandang</label>
-            <input
-              type="text"
-              id="kesKandang"
-              readonly
-              class="readonly-input"
-            />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group half">
-              <label for="kesJmlSakit">Jml Ayam Sakit</label>
-              <!-- Mengumpulkan angka mutlak yang sakit -->
-              <input
-                type="number"
-                id="kesJmlSakit"
-                min="0"
-                value="0"
-                required
-              />
-            </div>
-            <div class="form-group half">
-              <label for="kesJmlMati"
-                >Jml Ayam Mati <small>(Akan mengurangi stok pop.)</small></label
-              >
-              <!-- Mengumpulkan pencatatan yang gugur/mati dalam satu peristiwa -->
-              <input type="number" id="kesJmlMati" min="0" value="0" required />
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="kesGejala">Gejala / Penyakit</label>
-            <input
-              type="text"
-              id="kesGejala"
-              placeholder="Contoh: Mencret, Ngorok, dll."
-              required
-            />
-          </div>
-
-          <div class="form-group">
-            <label for="kesPenanganan">Tindakan Penanganan</label>
-            <textarea
-              id="kesPenanganan"
-              rows="3"
-              placeholder="Contoh: Pemberian vitamin, karantina..."
-              required
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="kesStatus">Status saat ini</label>
-            <select id="kesStatus" required>
-              <option value="Dalam Perawatan">Dalam Perawatan (Sakit)</option>
-              <option value="Sembuh">Sudah Sembuh</option>
-              <option value="Mati Semua">Mati Semua (Terkait kasus ini)</option>
-            </select>
-          </div>
-
-          <div class="modal-actions">
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="closeKesehatanModal()"
-            >
-              Batal
-            </button>
-            <button type="submit" class="btn-primary">💾 Simpan Kasus</button>
-          </div>
-        </form>
+      <!-- Area tombol tindakan pemicu interaksi form/modal -->
+      <div class="header-actions">
+        <button class="btn-warning animate__animated animate__pulse animate__infinite pulse-soft"
+          onclick="openKesehatanModal()">
+          🩺 Catat Kesehatan
+        </button>
+        <button class="btn-success animate__animated animate__pulse animate__infinite pulse-soft"
+          onclick="openVaksinModal()">
+          💉 Jadwal Vaksin
+        </button>
       </div>
+    </header>
+
+    <!-- Ringkasan Statistik (Quick Stats) -->
+    <!-- Panel informasi cerdas yang otomatis mengkalkulasi angkat penting seperti hewan sakit, mati, & jadwal vaksin -->
+    <section class="quick-stats animate__animated animate__fadeInUp">
+      <div class="stat-card">
+        <div class="stat-icon warning-icon">🤒</div>
+        <div class="stat-info">
+          <h4>Ayam Sakit (Dirawat)</h4>
+          <p id="statAyamSakit">0 Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon danger-icon">💀</div>
+        <div class="stat-info">
+          <h4>Total Kematian</h4>
+          <p id="statAyamMati">0 Ekor</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon success-icon">💉</div>
+        <div class="stat-info">
+          <h4>Vaksin Terjadwal</h4>
+          <p id="statVaksinMendatang">0 Jadwal</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigasi Tab (Peralihan Layar) -->
+    <!-- Tombol untuk memisahkan fokus layar: antara data rekam medis penyakit atau data riwayat vaksin -->
+    <div class="tabs-container animate__animated animate__fadeInUp">
+      <button class="tab-btn active" onclick="switchTab('kesehatan')">
+        Riwayat Kesehatan (Medis)
+      </button>
+      <button class="tab-btn" onclick="switchTab('vaksin')">
+        Jadwal & Catatan Vaksinasi
+      </button>
     </div>
 
-    <!-- ========================= MODAL / DIALOG PENJADWALAN VAKSIN ========================== -->
-    <!-- Elemen form melayang untuk mengatur kegiatan atau merekam vaksinasi yang sudah terlaksana -->
-    <div id="vaksinModal" class="modal">
-      <div class="modal-content animate__animated animate__zoomIn">
-        <div class="modal-header">
-          <h3 id="modalVaksinTitle">Jadwal Vaksinasi Baru</h3>
-          <button class="close-btn" onclick="closeVaksinModal()">
-            &times;
-          </button>
+    <!-- TAB 1: KESEHATAN (MEDIS) -->
+    <!-- Memuat tabel berisi rekap kasus penyakit ayam lengkap dengan gejala dan penanganannya -->
+    <section id="tabKesehatan" class="tab-content active animate__animated animate__fadeIn">
+      <div class="table-container shadow-card">
+        <div class="table-header">
+          <h3>📋 Histori Perawatan & Kesehatan Ayam</h3>
+          <div class="table-actions">
+            <label for="filterKesehatanTanggal" class="filter-label">Tanggal:</label>
+            <input type="date" id="filterKesehatanTanggal" class="filter-input" onchange="renderKesehatanTable()"
+              title="Filter Tanggal" />
+            <button class="btn-export" onclick="exportKesehatanCSV()" title="Ekspor Data Kesehatan">
+              📥 Eksport CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Batch / Kandang</th>
+                <th>Gejala</th>
+                <th>Jumlah Sakit / Mati</th>
+                <th>Penanganan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="kesehatanTableBody">
+              <!-- Data JS -->
+            </tbody>
+          </table>
+          <div id="kesehatanEmpty" class="empty-state">
+            <span class="empty-icon">🩺</span>
+            <p>Belum ada catatan kesehatan. Silakan tambah data!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: VAKSINASI -->
+    <!-- Memuat tabel riwayat program vaksin, menunjukkan status terjadwal, selesai, metode, serta jenisnya -->
+    <section id="tabVaksin" class="tab-content animate__animated animate__fadeIn" style="display: none">
+      <div class="table-container shadow-card">
+        <div class="table-header">
+          <h3>📅 Jadwal & Riwayat Vaksinasi</h3>
+          <div class="table-actions">
+            <label for="filterVaksinStatus" class="filter-label">Status:</label>
+            <select id="filterVaksinStatus" class="filter-input" onchange="renderVaksinTable()">
+              <option value="all">Semua Status</option>
+              <option value="Terjadwal">Terjadwal</option>
+              <option value="Selesai">Selesai</option>
+            </select>
+            <button class="btn-export" onclick="exportVaksinCSV()" title="Ekspor Data Vaksin">
+              📥 Eksport CSV
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Jadwal Vaksin</th>
+                <th>Batch / Kandang</th>
+                <th>Jenis Vaksin</th>
+                <th>Metode</th>
+                <th>Catatan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="vaksinTableBody">
+              <!-- Data JS -->
+            </tbody>
+          </table>
+          <div id="vaksinEmpty" class="empty-state">
+            <span class="empty-icon">💉</span>
+            <p>Belum ada jadwal vaksinasi. Silakan buat jadwal!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ========================= MODAL / DIALOG TAMBAH DATA KESEHATAN ========================== -->
+  <!-- Elemen form melayang (overlay popup) yang tersembunyi hingga tombol "Catat Kesehatan" dipanggil -->
+  <div id="kesehatanModal" class="modal">
+    <div class="modal-content animate__animated animate__zoomIn">
+      <div class="modal-header">
+        <h3 id="modalKesehatanTitle">Catat Kesehatan Ayam</h3>
+        <button class="close-btn" onclick="closeKesehatanModal()">
+          &times;
+        </button>
+      </div>
+
+      <!-- Form penginputan detail medis penyakit ayam -->
+      <form id="kesehatanForm" onsubmit="saveKesehatan(event)">
+        <input type="hidden" id="kesehatanId" />
+
+        <div class="form-group">
+          <label for="kesTanggal">Tanggal Pencatatan</label>
+          <input type="date" id="kesTanggal" required />
         </div>
 
-        <!-- Form penginputan spesifikasi vaksinasi -->
-        <form id="vaksinForm" onsubmit="saveVaksin(event)">
-          <input type="hidden" id="vaksinId" />
+        <div class="form-group">
+          <label for="kesBatch">Batch Ayam</label>
+          <select id="kesBatch" required onchange="onBatchSakitChange()">
+            <option value="" disabled selected>Pilih Batch...</option>
+          </select>
+        </div>
 
-          <div class="form-group">
-            <label for="vakTanggal">Tanggal Jadwal Vaksin</label>
-            <input type="date" id="vakTanggal" required />
-          </div>
+        <div class="form-group">
+          <label for="kesKandang">Kandang</label>
+          <input type="text" id="kesKandang" readonly class="readonly-input" />
+        </div>
 
-          <div class="form-group">
-            <label for="vakBatch">Batch Ayam</label>
-            <select id="vakBatch" required onchange="onBatchVaksinChange()">
-              <option value="" disabled selected>Pilih Batch Target...</option>
-            </select>
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="kesJmlSakit">Jml Ayam Sakit</label>
+            <!-- Mengumpulkan angka mutlak yang sakit -->
+            <input type="number" id="kesJmlSakit" min="0" value="0" required />
           </div>
+          <div class="form-group half">
+            <label for="kesJmlMati">Jml Ayam Mati <small>(Akan mengurangi stok pop.)</small></label>
+            <!-- Mengumpulkan pencatatan yang gugur/mati dalam satu peristiwa -->
+            <input type="number" id="kesJmlMati" min="0" value="0" required />
+          </div>
+        </div>
 
-          <div class="form-group">
-            <label for="vakKandang">Kandang</label>
-            <input
-              type="text"
-              id="vakKandang"
-              readonly
-              class="readonly-input"
-            />
-          </div>
+        <div class="form-group">
+          <label for="kesGejala">Gejala / Penyakit</label>
+          <input type="text" id="kesGejala" placeholder="Contoh: Mencret, Ngorok, dll." required />
+        </div>
 
-          <div class="form-group">
-            <label for="vakJenis">Jenis Vaksin</label>
-            <select id="vakJenis" required>
-              <option value="" disabled selected>Pilih Vaksin...</option>
-              <option value="ND (Newcastle Disease)">
-                ND (Newcastle Disease)
-              </option>
-              <option value="IB (Infectious Bronchitis)">
-                IB (Infectious Bronchitis)
-              </option>
-              <option value="AI (Avian Influenza)">AI (Avian Influenza)</option>
-              <option value="Gumboro">Gumboro</option>
-              <option value="Lainnya">Lainnya...</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="kesPenanganan">Tindakan Penanganan</label>
+          <textarea id="kesPenanganan" rows="3" placeholder="Contoh: Pemberian vitamin, karantina..."
+            required></textarea>
+        </div>
 
-          <div class="form-group">
-            <label for="vakMetode">Metode Pemberian</label>
-            <select id="vakMetode" required>
-              <option value="Air Minum">Air Minum</option>
-              <option value="Tetes Mata/Hidung">Tetes Mata/Hidung</option>
-              <option value="Suntikan">Suntikan</option>
-              <option value="Spray">Spray (Semprot)</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="kesStatus">Status saat ini</label>
+          <select id="kesStatus" required>
+            <option value="Dalam Perawatan">Dalam Perawatan (Sakit)</option>
+            <option value="Sembuh">Sudah Sembuh</option>
+            <option value="Mati Semua">Mati Semua (Terkait kasus ini)</option>
+          </select>
+        </div>
 
-          <div class="form-group">
-            <label for="vakCatatan">Catatan / Dosis</label>
-            <textarea
-              id="vakCatatan"
-              rows="2"
-              placeholder="Contoh: Dosis 1 botol per 1000 ekor"
-            ></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="vakStatus">Status Kegiatan</label>
-            <select id="vakStatus" required>
-              <option value="Terjadwal">Terjadwal (Belum dilakukan)</option>
-              <option value="Selesai">Selesai (Sudah divaksin)</option>
-            </select>
-          </div>
-
-          <div class="modal-actions">
-            <button
-              type="button"
-              class="btn-secondary"
-              onclick="closeVaksinModal()"
-            >
-              Batal
-            </button>
-            <button type="submit" class="btn-primary">💾 Simpan Jadwal</button>
-          </div>
-        </form>
-      </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeKesehatanModal()">
+            Batal
+          </button>
+          <button type="submit" class="btn-primary">💾 Simpan Kasus</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- ========================= Skrip Eksekusi (JavaScript) ========================== -->
-    <!-- Menjalankan fungsi di atas struktur rangka HTML ini -->
-    <script type="module" src="js/kesehatanayam.js"></script>
-    <!-- Skrip Utama Sinkronasi Autentikasi -->
-    <script type="module" src="firebase.component/auth-state.js"></script>
-      <script src="js/ui-utils.js"></script>
+  <!-- ========================= MODAL / DIALOG PENJADWALAN VAKSIN ========================== -->
+  <!-- Elemen form melayang untuk mengatur kegiatan atau merekam vaksinasi yang sudah terlaksana -->
+  <div id="vaksinModal" class="modal">
+    <div class="modal-content animate__animated animate__zoomIn">
+      <div class="modal-header">
+        <h3 id="modalVaksinTitle">Jadwal Vaksinasi Baru</h3>
+        <button class="close-btn" onclick="closeVaksinModal()">
+          &times;
+        </button>
+      </div>
+
+      <!-- Form penginputan spesifikasi vaksinasi -->
+      <form id="vaksinForm" onsubmit="saveVaksin(event)">
+        <input type="hidden" id="vaksinId" />
+
+        <div class="form-group">
+          <label for="vakTanggal">Tanggal Jadwal Vaksin</label>
+          <input type="date" id="vakTanggal" required />
+        </div>
+
+        <div class="form-group">
+          <label for="vakBatch">Batch Ayam</label>
+          <select id="vakBatch" required onchange="onBatchVaksinChange()">
+            <option value="" disabled selected>Pilih Batch Target...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="vakKandang">Kandang</label>
+          <input type="text" id="vakKandang" readonly class="readonly-input" />
+        </div>
+
+        <div class="form-group">
+          <label for="vakJenis">Jenis Vaksin</label>
+          <select id="vakJenis" required>
+            <option value="" disabled selected>Pilih Vaksin...</option>
+            <option value="ND (Newcastle Disease)">
+              ND (Newcastle Disease)
+            </option>
+            <option value="IB (Infectious Bronchitis)">
+              IB (Infectious Bronchitis)
+            </option>
+            <option value="AI (Avian Influenza)">AI (Avian Influenza)</option>
+            <option value="Gumboro">Gumboro</option>
+            <option value="Lainnya">Lainnya...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="vakMetode">Metode Pemberian</label>
+          <select id="vakMetode" required>
+            <option value="Air Minum">Air Minum</option>
+            <option value="Tetes Mata/Hidung">Tetes Mata/Hidung</option>
+            <option value="Suntikan">Suntikan</option>
+            <option value="Spray">Spray (Semprot)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="vakCatatan">Catatan / Dosis</label>
+          <textarea id="vakCatatan" rows="2" placeholder="Contoh: Dosis 1 botol per 1000 ekor"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="vakStatus">Status Kegiatan</label>
+          <select id="vakStatus" required>
+            <option value="Terjadwal">Terjadwal (Belum dilakukan)</option>
+            <option value="Selesai">Selesai (Sudah divaksin)</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeVaksinModal()">
+            Batal
+          </button>
+          <button type="submit" class="btn-primary">💾 Simpan Jadwal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================= Skrip Eksekusi (JavaScript) ========================== -->
+  <!-- Menjalankan fungsi di atas struktur rangka HTML ini -->
+  <script type="module" src="js/kesehatanayam.js"></script>
+  <!-- Skrip Utama Sinkronasi Autentikasi -->
+  <script type="module" src="firebase.component/auth-state.js"></script>
+  <script src="js/ui-utils.js"></script>
 </body>
+
 </html>
