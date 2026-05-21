@@ -1,491 +1,380 @@
 <!doctype html>
 <html lang="id">
-  <head>
-    <!-- ========================= META & TITLE ========================== -->
-    <!-- Pengaturan dasar halaman dan judul tab browser -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lintau Buo Administration System</title>
 
-    <!-- ========================= FONT & ANIMASI ========================== -->
-    <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+<head>
+  <!-- ========================= META & TITLE ========================== -->
+  <!-- Pengaturan dasar halaman dan judul tab browser -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lintau Buo Administration System</title>
 
-    <!-- ========================= CSS KUSTOM ========================== -->
-    <!-- Memuat gaya desain spesifik untuk halaman dashboard ini -->
-    <link rel="stylesheet" href="css/dashboardTAalip.css" />
-    <link rel="stylesheet" href="css/recap-modal.css" />
+  <!-- ========================= FONT & ANIMASI ========================== -->
+  <!-- Memuat font Poppins dan library Animate.css untuk efek transisi -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-    <!-- ========================= LIBRARY ========================== -->
-    <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  </head>
+  <!-- ========================= CSS KUSTOM ========================== -->
+  <!-- Memuat gaya desain spesifik untuk halaman dashboard ini -->
+  <link rel="stylesheet" href="css/dashboardTAalip.css" />
+  <link rel="stylesheet" href="css/recap-modal.css" />
 
-  <body>
-    <!-- ========================= SIDEBAR ========================== -->
-    <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-    <aside class="sidebar" aria-label="Sidebar Navigasi">
-      <div class="sidebar-content">
-        <!-- ===== LOGO ===== -->
-        <h2 class="logo">🐔 LIBAS</h2>
+  <!-- ========================= LIBRARY ========================== -->
+  <!-- Memuat library SweetAlert2 untuk menampilkan popup notifikasi interaktif -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
 
-        <!-- ===== NAVIGASI UTAMA ===== -->
-        <nav class="main-nav">
-          <!-- ===== MENU Dashboard ===== -->
-          <a href="dashboardTAalip.html" class="active" title="Dashboard"
-            >🏠 Dashboard</a
-          >
+<body>
+  <!-- ========================= SIDEBAR ========================== -->
+  <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
+  <aside class="sidebar" aria-label="Sidebar Navigasi">
+    <div class="sidebar-content">
+      <!-- ===== LOGO ===== -->
+      <h2 class="logo">🐔 LIBAS</h2>
 
-          <!-- ===== SUBMENU Data Ayam ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('ternakSubmenu')"
-            aria-expanded="false"
-          >
-            📊 Data Ayam <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-            <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
-            <a href="kesehatanayam.html">🏥Data Kesehatan Ayam</a>
-          </div>
+      <!-- ===== NAVIGASI UTAMA ===== -->
+      <nav class="main-nav">
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" class="active" title="Dashboard">🏠 Dashboard</a>
 
-          <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('kelolaSubmenu')"
-            aria-expanded="false"
-          >
-            Rekomendasi Prediktif <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-            <a href="prediksihasil.html"> Prediksi Hasil </a>
-          </div>
-
-          <!-- ===== SUBMENU Produksi ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('produksiSubmenu')"
-            aria-expanded="false"
-          >
-            🥚 Produksi <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-            <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-          </div>
-
-          <!-- ===== SUBMENU Persediaan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('persediaanSubmenu')"
-            aria-expanded="false"
-          >
-            📦 Persediaan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-            <a href="stokpakan.html">🥬 Stok Pakan</a>
-            <a href="restockreminder.html">⏰ Restock Reminder</a>
-          </div>
-
-          <!-- ===== SUBMENU Keuangan ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('keuanganSubmenu')"
-            aria-expanded="false"
-          >
-            💵 Keuangan <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-            <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-          </div>
-
-          <!-- ===== SUBMENU Dokumen ===== -->
-          <button
-            class="has-submenu"
-            onclick="toggleSidebarMenu('dokumenSubmenu')"
-            aria-expanded="false"
-          >
-            📂 Dokumen <span class="arrow">▸</span>
-          </button>
-          <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-            <a href="dokumen.html">📄 Pusat Dokumen</a>
-          </div>
-
-          <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
-          <div
-            id="adminSwitchContainer"
-            style="display: none; margin-top: 1.5rem"
-          >
-            <a
-              href="admin.frontend/admin-core/admin.html"
-              class="admin-back-btn"
-              title="Kembali ke Panel Kontrol"
-            >
-              🛡️ Kembali ke Admin
-            </a>
-          </div>
-        </nav>
-
-        <!-- ===== PROFIL PENGGUNA ===== -->
-        <div class="sidebar-profile">
-          <img
-            src="images/profilepicture.png"
-            alt="Foto Profil Peternak"
-            class="profile-pic"
-            onclick="goToProfile()"
-          />
-          <div class="profile-name-container">
-            <p class="profile-name"></p>
-            <a
-              href="editProfileTAalip.html"
-              class="edit-profile-icon"
-              title="Edit Profil"
-              >&#x270E;</a
-            >
-          </div>
-          <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ========================= KONTEN UTAMA ========================== -->
-    <!-- Area kerja utama di sisi kanan layar untuk menampilkan widget dan data -->
-    <main class="main-content">
-      <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
-      <header class="mobile-header">
-        <div class="mobile-logo">🐔 LIBAS</div>
-        <button
-          class="menu-toggle"
-          onclick="
-            document.querySelector('.sidebar').classList.toggle('active')
-          "
-          aria-label="Toggle Sidebar"
-        >
-          ☰
+        <!-- ===== SUBMENU Data Ayam ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          📊 Data Ayam <span class="arrow">▸</span>
         </button>
-      </header>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
+          <a href="kesehatanayam.html">🏥Data Kesehatan Ayam</a>
+        </div>
 
-      <!-- ===== KARTU SAMBUTAN ===== -->
-      <section class="welcome-card animate__animated animate__fadeInDown">
-        <h2>Selamat Datang di Sistem Administrasi Peternakan!</h2>
-        <p>
-          Kelola pakan, jadwal produksi, dan keuangan dengan lebih efisien 🐣
-        </p>
-      </section>
+        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          Rekomendasi Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html"> Prediksi Hasil </a>
+        </div>
 
-      <!-- ===== ALERT BANNER DINAMIS (FASE 3) ===== -->
-      <!-- Banner ini muncul otomatis jika ada kondisi kritis: stok pakan rendah, ayam sakit, mortalitas tinggi -->
-      <div
-        id="alertBannerContainer"
-        style="
+        <!-- ===== SUBMENU Produksi ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
+          🥚 Produksi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Harian</a>
+        </div>
+
+        <!-- ===== SUBMENU Persediaan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
+          📦 Persediaan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
+          <a href="stokpakan.html">🥬 Stok Pakan</a>
+          <a href="restockreminder.html">⏰ Restock Reminder</a>
+        </div>
+
+        <!-- ===== SUBMENU Keuangan ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Keuangan <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+        </div>
+
+        <!-- ===== SUBMENU Dokumen ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html">📄 Pusat Dokumen</a>
+        </div>
+
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
+          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+            🛡️ Kembali ke Admin
+          </a>
+        </div>
+      </nav>
+
+      <!-- ===== PROFIL PENGGUNA ===== -->
+      <div class="sidebar-profile">
+        <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
+        <div class="profile-name-container">
+          <p class="profile-name"></p>
+          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
+        </div>
+        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================= KONTEN UTAMA ========================== -->
+  <!-- Area kerja utama di sisi kanan layar untuk menampilkan widget dan data -->
+  <main class="main-content">
+    <!-- ===== HEADER MOBILE / HAMBURGER MENU ===== -->
+    <header class="mobile-header">
+      <div class="mobile-logo">🐔 LIBAS</div>
+      <button class="menu-toggle" onclick="
+            document.querySelector('.sidebar').classList.toggle('active')
+          " aria-label="Toggle Sidebar">
+        ☰
+      </button>
+    </header>
+
+    <!-- ===== KARTU SAMBUTAN ===== -->
+    <section class="welcome-card animate__animated animate__fadeInDown">
+      <h2>Selamat Datang di Sistem Administrasi Peternakan!</h2>
+      <p>
+        Kelola pakan, jadwal produksi, dan keuangan dengan lebih efisien 🐣
+      </p>
+    </section>
+
+    <!-- ===== ALERT BANNER DINAMIS (FASE 3) ===== -->
+    <!-- Banner ini muncul otomatis jika ada kondisi kritis: stok pakan rendah, ayam sakit, mortalitas tinggi -->
+    <div id="alertBannerContainer" style="
           margin-bottom: 1.5rem;
           display: flex;
           flex-direction: column;
           gap: 0.6rem;
-        "
-      ></div>
+        "></div>
 
-      <!-- ===== 1. KARTU STATISTIK CEPAT (Paling penting untuk melihat kondisi kandang saat ini) ===== -->
-      <section class="quick-stats animate__animated animate__fadeInUp">
-        <!-- ===== KARTU STATISTIK Total Telur Harian ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">🥚</div>
-          <div class="stat-info">
-            <h4>Total Telur Hari Ini</h4>
-            <p id="stat-telur">- Butir</p>
-            <p
-              id="stat-telur-cacat-inline"
-              style="
+    <!-- ===== 1. KARTU STATISTIK CEPAT (Paling penting untuk melihat kondisi kandang saat ini) ===== -->
+    <section class="quick-stats animate__animated animate__fadeInUp">
+      <!-- ===== KARTU STATISTIK Total Telur Harian ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">🥚</div>
+        <div class="stat-info">
+          <h4>Total Telur Hari Ini</h4>
+          <p id="stat-telur">- Butir</p>
+          <p id="stat-telur-cacat-inline" style="
                 font-size: 0.85rem;
                 color: #ef4444;
                 margin-top: 5px;
                 font-weight: 600;
                 display: none;
-              "
-            ></p>
-          </div>
+              "></p>
         </div>
-        <!-- ===== KARTU STATISTIK Total Ayam ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">🐓</div>
-          <div class="stat-info">
-            <h4>Total Ayam Aktif</h4>
-            <p id="stat-ayam">- Ekor</p>
-            <p
-              id="stat-ayam-sakit"
-              style="
+      </div>
+      <!-- ===== KARTU STATISTIK Total Ayam ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">🐓</div>
+        <div class="stat-info">
+          <h4>Total Ayam Aktif</h4>
+          <p id="stat-ayam">- Ekor</p>
+          <p id="stat-ayam-sakit" style="
                 font-size: 0.85rem;
                 color: #f59e0b;
                 margin-top: 5px;
                 font-weight: 600;
                 display: none;
-              "
-            ></p>
-          </div>
+              "></p>
         </div>
-        <!-- ===== KARTU STATISTIK Mortalitas Hari Ini ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">💀</div>
-          <div class="stat-info">
-            <h4>Mortalitas Hari Ini</h4>
-            <p id="stat-mortalitas">- Ekor</p>
-          </div>
+      </div>
+      <!-- ===== KARTU STATISTIK Mortalitas Hari Ini ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">💀</div>
+        <div class="stat-info">
+          <h4>Mortalitas Hari Ini</h4>
+          <p id="stat-mortalitas">- Ekor</p>
         </div>
-        <!-- ===== KARTU STATISTIK Stok Pakan ===== -->
-        <div class="stat-card" id="stat-card-pakan">
-          <div class="stat-icon" id="stat-pakan-icon">🌾</div>
-          <div class="stat-info">
-            <h4>Stok Pakan Tersisa</h4>
-            <p id="stat-pakan">- Kg</p>
-            <p
-              id="stat-pakan-alert"
-              style="
+      </div>
+      <!-- ===== KARTU STATISTIK Stok Pakan ===== -->
+      <div class="stat-card" id="stat-card-pakan">
+        <div class="stat-icon" id="stat-pakan-icon">🌾</div>
+        <div class="stat-info">
+          <h4>Stok Pakan Tersisa</h4>
+          <p id="stat-pakan">- Kg</p>
+          <p id="stat-pakan-alert" style="
                 display: none;
                 margin-top: 5px;
                 font-size: 0.8rem;
                 font-weight: 600;
                 color: #ef4444;
-              "
-            >
-              ⚠️ Stok rendah, segera restock
-            </p>
-          </div>
+              ">
+            ⚠️ Stok rendah, segera restock
+          </p>
         </div>
-        <!-- ===== KARTU STATISTIK Pendapatan Bulan Ini ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">💰</div>
-          <div class="stat-info">
-            <h4>Pendapatan Bulan Ini</h4>
-            <p id="stat-pendapatan">Rp -</p>
-          </div>
+      </div>
+      <!-- ===== KARTU STATISTIK Pendapatan Bulan Ini ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">💰</div>
+        <div class="stat-info">
+          <h4>Pendapatan Bulan Ini</h4>
+          <p id="stat-pendapatan">Rp -</p>
         </div>
-        <!-- ===== KARTU STATISTIK Status Afkir ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">🍗</div>
-          <div class="stat-info">
-            <h4>Status Afkir</h4>
-            <p id="stat-afkir">- Ekor</p>
-          </div>
+      </div>
+      <!-- ===== KARTU STATISTIK Status Afkir ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">🍗</div>
+        <div class="stat-info">
+          <h4>Status Afkir</h4>
+          <p id="stat-afkir">- Ekor</p>
         </div>
-        <!-- ===== KARTU STATISTIK Pengeluaran Bulan Ini ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">💸</div>
-          <div class="stat-info">
-            <h4>Pengeluaran Bulan Ini</h4>
-            <p id="stat-pengeluaran">Rp -</p>
-          </div>
+      </div>
+      <!-- ===== KARTU STATISTIK Pengeluaran Bulan Ini ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">💸</div>
+        <div class="stat-info">
+          <h4>Pengeluaran Bulan Ini</h4>
+          <p id="stat-pengeluaran">Rp -</p>
         </div>
-        <!-- ===== KARTU STATISTIK Batch Aktif ===== -->
-        <div class="stat-card">
-          <div class="stat-icon">📊</div>
-          <div class="stat-info">
-            <h4>Total Batch Aktif</h4>
-            <p id="stat-batch-aktif">- Batch</p>
-          </div>
+      </div>
+      <!-- ===== KARTU STATISTIK Batch Aktif ===== -->
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <h4>Total Batch Aktif</h4>
+          <p id="stat-batch-aktif">- Batch</p>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ===== 2. GRAFIK ANALITIK (Untuk memonitor tren) ===== -->
-      <section class="charts-section animate__animated animate__fadeInUp">
-        <!-- ===== GRAFIK PRODUKSI (PREMIUM CARD) ===== -->
-        <div class="chart-container chart-produksi-card">
-          <!-- Header grafik dengan judul dan tombol filter -->
-          <div class="chart-header">
-            <div class="chart-title-group">
-              <h3>📈 Tren Produksi Telur</h3>
-              <span class="chart-subtitle">7 Hari Terakhir</span>
-            </div>
-            <div class="chart-filter-group">
-              <button
-                class="chart-filter-btn active"
-                id="filter7h"
-                onclick="gantiPeriodeGrafik(7, this)"
-              >
-                7 Hari
-              </button>
-              <button
-                class="chart-filter-btn"
-                id="filter14h"
-                onclick="gantiPeriodeGrafik(14, this)"
-              >
-                14 Hari
-              </button>
-              <button
-                class="chart-filter-btn"
-                id="filter30h"
-                onclick="gantiPeriodeGrafik(30, this)"
-              >
-                30 Hari
-              </button>
+    <!-- ===== 2. GRAFIK ANALITIK (Untuk memonitor tren) ===== -->
+    <section class="charts-section animate__animated animate__fadeInUp">
+      <!-- ===== GRAFIK PRODUKSI (PREMIUM CARD) ===== -->
+      <div class="chart-container chart-produksi-card">
+        <!-- Header grafik dengan judul dan tombol filter -->
+        <div class="chart-header">
+          <div class="chart-title-group">
+            <h3>📈 Tren Produksi Telur</h3>
+            <span class="chart-subtitle">7 Hari Terakhir</span>
+          </div>
+          <div class="chart-filter-group">
+            <button class="chart-filter-btn active" id="filter7h" onclick="gantiPeriodeGrafik(7, this)">
+              7 Hari
+            </button>
+            <button class="chart-filter-btn" id="filter14h" onclick="gantiPeriodeGrafik(14, this)">
+              14 Hari
+            </button>
+            <button class="chart-filter-btn" id="filter30h" onclick="gantiPeriodeGrafik(30, this)">
+              30 Hari
+            </button>
+          </div>
+        </div>
+
+        <!-- Mini statistik ringkasan di atas grafik -->
+        <div class="chart-mini-stats">
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background: rgba(251, 133, 0, 0.15); color: #fb8500">🥚</span>
+            <div>
+              <p class="mini-stat-label">Total Butir</p>
+              <p class="mini-stat-val" id="chart-stat-total">0</p>
             </div>
           </div>
-
-          <!-- Mini statistik ringkasan di atas grafik -->
-          <div class="chart-mini-stats">
-            <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(251, 133, 0, 0.15); color: #fb8500"
-                >🥚</span
-              >
-              <div>
-                <p class="mini-stat-label">Total Butir</p>
-                <p class="mini-stat-val" id="chart-stat-total">0</p>
-              </div>
-            </div>
-            <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(16, 185, 129, 0.15); color: #10b981"
-                >✅</span
-              >
-              <div>
-                <p class="mini-stat-label">Telur Baik</p>
-                <p class="mini-stat-val" id="chart-stat-baik">0</p>
-              </div>
-            </div>
-            <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(239, 68, 68, 0.15); color: #ef4444"
-                >❌</span
-              >
-              <div>
-                <p class="mini-stat-label">Telur Cacat</p>
-                <p class="mini-stat-val" id="chart-stat-cacat">0</p>
-              </div>
-            </div>
-            <div class="mini-stat">
-              <span
-                class="mini-stat-icon"
-                style="background: rgba(99, 102, 241, 0.15); color: #6366f1"
-                >📊</span
-              >
-              <div>
-                <p class="mini-stat-label">Rata-rata/Hari</p>
-                <p class="mini-stat-val" id="chart-stat-rata">0</p>
-              </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981">✅</span>
+            <div>
+              <p class="mini-stat-label">Telur Baik</p>
+              <p class="mini-stat-val" id="chart-stat-baik">0</p>
             </div>
           </div>
-
-          <!-- Canvas untuk grafik -->
-          <div class="chart-canvas-wrapper">
-            <canvas id="eggProductionChart"></canvas>
-            <!-- Overlay jika data kosong -->
-            <div class="chart-empty-overlay" id="chartEmptyOverlay">
-              <span class="chart-empty-icon">🥚</span>
-              <p>Belum ada data produksi</p>
-              <small>Mulai input produksi harian untuk melihat grafik</small>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444">❌</span>
+            <div>
+              <p class="mini-stat-label">Telur Cacat</p>
+              <p class="mini-stat-val" id="chart-stat-cacat">0</p>
+            </div>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-icon" style="background: rgba(99, 102, 241, 0.15); color: #6366f1">📊</span>
+            <div>
+              <p class="mini-stat-label">Rata-rata/Hari</p>
+              <p class="mini-stat-val" id="chart-stat-rata">0</p>
             </div>
           </div>
         </div>
 
-        <!-- ===== GRAFIK KEUANGAN ===== -->
-        <div class="chart-container">
-          <h3>📊 Pemasukan vs Pengeluaran</h3>
-          <canvas id="financeChart"></canvas>
+        <!-- Canvas untuk grafik -->
+        <div class="chart-canvas-wrapper">
+          <canvas id="eggProductionChart"></canvas>
+          <!-- Overlay jika data kosong -->
+          <div class="chart-empty-overlay" id="chartEmptyOverlay">
+            <span class="chart-empty-icon">🥚</span>
+            <p>Belum ada data produksi</p>
+            <small>Mulai input produksi harian untuk melihat grafik</small>
+          </div>
         </div>
-      </section>
+      </div>
 
-      <!-- ===== 3 & 4. QUICK ACTIONS + JADWAL VAKSINASI (2 kolom) ===== -->
-      <section class="widgets-row animate__animated animate__fadeInUp">
-        <!-- QUICK ACTIONS -->
-        <div
-          class="quick-actions-card widget-card"
-          style="
+      <!-- ===== GRAFIK KEUANGAN ===== -->
+      <div class="chart-container">
+        <h3>📊 Pemasukan vs Pengeluaran</h3>
+        <canvas id="financeChart"></canvas>
+      </div>
+    </section>
+
+    <!-- ===== 3 & 4. QUICK ACTIONS + JADWAL VAKSINASI (2 kolom) ===== -->
+    <section class="widgets-row animate__animated animate__fadeInUp">
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions-card widget-card" style="
             background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
             color: white;
             box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
-          "
-        >
-          <div class="widget-card-header">
-            <div style="display: flex; align-items: center; gap: 10px">
-              <span style="font-size: 2rem">⚡</span>
-              <div>
-                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
-                  Aksi Cepat
-                </h3>
-                <p style="margin: 0; font-size: 0.85rem; opacity: 0.9">
-                  Operasi harian dalam satu klik
-                </p>
-              </div>
+          ">
+        <div class="widget-card-header">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 2rem">⚡</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
+                Aksi Cepat
+              </h3>
+              <p style="margin: 0; font-size: 0.85rem; opacity: 0.9">
+                Operasi harian dalam satu klik
+              </p>
             </div>
           </div>
-          <div class="widget-card-body">
-            <div
-              style="
+        </div>
+        <div class="widget-card-body">
+          <div style="
                 display: grid;
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.6rem;
-              "
-            >
-              <button
-                onclick="quickActionInputProduksi()"
-                class="qa-square-btn"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">🥚</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Input Produksi
-                </p>
-                <p style="font-size: 0.6rem; opacity: 0.75">
-                  Catat hasil telur hari ini
-                </p>
-              </button>
-              <button
-                onclick="quickActionStokPakan()"
-                class="qa-square-btn"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">🥬</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Kelola Pakan
-                </p>
-                <p style="font-size: 0.6rem; opacity: 0.75">
-                  Update stok pakan
-                </p>
-              </button>
-              <button
-                onclick="quickActionKeuangan()"
-                class="qa-square-btn"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">💰</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Catat Transaksi
-                </p>
-                <p style="font-size: 0.6rem; opacity: 0.75">
-                  Input pemasukan/pengeluaran
-                </p>
-              </button>
-              <button
-                onclick="quickActionKesehatan()"
-                class="qa-square-btn"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">🩺</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Cek Kesehatan
-                </p>
-                <p style="font-size: 0.6rem; opacity: 0.75">
-                  Monitor kondisi ayam
-                </p>
-              </button>
+              ">
+            <button onclick="quickActionInputProduksi()" class="qa-square-btn"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">🥚</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Input Produksi
+              </p>
+              <p style="font-size: 0.6rem; opacity: 0.75">
+                Catat hasil telur hari ini
+              </p>
+            </button>
+            <button onclick="quickActionStokPakan()" class="qa-square-btn"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">🥬</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Kelola Pakan
+              </p>
+              <p style="font-size: 0.6rem; opacity: 0.75">
+                Update stok pakan
+              </p>
+            </button>
+            <button onclick="quickActionKeuangan()" class="qa-square-btn"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">💰</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Catat Transaksi
+              </p>
+              <p style="font-size: 0.6rem; opacity: 0.75">
+                Input pemasukan/pengeluaran
+              </p>
+            </button>
+            <button onclick="quickActionKesehatan()" class="qa-square-btn"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">🩺</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Cek Kesehatan
+              </p>
+              <p style="font-size: 0.6rem; opacity: 0.75">
+                Monitor kondisi ayam
+              </p>
+            </button>
 
-              <!-- Tombol Rekap Harian (Full Width di dalam Grid) -->
-              <button
-                onclick="openUserDailyRecap()"
-                style="
+            <!-- Tombol Rekap Harian (Full Width di dalam Grid) -->
+            <button onclick="openUserDailyRecap()" style="
                   grid-column: span 2;
                   margin-top: 0.4rem;
                   padding: 0.8rem;
@@ -500,43 +389,33 @@
                   align-items: center;
                   justify-content: center;
                   gap: 8px;
-                "
-                onmouseover="this.style.background = 'rgba(255,255,255,0.3)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.2)'"
-              >
-                <span>📅</span> Lihat Rekap Harian
-              </button>
-            </div>
+                " onmouseover="this.style.background = 'rgba(255,255,255,0.3)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.2)'">
+              <span>📅</span> Lihat Rekap Harian
+            </button>
           </div>
         </div>
+      </div>
 
-        <!-- JADWAL VAKSINASI -->
-        <div
-          class="vaccination-card widget-card"
-          style="
+      <!-- JADWAL VAKSINASI -->
+      <div class="vaccination-card widget-card" style="
             background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
             color: white;
             box-shadow: 0 10px 30px rgba(6, 182, 212, 0.3);
-          "
-        >
-          <div class="widget-card-header">
-            <div style="display: flex; align-items: center; gap: 10px">
-              <span style="font-size: 2rem">💉</span>
-              <div>
-                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
-                  Jadwal Vaksinasi
-                </h3>
-                <p
-                  id="vaccination-subtitle"
-                  style="margin: 0; font-size: 0.85rem; opacity: 0.9"
-                >
-                  Monitoring jadwal vaksin mendatang
-                </p>
-              </div>
+          ">
+        <div class="widget-card-header">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 2rem">💉</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
+                Jadwal Vaksinasi
+              </h3>
+              <p id="vaccination-subtitle" style="margin: 0; font-size: 0.85rem; opacity: 0.9">
+                Monitoring jadwal vaksin mendatang
+              </p>
             </div>
-            <button
-              onclick="openVaccinationDetail()"
-              style="
+          </div>
+          <button onclick="openVaccinationDetail()" style="
                 background: rgba(255, 255, 255, 0.2);
                 color: white;
                 padding: 8px 16px;
@@ -547,55 +426,43 @@
                 cursor: pointer;
                 transition: all 0.3s;
                 flex-shrink: 0;
-              "
-            >
-              Lihat Semua →
-            </button>
-          </div>
-          <div class="widget-card-body">
-            <div id="vaccination-content"></div>
-            <div
-              id="vaccination-empty"
-              style="text-align: center; padding: 2rem; display: none"
-            >
-              <p style="margin: 0; opacity: 0.8">
-                Tidak ada jadwal vaksinasi mendatang. Semua vaksin sudah
-                selesai.
-              </p>
-            </div>
+              ">
+            Lihat Semua →
+          </button>
+        </div>
+        <div class="widget-card-body">
+          <div id="vaccination-content"></div>
+          <div id="vaccination-empty" style="text-align: center; padding: 2rem; display: none">
+            <p style="margin: 0; opacity: 0.8">
+              Tidak ada jadwal vaksinasi mendatang. Semua vaksin sudah
+              selesai.
+            </p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- ===== 5 & 6. WIDGET PREDIKSI + RINGKASAN KEUANGAN (2 kolom) ===== -->
-      <section class="widgets-row animate__animated animate__fadeInUp">
-        <!-- WIDGET PREDIKSI -->
-        <div
-          class="prediction-card widget-card"
-          style="
+    <!-- ===== 5 & 6. WIDGET PREDIKSI + RINGKASAN KEUANGAN (2 kolom) ===== -->
+    <section class="widgets-row animate__animated animate__fadeInUp">
+      <!-- WIDGET PREDIKSI -->
+      <div class="prediction-card widget-card" style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-          "
-        >
-          <div class="widget-card-header">
-            <div style="display: flex; align-items: center; gap: 10px">
-              <span style="font-size: 2rem">🔮</span>
-              <div>
-                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
-                  Prediksi Terakhir
-                </h3>
-                <p
-                  id="prediction-date"
-                  style="margin: 0; font-size: 0.85rem; opacity: 0.9"
-                >
-                  -
-                </p>
-              </div>
+          ">
+        <div class="widget-card-header">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 2rem">🔮</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
+                Prediksi Terakhir
+              </h3>
+              <p id="prediction-date" style="margin: 0; font-size: 0.85rem; opacity: 0.9">
+                -
+              </p>
             </div>
-            <button
-              onclick="openModalPrediksi()"
-              style="
+          </div>
+          <button onclick="openModalPrediksi()" style="
                 background: rgba(255, 255, 255, 0.2);
                 color: white;
                 padding: 8px 16px;
@@ -606,30 +473,22 @@
                 cursor: pointer;
                 transition: all 0.3s;
                 flex-shrink: 0;
-              "
-            >
-              Lihat Detail →
-            </button>
-          </div>
-          <div class="widget-card-body">
-            <div
-              id="prediction-content"
-              style="
+              ">
+            Lihat Detail →
+          </button>
+        </div>
+        <div class="widget-card-body">
+          <div id="prediction-content" style="
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 0.85rem;
-              "
-            >
-              <div
-                class="widget-square-box"
-                style="
+              ">
+            <div class="widget-square-box" style="
                   background: rgba(255, 255, 255, 0.15);
                   border-radius: 10px;
                   backdrop-filter: blur(10px);
-                "
-              >
-                <p
-                  style="
+                ">
+              <p style="
                     margin: 0;
                     font-size: 0.8rem;
                     opacity: 0.9;
@@ -637,12 +496,9 @@
                     align-items: center;
                     gap: 5px;
                     flex-wrap: wrap;
-                  "
-                >
-                  Prediksi Telur
-                  <span
-                    title="Jumlah telur yang diprediksi besok"
-                    style="
+                  ">
+                Prediksi Telur
+                <span title="Jumlah telur yang diprediksi besok" style="
                       cursor: help;
                       font-size: 0.75rem;
                       background: rgba(255, 255, 255, 0.2);
@@ -652,454 +508,326 @@
                       display: inline-flex;
                       align-items: center;
                       justify-content: center;
-                    "
-                    >ℹ️</span
-                  >
-                </p>
-                <p
-                  id="prediction-eggs"
-                  style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700"
-                >
-                  -
-                </p>
-                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
-                  Produksi besok
-                </p>
-              </div>
-              <div
-                class="widget-square-box"
-                style="
-                  background: rgba(255, 255, 255, 0.15);
-                  border-radius: 10px;
-                  backdrop-filter: blur(10px);
-                "
-              >
-                <p
-                  style="
-                    margin: 0;
-                    font-size: 0.8rem;
-                    opacity: 0.9;
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    flex-wrap: wrap;
-                  "
-                >
-                  Prediksi Pendapatan
-                  <span
-                    title="Estimasi pendapatan dari penjualan telur besok"
-                    style="
-                      cursor: help;
-                      font-size: 0.75rem;
-                      background: rgba(255, 255, 255, 0.2);
-                      width: 16px;
-                      height: 16px;
-                      border-radius: 50%;
-                      display: inline-flex;
-                      align-items: center;
-                      justify-content: center;
-                    "
-                    >ℹ️</span
-                  >
-                </p>
-                <p
-                  id="prediction-income"
-                  style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700"
-                >
-                  -
-                </p>
-                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
-                  Dari penjualan telur
-                </p>
-              </div>
-              <div
-                class="widget-square-box"
-                style="
-                  background: rgba(255, 255, 255, 0.15);
-                  border-radius: 10px;
-                  backdrop-filter: blur(10px);
-                "
-              >
-                <p
-                  style="
-                    margin: 0;
-                    font-size: 0.8rem;
-                    opacity: 0.9;
-                    display: flex;
-                    align-items: center;
-                    gap: 5px;
-                    flex-wrap: wrap;
-                  "
-                >
-                  Akurasi Model
-                  <span
-                    title="Tingkat kepercayaan prediksi"
-                    style="
-                      cursor: help;
-                      font-size: 0.75rem;
-                      background: rgba(255, 255, 255, 0.2);
-                      width: 16px;
-                      height: 16px;
-                      border-radius: 50%;
-                      display: inline-flex;
-                      align-items: center;
-                      justify-content: center;
-                    "
-                    >ℹ️</span
-                  >
-                </p>
-                <p
-                  id="prediction-accuracy"
-                  style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700"
-                >
-                  -
-                </p>
-                <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
-                  Tingkat kepercayaan
-                </p>
-              </div>
+                    ">ℹ️</span>
+              </p>
+              <p id="prediction-eggs" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700">
+                -
+              </p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
+                Produksi besok
+              </p>
             </div>
-            <div
-              id="prediction-empty"
-              style="text-align: center; padding: 2rem; display: none"
-            >
-              <p style="margin: 0; opacity: 0.8">
-                Belum ada prediksi. Silakan buat prediksi di halaman Prediksi
-                Hasil.
+            <div class="widget-square-box" style="
+                  background: rgba(255, 255, 255, 0.15);
+                  border-radius: 10px;
+                  backdrop-filter: blur(10px);
+                ">
+              <p style="
+                    margin: 0;
+                    font-size: 0.8rem;
+                    opacity: 0.9;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    flex-wrap: wrap;
+                  ">
+                Prediksi Pendapatan
+                <span title="Estimasi pendapatan dari penjualan telur besok" style="
+                      cursor: help;
+                      font-size: 0.75rem;
+                      background: rgba(255, 255, 255, 0.2);
+                      width: 16px;
+                      height: 16px;
+                      border-radius: 50%;
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                    ">ℹ️</span>
+              </p>
+              <p id="prediction-income" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700">
+                -
+              </p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
+                Dari penjualan telur
+              </p>
+            </div>
+            <div class="widget-square-box" style="
+                  background: rgba(255, 255, 255, 0.15);
+                  border-radius: 10px;
+                  backdrop-filter: blur(10px);
+                ">
+              <p style="
+                    margin: 0;
+                    font-size: 0.8rem;
+                    opacity: 0.9;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    flex-wrap: wrap;
+                  ">
+                Akurasi Model
+                <span title="Tingkat kepercayaan prediksi" style="
+                      cursor: help;
+                      font-size: 0.75rem;
+                      background: rgba(255, 255, 255, 0.2);
+                      width: 16px;
+                      height: 16px;
+                      border-radius: 50%;
+                      display: inline-flex;
+                      align-items: center;
+                      justify-content: center;
+                    ">ℹ️</span>
+              </p>
+              <p id="prediction-accuracy" style="margin: 8px 0 0 0; font-size: 1.5rem; font-weight: 700">
+                -
+              </p>
+              <p style="margin: 5px 0 0 0; font-size: 0.7rem; opacity: 0.8">
+                Tingkat kepercayaan
+              </p>
+            </div>
+          </div>
+          <div id="prediction-empty" style="text-align: center; padding: 2rem; display: none">
+            <p style="margin: 0; opacity: 0.8">
+              Belum ada prediksi. Silakan buat prediksi di halaman Prediksi
+              Hasil.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RINGKASAN KEUANGAN -->
+      <div class="finance-summary-card widget-card" style="
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+          ">
+        <div class="widget-card-header">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 2rem">💰</span>
+            <div>
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
+                Ringkasan Keuangan Bulan Ini
+              </h3>
+              <p id="finance-month" style="margin: 0; font-size: 0.85rem; opacity: 0.9">
+                -
+              </p>
+            </div>
+          </div>
+          <button onclick="openModalKeuangan()" style="
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 8px;
+                border: none;
+                font-size: 0.85rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                flex-shrink: 0;
+              ">
+            Lihat Detail →
+          </button>
+        </div>
+        <div class="widget-card-body">
+          <div style="
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.6rem;
+              ">
+            <div class="qa-square-btn" style="background: rgba(255, 255, 255, 0.15); cursor: default"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">💵</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Pemasukan
+              </p>
+              <p id="finance-income" style="
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    opacity: 1;
+                    margin-top: 2px;
+                  ">
+                Rp 0
+              </p>
+            </div>
+            <div class="qa-square-btn" style="background: rgba(255, 255, 255, 0.15); cursor: default"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">💸</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Pengeluaran
+              </p>
+              <p id="finance-expense" style="
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    opacity: 1;
+                    margin-top: 2px;
+                  ">
+                Rp 0
+              </p>
+            </div>
+            <div class="qa-square-btn" style="background: rgba(255, 255, 255, 0.15); cursor: default"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">💎</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Saldo Bersih
+              </p>
+              <p id="finance-balance" style="
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    opacity: 1;
+                    margin-top: 2px;
+                  ">
+                Rp 0
+              </p>
+            </div>
+            <div class="qa-square-btn" style="background: rgba(255, 255, 255, 0.15); cursor: default"
+              onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
+              onmouseout="this.style.background = 'rgba(255,255,255,0.15)'">
+              <p style="font-size: 1.1rem; line-height: 1">📊</p>
+              <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
+                Transaksi
+              </p>
+              <p id="finance-transactions" style="
+                    font-size: 0.85rem;
+                    font-weight: 700;
+                    opacity: 1;
+                    margin-top: 2px;
+                  ">
+                0 Transaksi
               </p>
             </div>
           </div>
         </div>
+      </div>
+    </section>
 
-        <!-- RINGKASAN KEUANGAN -->
-        <div
-          class="finance-summary-card widget-card"
-          style="
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-          "
-        >
-          <div class="widget-card-header">
-            <div style="display: flex; align-items: center; gap: 10px">
-              <span style="font-size: 2rem">💰</span>
-              <div>
-                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700">
-                  Ringkasan Keuangan Bulan Ini
-                </h3>
-                <p
-                  id="finance-month"
-                  style="margin: 0; font-size: 0.85rem; opacity: 0.9"
-                >
-                  -
-                </p>
-              </div>
-            </div>
-            <button
-              onclick="openModalKeuangan()"
-              style="
-                background: rgba(255, 255, 255, 0.2);
-                color: white;
-                padding: 8px 16px;
-                border-radius: 8px;
-                border: none;
-                font-size: 0.85rem;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s;
-                flex-shrink: 0;
-              "
-            >
-              Lihat Detail →
-            </button>
-          </div>
-          <div class="widget-card-body">
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.6rem;
-              "
-            >
-              <div
-                class="qa-square-btn"
-                style="background: rgba(255, 255, 255, 0.15); cursor: default"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">💵</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Pemasukan
-                </p>
-                <p
-                  id="finance-income"
-                  style="
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    opacity: 1;
-                    margin-top: 2px;
-                  "
-                >
-                  Rp 0
-                </p>
-              </div>
-              <div
-                class="qa-square-btn"
-                style="background: rgba(255, 255, 255, 0.15); cursor: default"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">💸</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Pengeluaran
-                </p>
-                <p
-                  id="finance-expense"
-                  style="
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    opacity: 1;
-                    margin-top: 2px;
-                  "
-                >
-                  Rp 0
-                </p>
-              </div>
-              <div
-                class="qa-square-btn"
-                style="background: rgba(255, 255, 255, 0.15); cursor: default"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">💎</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Saldo Bersih
-                </p>
-                <p
-                  id="finance-balance"
-                  style="
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    opacity: 1;
-                    margin-top: 2px;
-                  "
-                >
-                  Rp 0
-                </p>
-              </div>
-              <div
-                class="qa-square-btn"
-                style="background: rgba(255, 255, 255, 0.15); cursor: default"
-                onmouseover="this.style.background = 'rgba(255,255,255,0.25)'"
-                onmouseout="this.style.background = 'rgba(255,255,255,0.15)'"
-              >
-                <p style="font-size: 1.1rem; line-height: 1">📊</p>
-                <p style="font-size: 0.7rem; font-weight: 700; opacity: 0.95">
-                  Transaksi
-                </p>
-                <p
-                  id="finance-transactions"
-                  style="
-                    font-size: 0.85rem;
-                    font-weight: 700;
-                    opacity: 1;
-                    margin-top: 2px;
-                  "
-                >
-                  0 Transaksi
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===== 7. AKTIVITAS HARIAN, PENGUMUMAN, JADWAL ===== -->
-      <section class="office-admin">
-        <!-- ===== AKTIVITAS HARIAN (FASE 3 - VISUAL CHECKLIST) ===== -->
-        <div class="manage-card animate__animated animate__fadeInUp">
-          <h3>🧺 Aktivitas Harian</h3>
-          <!-- Progress bar ringkasan -->
-          <div
-            style="
+    <!-- ===== 7. AKTIVITAS HARIAN, PENGUMUMAN, JADWAL ===== -->
+    <section class="office-admin">
+      <!-- ===== AKTIVITAS HARIAN (FASE 3 - VISUAL CHECKLIST) ===== -->
+      <div class="manage-card animate__animated animate__fadeInUp">
+        <h3>🧺 Aktivitas Harian</h3>
+        <!-- Progress bar ringkasan -->
+        <div style="
               padding: 0.8rem 1.2rem 0;
               background: #f8f9fa;
               border-bottom: 1px solid #f0f0f0;
-            "
-          >
-            <div
-              style="
+            ">
+          <div style="
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 margin-bottom: 0.4rem;
-              "
-            >
-              <span style="font-size: 0.78rem; color: #64748b; font-weight: 600"
-                >PROGRES HARI INI</span
-              >
-              <span
-                id="activity-progress-text"
-                style="font-size: 0.78rem; color: #10b981; font-weight: 700"
-                >0 / 0 selesai</span
-              >
-            </div>
-            <div
-              style="
+              ">
+            <span style="font-size: 0.78rem; color: #64748b; font-weight: 600">PROGRES HARI INI</span>
+            <span id="activity-progress-text" style="font-size: 0.78rem; color: #10b981; font-weight: 700">0 / 0
+              selesai</span>
+          </div>
+          <div style="
                 background: #e2e8f0;
                 border-radius: 100px;
                 height: 6px;
                 overflow: hidden;
-              "
-            >
-              <div
-                id="activity-progress-bar"
-                style="
+              ">
+            <div id="activity-progress-bar" style="
                   height: 100%;
                   background: linear-gradient(90deg, #10b981, #34d399);
                   border-radius: 100px;
                   width: 0%;
                   transition: width 0.5s ease;
-                "
-              ></div>
-            </div>
+                "></div>
           </div>
-          <ul id="dailyActivityList">
-            <!-- Diisi via JavaScript -->
-          </ul>
-          <form id="addActivityForm" class="add-form" style="margin-top: 1rem">
-            <input
-              type="text"
-              id="activityInput"
-              placeholder="Tambah aktivitas..."
-              required
-            />
-            <button type="submit">Tambah</button>
-          </form>
         </div>
+        <ul id="dailyActivityList">
+          <!-- Diisi via JavaScript -->
+        </ul>
+        <form id="addActivityForm" class="add-form" style="margin-top: 1rem">
+          <input type="text" id="activityInput" placeholder="Tambah aktivitas..." required />
+          <button type="submit">Tambah</button>
+        </form>
+      </div>
 
-        <!-- ===== PENGUMUMAN ===== -->
-        <div class="reminder-card animate__animated animate__fadeInUp">
-          <h3>📢 Pengumuman</h3>
-          <!-- Badge jumlah belum dikonfirmasi -->
-          <div
-            id="announcementUnreadBadge"
-            style="
+      <!-- ===== PENGUMUMAN ===== -->
+      <div class="reminder-card animate__animated animate__fadeInUp">
+        <h3>📢 Pengumuman</h3>
+        <!-- Badge jumlah belum dikonfirmasi -->
+        <div id="announcementUnreadBadge" style="
               display: none;
               padding: 0.5rem 1.2rem;
               background: #fff7ed;
               border-bottom: 1px solid #fed7aa;
-            "
-          >
-            <span style="font-size: 0.8rem; font-weight: 600; color: #c2410c">
-              🔔 <span id="announcementUnreadCount">0</span> pengumuman belum
-              dikonfirmasi
-            </span>
-          </div>
-          <ul id="announcementList">
-            <!-- Diisi via JavaScript -->
-          </ul>
-          <!-- Form input hanya tampil untuk admin (disembunyikan via JS) -->
-          <form
-            id="addAnnouncementForm"
-            class="add-form"
-            style="margin-top: 1rem; display: none"
-          >
-            <input
-              type="text"
-              id="announcementInput"
-              placeholder="Ketik pengumuman baru..."
-              required
-            />
-            <button type="submit">➕</button>
-          </form>
-          <!-- Pesan untuk petugas -->
-          <p
-            id="announcementPetugasNote"
-            style="
+            ">
+          <span style="font-size: 0.8rem; font-weight: 600; color: #c2410c">
+            🔔 <span id="announcementUnreadCount">0</span> pengumuman belum
+            dikonfirmasi
+          </span>
+        </div>
+        <ul id="announcementList">
+          <!-- Diisi via JavaScript -->
+        </ul>
+        <!-- Form input hanya tampil untuk admin (disembunyikan via JS) -->
+        <form id="addAnnouncementForm" class="add-form" style="margin-top: 1rem; display: none">
+          <input type="text" id="announcementInput" placeholder="Ketik pengumuman baru..." required />
+          <button type="submit">➕</button>
+        </form>
+        <!-- Pesan untuk petugas -->
+        <p id="announcementPetugasNote" style="
               display: none;
               padding: 0.8rem 1.2rem;
               font-size: 0.8rem;
               color: #64748b;
               font-style: italic;
-            "
-          >
-            ✅ Konfirmasi pengumuman untuk memberi tahu admin bahwa Anda sudah
-            membaca.
-          </p>
+            ">
+          ✅ Konfirmasi pengumuman untuk memberi tahu admin bahwa Anda sudah
+          membaca.
+        </p>
+      </div>
+
+      <!-- ===== JADWAL KEGIATAN ===== -->
+      <div class="schedule-card animate__animated animate__fadeInUp">
+        <h3>📆 Jadwal Kegiatan Peternakan</h3>
+        <div class="schedule-content meeting-schedule">
+          <table id="scheduleTable">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Waktu</th>
+                <th>Kegiatan</th>
+                <th>Tempat</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+
+          <!-- ===== FORM TAMBAH JADWAL ===== -->
+          <form id="addScheduleForm" class="add-form" style="margin-top: auto">
+            <input type="text" id="tanggal" placeholder="Tanggal (cth: Senin, 20 Okt 2025)" required />
+            <input type="time" id="waktu" required />
+            <input type="text" id="agenda" placeholder="Kegiatan (cth: Panen Telur)" required />
+            <input type="text" id="ruangan" placeholder="Lokasi (cth: Kandang A)" required />
+            <button type="submit">➕ Tambah Kegiatan</button>
+          </form>
         </div>
+      </div>
+    </section>
+  </main>
 
-        <!-- ===== JADWAL KEGIATAN ===== -->
-        <div class="schedule-card animate__animated animate__fadeInUp">
-          <h3>📆 Jadwal Kegiatan Peternakan</h3>
-          <div class="schedule-content meeting-schedule">
-            <table id="scheduleTable">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Waktu</th>
-                  <th>Kegiatan</th>
-                  <th>Tempat</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-
-            <!-- ===== FORM TAMBAH JADWAL ===== -->
-            <form
-              id="addScheduleForm"
-              class="add-form"
-              style="margin-top: auto"
-            >
-              <input
-                type="text"
-                id="tanggal"
-                placeholder="Tanggal (cth: Senin, 20 Okt 2025)"
-                required
-              />
-              <input type="time" id="waktu" required />
-              <input
-                type="text"
-                id="agenda"
-                placeholder="Kegiatan (cth: Panen Telur)"
-                required
-              />
-              <input
-                type="text"
-                id="ruangan"
-                placeholder="Lokasi (cth: Kandang A)"
-                required
-              />
-              <button type="submit">➕ Tambah Kegiatan</button>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- ===== MODAL DETAIL PREDIKSI ===== -->
-    <div id="modalPrediksiDetail" class="modal-overlay" style="display: none">
-      <div
-        class="modal-content"
-        style="max-width: 800px; max-height: 90vh; overflow-y: auto"
-      >
-        <div
-          class="modal-header"
-          style="
+  <!-- ===== MODAL DETAIL PREDIKSI ===== -->
+  <div id="modalPrediksiDetail" class="modal-overlay" style="display: none">
+    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto">
+      <div class="modal-header" style="
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 1.5rem;
             border-radius: 10px 10px 0 0;
-          "
-        >
-          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px">
-            <span style="font-size: 2rem">🔮</span>
-            Detail Prediksi Terakhir
-          </h2>
-          <button
-            onclick="closeModalPrediksi()"
-            style="
+          ">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 10px">
+          <span style="font-size: 2rem">🔮</span>
+          Detail Prediksi Terakhir
+        </h2>
+        <button onclick="closeModalPrediksi()" style="
               position: absolute;
               top: 1rem;
               right: 1rem;
@@ -1114,41 +842,32 @@
               display: flex;
               align-items: center;
               justify-content: center;
-            "
-          >
-            ×
-          </button>
-        </div>
-        <div class="modal-body" style="padding: 1.5rem">
-          <div id="prediksiDetailContent">
-            <!-- Diisi via JavaScript -->
-          </div>
+            ">
+          ×
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem">
+        <div id="prediksiDetailContent">
+          <!-- Diisi via JavaScript -->
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ===== MODAL DETAIL KEUANGAN ===== -->
-    <div id="modalKeuanganDetail" class="modal-overlay" style="display: none">
-      <div
-        class="modal-content"
-        style="max-width: 800px; max-height: 90vh; overflow-y: auto"
-      >
-        <div
-          class="modal-header"
-          style="
+  <!-- ===== MODAL DETAIL KEUANGAN ===== -->
+  <div id="modalKeuanganDetail" class="modal-overlay" style="display: none">
+    <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto">
+      <div class="modal-header" style="
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             padding: 1.5rem;
             border-radius: 10px 10px 0 0;
-          "
-        >
-          <h2 style="margin: 0; display: flex; align-items: center; gap: 10px">
-            <span style="font-size: 2rem">💰</span>
-            Detail Keuangan Bulan Ini
-          </h2>
-          <button
-            onclick="closeModalKeuangan()"
-            style="
+          ">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 10px">
+          <span style="font-size: 2rem">💰</span>
+          Detail Keuangan Bulan Ini
+        </h2>
+        <button onclick="closeModalKeuangan()" style="
               position: absolute;
               top: 1rem;
               right: 1rem;
@@ -1163,75 +882,70 @@
               display: flex;
               align-items: center;
               justify-content: center;
-            "
-          >
-            ×
-          </button>
-        </div>
-        <div class="modal-body" style="padding: 1.5rem">
-          <div id="keuanganDetailContent">
-            <!-- Diisi via JavaScript -->
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================= MODAL REKAP HARIAN (USER) ========================== -->
-    <div class="recap-modal-overlay" id="userRecapModalOverlay">
-      <div class="recap-modal-card">
-        <button class="recap-close-btn" onclick="closeUserDailyRecap()">
+            ">
           ×
         </button>
-        <div class="recap-modal-header">
-          <h2>Rekap Harian Kandang</h2>
-          <input
-            type="date"
-            id="userRecapDate"
-            class="recap-date-picker"
-            onchange="openUserDailyRecap(this.value)"
-          />
-        </div>
-        <div class="recap-modal-body">
-          <div class="recap-stat-grid">
-            <div class="recap-stat-box">
-              <span class="icon">🥚</span>
-              <p class="value" id="ur-telur">-</p>
-              <p class="label">Panen Hari Ini</p>
-            </div>
-            <div class="recap-stat-box">
-              <span class="icon">🥬</span>
-              <p class="value" id="ur-pakan">-</p>
-              <p class="label">Pakan Terpakai</p>
-            </div>
-            <div class="recap-stat-box">
-              <span class="icon">💀</span>
-              <p class="value" id="ur-mati">-</p>
-              <p class="label">Ayam Mati</p>
-            </div>
-            <div class="recap-stat-box">
-              <span class="icon">🩺</span>
-              <p class="value" id="ur-sakit">-</p>
-              <p class="label">Ayam Sakit</p>
-            </div>
-          </div>
-          <div class="recap-note-section">
-            <h4>Pekerjaan Besok</h4>
-            <p id="ur-besok">Memuat data...</p>
-          </div>
-          <button class="recap-action-btn" onclick="closeUserDailyRecap()">
-            Saya Mengerti
-          </button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem">
+        <div id="keuanganDetailContent">
+          <!-- Diisi via JavaScript -->
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ========================= SCRIPT UTAMA ========================== -->
-    <!-- Memuat library Chart.js dan interaktivitas JavaScript khusus dashboard -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script type="module" src="js/dashboardTAalip.js"></script>
+  <!-- ========================= MODAL REKAP HARIAN (USER) ========================== -->
+  <div class="recap-modal-overlay" id="userRecapModalOverlay">
+    <div class="recap-modal-card">
+      <button class="recap-close-btn" onclick="closeUserDailyRecap()">
+        ×
+      </button>
+      <div class="recap-modal-header">
+        <h2>Rekap Harian Kandang</h2>
+        <input type="date" id="userRecapDate" class="recap-date-picker" onchange="openUserDailyRecap(this.value)" />
+      </div>
+      <div class="recap-modal-body">
+        <div class="recap-stat-grid">
+          <div class="recap-stat-box">
+            <span class="icon">🥚</span>
+            <p class="value" id="ur-telur">-</p>
+            <p class="label">Panen Hari Ini</p>
+          </div>
+          <div class="recap-stat-box">
+            <span class="icon">🥬</span>
+            <p class="value" id="ur-pakan">-</p>
+            <p class="label">Pakan Terpakai</p>
+          </div>
+          <div class="recap-stat-box">
+            <span class="icon">💀</span>
+            <p class="value" id="ur-mati">-</p>
+            <p class="label">Ayam Mati</p>
+          </div>
+          <div class="recap-stat-box">
+            <span class="icon">🩺</span>
+            <p class="value" id="ur-sakit">-</p>
+            <p class="label">Ayam Sakit</p>
+          </div>
+        </div>
+        <div class="recap-note-section">
+          <h4>Pekerjaan Besok</h4>
+          <p id="ur-besok">Memuat data...</p>
+        </div>
+        <button class="recap-action-btn" onclick="closeUserDailyRecap()">
+          Saya Mengerti
+        </button>
+      </div>
+    </div>
+  </div>
 
-    <!-- Skrip Utama Sinkronasi Autentikasi -->
-    <script type="module" src="firebase.component/auth-state.js"></script>
-      <script src="js/ui-utils.js"></script>
+  <!-- ========================= SCRIPT UTAMA ========================== -->
+  <!-- Memuat library Chart.js dan interaktivitas JavaScript khusus dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="js/dashboardTAalip.js"></script>
+
+  <!-- Skrip Utama Sinkronasi Autentikasi -->
+  <script type="module" src="firebase.component/auth-state.js"></script>
+  <script src="js/ui-utils.js"></script>
 </body>
+
 </html>
