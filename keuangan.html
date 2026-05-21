@@ -176,7 +176,7 @@
           <!-- 4. Input Jumlah Nominal Mata Uang Rupiah -->
           <div class="form-group">
             <label for="trxAmount">Jumlah Uang (Rp)</label>
-            <input type="number" id="trxAmount" placeholder="Contoh: 1500000" min="1" step="any" required />
+            <input type="text" id="trxAmount" inputmode="numeric" oninput="window.formatNumberInput(this)" placeholder="Contoh: 1.500.000" required />
           </div>
 
           <!-- 5. Kumpulan Tombol -->

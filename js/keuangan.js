@@ -141,7 +141,11 @@ async function handleFormSubmit(event) {
     const tanggal = document.getElementById('trxDate').value;
     const tipe = document.querySelector('input[name="trxType"]:checked').value;
     const deskripsi = document.getElementById('trxDesc').value;
-    const jumlah = parseFloat(document.getElementById('trxAmount').value) || 0;
+    
+    // Parsing nilai keuangan format Rupiah Indonesia (hilangkan pemisah ribuan titik dan ubah koma ke titik desimal)
+    const rawJumlah = document.getElementById('trxAmount').value;
+    const cleanJumlah = rawJumlah.replace(/\./g, '').replace(/,/g, '.');
+    const jumlah = parseFloat(cleanJumlah) || 0;
 
     const payload = {
         tanggal,
