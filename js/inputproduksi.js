@@ -22,6 +22,7 @@ import { db } from "../firebase.component/firebase-init.js";
 let dataProduksi = [];
 let dataAyam = [];
 let collapsedBatches = new Set(); 
+let collapsedWeeks = new Set();
 
 const produksiCollection = collection(db, "produksi_harian");
 const ayamCollection = collection(db, "populasi_ayam");
@@ -131,6 +132,7 @@ window.autoFillFromBatch = function() {
         if (totalAyamEl) totalAyamEl.value = batchData.sisaAyam || 0;
 
         lockBatchFields();
+        window.calculateTotal();
     }
 };
 
@@ -178,7 +180,16 @@ function resetBatchFieldsForNewEntry() {
 window.calculateTotal = function() {
     const baik = parseInt(document.getElementById('telurBaik').value) || 0;
     const cacat = parseInt(document.getElementById('telurCacat').value) || 0;
-    document.getElementById('totalTelur').value = baik + cacat;
+    const totalTelur = baik + cacat;
+    document.getElementById('totalTelur').value = totalTelur;
+
+    const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
+    if (totalAyam > 0) {
+        const ayamTidakBertelur = totalAyam - totalTelur;
+        document.getElementById('ayamTidakBertelur').value = ayamTidakBertelur >= 0 ? ayamTidakBertelur : 0;
+    } else {
+        document.getElementById('ayamTidakBertelur').value = 0;
+    }
 
     // Jalankan validasi ringan real-time saat angka berubah
     window.validateProduksiRealtime();
@@ -421,6 +432,16 @@ window.toggleBatchGroup = function(batchId) {
     renderTable(); // Render ulang untuk memperbarui icon dan visibilitas
 };
 
+window.toggleWeekGroup = function(batchId, minggu) {
+    const key = `${batchId}-W${minggu}`;
+    if (collapsedWeeks.has(key)) {
+        collapsedWeeks.delete(key);
+    } else {
+        collapsedWeeks.add(key);
+    }
+    renderTable();
+};
+
 function renderTable() {
     const tbody = document.getElementById("produksiTableBody");
     const emptyState = document.getElementById("emptyState");
@@ -430,15 +451,32 @@ function renderTable() {
     if (!tbody) return;
     tbody.innerHTML = "";
 
+    // MENGHITUNG MINGGU (Berdasarkan 7 data pertama, dst, diurutkan dari yang paling lama)
+    const batchGroups = {};
+    dataProduksi.forEach(prod => {
+        if (!batchGroups[prod.batchId]) batchGroups[prod.batchId] = [];
+        batchGroups[prod.batchId].push(prod);
+    });
+
+    Object.keys(batchGroups).forEach(batchId => {
+        batchGroups[batchId].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+        batchGroups[batchId].forEach((prod, index) => {
+            prod.minggu = Math.floor(index / 7) + 1;
+        });
+    });
+
     // Memfilter data berdasarkan tanggal jika ada filter yang aktif
     let filteredData = dataProduksi.filter(prod => !filterTgl || prod.tanggal === filterTgl);
 
-    // MENGELOMPOKKAN DATA: Urutkan berdasarkan batchId terlebih dahulu, kemudian tanggal terbaru
+    // MENGELOMPOKKAN DATA: Urutkan berdasarkan batchId terlebih dahulu, kemudian minggu (desc), lalu tanggal (desc)
     filteredData.sort((a, b) => {
         // Urutkan berdasarkan Batch ID (agar berkelompok)
         if (a.batchId < b.batchId) return -1;
         if (a.batchId > b.batchId) return 1;
-        // Jika batch sama, urutkan berdasarkan tanggal terbaru (descending)
+        // Jika batch sama, urutkan berdasarkan minggu terbaru (descending)
+        if (a.minggu > b.minggu) return -1;
+        if (a.minggu < b.minggu) return 1;
+        // Jika minggu sama, urutkan berdasarkan tanggal terbaru (descending)
         return b.tanggal.localeCompare(a.tanggal);
     });
 
@@ -450,28 +488,53 @@ function renderTable() {
         emptyState.style.display = "none";
 
         let currentBatch = null;
+        let currentMinggu = null;
 
         filteredData.forEach((prod) => {
-            const isCollapsed = collapsedBatches.has(prod.batchId);
+            const isBatchCollapsed = collapsedBatches.has(prod.batchId);
+            const weekKey = `${prod.batchId}-W${prod.minggu}`;
+            const isWeekCollapsed = collapsedWeeks.has(weekKey);
 
-            // SISIPKAN HEADER GRUP (Klik untuk Buka/Tutup)
+            // SISIPKAN HEADER GRUP BATCH
             if (prod.batchId !== currentBatch) {
                 currentBatch = prod.batchId;
+                currentMinggu = null; // Reset minggu setiap ganti batch
                 const headerRow = document.createElement("tr");
-                headerRow.className = `batch-group-header ${isCollapsed ? 'collapsed' : ''}`;
+                headerRow.className = `batch-group-header ${isBatchCollapsed ? 'collapsed' : ''}`;
                 headerRow.onclick = () => toggleBatchGroup(prod.batchId);
                 headerRow.innerHTML = `
                     <td colspan="10">
-                        <span class="toggle-icon">${isCollapsed ? '▶' : '▼'}</span>
+                        <span class="toggle-icon">${isBatchCollapsed ? '▶' : '▼'}</span>
                         <span style="font-weight: 700; letter-spacing: 0.5px;">${prod.batchLabel.split(' - ')[0]}</span>
-                        <span class="header-hint">${isCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
+                        <span class="header-hint">${isBatchCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
                     </td>
                 `;
                 tbody.appendChild(headerRow);
             }
 
-            // Jika batch sedang ditutup, jangan tampilkan baris datanya
-            if (isCollapsed) return;
+            // Jika batch sedang ditutup, jangan tampilkan minggu dan datanya
+            if (isBatchCollapsed) return;
+
+            // SISIPKAN HEADER GRUP MINGGU
+            if (prod.minggu !== currentMinggu) {
+                currentMinggu = prod.minggu;
+                const weekRow = document.createElement("tr");
+                weekRow.className = `batch-group-header week-group-header ${isWeekCollapsed ? 'collapsed' : ''}`;
+                weekRow.onclick = () => toggleWeekGroup(prod.batchId, prod.minggu);
+                weekRow.style.backgroundColor = '#f1f5f9';
+                weekRow.style.borderTop = '1px solid #e2e8f0';
+                weekRow.innerHTML = `
+                    <td colspan="10" style="padding-left: 2rem;">
+                        <span class="toggle-icon" style="color: #64748b; font-size: 0.9em;">${isWeekCollapsed ? '▶' : '▼'}</span>
+                        <span style="font-weight: 600; color: #475569; font-size: 0.95em;">Minggu ke-${prod.minggu}</span>
+                        <span class="header-hint" style="color: #94a3b8; font-size: 0.85em;">${isWeekCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
+                    </td>
+                `;
+                tbody.appendChild(weekRow);
+            }
+
+            // Jika minggu sedang ditutup, jangan tampilkan baris datanya
+            if (isWeekCollapsed) return;
 
             const row = document.createElement("tr");
             row.className = "data-row";

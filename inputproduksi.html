@@ -388,9 +388,13 @@
             <input
               type="number"
               id="ayamTidakBertelur"
-              min="0"
-              placeholder="Catat jumlah ayam yang tidak menghasilkan telur hari ini"
-              oninput="validateProduksiRealtime()"
+              readonly
+              style="
+                background-color: #e2e8f0;
+                font-weight: bold;
+                pointer-events: none;
+              "
+              title="Terisi otomatis dari selisih Total Ayam dan Total Telur"
             />
           </div>
 
