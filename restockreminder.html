@@ -96,60 +96,67 @@
     <aside class="sidebar" aria-label="Sidebar Navigasi">
         <div class="sidebar-content">
             <h2 class="logo">🐔 LIBAS</h2>
-            <nav class="main-nav">
-                <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
+                  <nav class="main-nav">
+        <!-- ===== MENU Dashboard ===== -->
+        <a href="dashboardTAalip.html" title="Dashboard">🏠 Dashboard</a>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
-                    📊 Data Ayam <span class="arrow">▸</span>
-                </button>
-                <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-                    <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
-                    <a href="kesehatanayam.html">Data Kesehatan Ayam</a>
-                </div>
+        <!-- ===== FASE 2: SETUP POPULASI ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
+          🐣 Manajemen Populasi <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
+          <a href="dataAyamTAalip.html">🐓 Data Batch Ayam</a>
+        </div>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
-                    Rekomendasi Prediktif <span class="arrow">▸</span>
-                </button>
-                <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-                    <a href="prediksihasil.html">Prediksi Hasil</a>
-                </div>
+        <!-- ===== FASE 3: RUTINITAS HARIAN ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('harianSubmenu')" aria-expanded="false">
+          📋 Operasional Harian <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="harianSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Telur</a>
+          <a href="kesehatanayam.html">🏥 Data Kesehatan & Vaksin</a>
+        </div>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
-                    🥚 Produksi <span class="arrow">▸</span>
-                </button>
-                <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-                    <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-                </div>
+        <!-- ===== FASE 4: LOGISTIK & PERSEDIAAN ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="true">
+          📦 Stok & Logistik <span class="arrow">▸</span>
+        </button>
+        <div class="submenu open" id="persediaanSubmenu" aria-hidden="false">
+          <a href="stokpakan.html">🥬 Pencatatan Stok Pakan</a>
+          <a href="restockreminder.html" class="active">⏰ Restock Reminder</a>
+        </div>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="true">
-                    📦 Persediaan <span class="arrow">▸</span>
-                </button>
-                <div class="submenu open" id="persediaanSubmenu" aria-hidden="false">
-                    <a href="stokpakan.html">🥬 Stok Pakan</a>
-                    <a href="restockreminder.html" class="active">⏰ Restock Reminder</a>
-                </div>
+        <!-- ===== FASE 5: KEUANGAN ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
+          💵 Pembukuan Finansial <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
+          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
+        </div>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
-                    💵 Keuangan <span class="arrow">▸</span>
-                </button>
-                <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-                    <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-                </div>
+        <!-- ===== FASE 6: PREDIKSI & ANALISIS ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          🔮 Analisis Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html">📈 Prediksi Hasil & Laba</a>
+        </div>
 
-                <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
-                    📂 Dokumen <span class="arrow">▸</span>
-                </button>
-                <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-                    <a href="dokumen.html">📄 Pusat Dokumen</a>
-                </div>
+        <!-- ===== FASE 7: DOKUMEN & PELAPORAN ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
+          📂 Pusat Dokumen <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
+          <a href="dokumen.html">📄 Ekspor Laporan</a>
+        </div>
 
-                <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem;">
-                    <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn"
-                        title="Kembali ke Panel Kontrol">
-                        🛡️ Kembali ke Admin
-                    </a>
-                </div>
-            </nav>
+        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
+        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
+          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
+            🛡️ Kembali ke Admin
+          </a>
+        </div>
+      </nav>
 
             <div class="sidebar-profile">
                 <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic"

@@ -32,58 +32,58 @@
       <h2 class="logo">🐔 LIBAS</h2>
 
       <!-- ===== NAVIGASI UTAMA ===== -->
-      <nav class="main-nav">
+            <nav class="main-nav">
         <!-- ===== MENU Dashboard ===== -->
         <a href="dashboardTAalip.html" class="active" title="Dashboard">🏠 Dashboard</a>
 
-        <!-- ===== SUBMENU Data Ayam ===== -->
+        <!-- ===== FASE 2: SETUP POPULASI ===== -->
         <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
-          📊 Data Ayam <span class="arrow">▸</span>
+          🐣 Manajemen Populasi <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-          <a href="dataAyamTAalip.html">🐓 Data Ayam</a>
-          <a href="kesehatanayam.html">🏥Data Kesehatan Ayam</a>
+          <a href="dataAyamTAalip.html">🐓 Data Batch Ayam</a>
         </div>
 
-        <!-- ===== SUBMENU Rekomendasi Prediktif ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
-          Rekomendasi Prediktif <span class="arrow">▸</span>
+        <!-- ===== FASE 3: RUTINITAS HARIAN ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('harianSubmenu')" aria-expanded="false">
+          📋 Operasional Harian <span class="arrow">▸</span>
         </button>
-        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-          <a href="prediksihasil.html"> Prediksi Hasil </a>
+        <div class="submenu" id="harianSubmenu" aria-hidden="true">
+          <a href="inputproduksi.html">📝 Input Produksi Telur</a>
+          <a href="kesehatanayam.html">🏥 Data Kesehatan & Vaksin</a>
         </div>
 
-        <!-- ===== SUBMENU Produksi ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('produksiSubmenu')" aria-expanded="false">
-          🥚 Produksi <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="produksiSubmenu" aria-hidden="true">
-          <a href="inputproduksi.html">📝 Input Produksi Harian</a>
-        </div>
-
-        <!-- ===== SUBMENU Persediaan ===== -->
+        <!-- ===== FASE 4: LOGISTIK & PERSEDIAAN ===== -->
         <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
-          📦 Persediaan <span class="arrow">▸</span>
+          📦 Stok & Logistik <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-          <a href="stokpakan.html">🥬 Stok Pakan</a>
+          <a href="stokpakan.html">🥬 Pencatatan Stok Pakan</a>
           <a href="restockreminder.html">⏰ Restock Reminder</a>
         </div>
 
-        <!-- ===== SUBMENU Keuangan ===== -->
+        <!-- ===== FASE 5: KEUANGAN ===== -->
         <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
-          💵 Keuangan <span class="arrow">▸</span>
+          💵 Pembukuan Finansial <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
           <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
         </div>
 
-        <!-- ===== SUBMENU Dokumen ===== -->
+        <!-- ===== FASE 6: PREDIKSI & ANALISIS ===== -->
+        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
+          🔮 Analisis Prediktif <span class="arrow">▸</span>
+        </button>
+        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
+          <a href="prediksihasil.html">📈 Prediksi Hasil & Laba</a>
+        </div>
+
+        <!-- ===== FASE 7: DOKUMEN & PELAPORAN ===== -->
         <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
-          📂 Dokumen <span class="arrow">▸</span>
+          📂 Pusat Dokumen <span class="arrow">▸</span>
         </button>
         <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-          <a href="dokumen.html">📄 Pusat Dokumen</a>
+          <a href="dokumen.html">📄 Ekspor Laporan</a>
         </div>
 
         <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
