@@ -116,10 +116,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Simpan status admin secara global untuk mempercepat proses logout
             window.isLibasAdmin = isAdminUser;
 
+            // Simpan status profil ke variabel global agar dapat diakses oleh sidebar dinamis
+            window.userProfileState = {
+                displayName: displayNameResult,
+                isAdmin: isAdminUser
+            };
+
             // Terapkan nama ke semua elemen .profile-name di sidebar
-            profileNameElements.forEach(el => {
-                el.textContent = displayNameResult;
-            });
+            if (typeof window.updateSidebarProfileFromGlobalState === 'function') {
+                window.updateSidebarProfileFromGlobalState();
+            } else {
+                profileNameElements.forEach(el => {
+                    el.textContent = displayNameResult;
+                });
+                const container = document.getElementById('adminSwitchContainer');
+                if (container && isAdminUser) container.style.display = 'block';
+            }
 
         } else {
             // Tidak ada user yang login — tidak ada tindakan paksa di sini
@@ -163,7 +175,6 @@ window.logoutUser = async function() {
  */
 async function executeLogout() {
     try {
-        // Ambil status admin dari cache global jika ada, jika tidak, verifikasi ulang
         let isAdmin = window.isLibasAdmin === true;
         const user = auth.currentUser;
         
@@ -219,26 +230,14 @@ function redirectBasedOnRole(isAdmin) {
     const isAdminCore = window.location.href.includes('admin-core');
     const isAdminRoot = window.location.href.includes('admin.frontend') && !isAdminCore;
 
-    if (isAdmin) {
-        // Redirect untuk Administrator -> adminlogin.html
-        if (isAdminCore) {
-            window.location.href = '../adminlogin.html';
-        } else if (isAdminRoot) {
-            window.location.href = 'adminlogin.html';
-        } else {
-            // Dari halaman utama/user
-            window.location.href = 'admin.frontend/adminlogin.html';
-        }
+    // Sejak adminlogin.html digabungkan ke login.html di root,
+    // seluruh rute pengalihan logout/sesi mengarah ke login.html utama.
+    if (isAdminCore) {
+        window.location.href = '../../login.html';
+    } else if (isAdminRoot) {
+        window.location.href = '../login.html';
     } else {
-        // Redirect untuk Pengguna/Staf Biasa -> login.html
-        if (isAdminCore) {
-            window.location.href = '../../login.html';
-        } else if (isAdminRoot) {
-            window.location.href = '../login.html';
-        } else {
-            // Dari halaman utama/user
-            window.location.href = 'login.html';
-        }
+        window.location.href = 'login.html';
     }
 }
 

@@ -25,7 +25,15 @@ const reminderCollection = collection(db, "restock_reminders");
 document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            window.location.href = "login.html";
+            // ✅ FIX: Deteksi kedalaman folder agar redirect ke login.html utama tidak 404
+            const href = window.location.href;
+            if (href.includes('admin-core')) {
+                window.location.href = "../../login.html";
+            } else if (href.includes('admin.frontend')) {
+                window.location.href = "../login.html";
+            } else {
+                window.location.href = "login.html";
+            }
             return;
         }
 

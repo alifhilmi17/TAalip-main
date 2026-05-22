@@ -26,85 +26,7 @@
 <body>
   <!-- ========================= SIDEBAR ========================== -->
   <!-- Panel menu navigasi di sisi kiri layar untuk berpindah antar halaman -->
-  <aside class="sidebar" aria-label="Sidebar Navigasi">
-    <div class="sidebar-content">
-      <!-- ===== LOGO ===== -->
-      <h2 class="logo">🐔 LIBAS</h2>
-
-      <!-- ===== NAVIGASI UTAMA ===== -->
-            <nav class="main-nav">
-        <!-- ===== MENU Dashboard ===== -->
-        <a href="dashboardTAalip.html" class="active" title="Dashboard">🏠 Dashboard</a>
-
-        <!-- ===== FASE 2: SETUP POPULASI ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('ternakSubmenu')" aria-expanded="false">
-          🐣 Manajemen Populasi <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="ternakSubmenu" aria-hidden="true">
-          <a href="dataAyamTAalip.html">🐓 Data Batch Ayam</a>
-        </div>
-
-        <!-- ===== FASE 3: RUTINITAS HARIAN ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('harianSubmenu')" aria-expanded="false">
-          📋 Operasional Harian <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="harianSubmenu" aria-hidden="true">
-          <a href="inputproduksi.html">📝 Input Produksi Telur</a>
-          <a href="kesehatanayam.html">🏥 Data Kesehatan & Vaksin</a>
-        </div>
-
-        <!-- ===== FASE 4: LOGISTIK & PERSEDIAAN ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('persediaanSubmenu')" aria-expanded="false">
-          📦 Stok & Logistik <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="persediaanSubmenu" aria-hidden="true">
-          <a href="stokpakan.html">🥬 Pencatatan Stok Pakan</a>
-          <a href="restockreminder.html">⏰ Restock Reminder</a>
-        </div>
-
-        <!-- ===== FASE 5: KEUANGAN ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('keuanganSubmenu')" aria-expanded="false">
-          💵 Pembukuan Finansial <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="keuanganSubmenu" aria-hidden="true">
-          <a href="keuangan.html">💰 Pemasukan & Pengeluaran</a>
-        </div>
-
-        <!-- ===== FASE 6: PREDIKSI & ANALISIS ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('kelolaSubmenu')" aria-expanded="false">
-          🔮 Analisis Prediktif <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="kelolaSubmenu" aria-hidden="true">
-          <a href="prediksihasil.html">📈 Prediksi Hasil & Laba</a>
-        </div>
-
-        <!-- ===== FASE 7: DOKUMEN & PELAPORAN ===== -->
-        <button class="has-submenu" onclick="toggleSidebarMenu('dokumenSubmenu')" aria-expanded="false">
-          📂 Pusat Dokumen <span class="arrow">▸</span>
-        </button>
-        <div class="submenu" id="dokumenSubmenu" aria-hidden="true">
-          <a href="dokumen.html">📄 Ekspor Laporan</a>
-        </div>
-
-        <!-- ===== TOMBOL KEMBALI KE ADMIN (HANYA UNTUK ADMIN) ===== -->
-        <div id="adminSwitchContainer" style="display: none; margin-top: 1.5rem">
-          <a href="admin.frontend/admin-core/admin.html" class="admin-back-btn" title="Kembali ke Panel Kontrol">
-            🛡️ Kembali ke Admin
-          </a>
-        </div>
-      </nav>
-
-      <!-- ===== PROFIL PENGGUNA ===== -->
-      <div class="sidebar-profile">
-        <img src="images/profilepicture.png" alt="Foto Profil Peternak" class="profile-pic" onclick="goToProfile()" />
-        <div class="profile-name-container">
-          <p class="profile-name"></p>
-          <a href="editProfileTAalip.html" class="edit-profile-icon" title="Edit Profil">&#x270E;</a>
-        </div>
-        <button class="logout-btn" onclick="logoutUser()">🚪 Logout</button>
-      </div>
-    </div>
-  </aside>
+  <aside class="sidebar" aria-label="Sidebar Navigasi"></aside>
 
   <!-- ========================= KONTEN UTAMA ========================== -->
   <!-- Area kerja utama di sisi kanan layar untuk menampilkan widget dan data -->
@@ -945,6 +867,8 @@
 
   <!-- Skrip Utama Sinkronasi Autentikasi -->
   <script type="module" src="firebase.component/auth-state.js"></script>
+    <!-- ========================= UTILITAS UI & SIDEBAR DINAMIS ========================== -->
+  <!-- Memuat skrip helper antarmuka global dan injeksi komponen sidebar otomatis -->
   <script src="js/ui-utils.js"></script>
 </body>
 

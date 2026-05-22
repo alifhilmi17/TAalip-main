@@ -32,6 +32,101 @@ window.toggleSidebarMenu = function(submenuId) {
 };
 
 /**
+ * Memuat isi sidebar secara dinamis dari components/sidebar.html
+ */
+window.loadSidebar = function() {
+    const sidebar = document.querySelector("aside.sidebar");
+    if (!sidebar) return;
+
+    // Tentukan path ke sidebar.html berdasarkan kedalaman folder saat ini
+    const href = window.location.href;
+    let sidebarPath = 'components/sidebar.html';
+    if (href.includes('admin-core')) {
+        sidebarPath = '../../components/sidebar.html';
+    } else if (href.includes('admin.frontend')) {
+        sidebarPath = '../components/sidebar.html';
+    }
+
+    fetch(sidebarPath)
+        .then(response => {
+            if (!response.ok) throw new Error("Template sidebar tidak ditemukan");
+            return response.text();
+        })
+        .then(html => {
+            sidebar.innerHTML = html;
+            
+            // 1. Sorot menu yang sedang aktif secara otomatis
+            window.highlightActiveSidebarMenu();
+            
+            // 2. Isi data profil dari window.userProfileState jika data tersebut sudah termuat dari auth-state.js
+            window.updateSidebarProfileFromGlobalState();
+        })
+        .catch(err => console.error("Gagal memuat sidebar dinamis: ", err));
+};
+
+/**
+ * Otomatis mendeteksi halaman saat ini dan menandai link aktif di sidebar
+ */
+window.highlightActiveSidebarMenu = function() {
+    const currentPath = window.location.pathname;
+    const currentPage = currentPath.substring(currentPath.lastIndexOf('/') + 1) || 'dashboardTAalip.html';
+    
+    const sidebar = document.querySelector("aside.sidebar");
+    if (!sidebar) return;
+    
+    const links = sidebar.querySelectorAll("nav.main-nav a");
+    links.forEach(link => {
+        const hrefAttr = link.getAttribute("href");
+        if (hrefAttr) {
+            // Dapatkan nama file dari atribut href
+            const linkPage = hrefAttr.substring(hrefAttr.lastIndexOf('/') + 1);
+            if (linkPage === currentPage) {
+                link.classList.add("active");
+                
+                // Jika menu berada di dalam submenu, buka submenunya secara otomatis
+                const submenu = link.closest(".submenu");
+                if (submenu) {
+                    submenu.classList.add("show");
+                    submenu.setAttribute("aria-hidden", "false");
+                    
+                    const parentButton = submenu.previousElementSibling;
+                    if (parentButton) {
+                        parentButton.setAttribute("aria-expanded", "true");
+                        parentButton.classList.add("active-parent");
+                    }
+                }
+            } else {
+                link.classList.remove("active");
+            }
+        }
+    });
+};
+
+/**
+ * Memperbarui nama profil dan tombol admin di sidebar dari state global
+ */
+window.updateSidebarProfileFromGlobalState = function() {
+    if (window.userProfileState) {
+        const { displayName, isAdmin } = window.userProfileState;
+        
+        const profileNames = document.querySelectorAll(".profile-name");
+        profileNames.forEach(el => {
+            el.textContent = displayName || "Peternak";
+        });
+        
+        const adminSwitch = document.getElementById("adminSwitchContainer");
+        if (adminSwitch) {
+            adminSwitch.style.display = isAdmin ? "block" : "none";
+        }
+    }
+};
+
+// Panggil pemuatan sidebar secara otomatis saat DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+    window.loadSidebar();
+});
+
+/**
  * Format tanggal YYYY-MM-DD ke teks Indonesia (contoh: "18 Mei 2026")
  */
 window.formatTanggal = function(tglString) {

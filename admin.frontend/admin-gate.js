@@ -28,11 +28,11 @@ document.body.style.transition = 'opacity 0.5s ease';
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
         // Kasus A: Sesi login tidak ditemukan, lempar kembali ke gerbang login Admin
-        console.warn("Akses ditolak: Sesi tidak ditemukan. Mengarahkan ke Admin Login.");
+        console.warn("Akses ditolak: Sesi tidak ditemukan. Mengarahkan ke Portal Login Utama.");
         if (window.location.href.includes('admin-core')) {
-            window.location.href = '../adminlogin.html';
+            window.location.href = '../../login.html';
         } else {
-            window.location.href = 'adminlogin.html';
+            window.location.href = '../login.html';
         }
         return;
     }

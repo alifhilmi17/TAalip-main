@@ -312,14 +312,14 @@ onAuthStateChanged(auth, async (user) => {
                 initAdminDashboard();
             } else {
                 console.warn("User login bukan admin.");
-                window.location.href = "../adminlogin.html";
+                window.location.href = "../../login.html";
             }
         } catch (err) {
             console.error("Auth error:", err);
-            window.location.href = "../adminlogin.html";
+            window.location.href = "../../login.html";
         }
     } else {
-        window.location.href = "../adminlogin.html";
+        window.location.href = "../../login.html";
     }
 });
 
@@ -993,7 +993,7 @@ window.logoutUser = function() {
     }).then((res) => {
         if (res.isConfirmed) {
             signOut(auth).then(() => {
-                window.location.href = "../adminlogin.html";
+                window.location.href = "../../login.html";
             }).catch(err => {
                 Swal.fire('Error', 'Gagal logout: ' + err.message, 'error');
             });

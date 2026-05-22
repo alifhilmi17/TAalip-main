@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
 
+    <!-- Memanggil Animate.css untuk animasi masuk kartu yang halus dan modern -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
     <!-- Memanggil Script SweetAlert2 untuk menangani interaksi Notifikasi / Pop-up -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -22,7 +25,7 @@
 
     <!-- ========================= WADAH KESELURUHAN EDIT PROFIL ========================== -->
     <!-- Kontainer utama dengan sentuhan animasi ringan ('FadeIn') sewaktu pertama kali terbuka -->
-    <div class="edit-profile-container animate__animated animate__fadeIn">
+    <div class="edit-profile-container animate__animated animate__fadeInUp">
 
         <!-- ========================= HEADER KEPALA PROFIL ========================== -->
         <!-- Bagian atas kartu form yang berisi foto, tombol balik, dan warna gradasi judul -->
@@ -31,7 +34,7 @@
             <div class="header-overlay"></div>
 
             <!-- Tombol Navigasi Cepat untuk Pindah ke Halaman Dasbor Utama -->
-            <a href="dashboardTAalip.html" class="back-btn" title="Kembali ke Dashboard">&#8592; Kembali</a>
+            <a href="dashboardTAalip.html" class="back-btn" title="Kembali ke Dashboard"><span>⬅️</span> Kembali</a>
 
             <!-- Elemen Lingkaran Foto Diri (Avatar) -->
             <div class="profile-avatar-container">
@@ -45,7 +48,7 @@
             </div>
 
             <!-- Teks Sambutan di Bawah Avatar -->
-            <h2>Edit Profil Peternak</h2>
+            <h2>Edit Profil Peternak 🧑‍🌾</h2>
             <p>Perbarui informasi akun dan kredensial Anda di sini</p>
         </div>
 
@@ -57,7 +60,7 @@
 
                 <!-- 1. Kolom Sebelah Kiri: Area Perubahan Informasi Pribadi (Biodata) -->
                 <div class="form-section">
-                    <h3>Informasi Dasar</h3>
+                    <h3>👤 Informasi Dasar</h3>
 
                     <div class="input-group">
                         <label for="fullName">Nama Lengkap</label>
@@ -82,7 +85,7 @@
 
                 <!-- 2. Kolom Sebelah Kanan: Area Sensitif (Ganti Kunci Rahasia / Password) -->
                 <div class="form-section password-section">
-                    <h3>Ganti Password <span class="badge-optional">(Opsional)</span></h3>
+                    <h3>🔒 Keamanan Akun <span class="badge-optional">(Opsional)</span></h3>
                     <p class="section-desc">Peringatan: Kosongkan bagian ini jika Anda tidak ingin merubah sandi saat
                         ini.</p>
 
@@ -114,7 +117,9 @@
 
     <!-- Menautkan Script Logika Javascript agar Preview Gambar berfungsi -->
     <script type="module" src="js/editProfileTAalip.js"></script>
-    <script src="js/ui-utils.js"></script>
+      <!-- ========================= UTILITAS UI & SIDEBAR DINAMIS ========================== -->
+  <!-- Memuat skrip helper antarmuka global dan injeksi komponen sidebar otomatis -->
+  <script src="js/ui-utils.js"></script>
 </body>
 
 </html>
