@@ -680,9 +680,29 @@ function renderAdminUserList(users) {
     }
 
     tbody.innerHTML = users.map(user => {
-        const isAuthAdmin = (user.role || '').toLowerCase().includes('admin');
-        const roleLabel = isAuthAdmin ? 'ADMIN' : 'PETUGAS';
-        const roleClass = isAuthAdmin ? 'badge-admin' : 'badge-user';
+        const currentRoleStr = (user.role || '').toLowerCase();
+        let roleLabel = 'PETUGAS';
+        let badgeBg = '#f1f5f9';
+        let badgeColor = '#64748b';
+        let badgeBorder = '#e2e8f0';
+
+        if (currentRoleStr.includes('admin')) {
+            roleLabel = 'ADMIN';
+            badgeBg = '#6366f115';
+            badgeColor = '#6366f1';
+            badgeBorder = '#6366f130';
+        } else if (currentRoleStr.includes('owner')) {
+            roleLabel = 'OWNER';
+            badgeBg = '#f59e0b15';
+            badgeColor = '#d97706';
+            badgeBorder = '#f59e0b30';
+        } else if (currentRoleStr.includes('akuntan')) {
+            roleLabel = 'AKUNTAN';
+            badgeBg = '#10b98115';
+            badgeColor = '#10b981';
+            badgeBorder = '#10b98130';
+        }
+
         const statusLabel = user.disabled ? 'NONAKTIF' : 'AKTIF';
         const statusColor = user.disabled ? '#ef4444' : '#10b981';
 
@@ -710,7 +730,7 @@ function renderAdminUserList(users) {
                 <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${escapeHTML(user.username) || '-'}</code></td>
                 <td style="font-size:0.85rem; color:#64748b;">${escapeHTML(user.email) || '-'}</td>
                 <td style="font-size:0.85rem;">${joinDate}</td>
-                <td><span style="background:${isAuthAdmin ? '#6366f115' : '#f1f5f9'}; color:${isAuthAdmin ? '#6366f1' : '#64748b'}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; border:1px solid ${isAuthAdmin ? '#6366f130' : '#e2e8f0'};">${roleLabel}</span></td>
+                <td><span style="background:${badgeBg}; color:${badgeColor}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; border:1px solid ${badgeBorder};">${roleLabel}</span></td>
                 <td><span style="color:${statusColor}; font-weight:700; font-size:0.75rem;">● ${statusLabel}</span></td>
                 <td>
                     <div style="display:flex; justify-content:center; gap:8px;">
@@ -1234,8 +1254,10 @@ window.openCreateAccountModal = function() {
                 <div class="swal-libas-field" style="margin-top:10px;">
                     <label style="font-weight:600; font-size:0.85rem; display:block; margin-bottom:5px;">🛡️ Hak Akses (Role)</label>
                     <select id="swal-role" class="swal-libas-input" style="width:100%; padding:10px; border-radius:8px; border:1px solid #e2e8f0; background:white;">
-                        <option value="user">User / Staff Operasional</option>
-                        <option value="admin">Administrator Otoritas</option>
+                        <option value="owner">👑 Owner (Akses Penuh & Pemilik)</option>
+                        <option value="admin">🛡️ Administrator (Akses Penuh)</option>
+                        <option value="akuntan">🧾 Akuntan (Akses Keuangan / Petugas)</option>
+                        <option value="user">👨‍🌾 Petugas (Akses Operasional)</option>
                     </select>
                 </div>
             </div>`,
@@ -1272,12 +1294,35 @@ async function createNewUser(userData) {
         const cred = await createUserWithEmailAndPassword(tempAuth, email, password);
         const uid = cred.user.uid;
 
+        // Tentukan jabatan berdasarkan role
+        let newJabatan = 'Petugas';
+        if (role === 'admin') newJabatan = 'Admin';
+        else if (role === 'owner') newJabatan = 'Owner';
+        else if (role === 'akuntan') newJabatan = 'Akuntan';
+
         // Simpan ke Firestore User
-        await setDoc(doc(db, "user", uid), { fullname, username, email, role, createdAt: serverTimestamp(), disabled: false });
+        await setDoc(doc(db, "user", uid), { 
+            fullname, 
+            username, 
+            email, 
+            role, 
+            jabatan: newJabatan,
+            createdAt: serverTimestamp(), 
+            disabled: false 
+        });
         
-        // Jika Admin, tambahkan ke koleksi admin
-        if (role === 'admin') {
-            await setDoc(doc(db, "admin", uid), { uid, fullname, username, email, role: 'admin', promotedAt: serverTimestamp(), type: 'auth_entry', createdBy: currentAdminData?.username || 'Admin' });
+        // Jika Admin atau Owner, tambahkan ke koleksi admin agar bisa login admin panel
+        if (role === 'admin' || role === 'owner') {
+            await setDoc(doc(db, "admin", uid), { 
+                uid, 
+                fullname, 
+                username, 
+                email, 
+                role, 
+                promotedAt: serverTimestamp(), 
+                type: 'auth_entry', 
+                createdBy: currentAdminData?.username || 'Admin' 
+            });
         }
 
         await tempAuth.signOut();
@@ -1356,7 +1401,7 @@ window.openEditUserModal = async function(uid) {
             if (res.isConfirmed) {
                 Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
                 await updateDoc(doc(db, "user", uid), { ...res.value, updatedAt: serverTimestamp() });
-                if (user.role === 'admin') {
+                if (user.role === 'admin' || user.role === 'owner') {
                     await updateDoc(doc(db, "admin", uid), { fullname: res.value.fullname, username: res.value.username });
                 }
                 Swal.fire('Sukses', 'Informasi akun telah diperbarui.', 'success');
@@ -1367,32 +1412,60 @@ window.openEditUserModal = async function(uid) {
 };
 
 window.toggleAdminRole = async function(uid, currentRole) {
-    const isNowAdmin = (currentRole || '').toLowerCase().includes('admin');
-    const newRole = isNowAdmin ? 'user' : 'admin';
-    const actionName = newRole === 'admin' ? 'PROMOSI KE ADMIN' : 'TURUNKAN KE PETUGAS';
-    
-    const confirm = await Swal.fire({
-        title: 'Ubah Hak Akses?',
-        text: `Apakah Anda yakin ingin melakukan ${actionName} pada akun ini?`,
-        icon: 'warning',
+    const { value: selectedNewRole } = await Swal.fire({
+        title: 'Ubah Otoritas Akun',
+        text: 'Pilih tingkat wewenang baru untuk akun ini. Sistem akan menyelaraskan posisi jabatan dan ikon secara otomatis.',
+        input: 'select',
+        inputOptions: {
+            'owner': '👑 Owner (Akses Penuh & Pemilik)',
+            'admin': '🛡️ Administrator (Akses Penuh)',
+            'akuntan': '🧾 Akuntan (Akses Keuangan / Petugas)',
+            'user': '👨‍🌾 Petugas (Akses Operasional)'
+        },
+        inputValue: currentRole || 'user',
         showCancelButton: true,
         confirmButtonColor: '#6366f1',
-        confirmButtonText: 'Ya, Update Otoritas'
+        confirmButtonText: 'Simpan Otoritas',
+        cancelButtonText: 'Batal'
     });
 
-    if (confirm.isConfirmed) {
+    if (selectedNewRole && selectedNewRole !== currentRole) {
         Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
         try {
-            await updateDoc(doc(db, "user", uid), { role: newRole, updatedAt: serverTimestamp() });
-            if (newRole === 'admin') {
+            let newJabatan = 'Petugas';
+            if (selectedNewRole === 'admin') newJabatan = 'Admin';
+            else if (selectedNewRole === 'owner') newJabatan = 'Owner';
+            else if (selectedNewRole === 'akuntan') newJabatan = 'Akuntan';
+
+            // 1. Update data dasar user di koleksi 'user'
+            await updateDoc(doc(db, "user", uid), { 
+                role: selectedNewRole, 
+                jabatan: newJabatan,
+                updatedAt: serverTimestamp() 
+            });
+
+            // 2. Kelola sinkronisasi ke koleksi 'admin'
+            if (selectedNewRole === 'admin' || selectedNewRole === 'owner') {
                 const u = (await getDoc(doc(db, "user", uid))).data();
-                await setDoc(doc(db, "admin", uid), { uid, fullname: u.fullname, username: u.username, email: u.email, role: 'admin', promotedAt: serverTimestamp(), promotedBy: currentAdminData?.username || 'Admin' });
+                await setDoc(doc(db, "admin", uid), { 
+                    uid, 
+                    fullname: u.fullname, 
+                    username: u.username, 
+                    email: u.email, 
+                    role: selectedNewRole, 
+                    promotedAt: serverTimestamp(), 
+                    promotedBy: currentAdminData?.username || 'Admin' 
+                });
             } else {
+                // Hapus jika sebelumnya dia admin/owner, karena sekarang diturunkan ke akuntan/petugas
                 await deleteDoc(doc(db, "admin", uid));
             }
-            Swal.fire('Berhasil', `Hak akses telah diubah menjadi ${newRole.toUpperCase()}.`, 'success');
-            logActivity(currentAdminData?.username || "Admin", "User Management", `Ubah role user ${uid} ke ${newRole}`);
-        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+
+            Swal.fire('Berhasil', `Hak akses telah diubah menjadi ${selectedNewRole.toUpperCase()} dan Jabatan disinkronkan ke "${newJabatan}".`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "User Management", `Ubah role user ${uid} menjadi ${selectedNewRole} (${newJabatan})`);
+        } catch (e) { 
+            Swal.fire('Error', e.message, 'error'); 
+        }
     }
 };
 
@@ -1431,7 +1504,17 @@ window.syncAdminAccounts = async function() {
             const uSnap = await getDoc(uRef);
             if (!uSnap.exists()) {
                 const a = aDoc.data();
-                await setDoc(uRef, { fullname: a.fullname || 'Admin', username: a.username || 'admin', email: a.email, role: 'admin', disabled: false, createdAt: serverTimestamp() });
+                const actualRole = a.role || 'admin';
+                const actualJabatan = actualRole === 'owner' ? 'Owner' : 'Admin';
+                await setDoc(uRef, { 
+                    fullname: a.fullname || 'Admin', 
+                    username: a.username || 'admin', 
+                    email: a.email, 
+                    role: actualRole, 
+                    jabatan: actualJabatan,
+                    disabled: false, 
+                    createdAt: serverTimestamp() 
+                });
                 fixed++;
             }
         }

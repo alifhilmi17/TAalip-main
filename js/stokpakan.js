@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const userData = userSnap.data();
                     currentUserName = userData.fullname || user.displayName || "Petugas";
                     const role = (userData.role || 'petugas').trim().toLowerCase();
-                    currentUserRole = (role === 'admin' || role === 'administrator') ? 'admin' : 'petugas';
+                    currentUserRole = (role === 'admin' || role === 'administrator' || role === 'owner') ? 'admin' : 'petugas';
                 }
             }
         } catch (err) {

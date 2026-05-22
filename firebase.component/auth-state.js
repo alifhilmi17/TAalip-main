@@ -73,9 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (userData.fullname) {
                         displayNameResult = userData.fullname;
                     }
-                    // Tandai sebagai admin jika field role = 'admin' (Case-insensitive)
+                    // Tandai sebagai admin jika field role = 'admin' atau 'owner' (Case-insensitive)
                     const userRoleClean = (userData.role || 'user').trim().toLowerCase();
-                    if (userRoleClean === 'admin' || userRoleClean === 'administrator' || userRoleClean === 'super_admin') {
+                    if (userRoleClean === 'admin' || userRoleClean === 'administrator' || userRoleClean === 'super_admin' || userRoleClean === 'owner') {
                         isAdminUser = true;
                     }
 
@@ -196,7 +196,7 @@ async function executeLogout() {
                 const userDoc = await getDoc(doc(db, "user", user.uid));
                 if (userDoc.exists()) {
                     const roleClean = (userDoc.data().role || 'user').trim().toLowerCase();
-                    if (roleClean === 'admin' || roleClean === 'administrator' || roleClean === 'super_admin') {
+                    if (roleClean === 'admin' || roleClean === 'administrator' || roleClean === 'super_admin' || roleClean === 'owner') {
                         isAdmin = true;
                     }
                 }

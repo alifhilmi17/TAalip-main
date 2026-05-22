@@ -217,6 +217,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 phone: targetPhone         // Simpan Nomor Telepon
             }, { merge: true }); // Merge: true memastikan field lain tidak terhapus (seperti profilePic url dll)
 
+            // === OPTIMALISASI SINKRONISASI: Sinkronisasi ke koleksi 'admin' jika user adalah Admin/Owner ===
+            const adminDocRef = doc(db, "admin", user.uid);
+            const adminDocSnap = await getDoc(adminDocRef);
+            if (adminDocSnap.exists()) {
+                await setDoc(adminDocRef, {
+                    fullname: targetFullName,
+                    username: targetUsername,
+                    email: targetEmail
+                }, { merge: true });
+            }
+
             // Tutup loading dan tampilkan Sukses
             Swal.fire(
                 "Sukses!",

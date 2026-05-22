@@ -32,13 +32,13 @@ function escapeHTML(str) {
 let dataReminders = [];
 let currentUserName = "Pengguna";
 let currentUserRole = "petugas";
+let activeTab = "pending"; // 'pending' (Pending & Usulan), 'selesai' (Selesai)
 
 const reminderCollection = collection(db, "restock_reminders");
 
 document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
-            // ✅ FIX: Deteksi kedalaman folder agar redirect ke login.html utama tidak 404
             const href = window.location.href;
             if (href.includes('admin-core')) {
                 window.location.href = "../../login.html";
@@ -51,27 +51,37 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
+            // Cek koleksi admin
             const adminSnap = await getDoc(doc(db, "admin", user.uid));
             if (adminSnap.exists()) {
-                currentUserRole = "admin";
-                currentUserName = adminSnap.data().fullname || "Admin";
-                document.getElementById('adminSwitchContainer').style.display = 'block';
-                const adminActions = document.getElementById('adminActionsContainer');
-                if (adminActions) adminActions.style.display = 'block';
+                const adminData = adminSnap.data();
+                const role = (adminData.role || 'admin').trim().toLowerCase();
+                currentUserRole = (role === 'admin' || role === 'administrator' || role === 'owner') ? 'admin' : 'petugas';
+                currentUserName = adminData.fullname || adminData.username || "Admin";
+                
+                const switchContainer = document.getElementById('adminSwitchContainer');
+                if (switchContainer) switchContainer.style.display = 'block';
             } else {
+                // Cek koleksi user
                 const userSnap = await getDoc(doc(db, "user", user.uid));
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
                     currentUserName = userData.fullname || "Petugas";
-                    const role = (userData.role || 'petugas').toLowerCase();
-                    currentUserRole = role.includes('admin') ? 'admin' : 'petugas';
-                    if (currentUserRole === 'admin') {
-                        const adminActions = document.getElementById('adminActionsContainer');
-                        if (adminActions) adminActions.style.display = 'block';
-                    }
+                    const role = (userData.role || 'petugas').trim().toLowerCase();
+                    currentUserRole = (role === 'admin' || role === 'administrator' || role === 'owner') ? 'admin' : 'petugas';
                 }
             }
-            // WARN-06 FIX: Gunakan null check agar tidak crash jika elemen tidak ada
+
+            // Update teks tombol aksi di header
+            const btnAction = document.getElementById('btnActionReminder');
+            if (btnAction) {
+                if (currentUserRole === 'admin') {
+                    btnAction.innerHTML = `➕ Buat Reminder Baru`;
+                } else {
+                    btnAction.innerHTML = `➕ Ajukan Kebutuhan Pakan`;
+                }
+            }
+
             const profileEl = document.querySelector('.profile-name');
             if (profileEl) profileEl.innerText = currentUserName;
         } catch (err) {
@@ -79,11 +89,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         startFirestoreListener();
+        startLiveStockListener();
     });
 });
 
 let isInitialLoad = true;
 
+// ==========================================
+// FIREBASE LISTENERS
+// ==========================================
 function startFirestoreListener() {
     const q = query(reminderCollection, orderBy("tglBatas", "asc"));
     onSnapshot(q, (snapshot) => {
@@ -113,57 +127,178 @@ function startFirestoreListener() {
     });
 }
 
+function startLiveStockListener() {
+    const q = collection(db, "stok_pakan");
+    onSnapshot(q, (snapshot) => {
+        const items = snapshot.docs.map(d => d.data());
+        
+        // Hitung sisa stok per jenis pakan
+        const stockMap = {};
+        items.forEach(item => {
+            const jenis = item.jenis || item.namaBarang || 'Lainnya';
+            const tipe = item.tipe || 'Masuk';
+            const jumlah = parseFloat(item.jumlah) || 0;
+            
+            if (!stockMap[jenis]) {
+                stockMap[jenis] = { masuk: 0, keluar: 0 };
+            }
+            if (tipe === 'Masuk') {
+                stockMap[jenis].masuk += jumlah;
+            } else if (tipe === 'Keluar') {
+                stockMap[jenis].keluar += jumlah;
+            }
+        });
+        
+        renderLiveStockWidget(stockMap);
+    });
+}
+
+// ==========================================
+// RENDERING FUNCTIONS
+// ==========================================
+function renderLiveStockWidget(stockMap) {
+    const grid = document.getElementById('liveStockGrid');
+    if (!grid) return;
+    
+    const keys = Object.keys(stockMap);
+    if (keys.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 15px; text-align: center; color: #64748b;">Belum ada data stok pakan tercatat.</div>`;
+        return;
+    }
+    
+    let html = '';
+    keys.forEach(jenis => {
+        const data = stockMap[jenis];
+        const sisa = Math.max(0, data.masuk - data.keluar);
+        const isLow = sisa < 50; // Threshold stok kritis pakan menipis
+        
+        const cardClass = isLow ? 'stock-item-card low-stock animate__animated animate__pulse animate__infinite' : 'stock-item-card';
+        const statusText = isLow ? 'Tipis ⚠️' : 'Aman ✓';
+        const statusClass = isLow ? 'status-tipis' : 'status-aman';
+        
+        html += `
+            <div class="${cardClass}">
+                <div>
+                    <span class="stock-item-name">📦 ${escapeHTML(jenis)}</span>
+                    <div class="stock-item-value">${sisa.toLocaleString('id-ID')} Kg</div>
+                </div>
+                <span class="stock-item-status ${statusClass}">${statusText}</span>
+            </div>
+        `;
+    });
+    
+    grid.innerHTML = html;
+}
+
 function renderReminders() {
     const container = document.getElementById('reminderListContainer');
     if (!container) return;
 
-    if (dataReminders.length === 0) {
-        container.innerHTML = `<div class="empty-state">
+    // Hitung jumlah untuk badge tab
+    const countPending = dataReminders.filter(r => r.status === 'Pending' || r.status === 'Usulan' || !r.status).length;
+    const countSelesai = dataReminders.filter(r => r.status === 'Selesai').length;
+
+    const badgePending = document.getElementById('badgePendingCount');
+    const badgeSelesai = document.getElementById('badgeSelesaiCount');
+
+    if (badgePending) {
+        badgePending.innerText = countPending;
+        if (countPending > 0) badgePending.classList.remove('count-zero');
+        else badgePending.classList.add('count-zero');
+    }
+    if (badgeSelesai) {
+        badgeSelesai.innerText = countSelesai;
+        if (countSelesai > 0) badgeSelesai.classList.remove('count-zero');
+        else badgeSelesai.classList.add('count-zero');
+    }
+
+    // Filter reminder sesuai tab aktif
+    let filteredData = [];
+    if (activeTab === 'pending') {
+        filteredData = dataReminders.filter(r => r.status === 'Pending' || r.status === 'Usulan' || !r.status);
+    } else {
+        filteredData = dataReminders.filter(r => r.status === 'Selesai');
+    }
+
+    if (filteredData.length === 0) {
+        container.innerHTML = `<div class="empty-state animate__animated animate__fadeIn">
             <span class="empty-icon">📂</span>
-            <p>Tidak ada pengingat restock saat ini.</p>
+            <p>${activeTab === 'pending' ? 'Tidak ada pengingat restock yang butuh tindakan.' : 'Belum ada riwayat restock pakan.'}</p>
         </div>`;
         return;
     }
 
     let html = '';
-    dataReminders.forEach(r => {
+    filteredData.forEach(r => {
         const isSelesai = r.status === 'Selesai';
-        const cardClass = isSelesai ? 'selesai' : (r.prioritas === 'Tinggi' ? 'tinggi' : '');
-        const badgePrioritas = r.prioritas === 'Tinggi' ? '<span class="badge badge-tinggi">⚠️ Prioritas Tinggi</span>' : '<span class="badge badge-sedang">⏳ Prioritas Sedang</span>';
-        const badgeStatus = isSelesai ? '<span class="badge badge-selesai">✅ Selesai Di-restock</span>' : '<span class="badge badge-pending">⏱️ Pending</span>';
+        const isUsulan = r.status === 'Usulan';
         
-        let actions = '';
+        let cardClass = '';
+        if (isSelesai) cardClass = 'selesai';
+        else if (isUsulan) cardClass = 'usulan';
+        else if (r.prioritas === 'Tinggi') cardClass = 'tinggi';
+
+        // Beacon / lampu denyut untuk prioritas tinggi yang belum selesai
+        const showBeacon = r.prioritas === 'Tinggi' && !isSelesai;
+        const beaconHtml = showBeacon ? '<span class="pulse-beacon" title="Mendesak!"></span>' : '';
+
+        // Badge Prioritas
+        const badgePrioritas = r.prioritas === 'Tinggi' 
+            ? '<span class="badge badge-tinggi">⚠️ Prioritas Tinggi</span>' 
+            : '<span class="badge badge-sedang">⏳ Prioritas Sedang</span>';
+
+        // Badge Status
+        let badgeStatus = '';
+        if (isSelesai) {
+            badgeStatus = '<span class="badge badge-selesai">✅ Selesai Di-restock</span>';
+        } else if (isUsulan) {
+            badgeStatus = '<span class="badge badge-usulan">💡 Usulan Baru</span>';
+        } else {
+            badgeStatus = '<span class="badge badge-pending">⏱️ Pending</span>';
+        }
+
+        let actionsHtml = '';
         if (currentUserRole === 'admin') {
-            if (!isSelesai) {
-                actions += `<button onclick="markSelesai('${r.id}')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600; margin-right:5px;">✓ Tandai Selesai</button>`;
+            if (isUsulan) {
+                // Admin/Owner menyetujui usulan
+                actionsHtml += `<button onclick="approveUsulan('${r.id}')" class="action-btn btn-indigo-solid">✓ Setujui Usulan</button>`;
+            } else if (!isSelesai) {
+                // Admin/Owner menandai selesai
+                actionsHtml += `<button onclick="markSelesai('${r.id}')" class="action-btn btn-success-solid">✓ Tandai Selesai</button>`;
             }
-            actions += `<button onclick="deleteReminder('${r.id}')" style="background:#fee2e2; color:#ef4444; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600;">🗑️ Hapus</button>`;
-        } else if (currentUserRole === 'petugas') {
-            if (!isSelesai) {
-                actions += `<button onclick="markSelesai('${r.id}')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600;">✓ Restock Selesai</button>`;
+            // Admin/Owner selalu bisa menghapus
+            actionsHtml += `<button onclick="deleteReminder('${r.id}')" class="action-btn btn-danger-light">🗑️ Hapus</button>`;
+        } else {
+            // Petugas / Akuntan
+            if (isUsulan) {
+                actionsHtml += `<span style="color:#6366f1; font-weight:600; font-size:0.8rem; font-style:italic;">⌛ Menunggu Persetujuan Admin</span>`;
+            } else if (!isSelesai) {
+                // Tombol restock selesai untuk staff
+                actionsHtml += `<button onclick="markSelesai('${r.id}')" class="action-btn btn-success-solid">✓ Restock Selesai</button>`;
             } else {
-                actions += `<span style="color:#10b981; font-weight:bold; font-size:0.9rem;">Telah Direstock</span>`;
+                actionsHtml += `<span style="color:#10b981; font-weight:bold; font-size:0.9rem;">Telah Direstock</span>`;
             }
         }
 
         const dateStr = r.tglBatas ? new Date(r.tglBatas).toLocaleDateString('id-ID', {day: 'numeric', month: 'long', year: 'numeric'}) : '-';
 
         html += `
-            <div class="reminder-card ${cardClass}">
+            <div class="reminder-card ${cardClass} animate__animated animate__fadeInUp">
                 <div class="reminder-info">
-                    <h4>📦 ${escapeHTML(r.jenisPakan)}</h4>
-                    <p>${escapeHTML(r.catatan) || 'Tidak ada catatan tambahan'}</p>
+                    <h4 style="display: flex; align-items: center;">${beaconHtml}📦 ${escapeHTML(r.jenisPakan)}</h4>
+                    <p style="margin: 6px 0 10px 0; font-size: 0.9rem; line-height: 1.4;">${escapeHTML(r.catatan) || 'Tidak ada catatan tambahan'}</p>
                     <div class="reminder-meta">
                         <span>Batas Waktu: ${dateStr}</span>
                         ${badgePrioritas}
                         ${badgeStatus}
                     </div>
-                    <div style="margin-top:8px; font-size:0.75rem; color:#94a3b8;">
-                        Dibuat oleh: ${escapeHTML(r.dibuatOleh)}
+                    <div style="margin-top:10px; font-size:0.75rem; color:#94a3b8;">
+                        Diajukan oleh: <strong>${escapeHTML(r.dibuatOleh || 'Petugas')}</strong>
+                        ${r.diselesaikanOleh ? ` | Direstock oleh: <strong>${escapeHTML(r.diselesaikanOleh)}</strong>` : ''}
                     </div>
                 </div>
-                <div class="reminder-actions">
-                    ${actions}
+                <div class="reminder-actions" style="display:flex; gap:8px;">
+                    ${actionsHtml}
                 </div>
             </div>
         `;
@@ -172,6 +307,29 @@ function renderReminders() {
     container.innerHTML = html;
 }
 
+// ==========================================
+// TABS NAVIGATION CONTROLLER
+// ==========================================
+window.switchTab = function(tabName) {
+    activeTab = tabName;
+    
+    const btnPending = document.getElementById('tabPendingBtn');
+    const btnSelesai = document.getElementById('tabSelesaiBtn');
+    
+    if (tabName === 'pending') {
+        if (btnPending) btnPending.classList.add('active');
+        if (btnSelesai) btnSelesai.classList.remove('active');
+    } else {
+        if (btnPending) btnPending.classList.remove('active');
+        if (btnSelesai) btnSelesai.classList.add('active');
+    }
+    
+    renderReminders();
+};
+
+// ==========================================
+// ACTION HANDLERS & MODALS
+// ==========================================
 window.openReminderModal = function() {
     document.getElementById('reminderForm').reset();
     document.getElementById('reminderId').value = "";
@@ -181,7 +339,7 @@ window.openReminderModal = function() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('tglReminder').value = tomorrow.toISOString().split('T')[0];
 
-    document.getElementById('modalTitle').innerText = "Buat Reminder Baru";
+    document.getElementById('modalTitle').innerText = currentUserRole === 'admin' ? "Buat Reminder Baru" : "Ajukan Usulan Kebutuhan Pakan";
     document.getElementById('reminderModal').classList.add('show');
 };
 
@@ -193,9 +351,11 @@ window.saveReminder = async function(e) {
     e.preventDefault();
     const id = document.getElementById('reminderId').value;
     
-    // BUG-10 FIX: Saat mode edit, pertahankan status lama (jangan selalu set 'Pending').
-    // Ini mencegah reminder yang sudah 'Selesai' ter-reset saat admin mengedit field lain.
-    let statusToSave = 'Pending'; // default untuk data baru
+    let statusToSave = 'Pending'; // default untuk data baru oleh Admin
+    if (currentUserRole !== 'admin') {
+        statusToSave = 'Usulan'; // Otomatis berstatus 'Usulan' untuk Petugas/Akuntan
+    }
+    
     if (id) {
         const existingReminder = dataReminders.find(r => r.id === id);
         statusToSave = existingReminder ? existingReminder.status : 'Pending';
@@ -215,7 +375,12 @@ window.saveReminder = async function(e) {
         if (!id) {
             payload.createdAt = serverTimestamp();
             await addDoc(reminderCollection, payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Reminder berhasil dibuat.', timer: 1500, showConfirmButton: false });
+            
+            const successMsg = currentUserRole === 'admin' 
+                ? 'Reminder restock berhasil dibuat.' 
+                : 'Usulan kebutuhan pakan berhasil diajukan untuk disetujui.';
+                
+            Swal.fire({ icon: 'success', title: 'Berhasil', text: successMsg, timer: 2000, showConfirmButton: false });
         } else {
             await updateDoc(doc(db, "restock_reminders", id), payload);
             Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Reminder diperbarui.', timer: 1500, showConfirmButton: false });
@@ -226,21 +391,57 @@ window.saveReminder = async function(e) {
     }
 };
 
+window.approveUsulan = function(id) {
+    Swal.fire({
+        title: 'Setujui Usulan Pakan',
+        text: 'Apakah Anda yakin ingin menyetujui usulan pengadaan pakan ini dan memindahkannya ke antrean restock?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#6366f1',
+        confirmButtonText: 'Ya, Setujui Usulan',
+        cancelButtonText: 'Batal'
+    }).then(async (res) => {
+        if (res.isConfirmed) {
+            try {
+                await updateDoc(doc(db, "restock_reminders", id), {
+                    status: 'Pending',
+                    disetujuiOleh: currentUserName,
+                    disetujuiPada: serverTimestamp(),
+                    updatedAt: serverTimestamp()
+                });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Disetujui',
+                    text: 'Usulan pakan berhasil disetujui.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
+        }
+    });
+};
+
 window.markSelesai = function(id) {
     Swal.fire({
-        title: 'Konfirmasi',
-        text: 'Tandai pengingat ini bahwa pakan telah di-restock?',
+        title: 'Konfirmasi Restock',
+        text: 'Tandai pengingat ini bahwa pakan telah berhasil di-restock?',
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'Ya, Tandai Selesai'
     }).then(async (res) => {
         if (res.isConfirmed) {
-            await updateDoc(doc(db, "restock_reminders", id), {
-                status: 'Selesai',
-                diselesaikanOleh: currentUserName,
-                waktuSelesai: serverTimestamp()
-            });
-            Swal.fire('Selesai', 'Pakan telah ditandai berhasil direstock.', 'success');
+            try {
+                await updateDoc(doc(db, "restock_reminders", id), {
+                    status: 'Selesai',
+                    diselesaikanOleh: currentUserName,
+                    waktuSelesai: serverTimestamp()
+                });
+                Swal.fire('Selesai', 'Pakan telah ditandai berhasil direstock.', 'success');
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
         }
     });
 };
@@ -248,15 +449,19 @@ window.markSelesai = function(id) {
 window.deleteReminder = function(id) {
     Swal.fire({
         title: 'Hapus Reminder?',
-        text: 'Data ini akan dihapus permanen.',
+        text: 'Data ini akan dihapus secara permanen dari sistem.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Hapus'
+        confirmButtonText: 'Ya, Hapus'
     }).then(async (res) => {
         if (res.isConfirmed) {
-            await deleteDoc(doc(db, "restock_reminders", id));
-            Swal.fire('Terhapus', 'Reminder telah dihapus.', 'success');
+            try {
+                await deleteDoc(doc(db, "restock_reminders", id));
+                Swal.fire('Terhapus', 'Reminder telah berhasil dihapus.', 'success');
+            } catch (err) {
+                Swal.fire('Error', err.message, 'error');
+            }
         }
     });
 };

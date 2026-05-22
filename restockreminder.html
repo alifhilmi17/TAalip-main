@@ -18,26 +18,167 @@
     <!-- ========================= LIBRARY ========================== -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
+        /* CSS Perombakan Premium */
+        .live-stock-widget {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+        }
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .widget-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #1e293b;
+            font-weight: 700;
+        }
+        .refresh-indicator {
+            font-size: 0.75rem;
+            color: #10b981;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .widget-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
+        .stock-item-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        .stock-item-card:hover {
+            transform: translateY(-2px);
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .stock-item-card.low-stock {
+            background: #fff7ed;
+            border-color: #ffd8a8;
+        }
+        .stock-item-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+        .stock-item-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 5px;
+        }
+        .stock-item-card.low-stock .stock-item-value {
+            color: #ea580c;
+        }
+        .stock-item-status {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 8px;
+            align-self: flex-start;
+        }
+        .status-aman {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-tipis {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Tabs Container */
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #64748b;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tab-btn:hover {
+            color: #475569;
+            background: #f8fafc;
+        }
+        .tab-btn.active {
+            color: #4f46e5;
+            background: #eeebff;
+        }
+        .tab-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 20px;
+            line-height: 1;
+        }
+        .tab-badge.count-zero {
+            background: #94a3b8;
+        }
+
+        /* Premium Card Improvements */
         .reminder-card {
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-left: 6px solid #f59e0b;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
             border-radius: 12px;
             padding: 20px;
-            border-left: 5px solid #f59e0b;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-
+        .reminder-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06);
+            border-color: #cbd5e1;
+        }
         .reminder-card.tinggi {
             border-left-color: #ef4444;
-            background: #fef2f2;
+            background: #fffbfa;
         }
-
         .reminder-card.selesai {
             border-left-color: #10b981;
-            opacity: 0.7;
+            background: #fcfdfd;
+            opacity: 0.85;
+        }
+        .reminder-card.usulan {
+            border-left-color: #6366f1;
+            background: #fcfcff;
         }
 
         .reminder-info h4 {
@@ -58,11 +199,13 @@
             margin-top: 10px;
             font-size: 0.8rem;
             font-weight: 600;
+            align-items: center;
         }
 
         .badge {
             padding: 4px 10px;
             border-radius: 20px;
+            font-size: 0.75rem;
         }
 
         .badge-tinggi {
@@ -85,8 +228,75 @@
             color: #4338ca;
         }
 
-        .admin-only {
-            display: none;
+        .badge-usulan {
+            background: #fff7ed;
+            color: #ea580c;
+            border: 1px dashed #ffd8a8;
+        }
+
+        /* Pulsating beacons */
+        .pulse-beacon {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            animation: pulse 1.6s infinite;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+            }
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        .action-btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .btn-success-solid {
+            background: #10b981;
+            color: white;
+        }
+        .btn-success-solid:hover {
+            background: #059669;
+            transform: scale(1.02);
+        }
+        .btn-danger-light {
+            background: #fef2f2;
+            color: #ef4444;
+            border: 1px solid #fee2e2;
+        }
+        .btn-danger-light:hover {
+            background: #fee2e2;
+            transform: scale(1.02);
+        }
+        .btn-indigo-solid {
+            background: #6366f1;
+            color: white;
+        }
+        .btn-indigo-solid:hover {
+            background: #4f46e5;
+            transform: scale(1.02);
         }
     </style>
 </head>
@@ -102,16 +312,38 @@
                 <h2>⏰ Restock Reminder</h2>
                 <p>Pengingat pemesanan ulang pakan untuk mencegah kehabisan stok</p>
             </div>
-            <div class="header-actions admin-only" id="adminActionsContainer">
-                <button class="btn-primary" onclick="openReminderModal()">
-                    ➕ Buat Reminder Baru
+            <div class="header-actions" id="actionsContainer">
+                <button class="btn-primary" onclick="openReminderModal()" id="btnActionReminder">
+                    ➕ Ajukan Kebutuhan Pakan
                 </button>
             </div>
         </header>
 
+        <!-- Live Feed Stock Tracker Widget -->
+        <div class="live-stock-widget animate__animated animate__fadeInUp">
+            <div class="widget-header">
+                <h3>📊 Live Feed Stock Tracker</h3>
+                <span class="refresh-indicator">⚡ Terhubung Secara Real-time</span>
+            </div>
+            <div class="widget-grid" id="liveStockGrid">
+                <div class="empty-state" style="grid-column: 1/-1; padding: 10px; text-align: center;">
+                    <p style="margin: 0; color: #64748b; font-size: 0.85rem;">Memuat data stok pakan riil...</p>
+                </div>
+            </div>
+        </div>
+
         <section class="animate__animated animate__fadeInUp" style="margin-top:20px;">
             <div class="shadow-card" style="padding: 20px;">
-                <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Daftar Pengingat</h3>
+                <!-- Tabs Navigation -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" onclick="switchTab('pending')" id="tabPendingBtn">
+                        ⏳ Butuh Restock <span class="tab-badge count-zero" id="badgePendingCount">0</span>
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('selesai')" id="tabSelesaiBtn">
+                        ✅ Riwayat Restock <span class="tab-badge count-zero" id="badgeSelesaiCount">0</span>
+                    </button>
+                </div>
+
                 <div id="reminderListContainer">
                     <div class="empty-state">
                         <span class="empty-icon">📂</span>
@@ -165,14 +397,9 @@
 
     <!-- Script Utama -->
     <script type="module" src="js/restockreminder.js"></script>
-    <script>
-        
-            else { el.classList.remove('open'); }
-        };
-    </script>
-      <!-- ========================= UTILITAS UI & SIDEBAR DINAMIS ========================== -->
-  <!-- Memuat skrip helper antarmuka global dan injeksi komponen sidebar otomatis -->
-  <script src="js/ui-utils.js"></script>
+    <!-- ========================= UTILITAS UI & SIDEBAR DINAMIS ========================== -->
+    <!-- Memuat skrip helper antarmuka global dan injeksi komponen sidebar otomatis -->
+    <script src="js/ui-utils.js"></script>
 </body>
 
 </html>
