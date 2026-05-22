@@ -34,6 +34,19 @@ const firebaseConfig = {
 };
 
 // =========================================================
+// Helper: Anti-XSS HTML Sanitizer (Mencegah Stored XSS)
+// =========================================================
+function escapeHTML(str) {
+    if (str === undefined || str === null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// =========================================================
 // 2. VARIABEL GLOBAL & STATE MANAGEMENT
 // =========================================================
 let currentAdminData = null;
@@ -691,11 +704,11 @@ function renderAdminUserList(users) {
         return `
             <tr>
                 <td style="text-align:left;">
-                    <div style="font-weight:600; color:#1e293b;">${user.fullname || '-'}</div>
-                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${roleIcon} ${user.jabatan}</div>` : ''}
+                    <div style="font-weight:600; color:#1e293b;">${escapeHTML(user.fullname) || '-'}</div>
+                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${roleIcon} ${escapeHTML(user.jabatan)}</div>` : ''}
                 </td>
-                <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${user.username || '-'}</code></td>
-                <td style="font-size:0.85rem; color:#64748b;">${user.email || '-'}</td>
+                <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${escapeHTML(user.username) || '-'}</code></td>
+                <td style="font-size:0.85rem; color:#64748b;">${escapeHTML(user.email) || '-'}</td>
                 <td style="font-size:0.85rem;">${joinDate}</td>
                 <td><span style="background:${isAuthAdmin ? '#6366f115' : '#f1f5f9'}; color:${isAuthAdmin ? '#6366f1' : '#64748b'}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; border:1px solid ${isAuthAdmin ? '#6366f130' : '#e2e8f0'};">${roleLabel}</span></td>
                 <td><span style="color:${statusColor}; font-weight:700; font-size:0.75rem;">● ${statusLabel}</span></td>
@@ -729,8 +742,8 @@ function renderAdminAyamSnapshot(data) {
 
     tbody.innerHTML = data.slice(0, 10).map(a => `
         <tr>
-            <td><strong style="color:#1e293b;">${a.customId || (a.id ? a.id.slice(0, 8) : '-')}</strong></td>
-            <td>${a.jenis || '-'}</td>
+            <td><strong style="color:#1e293b;">${escapeHTML(a.customId) || (a.id ? a.id.slice(0, 8) : '-')}</strong></td>
+            <td>${escapeHTML(a.jenis) || '-'}</td>
             <td><span style="color:${a.status === 'Aktif' ? '#10b981' : '#64748b'}; font-weight:700;">${a.status || '-'}</span></td>
             <td style="font-weight:600;">${(a.sisaAyam || 0).toLocaleString('id-ID')} Ekor</td>
             <td><button onclick="openAyamDetail('${a.id || ''}')" class="action-btn-small btn-detail">Detail</button></td>
@@ -745,7 +758,7 @@ function renderAdminKeuanganSnapshot(data) {
     tbody.innerHTML = data.map(t => `
         <tr>
             <td style="font-size:0.85rem;">${t.tanggal ? new Date(t.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '-'}</td>
-            <td style="font-size:0.85rem;">${t.deskripsi || '-'}</td>
+            <td style="font-size:0.85rem;">${escapeHTML(t.deskripsi) || '-'}</td>
             <td><span style="color:${t.tipe === 'pemasukan' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${(t.tipe || '-').toUpperCase()}</span></td>
             <td style="font-weight:700;">Rp ${parseInt(t.jumlah || 0).toLocaleString('id-ID')}</td>
             <td><button onclick="openKeuanganDetail('${t.id || ''}')" class="action-btn-small btn-edit">Edit</button></td>
@@ -775,7 +788,7 @@ function renderAdminPakanSnapshot(data) {
     tbody.innerHTML = data.map(p => `
         <tr>
             <td>${p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-            <td>${p.jenis || p.namaBarang || '-'}</td>
+            <td>${escapeHTML(p.jenis || p.namaBarang || '-')}</td>
             <td><span style="color:${p.tipe === 'Masuk' ? '#10b981' : '#ef4444'}; font-weight:700; font-size:0.75rem;">${(p.tipe || '-').toUpperCase()}</span></td>
             <td style="font-weight:600;">${p.jumlah || 0} Kg</td>
             <td><button onclick="openPakanDetail('${p.id || ''}')" class="action-btn-small btn-authority">Edit</button></td>
@@ -790,9 +803,9 @@ function renderAdminKesehatanSnapshot(data) {
     tbody.innerHTML = data.map(h => `
         <tr>
             <td>${h.tanggal ? new Date(h.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-            <td>${h.batchName || 'Batch Global'}</td>
+            <td>${escapeHTML(h.batchName || 'Batch Global')}</td>
             <td style="color:#ef4444; font-weight:700;">${h.jmlMati || 0} Ekor</td>
-            <td style="font-size:0.8rem; color:#64748b;">${h.sebab || '-'}</td>
+            <td style="font-size:0.8rem; color:#64748b;">${escapeHTML(h.sebab) || '-'}</td>
             <td><button onclick="openKesehatanDetail('${h.id || ''}')" class="action-btn-small" style="background:#ef4444;">Edit</button></td>
         </tr>`).join('');
 }
@@ -805,8 +818,8 @@ function renderAdminVaksinSnapshot(data) {
     tbody.innerHTML = data.map(v => `
         <tr>
             <td>${v.tanggal ? new Date(v.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-            <td style="font-weight:600;">${v.jenis || '-'}</td>
-            <td style="font-size:0.85rem;">${v.batchName || '-'}</td>
+            <td style="font-weight:600;">${escapeHTML(v.jenis) || '-'}</td>
+            <td style="font-size:0.85rem;">${escapeHTML(v.batchName) || '-'}</td>
             <td><span style="background:${v.status === 'Selesai' ? '#d1fae5' : '#fef3c7'}; color:${v.status === 'Selesai' ? '#065f46' : '#92400e'}; padding:2px 8px; border-radius:10px; font-size:0.7rem; font-weight:700;">${(v.status || '-').toUpperCase()}</span></td>
             <td><button onclick="openVaksinDetail('${v.id || ''}')" class="action-btn-small" style="background:#8b5cf6;">Edit</button></td>
         </tr>`).join('');
@@ -891,7 +904,7 @@ function renderAdminActivities(activities) {
     if (!list) return;
     list.innerHTML = activities.map(item => `
         <li style="display:flex; justify-content:space-between; align-items:center; padding:12px 15px; border-bottom:1px solid #f1f5f9; background:${item.completed ? '#f8fafc' : 'transparent'}; transition: all 0.2s;">
-            <span style="flex:1; font-size:0.9rem; ${item.completed ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b; font-weight:500;'}">${item.text}</span>
+            <span style="flex:1; font-size:0.9rem; ${item.completed ? 'text-decoration:line-through; color:#94a3b8;' : 'color:#1e293b; font-weight:500;'}">${escapeHTML(item.text)}</span>
             <div style="display:flex; gap:8px;">
                 <button onclick="toggleAdminActivity('${item.id}', ${item.completed})" style="background:${item.completed ? '#64748b' : '#10b981'}; color:white; border:none; width:30px; height:30px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.8rem; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">${item.completed ? '↩' : '✔'}</button>
                 <button onclick="deleteAdminActivity('${item.id}')" style="background:#ef4444; color:white; border:none; width:30px; height:30px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.8rem; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.9)'" onmouseup="this.style.transform='scale(1)'">✕</button>
@@ -913,12 +926,12 @@ function renderAdminAnnouncements(ann) {
             <li class="announcement-card-modern" style="border-left-color: ${count > 0 ? '#10b981' : '#f59e0b'}">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                     <div style="flex:1;">
-                        <p style="margin:0 0 10px 0; font-weight:700; font-size:1.05rem; color:#1e293b;">${item.text}</p>
+                        <p style="margin:0 0 10px 0; font-weight:700; font-size:1.05rem; color:#1e293b;">${escapeHTML(item.text)}</p>
                         <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                             <span style="font-size:0.8rem; color:#64748b;">🕒 ${date}</span>
                             <span style="background:${count > 0 ? '#dcfce7' : '#fff7ed'}; color:${count > 0 ? '#166534' : '#c2410c'}; padding:4px 12px; border-radius:50px; font-size:0.75rem; font-weight:700; border: 1px solid ${count > 0 ? '#bbf7d0' : '#ffedd5'};">✅ ${count} Konfirmasi</span>
                         </div>
-                        ${count > 0 ? `<div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;">${confirmedBy.map(n => `<span style="font-size:0.7rem; background:#f1f5f9; padding:3px 8px; border-radius:6px; color:#475569; border:1px solid #e2e8f0;">${n}</span>`).join('')}</div>` : ''}
+                        ${count > 0 ? `<div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;">${confirmedBy.map(n => `<span style="font-size:0.7rem; background:#f1f5f9; padding:3px 8px; border-radius:6px; color:#475569; border:1px solid #e2e8f0;">${escapeHTML(n)}</span>`).join('')}</div>` : ''}
                     </div>
                     <button onclick="deleteAdminAnnouncement('${item.id}')" class="btn-delete" style="padding:6px 12px; font-size:0.75rem; border-radius:8px;">Hapus</button>
                 </div>
@@ -934,8 +947,8 @@ function renderAdminSchedules(sch) {
     tbody.innerHTML = sch.map(s => `
         <tr>
             <td style="font-size:0.8rem; font-weight:600; color:#1e293b;">${s.tanggal}<br><small style="color:#64748b; font-weight:400;">${s.waktu}</small></td>
-            <td style="font-size:0.9rem; font-weight:700; color:#3b82f6; text-align:left;">${s.agenda}</td>
-            <td style="font-size:0.85rem; color:#64748b;">${s.ruangan}</td>
+            <td style="font-size:0.9rem; font-weight:700; color:#3b82f6; text-align:left;">${escapeHTML(s.agenda)}</td>
+            <td style="font-size:0.85rem; color:#64748b;">${escapeHTML(s.ruangan)}</td>
             <td><button onclick="deleteAdminSchedule('${s.id}')" style="background:#fee2e2; color:#ef4444; border:1px solid #fecaca; width:30px; height:30px; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center;">🗑</button></td>
         </tr>`).join('');
 }
@@ -964,9 +977,9 @@ function renderSystemLogs(logs) {
         return `
             <tr>
                 <td style="white-space:nowrap; font-size:0.8rem; color:#64748b;">${timeStr}</td>
-                <td><strong style="color:#1e293b;">${l.user || 'System'}</strong></td>
-                <td><span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid #e2e8f0;">${l.modul || '-'}</span></td>
-                <td style="font-size:0.85rem; text-align:left; color:#334155; line-height:1.4;">${l.aksi || '-'}</td>
+                <td><strong style="color:#1e293b;">${escapeHTML(l.user || 'System')}</strong></td>
+                <td><span style="background:#f1f5f9; color:#475569; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:600; border:1px solid #e2e8f0;">${escapeHTML(l.modul || '-')}</span></td>
+                <td style="font-size:0.85rem; text-align:left; color:#334155; line-height:1.4;">${escapeHTML(l.aksi || '-')}</td>
             </tr>`;
     }).join('');
 }

@@ -15,11 +15,9 @@ import { logActivity } from "./admin-core/admin.js";
 
 /**
  * ===== 1. INISIALISASI KEAMANAN =====
- * Sembunyikan konten utama sampai verifikasi selesai agar tidak terjadi "flicker"
- * demi menjaga integritas privasi data admin.
+ * Konten disembunyikan secara absolut menggunakan CSS (display: none)
+ * demi menjaga integritas privasi data admin sebelum terverifikasi.
  */
-document.body.style.opacity = '0';
-document.body.style.transition = 'opacity 0.5s ease';
 
 /**
  * ===== 2. MONITOR STATUS AUTENTIKASI =====
@@ -52,8 +50,8 @@ onAuthStateChanged(auth, async (user) => {
             // Dokumentasikan akses masuk ke Log Aktivitas Global
             logActivity(adminData.username || user.email, "Otentikasi", "Login ke Panel Admin Berhasil");
             
-            // Tampilkan kembali interface setelah status admin terverifikasi
-            document.body.style.opacity = '1';
+            // ✅ Buka gerbang visual: Tampilkan kembali interface setelah status admin terverifikasi
+            document.body.classList.add('authorized');
         } else {
             // Kasus C: Login valid namun bukan level Administrator
             logActivity(user.email, "Keamanan", "Percobaan Akses Admin Ditolak (Unauthorized)");

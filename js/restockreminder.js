@@ -14,6 +14,19 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/fi
 import { db, auth } from "../firebase.component/firebase-init.js";
 
 // ==========================================
+// HELPER: Anti-XSS HTML Sanitizer
+// ==========================================
+function escapeHTML(str) {
+    if (str === undefined || str === null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// ==========================================
 // GLOBAL STATE
 // ==========================================
 let dataReminders = [];
@@ -138,15 +151,15 @@ function renderReminders() {
         html += `
             <div class="reminder-card ${cardClass}">
                 <div class="reminder-info">
-                    <h4>📦 ${r.jenisPakan}</h4>
-                    <p>${r.catatan || 'Tidak ada catatan tambahan'}</p>
+                    <h4>📦 ${escapeHTML(r.jenisPakan)}</h4>
+                    <p>${escapeHTML(r.catatan) || 'Tidak ada catatan tambahan'}</p>
                     <div class="reminder-meta">
                         <span>Batas Waktu: ${dateStr}</span>
                         ${badgePrioritas}
                         ${badgeStatus}
                     </div>
                     <div style="margin-top:8px; font-size:0.75rem; color:#94a3b8;">
-                        Dibuat oleh: ${r.dibuatOleh}
+                        Dibuat oleh: ${escapeHTML(r.dibuatOleh)}
                     </div>
                 </div>
                 <div class="reminder-actions">
