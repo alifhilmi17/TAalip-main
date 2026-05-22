@@ -14,7 +14,7 @@ import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-
 import { auth, db } from "./firebase-init.js";
 
 // Pastikan semua struktur HTML telah dirender browser sebelum menjalankan script
-document.addEventListener('DOMContentLoaded', () => {
+function initializeSignup() {
     
     // Mendapatkan elemen form pendaftaran dan tombol klik
     const signupForm = document.getElementById('signupForm');
@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     username: username,
                     email: email,
                     phone: "",  // nomor telpon diset kosong secara standar
+                    role: "user", // Secara eksplisit diset sebagai 'user' (Petugas)
                     createdAt: new Date()
                 });
 
@@ -97,4 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
+
+// Menjalankan inisialisasi dengan aman, menghindari bug DOMContentLoaded yang sudah terlewat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeSignup);
+} else {
+    initializeSignup();
+}

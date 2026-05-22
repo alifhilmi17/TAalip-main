@@ -9,10 +9,11 @@ import { collection, query, where, getDocs } from "https://www.gstatic.com/fireb
 import { auth, db } from "./firebase-init.js";
 
 // Semua instruksi baru boleh dijalankan apabila struktur HTML layar selesai dimuat
-document.addEventListener('DOMContentLoaded', () => {
+function initializeLogin() {
+    console.log("LIBAS: initializeLogin() mulai berjalan.");
 
     // =========================================
-    // 1. DEKLARASI ELEMEN HTML (Pencarian ID / Class)
+    // 1. DEKLARASI ELEMEN HTML & FLAG STATUS
     // =========================================
     const card = document.querySelector('.login-card');            // Kartu/Form Login keseluruhan
     const container = document.querySelector('.login-wrapper') || document.body;
@@ -20,61 +21,103 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginBtn = document.getElementById('loginBtn');          // Tombol eksekusi 'Masuk'
     const passwordInput = document.getElementById('password');     // Kolom isian kata sandi
     const togglePassword = document.getElementById('togglePassword'); // Ikon Mata (Intip Sandi)
-    const spotlight = document.querySelector('.card-spotlight');   // Efek lampu sorot kaca
+    const spotlights = document.querySelectorAll('.card-spotlight'); // Efek lampu sorot kaca
+
+    // Deklarasi tombol pilihan peran (Role Selection) & Back Button
+    const btnRolePetugas = document.getElementById('btnRolePetugas');
+    const btnRoleAdmin = document.getElementById('btnRoleAdmin');
+    const btnBackToRoles = document.getElementById('btnBackToRoles');
+    const formTitle = document.getElementById('formTitle');
+    const formSubtitle = document.getElementById('formSubtitle');
+
+    console.log("LIBAS: Elemen yang berhasil dimuat:", {
+        card: !!card,
+        container: !!container,
+        loginForm: !!loginForm,
+        loginBtn: !!loginBtn,
+        btnRolePetugas: !!btnRolePetugas,
+        btnRoleAdmin: !!btnRoleAdmin,
+        btnBackToRoles: !!btnBackToRoles
+    });
+    
+    let selectedRole = ''; // Menyimpan status role terpilih ('petugas' atau 'admin')
+    const signupLinkContainer = document.getElementById('signupLinkContainer');
+
+    if (btnRolePetugas && card) {
+        btnRolePetugas.addEventListener('click', () => {
+            console.log("LIBAS: btnRolePetugas diklik!");
+            selectedRole = 'petugas';
+            
+            // Pasang tema kelas dan balikkan kartu ke belakang
+            card.classList.add('role-petugas');
+            card.classList.remove('role-admin');
+            card.classList.add('flipped');
+            
+            if (formTitle) formTitle.innerText = "Login Petugas";
+            if (formSubtitle) formSubtitle.innerText = "Mohon isi data akses Petugas Anda untuk memasuki portal.";
+            
+            // Tampilkan tautan pendaftaran khusus untuk Petugas
+            if (signupLinkContainer) {
+                signupLinkContainer.style.display = 'block';
+            }
+        });
+    }
+
+    if (btnRoleAdmin && card) {
+        btnRoleAdmin.addEventListener('click', () => {
+            console.log("LIBAS: btnRoleAdmin diklik!");
+            selectedRole = 'admin';
+            
+            // Pasang tema kelas dan balikkan kartu ke belakang
+            card.classList.add('role-admin');
+            card.classList.remove('role-petugas');
+            card.classList.add('flipped');
+            
+            if (formTitle) formTitle.innerText = "Login Admin & Owner";
+            if (formSubtitle) formSubtitle.innerText = "Mohon isi data akses Admin / Owner Anda untuk memasuki portal.";
+            
+            // Sembunyikan tautan pendaftaran untuk Admin/Owner
+            if (signupLinkContainer) {
+                signupLinkContainer.style.display = 'none';
+            }
+        });
+    }
+
+    if (btnBackToRoles && card) {
+        btnBackToRoles.addEventListener('click', () => {
+            console.log("LIBAS: btnBackToRoles diklik!");
+            selectedRole = '';
+            
+            // Putar balik kartu ke depan
+            card.classList.remove('flipped');
+            
+            // Bersihkan kelas tema dinamis setelah transisi putaran selesai (800ms)
+            setTimeout(() => {
+                if (!card.classList.contains('flipped')) {
+                    card.classList.remove('role-petugas', 'role-admin');
+                }
+            }, 800);
+        });
+    }
 
     // =========================================
-    // 2. EFEK KARTU MIRING 3D & LAMPU SOROT (Spotlight)
+    // 2. EFEK LAMPU SOROT KURSOR (Spotlight)
     // =========================================
-    // Hanya aktif jika kartu login targetnya berhasil ditemukan
     if (card && container) {
-        
-        // Membaca pergerakan kursor tetikus (mouse) saat mondar-mandir di atas form
+        // Memantau gerakan mouse hanya untuk memosisikan efek lampu sorot spotlight
         container.addEventListener('mousemove', (e) => {
             const rect = card.getBoundingClientRect(); // Mengambil koordinat tepi kotak login
             
-            // Mengukur letak pasti mouse dihitung dari titik tengah koordinat form
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-
-            // Mengkalkulasikan kemiringan perspektif 3D maksimal sebesar 10 derajat
-            const rotateX = (y / (rect.height / 2)) * -10;
-            const rotateY = (x / (rect.width / 2)) * 10;
-
-            // Menerapkan rotasi sumbu X dan Y gaya CSS
-            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-
             // Jika ada properti lampu sorot, atur pusat gradiasi sorotan tepat mengikuti arah pointer
-            if (spotlight) {
+            if (spotlights.length > 0) {
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
-                // Suntik properti var css
-                spotlight.style.setProperty('--mouse-x', `${mouseX}px`);
-                spotlight.style.setProperty('--mouse-y', `${mouseY}px`);
-                // Gambar sorotan melingkar cahaya redup putih yang tembus pandang
-                spotlight.style.background = `radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(255, 255, 255, 0.1), transparent 40%)`;
+                
+                spotlights.forEach(spot => {
+                    spot.style.setProperty('--mouse-x', `${mouseX}px`);
+                    spot.style.setProperty('--mouse-y', `${mouseY}px`);
+                });
             }
-        });
-
-        // Apabila kursor Mouse meninggalkan area form
-        container.addEventListener('mouseleave', () => {
-            // Netralkan posisi kartu kembali tegap 0 derajat perlahan
-            card.style.transition = 'transform 0.5s ease';
-            card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg)';
-
-            // Reset lampu sorot memudar halus kembali ke tengah
-            if (spotlight) {
-                spotlight.style.background = `radial-gradient(600px circle at 50% 50%, rgba(255, 255, 255, 0), transparent 40%)`;
-            }
-
-            // Setelah setengah detik, buang efek lambat agar transisi mouse bergera responsif lagi
-            setTimeout(() => {
-                card.style.transition = ''; 
-            }, 500);
-        });
-
-        // Begitu mouse masuk menyentuh area, nyalakan respon cepat
-        container.addEventListener('mouseenter', () => {
-            card.style.transition = 'transform 0.1s ease';
         });
     }
 
@@ -107,11 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Ciptakan dan sisipkan properti HTML pemercik gelombang ("ripple")
             const ripple = document.createElement('span');
-            ripple.classList.add('ripple'); // .ripple dipetakan dalam loginc.css
+            ripple.classList.add('ripple');
             ripple.style.left = `${x}px`;
             ripple.style.top = `${y}px`;
 
-            this.appendChild(ripple); // Genggam elemen ripple
+            this.appendChild(ripple);
 
             // Setelah masa rambat gelombang habis di 600 milidetik, hapus percikan ini.
             setTimeout(() => {
@@ -125,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-            // JANGAN langsung memindahkan layar, cegat dengan Event Prevent ini
             e.preventDefault(); 
 
             // Pasangkan stempel gaya CSS loading ke tombolnya untuk mengganti tulisan ke logo putar
@@ -136,22 +178,72 @@ document.addEventListener('DOMContentLoaded', () => {
             const passwordVal = document.getElementById('password').value;
 
             try {
-                // 1. Tarik email asli dari database karena Firebase Auth butuh Email bukan Username
-                const usersRef = collection(db, "user");
-                const q = query(usersRef, where("username", "==", usernameVal));
-                const querySnapshot = await getDocs(q);
+                console.log("Memulai proses masuk untuk username:", usernameVal, "dengan role pilihan:", selectedRole);
+                let userData = null;
+                let userRole = "";
 
-                // Jika username terketik tidak ditemukan rekamannya di database
-                if (querySnapshot.empty) {
+                // 1. Tarik email asli dari database (Firebase Auth memerlukan Email, bukan Username)
+                if (selectedRole === 'admin') {
+                    // Cari di koleksi admin terlebih dahulu
+                    console.log("Mencari di koleksi 'admin'...");
+                    const adminRef = collection(db, "admin");
+                    const qAdmin = query(adminRef, where("username", "==", usernameVal));
+                    const snapAdmin = await getDocs(qAdmin);
+                    
+                    if (!snapAdmin.empty) {
+                        userData = snapAdmin.docs[0].data();
+                        userRole = userData.role || 'admin';
+                        console.log("Ditemukan di koleksi 'admin' dengan data:", userData);
+                    } else {
+                        // Jika tidak ada di koleksi admin, cari di koleksi user (fallback jika data admin disinkronisasi)
+                        console.log("Tidak ditemukan di koleksi 'admin', mencari di koleksi 'user'...");
+                        const usersRef = collection(db, "user");
+                        const qUser = query(usersRef, where("username", "==", usernameVal));
+                        const snapUser = await getDocs(qUser);
+                        
+                        if (!snapUser.empty) {
+                            userData = snapUser.docs[0].data();
+                            userRole = userData.role || 'user';
+                            console.log("Ditemukan di koleksi 'user' untuk pencarian admin:", userData);
+                        }
+                    }
+                } else {
+                    // Cari di koleksi user (untuk Petugas / User biasa)
+                    console.log("Mencari di koleksi 'user'...");
+                    const usersRef = collection(db, "user");
+                    const qUser = query(usersRef, where("username", "==", usernameVal));
+                    const snapUser = await getDocs(qUser);
+                    
+                    if (!snapUser.empty) {
+                        userData = snapUser.docs[0].data();
+                        userRole = userData.role || 'user';
+                        console.log("Ditemukan di koleksi 'user' dengan data:", userData);
+                    }
+                }
+
+                // Jika username tidak ditemukan di koleksi manapun
+                if (!userData) {
+                    console.warn("Username tidak ditemukan di database.");
                     throw { code: 'auth/user-not-found' }; 
                 }
 
-                // Jika ditemukan, bedah datanya dan ekstrak emailnya
-                const actualEmail = querySnapshot.docs[0].data().email;
+                const actualEmail = userData.email;
+                const cleanRole = userRole.trim().toLowerCase();
+                const isAdmin = cleanRole === 'admin' || cleanRole === 'administrator' || cleanRole === 'super_admin' || cleanRole === 'owner';
 
-                // 2. Proses krusial: Memeriksa dan mencocokkan kredensial dengan database Firebase
-                // signInWithEmailAndPassword akan melempar error jika email tak ada atau sandi salah
+                console.log("Memvalidasi hak akses: Role DB =", cleanRole, ", Apakah Admin =", isAdmin, ", Pilihan Portal =", selectedRole);
+
+                // --- VALIDASI PERAN AKSES (GUARD CONDITION) ---
+                if (selectedRole === 'admin' && !isAdmin) {
+                    throw { code: 'auth/role-mismatch-petugas' };
+                } else if (selectedRole === 'petugas' && isAdmin) {
+                    throw { code: 'auth/role-mismatch-admin' };
+                }
+
+                // 2. Proses krusial: Memeriksa dan mencocokkan kredensial dengan database Firebase Auth
+                console.log("Mencocokkan email & kata sandi via Firebase Auth...");
                 await signInWithEmailAndPassword(auth, actualEmail, passwordVal);
+                console.log("Firebase Auth sukses!");
 
                 // --- EASTER EGG LIBAS: Keluarkan anak ayam lari ----
                 const chickenOverlay = document.getElementById('chicken-overlay');
@@ -160,39 +252,48 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 // 3. Deteksi Role untuk Pengalihan Pintar (Redirect)
-                const userData = querySnapshot.docs[0].data();
-                const userRole = userData.role || 'user'; // Default sebagai user biasa
+                const finalRedirectRole = isAdmin ? 'admin' : 'user';
 
                 // Setelah berhasil masuk, jalankan animasi sejenak lalu alihkan berdasarkan role
                 setTimeout(() => {
-                    if (userRole === 'admin') {
+                    if (finalRedirectRole === 'admin') {
+                        console.log("Redirecting ke Admin Control Panel...");
                         window.location.href = 'admin.frontend/admin-core/admin.html';
                     } else {
+                        console.log("Redirecting ke Dashboard Petugas...");
                         window.location.href = 'dashboardTAalip.html';
                     }
                 }, 3000);
 
             } catch (error) {
                 // Tahap penanganan jika Firebase menolak akses (gagal login)
-                // Hapus stempel (class) 'loading' supaya tombol bisa ditekan kembali
                 loginBtn.classList.remove('loading');
                 
                 // Menerjemahkan kode error pelik dari Firebase menjadi Bahasa Indonesia
-                // yang ramah agar pengguna peternak bisa paham kesalahannya di mana
                 let errorMsg = "Terjadi kesalahan.";
                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                     errorMsg = "Username atau sandi yang Anda masukkan salah, mohon periksa kembali.";
+                } else if (error.code === 'auth/role-mismatch-petugas') {
+                    errorMsg = "Akun Anda terdaftar sebagai Petugas. Silakan masuk kembali menggunakan portal Petugas.";
+                } else if (error.code === 'auth/role-mismatch-admin') {
+                    errorMsg = "Akun Anda terdaftar sebagai Admin/Owner. Silakan masuk kembali menggunakan portal Admin.";
                 } else if (error.code === 'auth/too-many-requests') {
                     errorMsg = "Terlalu banyak percobaan gagal beruntun. Coba lagi beberapa saat.";
                 } else if (error.code === 'permission-denied') {
                     errorMsg = "Database tertutup! Buka Firebase Console > Firestore > Rules, ubah bagian 'allow read' menjadi 'if true;' agar sistem bisa mencari Username.";
                 } else {
-                    errorMsg = error.message; // Kalau-kalau ada error darurat lainnya
+                    errorMsg = error.message || error.code;
                 }
                 
-                // Tonjolkan pesan peringatannya di layar
                 alert("Gagal masuk: " + errorMsg);
             }
         });
     }
-});
+}
+
+// Menjalankan inisialisasi dengan aman, menghindari bug DOMContentLoaded yang sudah terlewat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeLogin);
+} else {
+    initializeLogin();
+}

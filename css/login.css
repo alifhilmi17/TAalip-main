@@ -157,26 +157,250 @@ body {
 }
 
 /* =========================================================
-   🪟 KARTU LOGIN (GLASSMORPHISM)
+   🪟 KARTU LOGIN (3D CARD FLIP)
 ========================================================= */
-/* Kotak utama bergaya kaca buram berisi form login;
-   muncul dari bawah ke atas saat halaman pertama dimuat */
-.login-card {
-  background: rgba(255, 255, 255, 0.03);  /* Putih sangat transparan */ 
-  backdrop-filter: blur(24px);             /* Mengaburkan latar di balik kartu */
-  -webkit-backdrop-filter: blur(24px);
-  padding: 48px 40px;
-  border-radius: 28px;
+/* Wadah berperspektif 3D yang membungkus kartu */
+.login-card-container {
   width: 100%;
-  text-align: center;
+  height: 570px;
+  perspective: 1500px;
+  position: relative;
+  z-index: 10;
+  animation: fadeIn 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+/* Flipper utama yang berputar 180 derajat */
+.login-card {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-card.flipped {
+  transform: rotateY(180deg);
+}
+
+/* Sisi Depan & Belakang Kartu */
+.card-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 28px;
+  padding: 32px 28px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
-  animation: fadeIn 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;  /* Muncul pelan dari bawah */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.card-front {
+  z-index: 2;
+  transform: rotateY(0deg);
+}
+
+.card-back {
+  transform: rotateY(180deg);
+  z-index: 1;
+}
+
+/* Memaksa elemen form mengambil lebar penuh di sisi belakang */
+.card-face form {
+  width: 100%;
+}
+
+/* =========================================================
+   🔘 GRUP PEMILIHAN PERAN (ROLE SELECTION)
+========================================================= */
+.role-selection-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 10px;
+  z-index: 2;
+}
+
+.role-btn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  text-align: left;
+  color: #fff;
   position: relative;
   overflow: hidden;
+  outline: none;
+}
+
+.role-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), transparent);
   opacity: 0;
-  transform: translateY(30px);
+  transition: opacity 0.3s ease;
+}
+
+.role-btn:hover::before {
+  opacity: 1;
+}
+
+.role-btn:hover {
+  transform: translateY(-3px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.role-icon {
+  font-size: 26px;
+  margin-right: 14px;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.2));
+  transition: transform 0.3s ease;
+}
+
+.role-btn:hover .role-icon {
+  transform: scale(1.15) rotate(5deg);
+}
+
+.role-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.role-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.role-desc {
+  font-size: 11px;
+  color: #a1a1aa;
+}
+
+.role-arrow {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.role-btn:hover .role-arrow {
+  transform: translateX(5px);
+}
+
+/* Aksen Premium Emas untuk Admin */
+.role-btn-admin:hover {
+  box-shadow: 0 10px 25px -5px rgba(255, 204, 112, 0.15), inset 0 1px 0 rgba(255, 204, 112, 0.1);
+  border-color: rgba(255, 204, 112, 0.3);
+}
+
+.role-btn-admin:hover .role-arrow {
+  color: #ffcc70;
+}
+
+/* Aksen Oranye Persik untuk Petugas */
+.role-btn-petugas:hover {
+  box-shadow: 0 10px 25px -5px rgba(255, 126, 95, 0.15), inset 0 1px 0 rgba(255, 126, 95, 0.1);
+  border-color: rgba(255, 126, 95, 0.3);
+}
+
+.role-btn-petugas:hover .role-arrow {
+  color: #ff7e5f;
+}
+
+/* =========================================================
+   🔙 TOMBOL KEMBALI GANTI PERAN (BACK BUTTON)
+========================================================= */
+.back-to-roles {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 8px 14px;
+  color: #e2e8f0;
+  font-size: 11px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+  z-index: 2;
+  outline: none;
+}
+
+.back-to-roles:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: translateX(-3px);
+}
+
+/* =========================================================
+   🎨 TEMA AKSEN DINAMIS BERDASARKAN ROLE
+========================================================= */
+/* Tema Admin (Aksen Emas/Mewah) */
+.login-card.role-admin .card-back .card-spotlight {
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 204, 112, 0.06), transparent 40%);
+}
+
+.login-card.role-admin .card-back input:focus {
+  border-color: rgba(255, 204, 112, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 204, 112, 0.25);
+}
+
+.login-card.role-admin .card-back .login-btn {
+  background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+  box-shadow: 0 10px 20px -5px rgba(255, 215, 0, 0.35);
+}
+
+.login-card.role-admin .card-back .login-btn:hover {
+  box-shadow: 0 15px 25px -5px rgba(255, 215, 0, 0.45);
+}
+
+/* Tema Petugas (Aksen Oranye Persik) */
+.login-card.role-petugas .card-back .card-spotlight {
+  background: radial-gradient(800px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 126, 95, 0.06), transparent 40%);
+}
+
+.login-card.role-petugas .card-back input:focus {
+  border-color: rgba(255, 126, 95, 0.6);
+  box-shadow: 0 0 0 3px rgba(255, 126, 95, 0.25);
+}
+
+.login-card.role-petugas .card-back .login-btn {
+  background: linear-gradient(135deg, #ff7e5f 0%, #ff5252 100%);
+  box-shadow: 0 10px 20px -5px rgba(255, 126, 95, 0.35);
+}
+
+.login-card.role-petugas .card-back .login-btn:hover {
+  box-shadow: 0 15px 25px -5px rgba(255, 126, 95, 0.45);
 }
 
 /* =========================================================
@@ -212,9 +436,10 @@ body {
 /* Teks sambutan besar di bagian atas kartu login */
 .login-card h2 {
   font-weight: 700;
-  font-size: 30px;
-  margin-bottom: 8px;
+  font-size: 26px;
+  margin-bottom: 6px;
   letter-spacing: -0.5px;
+  text-align: center;
 }
 
 /* =========================================================
@@ -222,10 +447,12 @@ body {
 ========================================================= */
 /* Kalimat deskripsi kecil di bawah judul; diredupkan agar tidak bersaing dengan form */
 .login-card .subtitle {
-  font-size: 14px;
+  font-size: 13px;
   color: #a1a1aa;                  /* Abu redup sebagai teks sekunder */
-  margin-bottom: 36px;
+  margin-bottom: 18px;
   font-weight: 300;
+  text-align: center;
+  line-height: 1.4;
 }
 
 

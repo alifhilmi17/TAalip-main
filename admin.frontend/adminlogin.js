@@ -28,7 +28,7 @@ import { auth, db } from "../firebase.component/firebase-init.js";
 /**
  * ===== 1. EVENT LISTENERS UTAMA =====
  */
-document.addEventListener('DOMContentLoaded', () => {
+function initializeAdminLogin() {
 
     /**
      * LOGIKA LOGIN ADMINISTRATOR
@@ -137,7 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
+}
+
+// Menjalankan inisialisasi dengan aman, menghindari bug DOMContentLoaded yang sudah terlewat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeAdminLogin);
+} else {
+    initializeAdminLogin();
+}
 
 /**
  * ===== 2. FUNGSI PEMBANTU (HELPERS) =====

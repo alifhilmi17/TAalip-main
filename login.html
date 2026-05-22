@@ -40,57 +40,106 @@
   <!-- ========================= AREA FORM PANEL LOGIN ========================== -->
   <!-- Pengelompokan seluruh kontainer kotak Login di sumbu tengah. -->
   <div class="login-wrapper">
-    <div class="login-card">
+    <div class="login-card-container">
+      <div class="login-card" id="loginCard">
 
-      <!-- Efek Lampu Sorot (Spotlight) menyoroti kartu saat mouse melewati / mengitari elemen. -->
-      <div class="card-spotlight"></div>
-
-      <!-- Judul dan Arahan Singkat Panel Login -->
-      <h2>Selamat Datang Kembali!</h2>
-      <p class="subtitle">Mohon isi data akses Anda untuk memasuki portal.</p>
-
-      <!-- Pemicu mekanisme Login, secara palsu/prototipe langsung membanting arah menuju Dasbor saat disubmit -->
-      <form action="dashboardTAalip.html" method="get" id="loginForm">
-
-        <!-- Field 1: Formulir Isian Nama Identitas -->
-        <div class="input-group">
-          <label for="username">Username Akses</label>
-          <input type="text" id="username" placeholder="Masukkan username Anda" autocomplete="off" required>
-        </div>
-
-        <!-- Field 2: Formulir Isian Kata Kunci Rahasia -->
-        <div class="input-group">
-          <label for="password">Kata Sandi (Password)</label>
-          <div class="password-wrapper">
-            <input type="password" id="password" placeholder="Masukkan kode sandi yang valid" required>
-
-            <!-- Tombol Interaktif berbentuk Ikon Mata (untuk mengintip kelalaian ketik password) -->
-            <span class="toggle-password" id="togglePassword" title="Tampilkan / Sembunyikan Sandi">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                  fill="#fff" fill-opacity="0.7" />
-              </svg>
-            </span>
+        <!-- SISI DEPAN: PILIHAN ROLE (FRONT FACE) -->
+        <div class="card-face card-front">
+          <div class="card-spotlight"></div>
+          
+          <!-- Ikon Logo (Kepala Ayam) -->
+          <div class="brand-icon" style="font-size: 48px; line-height: 1; margin-bottom: 16px; user-select: none;">
+            🐔
+          </div>
+          
+          <h2>Pilih Peran Akses</h2>
+          <p class="subtitle" style="margin-bottom: 24px;">Silakan pilih peran Anda untuk masuk ke portal administrasi LIBAS.</p>
+          
+          <div class="role-selection-group">
+            <!-- Tombol Pilih Petugas -->
+            <button type="button" class="role-btn role-btn-petugas" id="btnRolePetugas">
+              <div class="role-icon">👨‍🌾</div>
+              <div class="role-info">
+                <span class="role-title">Masuk sebagai Petugas</span>
+                <span class="role-desc">Operator kandang & pencatat harian</span>
+              </div>
+              <div class="role-arrow">→</div>
+            </button>
+            
+            <!-- Tombol Pilih Admin/Owner -->
+            <button type="button" class="role-btn role-btn-admin" id="btnRoleAdmin">
+              <div class="role-icon">👑</div>
+              <div class="role-info">
+                <span class="role-title">Masuk sebagai Admin</span>
+                <span class="role-desc">Pengelola utama & Pemilik peternakan</span>
+              </div>
+              <div class="role-arrow">→</div>
+            </button>
+          </div>
+          
+          <div class="extra-links" style="margin-top: 30px;">
+            <a href="index.html" style="font-size: 13px; opacity: 0.8;">← Kembali ke Beranda Utama</a>
           </div>
         </div>
 
-        <!-- Tombol Aksi Mengeksekusi Percobaan Log-In -->
-        <button type="submit" class="login-btn" id="loginBtn">
-          <span class="btn-text">Masuk</span>
-          <div class="loader"></div> <!-- Ikon muter loading tersembunyi (Akan dipanggil saat loading berlangsung) -->
-        </button>
-      </form>
+        <!-- SISI BELAKANG: FORM LOGIN (BACK FACE) -->
+        <div class="card-face card-back">
+          <div class="card-spotlight"></div>
+          
+          <!-- Tombol Kembali / Ganti Peran -->
+          <button type="button" class="back-to-roles" id="btnBackToRoles" title="Kembali ke Pilihan Peran">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Ganti Peran</span>
+          </button>
+          
+          <!-- Judul dan Arahan Singkat Panel Login -->
+          <h2 id="formTitle" style="margin-top: 10px;">Selamat Datang Kembali!</h2>
+          <p class="subtitle" id="formSubtitle">Mohon isi data akses Anda untuk memasuki portal.</p>
 
-      <!-- Tautan Luar Khusus di Dasar Kartu Login -->
-      <div class="extra-links">
-        <p>Belum sempat mendaftarkan diri? <a href="signup.html">Daftar Akun Baru</a></p>
-        <p style="margin-top: 10px;">
-          <a href="index.html" style="font-size: 13px; opacity: 0.8;">← Kembali ke Beranda Utama</a>
-        </p>
-      </div>
+          <!-- Pemicu mekanisme Login -->
+          <form action="dashboardTAalip.html" method="get" id="loginForm">
 
-    </div> <!-- Penutup Login Card -->
+            <!-- Field 1: Formulir Isian Nama Identitas -->
+            <div class="input-group">
+              <label for="username">Username Akses</label>
+              <input type="text" id="username" placeholder="Masukkan username Anda" autocomplete="off" required>
+            </div>
+
+            <!-- Field 2: Formulir Isian Kata Kunci Rahasia -->
+            <div class="input-group">
+              <label for="password">Kata Sandi (Password)</label>
+              <div class="password-wrapper">
+                <input type="password" id="password" placeholder="Masukkan kode sandi yang valid" required>
+
+                <!-- Tombol Interaktif berbentuk Ikon Mata (untuk mengintip kelalaian ketik password) -->
+                <span class="toggle-password" id="togglePassword" title="Tampilkan / Sembunyikan Sandi">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                      fill="#fff" fill-opacity="0.7" />
+                  </svg>
+                </span>
+              </div>
+            </div>
+
+            <!-- Tombol Aksi Mengeksekusi Percobaan Log-In -->
+            <button type="submit" class="login-btn" id="loginBtn">
+              <span class="btn-text">Masuk</span>
+              <div class="loader"></div> <!-- Ikon muter loading tersembunyi -->
+            </button>
+          </form>
+
+          <!-- Tautan Luar Khusus di Dasar Kartu Login -->
+          <div class="extra-links" id="signupLinkContainer">
+            <p>Belum sempat mendaftarkan diri? <a href="signup.html">Daftar Akun Baru</a></p>
+          </div>
+        </div>
+
+      </div> <!-- Penutup Login Card -->
+    </div> <!-- Penutup Login Card Container -->
   </div> <!-- Penutup Wrapper Login -->
 
   <!-- ========================= FITUR EASTER EGG (GABUT PENGANTAR LOADING) ========================== -->
