@@ -1684,12 +1684,18 @@ window.openPakanDetail = function(id) {
                 // Hapus data dari stok_pakan
                 await deleteDoc(doc(db, "stok_pakan", id));
 
-                // Cascade delete: Hapus pengingat restock yang jenis pakannya cocok
+                // Cascade delete: Hapus pengingat restock yang jenis pakannya cocok (case-insensitive & trimmed)
                 if (jenisPakan) {
                     try {
-                        const remindersQuery = query(collection(db, "restock_reminders"), where("jenisPakan", "==", jenisPakan));
-                        const remindersSnapshot = await getDocs(remindersQuery);
-                        const deletePromises = remindersSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+                        const cleanPakanJenis = jenisPakan.trim().toLowerCase();
+                        const allRemindersSnapshot = await getDocs(collection(db, "restock_reminders"));
+                        const deletePromises = [];
+                        allRemindersSnapshot.forEach(docSnap => {
+                            const data = docSnap.data();
+                            if (data.jenisPakan && data.jenisPakan.trim().toLowerCase() === cleanPakanJenis) {
+                                deletePromises.push(deleteDoc(docSnap.ref));
+                            }
+                        });
                         await Promise.all(deletePromises);
                     } catch (err) {
                         console.error("Gagal menghapus pengingat terkait: ", err);
