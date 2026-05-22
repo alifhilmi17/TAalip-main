@@ -19,10 +19,47 @@ import { auth, db } from "../firebase.component/firebase-init.js";
 // =========================================
 document.addEventListener("DOMContentLoaded", () => {
     // Definisi variabel dengan mengambil elemen-elemen penting dari HTML berdasarkan ID
-    // Definisi variabel dengan mengambil elemen-elemen penting dari HTML berdasarkan ID
     const form = document.getElementById("editProfileForm");
     const avatarInput = document.getElementById("profileImageUpload");
     const avatarPreview = document.getElementById("profileImagePreview");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // -----------------------------------------
+    // 0. Fitur Show/Hide Password Toggle
+    // -----------------------------------------
+    const passwordToggles = document.querySelectorAll(".password-toggle");
+    passwordToggles.forEach(toggle => {
+        toggle.addEventListener("click", function (e) {
+            e.preventDefault(); // Mencegah form tersubmit tidak sengaja
+            
+            const targetId = this.getAttribute("data-target");
+            const targetInput = document.getElementById(targetId);
+            if (!targetInput) return;
+
+            const isPassword = targetInput.getAttribute("type") === "password";
+            targetInput.setAttribute("type", isPassword ? "text" : "password");
+
+            // Ganti ikon mata secara dinamis dengan transisi mulus
+            if (isPassword) {
+                // Ikon Mata Coret (Eye-Off)
+                this.innerHTML = `
+                    <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                `;
+                targetInput.classList.add("password-field");
+            } else {
+                // Ikon Mata Biasa (Eye)
+                this.innerHTML = `
+                    <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                `;
+            }
+        });
+    });
 
     // --- PREFILL DATA AKUN DARI FIREBASE ---
     onAuthStateChanged(auth, async (user) => {
@@ -85,6 +122,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const user = auth.currentUser;
         if (!user) return; // Jika mendadak ter-logout
 
+        // Aktifkan visual loading spinner pada tombol submit
+        if (submitBtn) {
+            submitBtn.classList.add("loading");
+            submitBtn.disabled = true;
+        }
+
         // 1. Ambil teks masukan Profil dengan membuang spasi kosong di ujung (trim)
         const targetFullName = document.getElementById("fullName").value.trim();
         const targetUsername = document.getElementById("username").value.trim();
@@ -105,18 +148,33 @@ document.addEventListener("DOMContentLoaded", () => {
             // a. Syarat Wajib: Harus menyertakan Password Lama
             if (currPass === "") {
                 Swal.fire("Peringatan", "Harap masukkan password Anda saat ini untuk mengubah seluk-beluk akun/sandi.", "warning");
+                // Matikan status loading jika batal submit
+                if (submitBtn) {
+                    submitBtn.classList.remove("loading");
+                    submitBtn.disabled = false;
+                }
                 return; // Berhenti memproses simpan
             }
 
             // b. Syarat Verifikasi: Password Baru dan Ketik Ulang harus 100% sama (Typo Check)
             if (newPass !== confPass) {
                 Swal.fire("Konfirmasi Error!", "Password Baru dan Konfirmasi Password tampaknya tidak cocok.", "error");
+                // Matikan status loading jika batal submit
+                if (submitBtn) {
+                    submitBtn.classList.remove("loading");
+                    submitBtn.disabled = false;
+                }
                 return;
             }
 
             // c. Syarat Kekuatan: Panjang karakter jangan terlalu pendek
             if (newPass.length < 6) {
                 Swal.fire("Terlalu Singkat", "Password Baru tidak aman! Minimal harus terdiri dari 6 karakter.", "warning");
+                // Matikan status loading jika batal submit
+                if (submitBtn) {
+                    submitBtn.classList.remove("loading");
+                    submitBtn.disabled = false;
+                }
                 return;
             }
         }
@@ -170,6 +228,12 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
         } catch (error) {
+            // Matikan status loading jika terjadi error agar pengguna bisa mengedit kembali
+            if (submitBtn) {
+                submitBtn.classList.remove("loading");
+                submitBtn.disabled = false;
+            }
+
             // Menangkap pesan gagal update (khususnya security Firebase)
             let errorMsg = error.message;
             if (error.code === 'auth/requires-recent-login') {
