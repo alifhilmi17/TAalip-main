@@ -167,8 +167,15 @@ function renderLiveStockWidget(stockMap) {
     }
     
     let html = '';
+    let renderedCount = 0;
     keys.forEach(jenis => {
         const data = stockMap[jenis];
+        
+        // Jika tidak pernah ada stok masuk (atau semua stok masuk telah dihapus),
+        // maka pakan ini dianggap tidak aktif/telah dihapus.
+        if (!data.masuk || data.masuk <= 0) return;
+        
+        renderedCount++;
         const sisa = Math.max(0, data.masuk - data.keluar);
         const isLow = sisa < 50; // Threshold stok kritis pakan menipis
         
@@ -186,6 +193,11 @@ function renderLiveStockWidget(stockMap) {
             </div>
         `;
     });
+    
+    if (renderedCount === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 15px; text-align: center; color: #64748b;">Belum ada data stok pakan aktif tercatat.</div>`;
+        return;
+    }
     
     grid.innerHTML = html;
 }
