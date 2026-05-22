@@ -297,7 +297,7 @@ function renderReminders() {
                         ${r.diselesaikanOleh ? ` | Direstock oleh: <strong>${escapeHTML(r.diselesaikanOleh)}</strong>` : ''}
                     </div>
                 </div>
-                <div class="reminder-actions" style="display:flex; gap:8px;">
+                <div class="reminder-actions">
                     ${actionsHtml}
                 </div>
             </div>

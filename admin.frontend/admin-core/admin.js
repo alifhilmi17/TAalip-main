@@ -1677,7 +1677,27 @@ window.openPakanDetail = function(id) {
             Swal.fire('Tersimpan', '', 'success');
             logActivity(currentAdminData?.username || "Admin", "Stok Pakan", `Update log pakan: ${res.value.namaBarang}`);
         } else if (res.isDenied) {
-            if ((await Swal.fire({title:'Hapus Riwayat Pakan?', icon:'warning', showCancelButton:true})).isConfirmed) { await deleteDoc(doc(db, "stok_pakan", id)); Swal.fire('Dihapus', '', 'success'); }
+            if ((await Swal.fire({title:'Hapus Riwayat Pakan?', text: 'Pengingat restock yang berkaitan dengan pakan ini juga akan dihapus.', icon:'warning', showCancelButton:true})).isConfirmed) {
+                const item = pakanDataAdmin.find(p => p.id === id);
+                const jenisPakan = item ? (item.jenis || item.namaBarang) : null;
+
+                // Hapus data dari stok_pakan
+                await deleteDoc(doc(db, "stok_pakan", id));
+
+                // Cascade delete: Hapus pengingat restock yang jenis pakannya cocok
+                if (jenisPakan) {
+                    try {
+                        const remindersQuery = query(collection(db, "restock_reminders"), where("jenisPakan", "==", jenisPakan));
+                        const remindersSnapshot = await getDocs(remindersQuery);
+                        const deletePromises = remindersSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+                        await Promise.all(deletePromises);
+                    } catch (err) {
+                        console.error("Gagal menghapus pengingat terkait: ", err);
+                    }
+                }
+
+                Swal.fire('Dihapus', 'Data pakan dan pengingat terkait berhasil dihapus.', 'success');
+            }
         }
     });
 };

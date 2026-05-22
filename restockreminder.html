@@ -158,9 +158,23 @@
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            align-self: stretch !important;
+            width: 100% !important;
+        }
+        .reminder-info {
+            flex: 1 !important;
+            text-align: left !important;
+        }
+        .reminder-actions {
+            display: flex !important;
+            gap: 10px !important;
+            align-items: center !important;
+            flex-shrink: 0 !important;
+            margin-left: 20px !important;
         }
         .reminder-card:hover {
             transform: translateY(-4px);
@@ -262,16 +276,34 @@
         }
 
         .action-btn {
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
+            border: none !important;
+            padding: 8px 16px !important;
+            border-radius: 8px !important;
+            cursor: pointer !important;
+            font-weight: 600 !important;
+            font-size: 0.85rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            transition: all 0.2s ease !important;
+            width: auto !important;
+            height: auto !important;
+            flex-shrink: 0 !important;
+        }
+
+        @media (max-width: 768px) {
+            .reminder-card {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 15px !important;
+            }
+            .reminder-actions {
+                width: 100% !important;
+                justify-content: flex-end !important;
+                margin-left: 0 !important;
+                margin-top: 10px !important;
+            }
         }
         .btn-success-solid {
             background: #10b981;

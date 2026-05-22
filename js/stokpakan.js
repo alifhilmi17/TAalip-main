@@ -16,7 +16,9 @@ import {
     onSnapshot,
     query,
     orderBy,
-    getDoc
+    getDoc,
+    getDocs,
+    where
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { db, auth } from "../firebase.component/firebase-init.js";
@@ -307,7 +309,7 @@ window.deletePakan = function(id) {
 
     Swal.fire({
         title: 'Hapus Data?',
-        text: "Data ini akan dihapus permanen dari database.",
+        text: "Data ini akan dihapus permanen dari database serta seluruh pengingat restock yang berkaitan.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ff6b6b',
@@ -315,8 +317,24 @@ window.deletePakan = function(id) {
         confirmButtonText: 'Ya, Hapus'
     }).then(async (result) => {
         if (result.isConfirmed) {
+            const jenisPakan = item ? (item.jenis || item.namaBarang) : null;
+            
+            // Hapus data dari stok_pakan
             await deleteDoc(doc(db, "stok_pakan", id));
-            Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success');
+
+            // Cascade delete: Hapus pengingat restock yang jenis pakannya cocok
+            if (jenisPakan) {
+                try {
+                    const remindersQuery = query(collection(db, "restock_reminders"), where("jenisPakan", "==", jenisPakan));
+                    const remindersSnapshot = await getDocs(remindersQuery);
+                    const deletePromises = remindersSnapshot.docs.map(docSnap => deleteDoc(docSnap.ref));
+                    await Promise.all(deletePromises);
+                } catch (err) {
+                    console.error("Gagal menghapus pengingat terkait: ", err);
+                }
+            }
+
+            Swal.fire('Terhapus!', 'Data pakan dan pengingat terkait berhasil dihapus.', 'success');
         }
     });
 };

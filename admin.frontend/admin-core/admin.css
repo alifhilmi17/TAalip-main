@@ -879,18 +879,177 @@ body.sidebar-open::before {
 }
 
 /* =========================================
-   RESTOCK REMINDER STYLES
+   RESTOCK REMINDER STYLES (PREMIUM OVERRIDES)
 ========================================= */
-.reminder-card { background: white; border-radius: 12px; padding: 20px; border-left: 5px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-.reminder-card.tinggi { border-left-color: #ef4444; background: #fef2f2; }
-.reminder-card.selesai { border-left-color: #10b981; opacity: 0.7; }
-.reminder-info h4 { margin: 0 0 5px 0; color: #1e293b; font-size: 1.1rem; }
-.reminder-info p { margin: 0; color: #64748b; font-size: 0.85rem; }
-.reminder-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; font-size: 0.8rem; font-weight: 600; }
-.badge-tinggi { background: #fee2e2; color: #ef4444; }
-.badge-sedang { background: #fef3c7; color: #d97706; }
-.badge-selesai { background: #d1fae5; color: #059669; }
-.badge-pending { background: #e0e7ff; color: #4338ca; }
+.reminder-card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    border-left: 6px solid #f59e0b !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
+    margin-bottom: 15px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    align-self: stretch !important;
+    width: 100% !important;
+}
+.reminder-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.06) !important;
+    border-color: #cbd5e1 !important;
+}
+.reminder-card.tinggi {
+    border-left-color: #ef4444 !important;
+    background: #fffbfa !important;
+}
+.reminder-card.selesai {
+    border-left-color: #10b981 !important;
+    background: #fcfdfd !important;
+    opacity: 0.85 !important;
+}
+.reminder-card.usulan {
+    border-left-color: #6366f1 !important;
+    background: #fcfcff !important;
+}
+.reminder-info {
+    flex: 1 !important;
+    text-align: left !important;
+}
+.reminder-actions {
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    margin-left: 20px !important;
+}
+.reminder-info h4 {
+    margin: 0 0 5px 0 !important;
+    color: #1e293b !important;
+    font-size: 1.1rem !important;
+}
+.reminder-info p {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+}
+.reminder-meta {
+    display: flex !important;
+    gap: 15px !important;
+    margin-top: 10px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    align-items: center !important;
+}
+.badge-tinggi {
+    background: #fee2e2 !important;
+    color: #ef4444 !important;
+}
+.badge-sedang {
+    background: #fef3c7 !important;
+    color: #d97706 !important;
+}
+.badge-selesai {
+    background: #d1fae5 !important;
+    color: #059669 !important;
+}
+.badge-pending {
+    background: #e0e7ff !important;
+    color: #4338ca !important;
+}
+.badge-usulan {
+    background: #fff7ed !important;
+    color: #ea580c !important;
+    border: 1px dashed #ffd8a8 !important;
+}
+
+/* Pulsating beacons */
+.pulse-beacon {
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    animation: pulse 1.6s infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+}
+@keyframes pulse {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.action-btn {
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+    width: auto !important;
+    height: auto !important;
+    flex-shrink: 0 !important;
+}
+.btn-success-solid {
+    background: #10b981 !important;
+    color: white !important;
+}
+.btn-success-solid:hover {
+    background: #059669 !important;
+    transform: scale(1.02) !important;
+}
+.btn-danger-light {
+    background: #fef2f2 !important;
+    color: #ef4444 !important;
+    border: 1px solid #fee2e2 !important;
+}
+.btn-danger-light:hover {
+    background: #fee2e2 !important;
+    transform: scale(1.02) !important;
+}
+.btn-indigo-solid {
+    background: #6366f1 !important;
+    color: white !important;
+}
+.btn-indigo-solid:hover {
+    background: #4f46e5 !important;
+    transform: scale(1.02) !important;
+}
+
+@media (max-width: 768px) {
+    .reminder-card {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 15px !important;
+    }
+    .reminder-actions {
+        width: 100% !important;
+        justify-content: flex-end !important;
+        margin-left: 0 !important;
+        margin-top: 10px !important;
+    }
+}
 
 /* =========================================
    MODAL STYLES (ADDED)
@@ -928,7 +1087,7 @@ body.sidebar-open::before {
 /* =========================================
    SCHEDULE CARD & TABLE REFINEMENT
 ========================================= */
-.schedule-card, .reminder-card {
+.schedule-card {
     background: white;
     border-radius: 20px;
     border: 1px solid #f1f5f9;
@@ -937,7 +1096,7 @@ body.sidebar-open::before {
     box-shadow: 0 10px 25px rgba(0,0,0,0.03);
 }
 
-.schedule-card h3, .reminder-card h3 {
+.schedule-card h3 {
     margin: 0;
     padding: 1.5rem 2rem;
     color: white;
