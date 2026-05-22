@@ -548,8 +548,10 @@ window.calculatePrediction = function(event) {
     for (let i = startActual; i < totalHistoryDays; i++) {
         let cleanProdStr = (inputs[i].value || '').replace(/\./g, '').replace(',', '.');
         let cleanProfStr = (inputsProfit[i].value || '').replace(/\./g, '').replace(',', '.');
-        fullHistoryButir.push(parseFloat(cleanProdStr));
-        fullHistoryProfit.push(parseFloat(cleanProfStr));
+        const prodVal = parseFloat(cleanProdStr);
+        const profitVal = parseFloat(cleanProfStr);
+        fullHistoryButir.push(isNaN(prodVal) ? 0 : prodVal);
+        fullHistoryProfit.push(isNaN(profitVal) ? 0 : profitVal);
     }
 
     // KONVERSI EMAS MA (Butir -> Kilogram)

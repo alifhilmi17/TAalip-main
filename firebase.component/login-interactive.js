@@ -285,7 +285,12 @@ function initializeLogin() {
                     errorMsg = error.message || error.code;
                 }
                 
-                alert("Gagal masuk: " + errorMsg);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Masuk Gagal',
+                    text: errorMsg,
+                    confirmButtonColor: '#ff7e5f'
+                });
             }
         });
     }

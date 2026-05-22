@@ -69,10 +69,15 @@ function initializeSignup() {
                 await signOut(auth);
                 
                 // Menampilkan pengumuman sukses
-                alert("Pendaftaran berhasil! Silahkan login dengan akun yang baru dibuat...");
-                
-                // Setelah selesai mendaftar dan logout, arahkan ke gerbang keamanan Login Utama
-                window.location.href = 'login.html';
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Pendaftaran Berhasil!',
+                    text: 'Silakan masuk menggunakan akun baru yang telah dibuat.',
+                    confirmButtonColor: '#38ef7d'
+                }).then(() => {
+                    // Setelah selesai mendaftar dan logout, arahkan ke gerbang keamanan Login Utama
+                    window.location.href = 'login.html';
+                });
 
             } catch (error) {
                 // Di tahap ini (Blok Catch) diartikan bahwa proses registrasi gagal.
@@ -94,7 +99,12 @@ function initializeSignup() {
                 }
                 
                 // Melontarkan dialog peringatan penyebab kegagalan daftar
-                alert("Gagal daftar: " + errorMsg);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Pendaftaran Gagal',
+                    text: errorMsg,
+                    confirmButtonColor: '#ff7e5f'
+                });
             }
         });
     }

@@ -56,7 +56,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (userData.disabled === true) {
                         console.warn("Akun dinonaktifkan oleh administrator.");
                         await signOut(auth);
-                        alert("Akun Anda telah dinonaktifkan oleh administrator. Silakan hubungi admin.");
+                        if (typeof Swal !== 'undefined') {
+                            await Swal.fire({
+                                icon: 'warning',
+                                title: 'Akun Dinonaktifkan',
+                                text: 'Akun Anda telah dinonaktifkan oleh administrator. Silakan hubungi admin.',
+                                confirmButtonColor: '#ff7e5f'
+                            });
+                        } else {
+                            alert("Akun Anda telah dinonaktifkan oleh administrator. Silakan hubungi admin.");
+                        }
                         window.location.href = getLoginPath();
                         return;
                     }
