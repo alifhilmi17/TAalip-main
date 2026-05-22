@@ -56,6 +56,7 @@ let produksiDataAdmin = [];
 let pakanDataAdmin    = [];
 let kesehatanDataAdmin = [];
 let vaksinDataAdmin    = [];
+let prediksiHistoryData = [];
 let cachedTotalSisaAyam = 0;
 
 // State untuk Grafik
@@ -213,6 +214,7 @@ async function initAdminDashboard() {
     // H. LISTENER PREDIKSI HISTORY (Section 5)
     onSnapshot(query(collection(db, "prediksi_history"), orderBy("tanggal", "desc"), limit(10)), (snap) => {
         const history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        prediksiHistoryData = history;
         renderAdminPrediksiSnapshot(history);
         
         if (history.length > 0) {
@@ -313,28 +315,21 @@ function updateStatTidakBertelur(totalProdParam) {
     elTidakBertelur.textContent = `${tidakBertelur.toLocaleString('id-ID')} Ekor`;
 }
 
-// Inisialisasi Sesi Login Admin
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        try {
-            const adminSnap = await getDoc(doc(db, "admin", user.uid));
-            if (adminSnap.exists()) {
-                currentAdminData = adminSnap.data();
-                const elName = document.querySelector(".profile-name");
-                if (elName) elName.textContent = currentAdminData.fullname || "Administrator";
-                initAdminDashboard();
-            } else {
-                console.warn("User login bukan admin.");
-                window.location.href = "../../login.html";
-            }
-        } catch (err) {
-            console.error("Auth error:", err);
-            window.location.href = "../../login.html";
-        }
-    } else {
-        window.location.href = "../../login.html";
-    }
-});
+// Inisialisasi Sesi Login Admin menggunakan Gerbang Verifikasi admin-gate.js
+function handleVerifiedAdmin(adminData) {
+    currentAdminData = adminData;
+    const elName = document.querySelector(".profile-name");
+    if (elName) elName.textContent = currentAdminData.fullname || "Administrator";
+    initAdminDashboard();
+}
+
+if (window.verifiedAdminData) {
+    handleVerifiedAdmin(window.verifiedAdminData);
+} else {
+    window.addEventListener('admin:verified', (e) => {
+        handleVerifiedAdmin(e.detail);
+    });
+}
 
 // =========================================================
 // 4. UI RENDERING FUNCTIONS (FULL ORIGINAL LOGIC)
@@ -1828,7 +1823,7 @@ document.getElementById('adminAddActivityForm')?.addEventListener('submit', asyn
         await addDoc(collection(db, "daily_activities"), {
             text: input.value.trim(),
             completed: false,
-            createdAt: serverTimestamp()
+            createdAt: new Date().toISOString()
         });
         input.value = "";
     } catch (err) { console.error(err); }
@@ -2124,3 +2119,221 @@ document.addEventListener('click', function(event) {
         closeAdminDailyRecap();
     }
 });
+
+// =========================================================
+// 8. PREMIUM REPORT EXPORT ENGINE (PDF & CSV)
+// =========================================================
+window.exportDataAdmin = function(tipe, format) {
+    let title = '';
+    let headers = [];
+    let rows = [];
+
+    if (tipe === 'ayam') {
+        title = 'Ringkasan Batch Ternak';
+        headers = ["ID Batch", "Spesies", "Status", "Sisa Populasi"];
+        rows = ayamData.map(a => [
+            a.customId || (a.id ? a.id.slice(0, 8) : '-'),
+            a.spesies || '-',
+            a.status || '-',
+            a.sisaAyam !== undefined ? String(a.sisaAyam) : '0'
+        ]);
+    } else if (tipe === 'keuangan') {
+        title = 'Riwayat Transaksi Keuangan';
+        headers = ["Tanggal", "Keterangan", "Tipe", "Nominal"];
+        rows = keuanganDataAdmin.map(t => [
+            t.tanggal ? new Date(t.tanggal).toLocaleDateString('id-ID') : '-',
+            t.deskripsi || '-',
+            (t.tipe || '-').toUpperCase(),
+            t.jumlah ? `Rp ${parseInt(t.jumlah).toLocaleString('id-ID')}` : 'Rp 0'
+        ]);
+    } else if (tipe === 'produksi') {
+        title = 'Catatan Produksi Telur';
+        headers = ["Tanggal", "Total Telur (Butir)", "Telur Baik", "Telur Cacat"];
+        rows = produksiDataAdmin.map(p => [
+            p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-',
+            p.totalTelur !== undefined ? String(p.totalTelur) : '0',
+            p.telurBaik !== undefined ? String(p.telurBaik) : '0',
+            p.telurCacat !== undefined ? String(p.telurCacat) : '0'
+        ]);
+    } else if (tipe === 'pakan') {
+        title = 'Logistik & Stok Pakan';
+        headers = ["Tanggal", "Jenis Pakan", "Tipe", "Jumlah"];
+        rows = pakanDataAdmin.map(p => [
+            p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-',
+            p.jenis || p.namaBarang || '-',
+            (p.tipe || '-').toUpperCase(),
+            p.jumlah !== undefined ? `${p.jumlah} Kg` : '0 Kg'
+        ]);
+    } else if (tipe === 'kesehatan') {
+        title = 'Laporan Kesehatan & Mortalitas';
+        headers = ["Tanggal", "Batch", "Jumlah Mati", "Sebab"];
+        rows = kesehatanDataAdmin.map(h => [
+            h.tanggal ? new Date(h.tanggal).toLocaleDateString('id-ID') : '-',
+            h.batchName || 'Batch Global',
+            h.jmlMati !== undefined ? `${h.jmlMati} Ekor` : '0 Ekor',
+            h.sebab || '-'
+        ]);
+    } else if (tipe === 'vaksin') {
+        title = 'Jadwal Vaksinasi Terdekat';
+        headers = ["Tanggal", "Vaksin", "Batch", "Status"];
+        rows = vaksinDataAdmin.map(v => [
+            v.tanggal ? new Date(v.tanggal).toLocaleDateString('id-ID') : '-',
+            v.jenis || '-',
+            v.batchName || '-',
+            (v.status || '-').toUpperCase()
+        ]);
+    } else if (tipe === 'prediksi') {
+        title = 'Hasil Analisis Prediksi Moving Average';
+        headers = ["Tanggal Analisis", "Periode MA (Hari)", "Populasi", "Prediksi Besok (Butir)", "Estimasi Keuntungan"];
+        rows = prediksiHistoryData.map(p => [
+            p.tanggal ? new Date(p.tanggal).toLocaleString('id-ID') : '-',
+            p.periodeMA !== undefined ? `${p.periodeMA} Hari` : '0 Hari',
+            p.populasi !== undefined ? String(p.populasi) : '0',
+            p.prediksiBesokButir !== undefined ? `${p.prediksiBesokButir} Btr` : '0 Btr',
+            p.keuntungan !== undefined ? `Rp ${parseInt(p.keuntungan).toLocaleString('id-ID')}` : 'Rp 0'
+        ]);
+    }
+
+    if (rows.length === 0) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire('Ekspor Gagal', 'Tidak ada data untuk diekspor pada modul ini.', 'warning');
+        } else {
+            alert('Tidak ada data untuk diekspor.');
+        }
+        return;
+    }
+
+    if (format === 'csv') {
+        // Generate CSV Content with UTF-8 BOM
+        const csvContent = "\uFEFF" + [headers.join(",")].concat(rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `LIBAS_${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Ekspor Sukses!',
+                text: 'Berkas CSV berhasil diunduh.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        if (!jsPDF) {
+            console.error("Library jsPDF tidak ditemukan.");
+            if (typeof Swal !== 'undefined') {
+                Swal.fire('Eror Ekspor', 'Pustaka PDF tidak termuat dengan benar.', 'error');
+            } else {
+                alert('Pustaka PDF tidak termuat.');
+            }
+            return;
+        }
+
+        const doc = new jsPDF('p', 'mm', 'a4');
+        
+        // Kop Surat Resmi Premium
+        doc.setFillColor(30, 41, 59); // Dark Slate #1e293b
+        doc.rect(0, 0, 210, 40, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(20);
+        doc.text("SISTEM ADMINISTRASI PETERNAKAN (LIBAS)", 15, 16);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(226, 232, 240);
+        doc.text("Laporan Resmi Administrator & Ringkasan Data Operasional", 15, 23);
+        doc.text("Lokasi: Peternakan Alip | Status: Terverifikasi", 15, 28);
+        
+        // Header Laporan
+        doc.setTextColor(51, 65, 85);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(14);
+        doc.text(title.toUpperCase(), 15, 52);
+        
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.line(15, 55, 195, 55);
+        
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+        doc.text(`Dicetak Pada: ${dateStr}`, 15, 62);
+        const adminName = currentAdminData ? (currentAdminData.fullname || currentAdminData.username) : "Administrator";
+        doc.text(`Petugas Penanggung Jawab: ${adminName}`, 15, 67);
+        
+        // Render Tabel menggunakan jsPDF-AutoTable
+        doc.autoTable({
+            startY: 72,
+            head: [headers],
+            body: rows,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [249, 115, 22], // Primary Orange #f97316
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 9
+            },
+            bodyStyles: {
+                fontSize: 9,
+                textColor: [30, 41, 59]
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252]
+            },
+            margin: { left: 15, right: 15 }
+        });
+        
+        // Tanda Tangan Penanggung Jawab
+        const finalY = doc.lastAutoTable.finalY + 15;
+        if (finalY < 250) {
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(51, 65, 85);
+            doc.text("Hormat Kami,", 145, finalY);
+            doc.text("Penanggung Jawab Peternakan,", 130, finalY + 5);
+            
+            doc.setFont("helvetica", "bold");
+            doc.text(adminName, 140, finalY + 25);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(100, 116, 139);
+            doc.text(`ID Staf: ${currentAdminData ? (currentAdminData.username || 'N/A') : 'N/A'}`, 140, finalY + 29);
+            doc.setDrawColor(148, 163, 184);
+            doc.setLineWidth(0.3);
+            doc.line(140, finalY + 26, 185, finalY + 26);
+        }
+        
+        // Footer Halaman Dinamis
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(148, 163, 184);
+            doc.text(`Halaman ${i} dari ${pageCount}`, 180, 287);
+            doc.text("Sistem LIBAS v1.5.0 - Seluruh data dilindungi hak cipta.", 15, 287);
+        }
+
+        doc.save(`LIBAS_${title.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+        
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'success',
+                title: 'Ekspor Sukses!',
+                text: 'Laporan PDF resmi berhasil diunduh.',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        }
+    }
+};

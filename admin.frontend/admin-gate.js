@@ -45,6 +45,7 @@ onAuthStateChanged(auth, async (user) => {
             console.log("Akses Diterima: Selamat datang, Administrator!");
             
             // ✅ Kirim data admin ke modul lain via Custom Event
+            window.verifiedAdminData = adminData;
             window.dispatchEvent(new CustomEvent('admin:verified', { detail: adminData }));
 
             // Dokumentasikan akses masuk ke Log Aktivitas Global

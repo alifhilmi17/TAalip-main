@@ -1080,9 +1080,20 @@ function renderActivities() {
             transition: all 0.25s ease;
         `;
 
-        // Format waktu ditambahkan
-        const waktuLabel = item.createdAt
-            ? new Date(item.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        // Format waktu ditambahkan (tahan error jika createdAt berupa Firestore Timestamp)
+        let dateObj = null;
+        if (item.createdAt) {
+            if (typeof item.createdAt.toDate === 'function') {
+                dateObj = item.createdAt.toDate();
+            } else if (item.createdAt.seconds) {
+                dateObj = new Date(item.createdAt.seconds * 1000);
+            } else {
+                dateObj = new Date(item.createdAt);
+            }
+        }
+
+        const waktuLabel = (dateObj && !isNaN(dateObj.getTime()))
+            ? dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
             : '';
 
         li.innerHTML = `

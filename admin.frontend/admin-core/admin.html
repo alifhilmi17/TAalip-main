@@ -679,9 +679,13 @@
             <!-- Tab Ayam -->
             <div id="tabAyam" class="tab-pane active">
               <div class="schedule-card">
-                <h3>
-                  🐓 Ringkasan Batch Ternak
-                </h3>
+                <div class="card-header-flex">
+                  <h3>🐓 Ringkasan Batch Ternak</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('ayam', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('ayam', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -714,9 +718,13 @@
             <!-- Tab Keuangan -->
             <div id="tabKeuangan" class="tab-pane">
               <div class="schedule-card">
-                <h3>
-                  💵 Riwayat Keuangan
-                </h3>
+                <div class="card-header-flex">
+                  <h3>💵 Riwayat Keuangan</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('keuangan', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('keuangan', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -749,9 +757,13 @@
             <!-- Tab Produksi -->
             <div id="tabProduksi" class="tab-pane">
               <div class="schedule-card" style="width: 100%">
-                <h3>
-                  🥚 Produksi Telur Terakhir
-                </h3>
+                <div class="card-header-flex">
+                  <h3>🥚 Produksi Telur Terakhir</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('produksi', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('produksi', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -784,9 +796,13 @@
             <!-- Tab Pakan -->
             <div id="tabPakan" class="tab-pane">
               <div class="schedule-card" style="width: 100%">
-                <h3>
-                  🥬 Logistik & Stok Pakan
-                </h3>
+                <div class="card-header-flex">
+                  <h3>🥬 Logistik &amp; Stok Pakan</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('pakan', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('pakan', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -819,9 +835,13 @@
             <!-- Tab Kesehatan -->
             <div id="tabKesehatan" class="tab-pane">
               <div class="schedule-card" style="width: 100%">
-                <h3>
-                  🩺 Laporan Kesehatan & Mortalitas
-                </h3>
+                <div class="card-header-flex">
+                  <h3>🩺 Laporan Kesehatan &amp; Mortalitas</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('kesehatan', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('kesehatan', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -854,9 +874,13 @@
             <!-- Tab Vaksinasi -->
             <div id="tabVaksin" class="tab-pane">
               <div class="schedule-card" style="width: 100%">
-                <h3>
-                  💉 Jadwal Vaksinasi Terdekat
-                </h3>
+                <div class="card-header-flex">
+                  <h3>💉 Jadwal Vaksinasi Terdekat</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('vaksin', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('vaksin', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <div class="table-responsive">
                     <table class="logs-table">
@@ -889,9 +913,13 @@
             <!-- Tab Prediksi & Rekomendasi -->
             <div id="tabPrediksi" class="tab-pane">
               <div class="schedule-card" style="width: 100%">
-                <h3>
-                  📈 Hasil Prediksi & Rekomendasi Terbaru
-                </h3>
+                <div class="card-header-flex">
+                  <h3>📈 Hasil Prediksi &amp; Rekomendasi Terbaru</h3>
+                  <div class="export-actions">
+                    <button class="btn-export-admin csv" onclick="exportDataAdmin('prediksi', 'csv')" title="Ekspor CSV">📥 CSV</button>
+                    <button class="btn-export-admin pdf" onclick="exportDataAdmin('prediksi', 'pdf')" title="Ekspor PDF">📄 PDF</button>
+                  </div>
+                </div>
                 <div class="schedule-content">
                   <!-- Info Banner -->
                   <div class="prediksi-info-banner">
@@ -1400,6 +1428,10 @@
 
     <!-- Chart.js untuk grafik analitik -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF & jsPDF AutoTable for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
 
     <!-- Logika Bisnis & Sinkronisasi Data Firebase -->
     <script type="module" src="admin.js"></script>
