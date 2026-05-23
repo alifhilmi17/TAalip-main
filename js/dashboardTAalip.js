@@ -58,6 +58,7 @@ let state = {
 
 let eggChartInstance = null;
 let financeChartInstance = null;
+let selectedProduksiRange = 7;
 
 // =========================================
 // 2b. STATE PENGGUNA (ROLE & NAMA)
@@ -468,7 +469,7 @@ function updateDashboardAggregates() {
     if (elBatchAktif) elBatchAktif.textContent = `${totalBatchAktif} Batch`;
 
     // 9. Memperbarui Grafik Analitik Visual
-    renderEggChart(7); // Render grafik produksi 7 hari terakhir
+    renderEggChart(selectedProduksiRange); // Render grafik produksi sesuai rentang yang dipilih
     renderFinanceChart(); // Render grafik keuangan bulanan
     
     // ✅ FASE 2: Update widget ringkasan keuangan
@@ -482,9 +483,16 @@ function updateDashboardAggregates() {
  * CHART LOGIC (REUSED & ADAPTED)
  */
 window.gantiPeriodeGrafik = function(hari, btn) {
+    selectedProduksiRange = parseInt(hari) || 7;
     document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderEggChart(hari);
+    if (btn) {
+        btn.classList.add('active');
+    } else {
+        document.querySelectorAll('.chart-filter-btn').forEach(b => {
+            if (b.innerText.includes(hari)) b.classList.add('active');
+        });
+    }
+    renderEggChart(selectedProduksiRange);
 };
 
 /** 
@@ -495,6 +503,12 @@ function renderEggChart(nHari) {
     const canvas = document.getElementById('eggProductionChart');
     if (!canvas) return;
     if (eggChartInstance) eggChartInstance.destroy();
+
+    // Perbarui teks subtitle rentang hari secara dinamis
+    const subtitleEl = document.querySelector('.chart-subtitle');
+    if (subtitleEl) {
+        subtitleEl.textContent = `${nHari} Hari Terakhir`;
+    }
 
     // Group by date
     const grouped = {};

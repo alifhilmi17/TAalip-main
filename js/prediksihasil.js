@@ -93,6 +93,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadPredictionHistory(),
         loadSettings()
     ]);
+    
+    // Inisialisasi lencana awal dan listener real-time konfigurasi
+    updateRealtimeMAPeriodBadge();
+    initRealtimeConfigListeners();
+    updateHargaTelurConversionLabel();
+    updateRealtimeConfigCalculations();
 });
 
 /**
@@ -187,9 +193,211 @@ async function loadBatchAyam() {
         if (infoEl && selectedOption.dataset.info) {
             infoEl.textContent = selectedOption.dataset.info;
         }
+        // Perbarui pilihan minggu basis berdasarkan data batch terpilih
+        updateMingguBasisDropdown();
         // Auto-fill data produksi saat batch dipilih
         autoFillFromBatch();
     });
+}
+
+/**
+ * Menghitung minggu unik secara dinamis dan mengisi dropdown mingguBasis
+ */
+function updateMingguBasisDropdown() {
+    const batchSelect = document.getElementById('populasiBatch');
+    const mingguSelect = document.getElementById('mingguBasis');
+    if (!batchSelect || !mingguSelect) return;
+
+    const selectedBatchId = batchSelect.value;
+    if (!selectedBatchId) {
+        mingguSelect.innerHTML = '<option value="LATEST" selected>📊 Data Terkini (7 Hari Terakhir)</option>';
+        return;
+    }
+
+    // Filter data produksi berdasarkan batch
+    let filteredData = [];
+    if (selectedBatchId === 'ALL') {
+        filteredData = [...dataProduksi];
+    } else {
+        filteredData = dataProduksi.filter(p => p.batchId === selectedBatchId);
+    }
+
+    // Urutkan dari terlama ke terbaru (ascending) untuk menghitung minggu
+    filteredData.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+    // Dapatkan daftar minggu unik
+    const uniqueWeeks = new Set();
+    filteredData.forEach((prod, index) => {
+        const minggu = Math.floor(index / 7) + 1;
+        uniqueWeeks.add(minggu);
+    });
+
+    const currentSelectedValue = mingguSelect.value || 'LATEST';
+
+    // Bersihkan dropdown dan isi ulang
+    mingguSelect.innerHTML = '<option value="LATEST">📊 Data Terkini (7 Hari Terakhir)</option>';
+    
+    // Urutkan minggu ascending
+    const sortedWeeks = Array.from(uniqueWeeks).sort((a, b) => a - b);
+    sortedWeeks.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = `📅 Minggu ke-${w}`;
+        mingguSelect.appendChild(opt);
+    });
+
+    // Pertahankan nilai jika ada
+    if (Array.from(uniqueWeeks).includes(parseInt(currentSelectedValue))) {
+        mingguSelect.value = currentSelectedValue;
+    } else {
+        mingguSelect.value = 'LATEST';
+    }
+}
+
+/**
+ * Inisialisasi Event Listeners untuk kalkulasi real-time konfigurasi
+ */
+function initRealtimeConfigListeners() {
+    const inputPakan = document.getElementById('pakanPerEkor');
+    const inputHargaPakan = document.getElementById('hargaPakan');
+    const inputHargaTelur = document.getElementById('hargaTelur');
+    const selectBatch = document.getElementById('populasiBatch');
+    const selectMA = document.getElementById('periodeMA');
+
+    if (inputPakan) inputPakan.addEventListener('input', updateRealtimeConfigCalculations);
+    if (inputHargaPakan) inputHargaPakan.addEventListener('input', updateRealtimeConfigCalculations);
+    if (inputHargaTelur) {
+        inputHargaTelur.addEventListener('input', () => {
+            updateRealtimeConfigCalculations();
+            updateHargaTelurConversionLabel();
+        });
+    }
+    if (selectBatch) {
+        selectBatch.addEventListener('change', () => {
+            updateRealtimeConfigCalculations();
+        });
+    }
+    if (selectMA) {
+        selectMA.addEventListener('change', () => {
+            updateRealtimeMAPeriodBadge();
+            autoFillFromBatch();
+        });
+    }
+}
+
+/**
+ * Merubah lencana karakteristik periode MA secara interaktif
+ */
+function updateRealtimeMAPeriodBadge() {
+    const selectMA = document.getElementById('periodeMA');
+    const badge = document.getElementById('maPeriodBadge');
+    if (!selectMA || !badge) return;
+
+    const val = selectMA.value;
+    if (val === '3') {
+        badge.innerText = '⚡ Responsif Tinggi';
+        badge.style.background = '#fef3c7';
+        badge.style.color = '#d97706';
+        badge.style.border = '1px solid #fde68a';
+        badge.style.display = 'inline-block';
+    } else if (val === '5') {
+        badge.innerText = '⚖️ Stabil & Moderat';
+        badge.style.background = '#dbeafe';
+        badge.style.color = '#2563eb';
+        badge.style.border = '1px solid #bfdbfe';
+        badge.style.display = 'inline-block';
+    } else if (val === '7') {
+        badge.innerText = '👑 Direkomendasikan';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+        badge.style.border = '1px solid #bbf7d0';
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+/**
+ * Merubah label konversi harga telur per butir
+ */
+function updateHargaTelurConversionLabel() {
+    const inputHargaTelur = document.getElementById('hargaTelur');
+    const label = document.getElementById('hargaTelurConvertInfo');
+    if (!inputHargaTelur || !label) return;
+
+    const valStr = inputHargaTelur.value || '0';
+    const val = parseInt(valStr.replace(/\./g, '').replace(',', '.')) || 0;
+
+    if (val > 0) {
+        const perButir = Math.round(val / 30);
+        label.textContent = `💡 Setara dengan Rp ${perButir.toLocaleString('id-ID')} per butir (1 Papan = 30 Butir)`;
+        label.style.display = 'block';
+    } else {
+        label.style.display = 'none';
+    }
+}
+
+/**
+ * Menghitung estimasi kebutuhan dan modal pakan harian secara real-time
+ */
+function updateRealtimeConfigCalculations() {
+    const inputPakan = document.getElementById('pakanPerEkor');
+    const inputHargaPakan = document.getElementById('hargaPakan');
+    const selectBatch = document.getElementById('populasiBatch');
+    const hiddenPopulasi = document.getElementById('populasi');
+
+    const populasi = parseInt(hiddenPopulasi ? hiddenPopulasi.value : 0) || 0;
+    const pakanPerEkor = parseFloat(inputPakan ? inputPakan.value : 0) || 0;
+    
+    const hargaPakanStr = inputHargaPakan ? inputHargaPakan.value : '0';
+    const hargaPakan = parseInt(hargaPakanStr.replace(/\./g, '').replace(',', '.')) || 0;
+
+    const summaryBox = document.getElementById('realtimeConfigSummary');
+    const rtPakanKg = document.getElementById('rtPakanKg');
+    const rtBiayaPakan = document.getElementById('rtBiayaPakan');
+
+    // 1. Hitung pakan dan biaya
+    if (populasi > 0 && pakanPerEkor > 0) {
+        const totalPakanKg = (populasi * pakanPerEkor) / 1000;
+        const biayaPakan = totalPakanKg * hargaPakan;
+
+        if (rtPakanKg) rtPakanKg.textContent = `${totalPakanKg.toLocaleString('id-ID')} Kg / Hari`;
+        if (rtBiayaPakan) rtBiayaPakan.textContent = `Rp ${Math.round(biayaPakan).toLocaleString('id-ID')} / Hari`;
+        
+        if (summaryBox) summaryBox.style.display = 'block';
+    } else {
+        if (summaryBox) summaryBox.style.display = 'none';
+    }
+
+    // 2. Perbarui Mini Info Card Batch ayam
+    const batchCard = document.getElementById('rtBatchInfoCard');
+    const rtBatchAyam = document.getElementById('rtBatchAyam');
+    const rtBatchKandang = document.getElementById('rtBatchKandang');
+    const rtBatchTgl = document.getElementById('rtBatchTgl');
+
+    if (selectBatch && selectBatch.value && selectBatch.value !== '') {
+        if (selectBatch.value === 'ALL') {
+            if (rtBatchAyam) rtBatchAyam.textContent = `${populasi.toLocaleString('id-ID')} Ekor`;
+            if (rtBatchKandang) rtBatchKandang.textContent = 'Semua Kandang';
+            if (rtBatchTgl) rtBatchTgl.textContent = '-';
+            if (batchCard) batchCard.style.display = 'block';
+        } else {
+            const batchInfo = batchDataAyam.find(b => b.id === selectBatch.value);
+            if (batchInfo) {
+                if (rtBatchAyam) rtBatchAyam.textContent = `${(parseInt(batchInfo.sisaAyam) || 0).toLocaleString('id-ID')} Ekor`;
+                if (rtBatchKandang) rtBatchKandang.textContent = batchInfo.kandang || '-';
+                if (rtBatchTgl) {
+                    const formattedDate = batchInfo.tglMasuk ? new Date(batchInfo.tglMasuk).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+                    rtBatchTgl.textContent = formattedDate;
+                }
+                if (batchCard) batchCard.style.display = 'block';
+            } else {
+                if (batchCard) batchCard.style.display = 'none';
+            }
+        }
+    } else {
+        if (batchCard) batchCard.style.display = 'none';
+    }
 }
 
 /**
@@ -205,28 +413,38 @@ async function loadProduksiData() {
     }
 }
 
-/**
- * Auto-fill data historis produksi berdasarkan batch yang dipilih
- */
 window.autoFillFromBatch = function() {
     const batchSelect = document.getElementById('populasiBatch');
+    const mingguSelect = document.getElementById('mingguBasis');
     const periodeMA = parseInt(document.getElementById('periodeMA').value) || 7;
     
     if (!batchSelect || !batchSelect.value) return;
     
     const selectedBatchId = batchSelect.value;
+    const selectedMingguVal = mingguSelect ? mingguSelect.value : 'LATEST';
     
     // Filter data produksi berdasarkan batch
     let filteredData = [];
     if (selectedBatchId === 'ALL') {
-        // Jika "Semua Batch", ambil semua data produksi
         filteredData = [...dataProduksi];
     } else {
-        // Jika batch spesifik, filter berdasarkan batchId
         filteredData = dataProduksi.filter(p => p.batchId === selectedBatchId);
     }
     
-    // Urutkan berdasarkan tanggal descending (terbaru dulu)
+    // Urutkan berdasarkan tanggal ascending (terlama ke terbaru) untuk menghitung minggu
+    filteredData.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+    
+    filteredData.forEach((prod, index) => {
+        prod.minggu = Math.floor(index / 7) + 1;
+    });
+
+    // Jika memilih minggu tertentu, lakukan filter
+    if (selectedMingguVal !== 'LATEST') {
+        const targetWeek = parseInt(selectedMingguVal);
+        filteredData = filteredData.filter(p => p.minggu === targetWeek);
+    }
+    
+    // Urutkan berdasarkan tanggal descending (terbaru dulu) agar input H-0 adalah terupdate di rentang tersebut
     filteredData.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
     
     // Ambil N data terakhir sesuai periode MA
@@ -236,13 +454,21 @@ window.autoFillFromBatch = function() {
         Swal.fire({
             icon: 'info',
             title: 'Belum Ada Data Produksi',
-            html: `Batch yang dipilih belum memiliki data produksi.<br><br>Silakan input data produksi terlebih dahulu di halaman <strong>Input Produksi Harian</strong>.`,
+            html: `Rentang data atau minggu yang dipilih tidak memiliki rekaman data produksi.<br><br>Silakan input data produksi terlebih dahulu di halaman <strong>Input Produksi Harian</strong>.`,
             confirmButtonColor: '#3085d6'
         });
         return;
     }
     
-    // Isi data ke input field (dari H-0 mundur ke H-N)
+    // Kosongkan dulu semua field input historis (mencegah sisa data minggu lain)
+    for (let i = 0; i <= totalHistoryDays + 10; i++) {
+        const inputEl = document.getElementById(`hist${i}`);
+        const profitEl = document.getElementById(`prof${i}`);
+        if (inputEl) inputEl.value = '';
+        if (profitEl) profitEl.value = '';
+    }
+
+    // Isi data baru
     dataToFill.forEach((prod, index) => {
         const inputId = `hist${index}`;
         const profitId = `prof${index}`;
@@ -250,13 +476,11 @@ window.autoFillFromBatch = function() {
         const profitEl = document.getElementById(profitId);
         
         if (inputEl) {
-            inputEl.value = prod.totalTelur || 0; // Dalam butir
+            inputEl.value = prod.totalTelur || 0;
         }
         
-        // Untuk profit, kita perlu hitung manual atau ambil dari data keuangan
-        // Sementara kosongkan dulu (user harus isi manual)
         if (profitEl) {
-            profitEl.value = ''; // Kosongkan, user isi manual
+            profitEl.value = '';
         }
     });
     
@@ -264,21 +488,26 @@ window.autoFillFromBatch = function() {
         Swal.fire({
             icon: 'warning',
             title: 'Data Belum Sesuai/Lengkap',
-            html: `Batch ini hanya memiliki <strong>${dataToFill.length} hari</strong> data produksi, sedangkan Periode MA yang dipilih adalah <strong>${periodeMA} hari</strong>.<br><br>Data yang ada telah diisi otomatis, <strong>namun Anda wajib melengkapi sisanya secara manual</strong> agar prediksi dapat berjalan.`,
+            html: `Rentang/Minggu basis yang dipilih hanya memiliki <strong>${dataToFill.length} hari</strong> data produksi, sedangkan Periode MA yang dipilih adalah <strong>${periodeMA} hari</strong>.<br><br>Data yang ada telah diisi otomatis, <strong>namun Anda wajib melengkapi sisanya secara manual</strong> agar prediksi dapat berjalan.`,
             showConfirmButton: true,
             confirmButtonText: 'Mengerti',
             confirmButtonColor: '#f59e0b'
         });
     } else {
+        const basisLabel = selectedMingguVal === 'LATEST' ? 'Data Terkini (7 Hari Terakhir)' : `Minggu ke-${selectedMingguVal}`;
         Swal.fire({
             icon: 'success',
             title: 'Data Berhasil Dimuat!',
-            html: `<strong>${dataToFill.length} hari</strong> data produksi telah diisi otomatis ke form.<br><br>Silakan lengkapi data <strong>Keuntungan (Rp)</strong> secara manual di tab sebelah.`,
+            html: `<strong>${dataToFill.length} hari</strong> data produksi dari basis <strong>${basisLabel}</strong> telah diisi otomatis ke form.<br><br>Silakan lengkapi data <strong>Keuntungan (Rp)</strong> secara manual di tab sebelah.`,
             showConfirmButton: true,
             confirmButtonText: 'OK',
             confirmButtonColor: '#10b981'
         });
     }
+
+    // Perbarui visualisasi real-time pembantu konfigurasi
+    updateRealtimeConfigCalculations();
+    updateHargaTelurConversionLabel();
 };
 
 /**
@@ -585,7 +814,25 @@ window.calculatePrediction = function(event) {
     let prediksiBesokKg = maResult.prediksiBesok;
 
     // --- STEP 5.5: KALKULASI MAE & AKURASI MODEL (BACKTESTING) ---
-    let evalResult = window.evaluateModelAccuracy(fullHistoryButir, periodeMA);
+    // Gunakan seluruh data produksi historis di database untuk batch ini agar backtesting akurat (> 7 hari)
+    const batchSelectForEval = document.getElementById('populasiBatch');
+    const selectedBatchIdForEval = batchSelectForEval ? batchSelectForEval.value : '';
+    let evalDataButir = [...fullHistoryButir];
+
+    if (selectedBatchIdForEval) {
+        let dbFiltered = [];
+        if (selectedBatchIdForEval === 'ALL') {
+            dbFiltered = [...dataProduksi];
+        } else {
+            dbFiltered = dataProduksi.filter(p => p.batchId === selectedBatchIdForEval);
+        }
+        dbFiltered.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+        if (dbFiltered.length > periodeMA) {
+            evalDataButir = dbFiltered.map(p => p.totalTelur || 0);
+        }
+    }
+
+    let evalResult = window.evaluateModelAccuracy(evalDataButir, periodeMA);
     let maeButir = evalResult.mae;
     let akurasiModel = evalResult.akurasi;
     let isAkurasiValid = evalResult.isAkurasiValid;
@@ -671,9 +918,34 @@ window.calculatePrediction = function(event) {
     let totalPrediksiKg7Hari = proyeksi7HariKg.reduce((a, b) => a + b, 0);
     let totalPrediksiButir7Hari = Math.round(totalPrediksiKg7Hari * konversiButirPerKg);
     let estimasiMingguan = (totalPrediksiButir7Hari / 30) * hargaTelur;
+    
+    // Tentukan target minggu prediksi dinamis
+    const mingguSelect = document.getElementById('mingguBasis');
+    const selectedMingguVal = mingguSelect ? mingguSelect.value : 'LATEST';
+    let targetWeek = 1;
+    if (selectedMingguVal === 'LATEST') {
+        const batchSelect = document.getElementById('populasiBatch');
+        const selectedBatchId = batchSelect ? batchSelect.value : '';
+        let filtered = [...dataProduksi];
+        if (selectedBatchId && selectedBatchId !== 'ALL') {
+            filtered = dataProduksi.filter(p => p.batchId === selectedBatchId);
+        }
+        filtered.sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+        const latestIndex = filtered.length - 1;
+        const currentLatestWeek = latestIndex >= 0 ? Math.floor(latestIndex / 7) + 1 : 1;
+        targetWeek = currentLatestWeek + 1;
+    } else {
+        targetWeek = parseInt(selectedMingguVal) + 1;
+    }
+
     let outMingguanEl = document.getElementById('outPendapatanMingguan');
     if (outMingguanEl) {
-        outMingguanEl.textContent = `Rp ${Math.round(estimasiMingguan).toLocaleString('id-ID')} (Estimasi 7 Hari)`;
+        outMingguanEl.textContent = `Rp ${Math.round(estimasiMingguan).toLocaleString('id-ID')} (Estimasi Minggu ke-${targetWeek})`;
+    }
+
+    const summaryTitleEl = document.getElementById('summaryTitle');
+    if (summaryTitleEl) {
+        summaryTitleEl.innerHTML = `<span>📋</span> Hasil Rekapan Proyeksi (Minggu ke-${targetWeek})`;
     }
 
     // --- STEP 9: JALANKAN PROSESS PENGGAMBARAN KE KANVAS (RENDER GRAFIK CHART.JS) ---

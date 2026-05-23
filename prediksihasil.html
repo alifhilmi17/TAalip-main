@@ -206,33 +206,33 @@
             <div class="historical-inputs">
               <div class="form-group-mini">
                 <label>H-6 </label>
-                <input type="number" id="prof6" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof6" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini">
                 <label>H-5 </label>
-                <input type="number" id="prof5" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof5" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini">
                 <label>H-4 </label>
-                <input type="number" id="prof4" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof4" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini">
                 <label>H-3</label>
-                <input type="number" id="prof3" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof3" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini">
                 <label>H-2</label>
-                <input type="number" id="prof2" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof2" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini">
                 <label>H-1</label>
-                <input type="number" id="prof1" class="hist-input" placeholder="-" step="any" />
+                <input type="text" inputmode="numeric" id="prof1" class="hist-input" placeholder="-" oninput="formatNumberInput(this)" />
               </div>
               <div class="form-group-mini" style="grid-column: span 2">
                 <label class="hist-input-today-label-keuntungan">
                   Hari Ini (Wajib)</label>
-                <input type="number" id="prof0" class="hist-input hist-input-today-keuntungan" placeholder="-"
-                  step="any" required />
+                <input type="text" inputmode="numeric" id="prof0" class="hist-input hist-input-today-keuntungan" placeholder="-"
+                  oninput="formatNumberInput(this)" required />
               </div>
             </div>
           </div>
@@ -246,7 +246,10 @@
             <!-- Baris 1: Periode MA & Populasi Kandang -->
             <div class="form-row">
               <div class="form-group half">
-                <label for="periodeMA" style="font-weight: 600">Periode MA (Hari)</label>
+                <label for="periodeMA" style="font-weight: 600; display: flex; align-items: center; justify-content: space-between; width: 100%;">
+                  <span>Periode MA (Hari)</span>
+                  <span id="maPeriodBadge" class="badge" style="font-size: 0.7rem; padding: 3px 8px; border-radius: 6px; font-weight: 700; display: none;"></span>
+                </label>
                 <select id="periodeMA" class="styled-select config-select" onchange="autoFillFromBatch()">
                   <option value="3">
                     3 Hari (Sangat Responsif - Rentan Noise)
@@ -269,6 +272,44 @@
                 <input type="hidden" id="populasi" value="0" />
                 <small id="populasiBatchInfo" class="config-helper-text">Pilih batch ayam aktif dari data yang sudah
                   diinput.</small>
+                <!-- Mini Info Card Batch terpilih -->
+                <div id="rtBatchInfoCard" style="
+                  display: none;
+                  margin-top: 10px;
+                  padding: 10px 15px;
+                  background: #f8fafc;
+                  border: 1px solid #cbd5e1;
+                  border-radius: 8px;
+                  font-size: 0.8rem;
+                  font-family: 'Poppins', sans-serif;
+                  color: #475569;
+                ">
+                  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                    <div style="border-right: 1px solid #e2e8f0;">
+                      <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Ayam Aktif</span>
+                      <strong id="rtBatchAyam" style="color: #334155; font-size: 0.9rem;">- Ekor</strong>
+                    </div>
+                    <div style="border-right: 1px solid #e2e8f0;">
+                      <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Kandang</span>
+                      <strong id="rtBatchKandang" style="color: #334155; font-size: 0.9rem;">-</strong>
+                    </div>
+                    <div>
+                      <span style="display: block; font-size: 0.7rem; color: #94a3b8; font-weight: 600; text-transform: uppercase;">Tgl Masuk</span>
+                      <strong id="rtBatchTgl" style="color: #334155; font-size: 0.8rem;">-</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Baris Baru: Minggu Basis Prediksi -->
+            <div class="form-row" style="margin-top: 15px;">
+              <div class="form-group full" style="width: 100%;">
+                <label for="mingguBasis" style="font-weight: 600">📅 Minggu Basis Prediksi</label>
+                <select id="mingguBasis" class="styled-select config-select" onchange="autoFillFromBatch()">
+                  <option value="LATEST" selected>📊 Data Terkini (7 Hari Terakhir)</option>
+                </select>
+                <small class="config-helper-text">Pilih rentang minggu tertentu sebagai basis historis proyeksi.</small>
               </div>
             </div>
 
@@ -326,6 +367,32 @@
                 <label for="hargaTelur" style="font-weight: 600">Harga Telur/Papan</label>
                 <input type="text" inputmode="numeric" id="hargaTelur" class="price-input" placeholder="Contoh: 25000"
                   oninput="formatNumberInput(this)" required />
+                <small id="hargaTelurConvertInfo" class="config-helper-text" style="color: #047857; font-weight: 600; display: none; margin-top: 5px;"></small>
+              </div>
+            </div>
+
+            <!-- Mini Rangkuman Biaya & Pakan Teoritis -->
+            <div id="realtimeConfigSummary" class="config-summary-box" style="
+              display: none;
+              margin-top: 25px;
+              padding: 15px;
+              border-radius: 12px;
+              background: #ecfdf5;
+              border: 1px solid #a7f3d0;
+              font-family: 'Poppins', sans-serif;
+            ">
+              <h5 style="margin: 0 0 10px 0; color: #047857; font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                <span>📋</span> Estimasi Kebutuhan & Modal Pakan Harian
+              </h5>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                  <small style="color: #065f46; font-size: 0.75rem; font-weight: 600; display: block; text-transform: uppercase;">Total Pakan</small>
+                  <strong id="rtPakanKg" style="color: #047857; font-size: 1.1rem; font-weight: 700;">0 Kg / Hari</strong>
+                </div>
+                <div>
+                  <small style="color: #065f46; font-size: 0.75rem; font-weight: 600; display: block; text-transform: uppercase;">Modal Pakan</small>
+                  <strong id="rtBiayaPakan" style="color: #047857; font-size: 1.1rem; font-weight: 700;">Rp 0 / Hari</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -409,7 +476,7 @@
 
         <!-- 3. Kontainer Hasil Rekapan Prediksi -->
         <div class="summary-container shadow-card">
-          <h3 class="summary-container-title">
+          <h3 class="summary-container-title" id="summaryTitle">
             <span>📋</span>
             Hasil Rekapan Prediksi (7 Hari Kedepan)
           </h3>

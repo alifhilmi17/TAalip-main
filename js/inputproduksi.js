@@ -216,15 +216,28 @@ window.validateProduksiRealtime = function() {
 
     if (totalTelur > sisaAyam) {
         hint.textContent = `⚠️ Total telur (${totalTelur}) melebihi jumlah ayam (${sisaAyam} ekor). Periksa kembali.`;
-        hint.style.color = '#ef4444';
+        hint.style.color = '#b91c1c';
+        hint.style.background = '#fef2f2';
+        hint.style.borderColor = '#fca5a5';
         hint.style.display = 'block';
     } else if (rasio > 95) {
         hint.textContent = `ℹ️ Rasio produksi ${rasio.toFixed(1)}% — sangat tinggi, pastikan data sudah benar.`;
-        hint.style.color = '#f59e0b';
+        hint.style.color = '#b45309';
+        hint.style.background = '#fef9ec';
+        hint.style.borderColor = '#fde68a';
         hint.style.display = 'block';
     } else if (totalTelur > 0 && rasio < 30) {
         hint.textContent = `ℹ️ Rasio produksi ${rasio.toFixed(1)}% — cukup rendah. Normal jika ada wabah atau cuaca ekstrem.`;
-        hint.style.color = '#64748b';
+        hint.style.color = '#4b5563';
+        hint.style.background = '#f9fafb';
+        hint.style.borderColor = '#e5e7eb';
+        hint.style.display = 'block';
+    } else if (totalTelur > 0) {
+        // Kasus 4: Produktivitas Normal (30% s/d 95%)
+        hint.textContent = `✅ Rasio produksi ${rasio.toFixed(1)}% — tingkat produktivitas normal dan stabil.`;
+        hint.style.color = '#047857';
+        hint.style.background = '#ecfdf5';
+        hint.style.borderColor = '#a7f3d0';
         hint.style.display = 'block';
     } else {
         hint.style.display = 'none';
@@ -420,6 +433,61 @@ window.deleteProduksi = function(id) {
     });
 };
 
+window.deleteMinggu = function(batchId, minggu) {
+    // Cari semua data produksi yang cocok dengan batchId dan minggu tersebut
+    const docsToDelete = dataProduksi.filter(p => p.batchId === batchId && p.minggu === minggu);
+    
+    if (docsToDelete.length === 0) {
+        Swal.fire('Info', 'Tidak ada data untuk dihapus pada minggu ini.', 'info');
+        return;
+    }
+
+    const batchName = docsToDelete[0].batchLabel.split(' - ')[0];
+
+    Swal.fire({
+        title: 'Hapus Semua Data Minggu Ini?',
+        html: `Anda akan menghapus seluruh data produksi (<b>${docsToDelete.length} data</b>) untuk <b>${batchName}</b> pada <b>Minggu ke-${minggu}</b>.<br><br><span style="color:#ef4444;font-weight:bold;">⚠️ Tindakan ini tidak dapat dibatalkan!</span>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff6b6b',
+        cancelButtonColor: '#64748b',
+        confirmButtonText: 'Ya, Hapus Semua!',
+        cancelButtonText: 'Batal'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                // Tampilkan loading spinner agar user tahu proses sedang berjalan
+                Swal.fire({
+                    title: 'Menghapus data...',
+                    html: 'Mohon tunggu sejenak.',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Hapus semua dokumen secara paralel menggunakan Promise.all
+                const deletePromises = docsToDelete.map(p => deleteDoc(doc(db, "produksi_harian", p.id)));
+                await Promise.all(deletePromises);
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: `Semua data produksi Minggu ke-${minggu} berhasil dihapus.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+                // Refresh data
+                await loadProduksiData();
+            } catch (error) {
+                console.error("Error deleting week: ", error);
+                Swal.fire('Error', 'Gagal menghapus data: ' + error.message, 'error');
+            }
+        }
+    });
+};
+
 // =========================================
 // 5. TABLE & STATS
 // =========================================
@@ -524,10 +592,17 @@ function renderTable() {
                 weekRow.style.backgroundColor = '#f1f5f9';
                 weekRow.style.borderTop = '1px solid #e2e8f0';
                 weekRow.innerHTML = `
-                    <td colspan="10" style="padding-left: 2rem;">
-                        <span class="toggle-icon" style="color: #64748b; font-size: 0.9em;">${isWeekCollapsed ? '▶' : '▼'}</span>
-                        <span style="font-weight: 600; color: #475569; font-size: 0.95em;">Minggu ke-${prod.minggu}</span>
-                        <span class="header-hint" style="color: #94a3b8; font-size: 0.85em;">${isWeekCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
+                    <td colspan="10" style="padding-left: 2rem; padding-right: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <div>
+                                <span class="toggle-icon" style="color: #64748b; font-size: 0.9em;">${isWeekCollapsed ? '▶' : '▼'}</span>
+                                <span style="font-weight: 600; color: #475569; font-size: 0.95em;">Minggu ke-${prod.minggu}</span>
+                                <span class="header-hint" style="color: #94a3b8; font-size: 0.85em;">${isWeekCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
+                            </div>
+                            <button class="btn-delete-week" onclick="event.stopPropagation(); deleteMinggu('${prod.batchId}', ${prod.minggu})" title="Hapus semua data minggu ini">
+                                🗑️ Hapus Minggu Ini
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(weekRow);

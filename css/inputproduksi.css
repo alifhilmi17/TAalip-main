@@ -823,6 +823,31 @@
     margin-top: 2px;
 }
 
+/* Tombol Hapus per Minggu */
+.btn-delete-week {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-delete-week:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: scale(1.05);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+
 /* 📱 RESPONSIF — LAYAR KECIL (≤768px) */
 @media (max-width: 768px) {
     .page-header {
