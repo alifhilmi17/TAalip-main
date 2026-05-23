@@ -104,6 +104,11 @@ function setupEventListeners() {
         }
     });
 
+    const viewModeEl = document.getElementById('viewMode');
+    if (viewModeEl) {
+        viewModeEl.addEventListener('change', () => renderTable());
+    }
+
     // Export
     const btnExport = document.getElementById('btnExport');
     if (btnExport) {
@@ -202,6 +207,25 @@ async function deleteTransaction(id) {
 // ==========================================
 // 4. DISPLAY & FILTER
 // ==========================================
+function renderRow(t, tbody) {
+    const tr = document.createElement('tr');
+    const isIncome = t.tipe === "pemasukan";
+    const badgeClass = isIncome ? 'badge-income' : 'badge-expense';
+    const textClass = isIncome ? 'text-income' : 'text-expense';
+    const typeLabel = t.tipe.charAt(0).toUpperCase() + t.tipe.slice(1);
+    
+    tr.innerHTML = `
+        <td>${formatTanggal(t.tanggal)}</td>
+        <td><span class="badge-type ${badgeClass}">${typeLabel}</span></td>
+        <td>${escapeHTML(t.deskripsi)}</td>
+        <td class="text-right ${textClass}" style="font-weight: 700;">${formatIDR(t.jumlah)}</td>
+        <td class="text-center">
+            <button class="btn-delete" data-id="${t.id}" title="Hapus">🗑️</button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
 function renderTable() {
     const tbody = document.getElementById('financeTableBody');
     const emptyState = document.getElementById('emptyState');
@@ -210,6 +234,8 @@ function renderTable() {
     // Ambil nilai filter
     const searchTerm = document.getElementById('searchTrx').value.toLowerCase();
     const startDate = document.getElementById('filterStartDate').value;
+    const viewModeEl = document.getElementById('viewMode');
+    const viewMode = viewModeEl ? viewModeEl.value : 'kronologis';
     
     tbody.innerHTML = "";
 
@@ -224,24 +250,42 @@ function renderTable() {
         if (emptyState) emptyState.style.display = 'flex';
     } else {
         if (emptyState) emptyState.style.display = 'none';
-        filtered.forEach(t => {
-            const tr = document.createElement('tr');
-            const isIncome = t.tipe === "pemasukan";
-            const badgeClass = isIncome ? 'badge-income' : 'badge-expense';
-            const textClass = isIncome ? 'text-income' : 'text-expense';
-            const typeLabel = t.tipe.charAt(0).toUpperCase() + t.tipe.slice(1);
-            
-            tr.innerHTML = `
-                <td>${formatTanggal(t.tanggal)}</td>
-                <td><span class="badge-type ${badgeClass}">${typeLabel}</span></td>
-                <td>${escapeHTML(t.deskripsi)}</td>
-                <td class="text-right ${textClass}" style="font-weight: 700;">${formatIDR(t.jumlah)}</td>
-                <td class="text-center">
-                    <button class="btn-delete" data-id="${t.id}" title="Hapus">🗑️</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
+
+        if (viewMode === 'tipe') {
+            const pemasukanList = filtered.filter(t => t.tipe === 'pemasukan');
+            const pengeluaranList = filtered.filter(t => t.tipe === 'pengeluaran');
+
+            // 1. Render Kelompok Pemasukan
+            if (pemasukanList.length > 0) {
+                const subtotalPemasukan = pemasukanList.reduce((sum, t) => sum + t.jumlah, 0);
+                const groupHeader = document.createElement('tr');
+                groupHeader.className = 'group-header-row group-header-income';
+                groupHeader.innerHTML = `
+                    <td colspan="5" style="text-align: left;">
+                        🟢 Pemasukan (${pemasukanList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPemasukan)}
+                    </td>
+                `;
+                tbody.appendChild(groupHeader);
+                pemasukanList.forEach(t => renderRow(t, tbody));
+            }
+
+            // 2. Render Kelompok Pengeluaran
+            if (pengeluaranList.length > 0) {
+                const subtotalPengeluaran = pengeluaranList.reduce((sum, t) => sum + t.jumlah, 0);
+                const groupHeader = document.createElement('tr');
+                groupHeader.className = 'group-header-row group-header-expense';
+                groupHeader.innerHTML = `
+                    <td colspan="5" style="text-align: left;">
+                        🔴 Pengeluaran (${pengeluaranList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPengeluaran)}
+                    </td>
+                `;
+                tbody.appendChild(groupHeader);
+                pengeluaranList.forEach(t => renderRow(t, tbody));
+            }
+        } else {
+            // Default: Tampilan Kronologis (Flat List)
+            filtered.forEach(t => renderRow(t, tbody));
+        }
     }
 }
 

@@ -793,6 +793,39 @@
 .border-none { border: none !important; padding: 0 !important; margin-bottom: 20px !important; }
 .form-label { font-weight: 600; margin-bottom: 8px; color: #475569; font-size: 0.95rem; display: block; }
 
+/* =========================================================
+   📂 BARIS HEADER KELOMPOK (TRANSACTION GROUP HEADERS)
+========================================================= */
+/* Gaya khusus baris pembatas saat riwayat dikelompokkan */
+.group-header-row {
+    background-color: #f8fafc !important;
+    cursor: default !important;
+}
+
+.group-header-row td {
+    text-align: left !important;
+    font-weight: 800 !important;
+    font-size: 0.9rem !important;
+    letter-spacing: 0.75px !important;
+    padding: 16px 20px !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    text-transform: uppercase !important;
+}
+
+.group-header-income td {
+    background: linear-gradient(90deg, #ecfdf5 0%, #ffffff 100%) !important;
+    color: #047857 !important;
+}
+
+.group-header-expense td {
+    background: linear-gradient(90deg, #fef2f2 0%, #ffffff 100%) !important;
+    color: #b91c1c !important;
+}
+
+.group-header-row:hover {
+    background-color: transparent !important;
+}
+
 /* 📱 RESPONSIF — LAYAR KECIL */
 @media (max-width: 768px) {
     .table-header-modern {
