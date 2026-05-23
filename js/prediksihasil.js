@@ -971,7 +971,8 @@ window.calculatePrediction = function(event) {
                     <span class="prediksi-badge-hari">H+${i + 1}</span>
                 </td>
                 <td class="prediksi-cell-produksi">
-                    <span class="prediksi-text-produksi">${pKg.toFixed(2)} Kg ${butir.toLocaleString('id-ID')} Butir</span>
+                    <span class="prediksi-text-produksi">${pKg.toFixed(2)} Kg</span>
+                    <span class="prediksi-subtext-produksi">${butir.toLocaleString('id-ID')} Butir</span>
                 </td>
                 <td class="prediksi-cell-keuntungan ${profitClass}">
                     Rp ${rpFormat}
