@@ -33,19 +33,21 @@
 
         <!-- Navigasi Menu -->
         <nav class="main-nav">
-          <!-- Dasar (User View) -->
-          <a href="#" onclick="switchAdminPage('section-dashboard')" title="Dashboard">🏠 Dashboard</a>
+          <a href="#section-dashboard" onclick="switchAdminPage('section-dashboard')" title="Dashboard">🏠 Dashboard</a>
+
+          <a href="#section-system-health" onclick="switchAdminPage('section-system-health')">🔧 Status Kesehatan</a>
+
+          <a href="#section-feed-management" onclick="switchAdminPage('section-feed-management')">🥬 Manajemen Stok Pakan</a>
 
           <a href="#section-user-management" onclick="switchAdminPage('section-user-management')">👥 Manajemen Pengguna</a>
 
-          <a href="#section-system-health" onclick="switchAdminPage('section-system-health')">🔧 Status Kesehatan</a>
-          
           <a href="#section-data-ringkasan" onclick="switchAdminPage('section-data-ringkasan')">📊 Ringkasan Data</a>
 
           <a href="#section-restock-reminder" onclick="switchAdminPage('section-restock-reminder')">⏰ Restock Reminder</a>
           
-          <!-- Switch Tampilan -->
           <a href="#section-audit-log" onclick="switchAdminPage('section-audit-log')">📋 Log Keamanan</a>
+
+          <!-- Switch Tampilan -->
           <a
             href="../../dashboardTAalip.html"
             class="switch-mode-btn"
@@ -298,7 +300,7 @@
       </section>
 
       <!-- G. Section: Comprehensive Feed Stock Management (Admin Only) -->
-      <section class="feed-management-admin animate__animated animate__fadeInUp" style="margin: 2rem 0;">
+      <section id="section-feed-management" class="feed-management-admin admin-page-section animate__animated animate__fadeInUp" style="margin: 2rem 0;">
         <div class="management-card">
           <div class="card-header-flex" style="border-bottom: none; margin-bottom: 2rem;">
             <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
@@ -527,17 +529,16 @@
           <div class="card-header-flex">
             <div style="display: flex; align-items: center; gap: 15px">
               <h3>👥 Manajemen Pengguna</h3>
-              <span class="badge" id="user-count-badge">0 Users</span>
             </div>
 
-            <div style="display: flex; gap: 10px">
+            <div style="display: flex; gap: 10px; align-items: center;">
               <button
                 class="action-btn-small"
                 onclick="syncAdminAccounts()"
                 style="
                   background: #6366f1;
                   color: white;
-                  padding: 0 15px;
+                  padding: 8px 15px;
                   border-radius: 8px;
                   border: none;
                   font-weight: 600;
@@ -545,6 +546,7 @@
                   display: flex;
                   align-items: center;
                   gap: 5px;
+                  font-size: 0.85rem;
                 "
                 title="Perbaiki Akun Admin yang Hilang"
               >
@@ -562,59 +564,94 @@
                   font-size: 0.85rem;
                   outline: none;
                   width: 200px;
+                  font-family: inherit;
                 "
               />
               <button
                 class="create-account-btn"
                 onclick="openCreateAccountModal()"
+                style="font-size: 0.85rem; padding: 8px 16px;"
               >
                 <span>➕</span> Buat Akun Baru
               </button>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="logs-table">
-              <thead>
-                <tr>
-                  <th>Nama Lengkap</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Tgl Bergabung</th>
-                  <th>Hak Akses</th>
-                  <th>Status</th>
-                  <th>Tindakan</th>
-                </tr>
-              </thead>
-              <tbody id="adminUserListBody">
-                <tr class="skeleton-row">
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                </tr>
-                <tr class="skeleton-row">
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                </tr>
-                <tr class="skeleton-row">
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                  <td><div class="skeleton-cell"></div></td>
-                </tr>
-              </tbody>
-            </table>
+          
+          <div style="padding: 1.5rem 2rem 2rem 2rem;">
+            <!-- Selector Tampilan Tab/Segmented Button -->
+            <div class="user-view-selector">
+              <button id="btn-show-active" onclick="switchUserTable('active')" class="user-tab-btn active">
+                👥 Akun Aktif <span id="user-count-badge" class="badge">0 Users</span>
+              </button>
+              <button id="btn-show-deleted" onclick="switchUserTable('deleted')" class="user-tab-btn">
+                🗑️ Akun Terhapus <span id="deleted-user-count-badge" class="badge">0 Users</span>
+              </button>
+            </div>
+
+            <div id="activeUsersTableContainer" class="table-responsive" style="margin-top: 0;">
+              <table class="logs-table" style="width: 100%; table-layout: fixed;">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Nama Lengkap</th>
+                    <th style="width: 15%;">Username</th>
+                    <th class="email-col" style="width: 22%;">Email</th>
+                    <th style="width: 13%;">Tgl Bergabung</th>
+                    <th style="width: 12%;">Hak Akses</th>
+                    <th style="width: 8%;">Status</th>
+                    <th style="width: 10%; text-align: center;">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="adminUserListBody">
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                  </tr>
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                  </tr>
+                  <tr class="skeleton-row">
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                    <td><div class="skeleton-cell"></div></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Tabel Akun Terhapus -->
+            <div id="deletedUsersTableContainer" class="table-responsive" style="display: none; margin-top: 0;">
+              <table class="logs-table" style="width: 100%; table-layout: fixed;">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Nama Lengkap</th>
+                    <th style="width: 15%;">Username</th>
+                    <th class="email-col" style="width: 22%;">Email</th>
+                    <th style="width: 13%;">Tgl Bergabung</th>
+                    <th style="width: 12%;">Hak Akses</th>
+                    <th style="width: 8%;">Status</th>
+                    <th style="width: 10%; text-align: center;">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="deletedUserListBody">
+                  <tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:2rem;">Belum ada data akun yang dihapus.</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>

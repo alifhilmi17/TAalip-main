@@ -94,13 +94,20 @@ async function initAdminDashboard() {
 
     // A. LISTENER PENGGUNA (Section 4)
     onSnapshot(query(collection(db, "user"), orderBy("createdAt", "desc")), (snap) => {
-        const users = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderAdminUserList(users);
+        const allUsers = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const activeUsers = allUsers.filter(u => u.deleted !== true);
+        const deletedUsers = allUsers.filter(u => u.deleted === true);
+
+        renderAdminUserList(activeUsers);
+        renderAdminDeletedUserList(deletedUsers);
         
         const countBadge = document.getElementById('user-count-badge');
         const statUser = document.getElementById('stat-user');
-        if (countBadge) countBadge.textContent = `${users.length} Users`;
-        if (statUser) statUser.textContent = `${users.length} Orang`;
+        if (countBadge) countBadge.textContent = `${activeUsers.length} Users`;
+        if (statUser) statUser.textContent = `${activeUsers.length} Orang`;
+
+        const deletedCountBadge = document.getElementById('deleted-user-count-badge');
+        if (deletedCountBadge) deletedCountBadge.textContent = `${deletedUsers.length} Users`;
     });
 
     // B. LISTENER POPULASI AYAM (Section 2 & 5)
@@ -723,7 +730,7 @@ function renderAdminUserList(users) {
                     ${user.jabatan ? `<div style="font-size:0.75rem; color:#64748b; margin-top:2px;">${roleIcon} ${escapeHTML(user.jabatan)}</div>` : ''}
                 </td>
                 <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem;">@${escapeHTML(user.username) || '-'}</code></td>
-                <td style="font-size:0.85rem; color:#64748b;">${escapeHTML(user.email) || '-'}</td>
+                <td class="email-col" style="font-size:0.85rem; color:#64748b;" title="${escapeHTML(user.email) || ''}">${escapeHTML(user.email) || '-'}</td>
                 <td style="font-size:0.85rem;">${joinDate}</td>
                 <td><span style="background:${badgeBg}; color:${badgeColor}; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; border:1px solid ${badgeBorder};">${roleLabel}</span></td>
                 <td><span style="color:${statusColor}; font-weight:700; font-size:0.75rem;">● ${statusLabel}</span></td>
@@ -736,6 +743,79 @@ function renderAdminUserList(users) {
                             <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
                         </button>
                         <button onclick="deleteUserAccount('${user.id}', '${user.fullname}')" class="action-btn-small btn-delete" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Hapus Akun">
+                            <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function renderAdminDeletedUserList(users) {
+    const tbody = document.getElementById("deletedUserListBody");
+    if (!tbody) return;
+
+    if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#94a3b8; padding:2rem;">Belum ada data akun yang dihapus.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = users.map(user => {
+        const currentRoleStr = (user.role || '').toLowerCase();
+        let roleLabel = 'PETUGAS';
+        let badgeBg = '#f1f5f9';
+        let badgeColor = '#64748b';
+        let badgeBorder = '#e2e8f0';
+
+        if (currentRoleStr.includes('admin')) {
+            roleLabel = 'ADMIN';
+            badgeBg = '#6366f115';
+            badgeColor = '#6366f1';
+            badgeBorder = '#6366f130';
+        } else if (currentRoleStr.includes('owner')) {
+            roleLabel = 'OWNER';
+            badgeBg = '#f59e0b15';
+            badgeColor = '#d97706';
+            badgeBorder = '#f59e0b30';
+        } else if (currentRoleStr.includes('akuntan')) {
+            roleLabel = 'AKUNTAN';
+            badgeBg = '#10b98115';
+            badgeColor = '#10b981';
+            badgeBorder = '#10b98130';
+        }
+
+        let joinDate = '-';
+        if (user.createdAt) {
+            const dateObj = user.createdAt.toDate ? user.createdAt.toDate() : new Date(user.createdAt);
+            joinDate = dateObj.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        let roleIcon = '💼';
+        if (user.jabatan) {
+            const j = user.jabatan.toLowerCase();
+            if (j.includes('admin')) roleIcon = '🛡️';
+            else if (j.includes('owner')) roleIcon = '👑';
+            else if (j.includes('akuntan')) roleIcon = '🧾';
+            else if (j.includes('petugas')) roleIcon = '👨‍🌾';
+        }
+
+        return `
+            <tr style="background:#fee2e210;">
+                <td style="text-align:left;">
+                    <div style="font-weight:600; color:#475569; text-decoration: line-through;">${escapeHTML(user.fullname) || '-'}</div>
+                    ${user.jabatan ? `<div style="font-size:0.75rem; color:#94a3b8; margin-top:2px;">${roleIcon} ${escapeHTML(user.jabatan)}</div>` : ''}
+                </td>
+                <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:0.8rem; color:#94a3b8;">@${escapeHTML(user.username) || '-'}</code></td>
+                <td class="email-col" style="font-size:0.85rem; color:#94a3b8;" title="${escapeHTML(user.email) || ''}">${escapeHTML(user.email) || '-'}</td>
+                <td style="font-size:0.85rem; color:#94a3b8;">${joinDate}</td>
+                <td><span style="background:${badgeBg}; color:${badgeColor}; opacity:0.6; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:700; border:1px solid ${badgeBorder};">${roleLabel}</span></td>
+                <td><span style="color:#ef4444; font-weight:700; font-size:0.75rem; background:#fee2e2; padding:4px 10px; border-radius:8px; border:1px solid #fca5a5;">🗑️ TERHAPUS</span></td>
+                <td>
+                    <div style="display:flex; justify-content:center; gap:8px;">
+                        <button onclick="restoreUserAccount('${user.id}', '${user.fullname}')" class="action-btn-small btn-detail" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Pulihkan Akun">
+                            <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                        </button>
+                        <button onclick="permanentlyDeleteUserAccount('${user.id}', '${user.fullname}')" class="action-btn-small btn-delete" style="width:32px; height:32px; padding:0; display:flex; align-items:center; justify-content:center;" title="Hapus Permanen">
                             <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
                     </div>
@@ -1465,26 +1545,90 @@ window.toggleAdminRole = async function(uid, currentRole) {
 };
 
 window.deleteUserAccount = async function(uid, name) {
-    // BUG-03 FIX: Firebase Auth tidak bisa dihapus dari client-side untuk akun orang lain.
-    // Solusi: Nonaktifkan akun (disabled: true) agar user tidak bisa login,
-    // memanfaatkan mekanisme force-logout yang sudah ada di auth-state.js.
     const confirm = await Swal.fire({
-        title: 'Nonaktifkan Akun?',
-        html: `Akun <strong>${name}</strong> akan <strong>dinonaktifkan</strong> dan tidak dapat login lagi.<br><br><small style="color:#64748b;">💡 Data akun tetap tersimpan dan bisa diaktifkan kembali via Edit Profil.</small>`,
+        title: 'Hapus Akun?',
+        html: `Apakah Anda yakin ingin <strong>menghapus</strong> akun <strong>${name}</strong>?<br><br><small style="color:#64748b;">💡 Akun akan dipindahkan ke daftar akun terhapus dan dinonaktifkan.</small>`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ef4444',
-        confirmButtonText: 'Ya, Nonaktifkan'
+        confirmButtonText: 'Ya, Hapus'
     });
     
     if (confirm.isConfirmed) {
         Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
         try {
-            await updateDoc(doc(db, "user", uid), { disabled: true, disabledAt: serverTimestamp(), disabledBy: currentAdminData?.username || 'Admin' });
-            // Jika juga admin, tandai di koleksi admin
-            try { await updateDoc(doc(db, "admin", uid), { disabled: true }); } catch(e) {}
-            Swal.fire('Akun Dinonaktifkan', `${name} tidak dapat login lagi. Aktifkan kembali via Edit Profil jika diperlukan.`, 'success');
-            logActivity(currentAdminData?.username || "Admin", "User Management", `Nonaktifkan akun: ${name}`);
+            await updateDoc(doc(db, "user", uid), { 
+                deleted: true, 
+                disabled: true, 
+                deletedAt: serverTimestamp(), 
+                deletedBy: currentAdminData?.username || 'Admin' 
+            });
+            // Jika juga admin, tandai di koleksi admin agar tidak disinkronkan kembali
+            try { 
+                await updateDoc(doc(db, "admin", uid), { 
+                    deleted: true, 
+                    disabled: true 
+                }); 
+            } catch(e) {}
+            
+            Swal.fire('Akun Dihapus', `${name} berhasil dipindahkan ke Daftar Akun Terhapus.`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "User Management", `Hapus akun (soft delete): ${name}`);
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+    }
+};
+
+window.restoreUserAccount = async function(uid, name) {
+    const confirm = await Swal.fire({
+        title: 'Pulihkan Akun?',
+        html: `Apakah Anda yakin ingin <strong>memulihkan</strong> kembali akun <strong>${name}</strong>?<br><br><small style="color:#64748b;">💡 Akun akan kembali aktif dan dapat digunakan kembali.</small>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Ya, Pulihkan'
+    });
+    
+    if (confirm.isConfirmed) {
+        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
+        try {
+            await updateDoc(doc(db, "user", uid), { 
+                deleted: false, 
+                disabled: false, 
+                restoredAt: serverTimestamp(), 
+                restoredBy: currentAdminData?.username || 'Admin' 
+            });
+            
+            // Jika dia admin, pulihkan juga di koleksi admin
+            try { 
+                await updateDoc(doc(db, "admin", uid), { 
+                    deleted: false, 
+                    disabled: false 
+                }); 
+            } catch(e) {}
+            
+            Swal.fire('Akun Dipulihkan', `${name} berhasil diaktifkan kembali.`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "User Management", `Pulihkan akun: ${name}`);
+        } catch (e) { Swal.fire('Error', e.message, 'error'); }
+    }
+};
+
+window.permanentlyDeleteUserAccount = async function(uid, name) {
+    const confirm = await Swal.fire({
+        title: 'Hapus Permanen?',
+        html: `<span style="color:#ef4444; font-weight:700;">PERINGATAN!</span> Akun <strong>${name}</strong> akan <strong>dihapus secara permanen</strong> dari database.<br>Tindakan ini tidak dapat dibatalkan!`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'Ya, Hapus Permanen'
+    });
+    
+    if (confirm.isConfirmed) {
+        Swal.fire({ title: 'Memproses...', didOpen: () => Swal.showLoading() });
+        try {
+            await deleteDoc(doc(db, "user", uid));
+            try { await deleteDoc(doc(db, "admin", uid)); } catch(e) {}
+            
+            Swal.fire('Hapus Permanen Sukses', `${name} telah dihapus permanen dari database.`, 'success');
+            logActivity(currentAdminData?.username || "Admin", "User Management", `Hapus permanen akun: ${name}`);
         } catch (e) { Swal.fire('Error', e.message, 'error'); }
     }
 };
@@ -1495,25 +1639,20 @@ window.syncAdminAccounts = async function() {
         const adminSnap = await getDocs(collection(db, "admin"));
         let fixed = 0;
         for (const aDoc of adminSnap.docs) {
+            const a = aDoc.data();
+            // SKIP jika admin ini sudah ditandai terhapus (soft-deleted)
+            if (a.deleted === true) continue;
+
             const uRef = doc(db, "user", aDoc.id);
             const uSnap = await getDoc(uRef);
             if (!uSnap.exists()) {
-                const a = aDoc.data();
-                const actualRole = a.role || 'admin';
-                const actualJabatan = actualRole === 'owner' ? 'Owner' : 'Admin';
-                await setDoc(uRef, { 
-                    fullname: a.fullname || 'Admin', 
-                    username: a.username || 'admin', 
-                    email: a.email, 
-                    role: actualRole, 
-                    jabatan: actualJabatan,
-                    disabled: false, 
-                    createdAt: serverTimestamp() 
-                });
+                // Jika dokumen di koleksi user sama sekali tidak ada, artinya akun tersebut telah dihapus secara permanen.
+                // Hapus dokumen yatim piatu di koleksi admin agar data konsisten dan tidak memunculkan kembali akun terhapus.
+                await deleteDoc(doc(db, "admin", aDoc.id));
                 fixed++;
             }
         }
-        Swal.fire('Selesai', fixed > 0 ? `${fixed} entri akun berhasil dipulihkan.` : 'Seluruh data otoritas sudah sinkron.', 'success');
+        Swal.fire('Selesai', fixed > 0 ? `${fixed} entri akun tidak valid berhasil dibersihkan.` : 'Seluruh data otoritas sudah sinkron.', 'success');
     } catch (e) { Swal.fire('Error Sinkronisasi', e.message, 'error'); }
 };
 
@@ -1904,9 +2043,30 @@ window.openSnapshotTab = function(evt, tabName) {
 
 window.filterUserList = function() {
     const q = document.getElementById("searchUserInput").value.toLowerCase();
-    document.querySelectorAll("#adminUserListBody tr").forEach(r => {
+    document.querySelectorAll("#adminUserListBody tr, #deletedUserListBody tr").forEach(r => {
         r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
     });
+};
+
+window.switchUserTable = function(view) {
+    const activeContainer = document.getElementById("activeUsersTableContainer");
+    const deletedContainer = document.getElementById("deletedUsersTableContainer");
+    const btnShowActive = document.getElementById("btn-show-active");
+    const btnShowDeleted = document.getElementById("btn-show-deleted");
+    
+    if (view === 'active') {
+        if (activeContainer) activeContainer.style.display = "block";
+        if (deletedContainer) deletedContainer.style.display = "none";
+        
+        if (btnShowActive) btnShowActive.classList.add("active");
+        if (btnShowDeleted) btnShowDeleted.classList.remove("active");
+    } else {
+        if (activeContainer) activeContainer.style.display = "none";
+        if (deletedContainer) deletedContainer.style.display = "block";
+        
+        if (btnShowDeleted) btnShowDeleted.classList.add("active");
+        if (btnShowActive) btnShowActive.classList.remove("active");
+    }
 };
 
 
@@ -1932,8 +2092,8 @@ console.log("🛡️ LIBAS Admin Panel System Core Fully Restored & Reorganized.
  */
 
 window.clearLogs = async function() {
-    if (!currentAdminData || currentAdminData.type !== 'super_admin') {
-        Swal.fire('Akses Ditolak', 'Hanya Super Administrator yang dapat membersihkan log sistem.', 'error');
+    if (!currentAdminData || (currentAdminData.type !== 'super_admin' && currentAdminData.type !== 'owner')) {
+        Swal.fire('Akses Ditolak', 'Hanya Super Administrator atau Owner yang dapat membersihkan log sistem.', 'error');
         return;
     }
 
