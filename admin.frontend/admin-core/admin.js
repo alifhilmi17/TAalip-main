@@ -262,11 +262,31 @@ async function initAdminDashboard() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             const inputEl = document.getElementById('inputButirPerKgAdmin');
-            if (inputEl && data.butirPerKg) {
-                inputEl.value = data.butirPerKg;
+            if (inputEl) {
+                if (data.gramPerButir) {
+                    inputEl.value = data.gramPerButir;
+                    if (typeof window.updateKonversiPreview === 'function') {
+                        window.updateKonversiPreview(data.gramPerButir);
+                    }
+                } else if (data.butirPerKg) {
+                    const valG = 1000 / data.butirPerKg;
+                    inputEl.value = parseFloat(valG.toFixed(2));
+                    if (typeof window.updateKonversiPreview === 'function') {
+                        window.updateKonversiPreview(valG);
+                    }
+                }
             }
         }
     });
+
+    const inputButirEl = document.getElementById('inputButirPerKgAdmin');
+    if (inputButirEl) {
+        inputButirEl.addEventListener('input', (e) => {
+            if (typeof window.updateKonversiPreview === 'function') {
+                window.updateKonversiPreview(e.target.value);
+            }
+        });
+    }
 
     console.log("✅ Semua Listener Cloud Aktif.");
 }
@@ -280,23 +300,44 @@ window.saveKonversiTelur = async function() {
     
     const newVal = parseFloat(inputEl.value);
     if (isNaN(newVal) || newVal <= 0) {
-        Swal.fire('Input Tidak Valid', 'Masukkan angka konversi yang benar (misal: 16)', 'warning');
+        Swal.fire('Input Tidak Valid', 'Masukkan bobot gram yang benar (misal: 62.5)', 'warning');
         return;
     }
     
     try {
         const docRef = doc(db, "settings", "konfigurasi_sistem");
-        await setDoc(docRef, { butirPerKg: newVal }, { merge: true });
+        await setDoc(docRef, { gramPerButir: newVal }, { merge: true });
         Swal.fire({
             icon: 'success',
             title: 'Tersimpan!',
-            text: `Konversi berhasil diubah menjadi ${newVal} butir/Kg.`,
+            text: `Konversi berhasil diubah menjadi ${newVal} Gram/butir.`,
             timer: 2000,
             showConfirmButton: false
         });
     } catch (err) {
         console.error("Gagal menyimpan konfigurasi:", err);
         Swal.fire('Gagal Menyimpan', 'Terjadi kesalahan saat menyimpan ke database.', 'error');
+    }
+};
+
+/**
+ * Memperbarui visualisasi real-time konversi telur (Kg & Gram)
+ */
+window.updateKonversiPreview = function(val) {
+    const previewEl = document.getElementById('previewKonversiTelur');
+    const previewKg = document.getElementById('previewKgForm');
+    const previewGram = document.getElementById('previewGramForm');
+    
+    if (!previewEl || !previewKg || !previewGram) return;
+    
+    const parsedVal = parseFloat(val);
+    if (!isNaN(parsedVal) && parsedVal > 0) {
+        previewEl.style.display = 'flex';
+        previewGram.textContent = `1 Butir = ${parsedVal.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} Gram`;
+        const butirPerKg = 1000 / parsedVal;
+        previewKg.textContent = `1 Kg = ${butirPerKg.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 2 })} Butir`;
+    } else {
+        previewEl.style.display = 'none';
     }
 };
 

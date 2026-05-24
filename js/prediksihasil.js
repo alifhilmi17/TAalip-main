@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * Memuat konfigurasi sistem (seperti konversi telur per Kg) dari Firestore
+ * Memuat konfigurasi sistem (seperti konversi telur dalam Gram) dari Firestore
  */
 async function loadSettings() {
     try {
@@ -110,12 +110,14 @@ async function loadSettings() {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.butirPerKg) {
+            if (data.gramPerButir) {
+                konversiButirPerKg = 1000 / parseFloat(data.gramPerButir);
+            } else if (data.butirPerKg) {
                 konversiButirPerKg = parseFloat(data.butirPerKg);
             }
         }
     } catch (err) {
-        console.warn("Gagal memuat konfigurasi konversi butir per kg:", err);
+        console.warn("Gagal memuat konfigurasi konversi:", err);
     }
 }
 
