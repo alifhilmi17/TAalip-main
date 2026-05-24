@@ -245,6 +245,157 @@ window.validateProduksiRealtime = function() {
 }
 
 // =========================================
+// 3.5 LOGIKA INPUT MINGGUAN (BULK)
+// =========================================
+
+window.switchInputMode = function(mode) {
+    const inputModeEl = document.getElementById('inputMode');
+    if (!inputModeEl) return;
+
+    inputModeEl.value = mode;
+
+    const btnHarian = document.getElementById('btnModeHarian');
+    const btnMingguan = document.getElementById('btnModeMingguan');
+    const dailyFields = document.getElementById('dailyFieldsContainer');
+    const weeklyFields = document.getElementById('weeklyFieldsContainer');
+    const labelTgl = document.getElementById('labelTglProduksi');
+    const hintTgl = document.getElementById('tglHint');
+
+    const telurBaikEl = document.getElementById('telurBaik');
+    const telurCacatEl = document.getElementById('telurCacat');
+
+    if (mode === 'harian') {
+        if (btnHarian) btnHarian.classList.add('active');
+        if (btnMingguan) btnMingguan.classList.remove('active');
+        if (dailyFields) dailyFields.style.display = 'block';
+        if (weeklyFields) weeklyFields.style.display = 'none';
+        if (labelTgl) labelTgl.innerText = "Tanggal Produksi";
+        if (hintTgl) hintTgl.innerText = "📅 Pilih tanggal produksi (default: Hari Ini)";
+
+        if (telurBaikEl) telurBaikEl.required = true;
+        if (telurCacatEl) telurCacatEl.required = true;
+    } else {
+        if (btnHarian) btnHarian.classList.remove('active');
+        if (btnMingguan) btnMingguan.classList.add('active');
+        if (dailyFields) dailyFields.style.display = 'none';
+        if (weeklyFields) weeklyFields.style.display = 'block';
+        if (labelTgl) labelTgl.innerText = "Tanggal Mulai (Hari Ke-1)";
+        if (hintTgl) hintTgl.innerText = "📅 Pilih tanggal mulai untuk rentang 7 hari";
+
+        if (telurBaikEl) telurBaikEl.required = false;
+        if (telurCacatEl) telurCacatEl.required = false;
+
+        generateWeeklyRows();
+    }
+};
+
+window.onStartDateChange = function() {
+    const inputMode = document.getElementById('inputMode').value;
+    if (inputMode === 'mingguan') {
+        generateWeeklyRows();
+    }
+};
+
+function generateWeeklyRows() {
+    const container = document.getElementById('weeklyRows');
+    if (!container) return;
+
+    const startDateStr = document.getElementById('tglProduksi').value;
+    if (!startDateStr) return;
+
+    container.innerHTML = "";
+    const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
+
+    for (let i = 0; i < 7; i++) {
+        const dateObj = new Date(startDateStr);
+        dateObj.setDate(dateObj.getDate() + i);
+
+        const yyyy = dateObj.getFullYear();
+        const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dd = String(dateObj.getDate()).padStart(2, '0');
+        const dateString = `${yyyy}-${mm}-${dd}`;
+
+        const formattedDate = dateObj.toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        const rowHtml = `
+            <div class="weekly-row" data-day="${i + 1}">
+                <div class="weekly-row-date">
+                    <span class="day-name">🗓️ Hari ke-${i + 1}</span>
+                    <span class="day-date">${formattedDate}</span>
+                </div>
+                <div class="weekly-row-inputs">
+                    <div class="weekly-input-group">
+                        <label>Baik (Butir)</label>
+                        <input type="number" class="weekly-telur-baik" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                    </div>
+                    <div class="weekly-input-group">
+                        <label>Cacat (Butir)</label>
+                        <input type="number" class="weekly-telur-cacat" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                    </div>
+                    <div class="weekly-input-group readonly-group">
+                        <label>Total Telur</label>
+                        <input type="number" class="weekly-total-telur" readonly value="0" />
+                    </div>
+                    <div class="weekly-input-group readonly-group">
+                        <label>Tdk Bertelur</label>
+                        <input type="number" class="weekly-tidak-bertelur" readonly value="${totalAyam}" />
+                    </div>
+                    <input type="hidden" class="weekly-date-val" value="${dateString}" />
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', rowHtml);
+    }
+}
+
+window.calculateWeeklyRow = function(dayNum) {
+    const row = document.querySelector(`.weekly-row[data-day="${dayNum}"]`);
+    if (!row) return;
+
+    const baikInput = row.querySelector('.weekly-telur-baik');
+    const cacatInput = row.querySelector('.weekly-telur-cacat');
+    const totalInput = row.querySelector('.weekly-total-telur');
+    const tidakBertelurInput = row.querySelector('.weekly-tidak-bertelur');
+
+    const baik = parseInt(baikInput.value) || 0;
+    const cacat = parseInt(cacatInput.value) || 0;
+    const total = baik + cacat;
+    totalInput.value = total;
+
+    const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
+
+    // Update jumlah ayam tidak bertelur secara real-time
+    if (tidakBertelurInput) {
+        if (totalAyam > 0) {
+            const tidakBertelur = totalAyam - total;
+            tidakBertelurInput.value = tidakBertelur >= 0 ? tidakBertelur : 0;
+        } else {
+            tidakBertelurInput.value = 0;
+        }
+    }
+
+    // Reset style
+    row.style.borderColor = '#e2e8f0';
+    row.style.background = '#f8fafc';
+
+    if (totalAyam > 0 && total > totalAyam) {
+        row.style.borderColor = '#fca5a5';
+        row.style.background = '#fef2f2';
+    } else if (totalAyam > 0 && total > 0 && (total / totalAyam) > 0.95) {
+        row.style.borderColor = '#fde68a';
+        row.style.background = '#fef9ec';
+    } else if (total > 0) {
+        row.style.borderColor = '#a7f3d0';
+        row.style.background = '#ecfdf5';
+    }
+};
+
+// =========================================
 // 4. CRUD FIRESTORE
 // =========================================
 window.openProduksiModal = function() {
@@ -261,6 +412,14 @@ window.openProduksiModal = function() {
 
     loadBatchOptions();
     resetBatchFieldsForNewEntry();
+
+    // Show Mode Input group in add mode
+    const modeGroup = document.getElementById('inputModeGroup');
+    if (modeGroup) modeGroup.style.display = 'block';
+
+    // Force default mode to harian
+    switchInputMode('harian');
+
     document.getElementById('modalTitle').innerText = "Tambah Data Produksi";
     if (modal) modal.classList.add('show');
 };
@@ -281,113 +440,194 @@ window.saveProduksiData = async function(event) {
 
     const idInput = document.getElementById('produksiId').value;
     const batchEl = document.getElementById('batchProduksi');
+    const inputMode = document.getElementById('inputMode').value;
 
-    // ── Ambil nilai form ──────────────────────────────────────────
-    const telurBaik        = parseInt(document.getElementById('telurBaik').value) || 0;
-    const telurCacat       = parseInt(document.getElementById('telurCacat').value) || 0;
-    const totalTelur       = telurBaik + telurCacat;
-    const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
-    const totalAyam        = parseInt(document.getElementById('totalAyamInput').value) || 0;
+    if (inputMode === 'harian') {
+        // ── MODE HARIAN ──────────────────────────────────────────
+        const telurBaik        = parseInt(document.getElementById('telurBaik').value) || 0;
+        const telurCacat       = parseInt(document.getElementById('telurCacat').value) || 0;
+        const totalTelur       = telurBaik + telurCacat;
+        const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
+        const totalAyam        = parseInt(document.getElementById('totalAyamInput').value) || 0;
 
-    // ── Ambil data batch untuk validasi ──────────────────────────
-    const batchData = dataAyam.find(a => a.id === batchEl.value);
-    const sisaAyam  = batchData ? (parseInt(batchData.sisaAyam) || 0) : 0;
+        // ── Ambil data batch untuk validasi ──────────────────────────
+        const batchData = dataAyam.find(a => a.id === batchEl.value);
+        const sisaAyam  = batchData ? (parseInt(batchData.sisaAyam) || 0) : 0;
 
-    // ── VALIDASI DATA INTEGRITY ───────────────────────────────────
-    if (totalAyam > 0) {
-        // 1. Total telur tidak boleh melebihi jumlah ayam
-        if (totalTelur > totalAyam) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Data Tidak Logis!',
-                html: `
-                    <div style="text-align: left;">
-                        <p>Total produksi telur (<b>${totalTelur} butir</b>) melebihi jumlah populasi ayam (<b>${totalAyam} ekor</b>).</p>
-                        <hr>
-                        <p><small><i>Catatan: Secara biologis, seekor ayam maksimal hanya bertelur 1 butir per hari. Harap periksa kembali input Anda.</i></small></p>
-                    </div>
-                `,
-                confirmButtonColor: '#ef4444',
-                confirmButtonText: 'Perbaiki Input'
-            });
-            return;
+        // ── VALIDASI DATA INTEGRITY ───────────────────────────────────
+        if (totalAyam > 0) {
+            // 1. Total telur tidak boleh melebihi jumlah ayam
+            if (totalTelur > totalAyam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Data Tidak Logis!',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Total produksi telur (<b>${totalTelur} butir</b>) melebihi jumlah populasi ayam (<b>${totalAyam} ekor</b>).</p>
+                            <hr>
+                            <p><small><i>Catatan: Secara biologis, seekor ayam maksimal hanya bertelur 1 butir per hari. Harap periksa kembali input Anda.</i></small></p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Perbaiki Input'
+                });
+                return;
+            }
+
+            // 2. Ayam tidak bertelur tidak boleh melebihi jumlah ayam
+            if (ayamTidakBertelur > totalAyam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Data Tidak Logis!',
+                    text: `Jumlah ayam tidak bertelur (${ayamTidakBertelur} ekor) tidak mungkin melebihi total populasi ayam (${totalAyam} ekor).`,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
+            // 3. Gabungan ayam bertelur (asumsi 1 butir = 1 ayam) + tidak bertelur
+            if (totalTelur + ayamTidakBertelur > totalAyam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Ketidakkonsistenan Data!',
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Total ayam terdeteksi: <b>${totalTelur + ayamTidakBertelur} ekor</b></p>
+                            <ul>
+                                <li>Bertelur: ${totalTelur} ekor</li>
+                                <li>Tidak Bertelur: ${ayamTidakBertelur} ekor</li>
+                            </ul>
+                            <p>Sedangkan populasi di database hanya: <b>${totalAyam} ekor</b>.</p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+        } else {
+            // Jika total ayam 0, tidak boleh ada produksi
+            if (totalTelur > 0) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Batch Kosong',
+                    text: 'Tidak bisa menginput produksi pada batch yang sudah tidak memiliki ayam.',
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
         }
 
-        // 2. Ayam tidak bertelur tidak boleh melebihi jumlah ayam
-        if (ayamTidakBertelur > totalAyam) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Data Tidak Logis!',
-                text: `Jumlah ayam tidak bertelur (${ayamTidakBertelur} ekor) tidak mungkin melebihi total populasi ayam (${totalAyam} ekor).`,
-                confirmButtonColor: '#ef4444'
-            });
-            return;
-        }
+        // ── Bentuk payload ────────────────────────────────────────────
+        const tanggalValue = document.getElementById('tglProduksi').value;
 
-        // 3. Gabungan ayam bertelur (asumsi 1 butir = 1 ayam) + tidak bertelur
-        if (totalTelur + ayamTidakBertelur > totalAyam) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Ketidakkonsistenan Data!',
-                html: `
-                    <div style="text-align: left;">
-                        <p>Total ayam terdeteksi: <b>${totalTelur + ayamTidakBertelur} ekor</b></p>
-                        <ul>
-                            <li>Bertelur: ${totalTelur} ekor</li>
-                            <li>Tidak Bertelur: ${ayamTidakBertelur} ekor</li>
-                        </ul>
-                        <p>Sedangkan populasi di database hanya: <b>${totalAyam} ekor</b>.</p>
-                    </div>
-                `,
-                confirmButtonColor: '#ef4444'
-            });
-            return;
+        const payload = {
+            tanggal: tanggalValue,
+            batchId: batchEl.value,
+            batchLabel: batchEl.options[batchEl.selectedIndex].text,
+            jenisTelur: document.getElementById('jenisTelurProduksi').value,
+            kandang: document.getElementById('kandangProduksiHidden').value || document.getElementById('kandangProduksi').value,
+            telurBaik,
+            telurCacat,
+            totalTelur,
+            ayamTidakBertelur,
+            totalAyam,
+            updatedAt: new Date().toISOString()
+        };
+
+        try {
+            if (idInput === "") {
+                payload.createdAt = new Date().toISOString();
+                await addDoc(produksiCollection, payload);
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi ditambahkan.', timer: 2000, showConfirmButton: false });
+            } else {
+                await updateDoc(doc(db, "produksi_harian", idInput), payload);
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi diperbarui.', timer: 2000, showConfirmButton: false });
+            }
+            
+            // Refresh data setelah operasi selesai
+            loadProduksiData();
+            window.closeProduksiModal();
+        } catch (err) {
+            Swal.fire("Error", err.message, "error");
         }
     } else {
-        // Jika total ayam 0, tidak boleh ada produksi
-        if (totalTelur > 0) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Batch Kosong',
-                text: 'Tidak bisa menginput produksi pada batch yang sudah tidak memiliki ayam.',
-                confirmButtonColor: '#ef4444'
-            });
-            return;
-        }
-    }
-
-    // ── Bentuk payload ────────────────────────────────────────────
-    const tanggalValue = document.getElementById('tglProduksi').value;
-
-    const payload = {
-        tanggal: tanggalValue,
-        batchId: batchEl.value,
-        batchLabel: batchEl.options[batchEl.selectedIndex].text,
-        jenisTelur: document.getElementById('jenisTelurProduksi').value,
-        kandang: document.getElementById('kandangProduksiHidden').value || document.getElementById('kandangProduksi').value,
-        telurBaik,
-        telurCacat,
-        totalTelur,
-        ayamTidakBertelur,
-        totalAyam,
-        updatedAt: new Date().toISOString()
-    };
-
-    try {
-        if (idInput === "") {
-            payload.createdAt = new Date().toISOString();
-            await addDoc(produksiCollection, payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi ditambahkan.', timer: 2000, showConfirmButton: false });
-        } else {
-            await updateDoc(doc(db, "produksi_harian", idInput), payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi diperbarui.', timer: 2000, showConfirmButton: false });
-        }
+        // ── MODE MINGGUAN (BULK SAVE) ─────────────────────────────
+        const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
         
-        // Refresh data setelah operasi selesai
-        loadProduksiData();
-        window.closeProduksiModal();
-    } catch (err) {
-        Swal.fire("Error", err.message, "error");
+        // Kumpulkan data dari ke-7 baris
+        const rows = document.querySelectorAll('.weekly-row');
+        const payloads = [];
+
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i];
+            const dayNum = row.dataset.day;
+            const dateVal = row.querySelector('.weekly-date-val').value;
+            const baik = parseInt(row.querySelector('.weekly-telur-baik').value) || 0;
+            const cacat = parseInt(row.querySelector('.weekly-telur-cacat').value) || 0;
+            const total = baik + cacat;
+            const ayamTidakBertelur = totalAyam > 0 ? (totalAyam - total >= 0 ? totalAyam - total : 0) : 0;
+
+            // VALIDASI: telur tidak boleh melebihi jumlah ayam
+            if (totalAyam > 0 && total > totalAyam) {
+                Swal.fire({
+                    icon: 'error',
+                    title: `Input Tidak Logis pada Hari Ke-${dayNum}!`,
+                    html: `
+                        <div style="text-align: left;">
+                            <p>Hari ke-${dayNum} (<b>${dateVal}</b>): Total telur (<b>${total} butir</b>) melebihi jumlah populasi ayam (<b>${totalAyam} ekor</b>).</p>
+                            <hr>
+                            <p><small><i>Harap periksa kembali input Anda.</i></small></p>
+                        </div>
+                    `,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
+            payloads.push({
+                tanggal: dateVal,
+                batchId: batchEl.value,
+                batchLabel: batchEl.options[batchEl.selectedIndex].text,
+                jenisTelur: document.getElementById('jenisTelurProduksi').value,
+                kandang: document.getElementById('kandangProduksiHidden').value || document.getElementById('kandangProduksi').value,
+                telurBaik: baik,
+                telurCacat: cacat,
+                totalTelur: total,
+                ayamTidakBertelur: ayamTidakBertelur,
+                totalAyam: totalAyam,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+        }
+
+        // Tampilkan loading spinner
+        Swal.fire({
+            title: 'Menyimpan 7 Data...',
+            html: 'Mohon tunggu sejenak, data sedang dikirim ke Firestore.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        try {
+            // Jalankan penyimpanan bulk secara paralel
+            const savePromises = payloads.map(payload => addDoc(produksiCollection, payload));
+            await Promise.all(savePromises);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: '7 data produksi mingguan berhasil disimpan sekaligus.',
+                timer: 2500,
+                showConfirmButton: false
+            });
+
+            loadProduksiData();
+            window.closeProduksiModal();
+        } catch (err) {
+            Swal.fire("Error", "Gagal menyimpan data mingguan: " + err.message, "error");
+        }
     }
 };
 
@@ -410,6 +650,14 @@ window.editProduksi = function(id) {
         document.getElementById('totalAyamInput').value = prod.totalAyam !== undefined ? prod.totalAyam : (batchInfo ? batchInfo.sisaAyam : 0);
 
         lockBatchFields();
+
+        // Hide Mode Input group in edit mode
+        const modeGroup = document.getElementById('inputModeGroup');
+        if (modeGroup) modeGroup.style.display = 'none';
+
+        // Force switch to daily mode fields
+        switchInputMode('harian');
+
         document.getElementById('modalTitle').innerText = "Edit Produksi";
         document.getElementById('produksiModal').classList.add('show');
     }

@@ -148,10 +148,20 @@
           <small class="hint-text">*Data batch diambil dari halaman Data Ayam</small>
         </div>
 
+        <!-- ===== TOGGLE MODE INPUT (Harian vs Mingguan) ===== -->
+        <div class="form-group" id="inputModeGroup">
+          <label>Mode Input</label>
+          <div class="mode-toggle-container">
+            <button type="button" id="btnModeHarian" class="mode-btn active" onclick="switchInputMode('harian')">📅 Harian (1 Hari)</button>
+            <button type="button" id="btnModeMingguan" class="mode-btn" onclick="switchInputMode('mingguan')">📊 Mingguan (7 Hari)</button>
+          </div>
+          <input type="hidden" id="inputMode" value="harian" />
+        </div>
+
         <!-- Tanggal: Diisi otomatis hari ini, tapi bisa diubah jika ingin input data kemarin -->
-        <div class="form-group">
-          <label for="tglProduksi">Tanggal Produksi</label>
-          <input type="date" id="tglProduksi" required title="Pilih tanggal pencatatan produksi" />
+        <div class="form-group" id="tglProduksiGroup">
+          <label for="tglProduksi" id="labelTglProduksi">Tanggal Produksi</label>
+          <input type="date" id="tglProduksi" required title="Pilih tanggal pencatatan produksi" onchange="onStartDateChange()" />
           <small class="hint-text" id="tglHint">📅 Pilih tanggal produksi (default: Hari Ini)</small>
         </div>
 
@@ -160,18 +170,11 @@
           <label for="kandangProduksi">Kandang</label>
           <!-- Hidden input sebagai backup agar nilai kandang tetap terkirim saat select disabled -->
           <input type="hidden" id="kandangProduksiHidden" name="kandangProduksiHidden" />
-          <select id="kandangProduksi" required disabled style="
+          <input type="text" id="kandangProduksi" readonly placeholder="— otomatis dari batch —" style="
                 background-color: #e2e8f0;
                 color: #64748b;
                 cursor: not-allowed;
-              ">
-            <option value="" disabled selected>
-              — otomatis dari batch —
-            </option>
-            <option value="Kandang A (Utara)">Kandang A (Utara)</option>
-            <option value="Kandang B (Timur)">Kandang B (Timur)</option>
-            <!--<option value="Kandang C (Selatan)">Kandang C (Selatan)</option>-->
-          </select>
+              " title="Terisi otomatis dari data batch yang dipilih" />
           <small class="hint-text" id="kandangHint">⬆️ Terisi otomatis saat batch dipilih</small>
         </div>
 
@@ -186,54 +189,72 @@
           <small class="hint-text" id="jenisHint">⬆️ Terisi otomatis saat batch dipilih</small>
         </div>
 
-        <div class="form-group">
-          <label for="telurBaik">Jumlah Telur Baik (Butir)</label>
-          <input type="number" id="telurBaik" min="0" required oninput="calculateTotal()" />
+        <!-- ===== CONTAINER FIELD INPUT HARIAN ===== -->
+        <div id="dailyFieldsContainer">
+          <div class="form-group">
+            <label for="telurBaik">Jumlah Telur Baik (Butir)</label>
+            <input type="number" id="telurBaik" min="0" required oninput="calculateTotal()" />
+          </div>
+
+          <div class="form-group">
+            <label for="telurCacat">Jumlah Telur Cacat/Pecah (Butir)</label>
+            <input type="number" id="telurCacat" min="0" required oninput="calculateTotal()" />
+          </div>
+
+          <div class="form-group">
+            <label for="ayamTidakBertelur">Jumlah Ayam Tidak Bertelur (Ekor)</label>
+            <input type="number" id="ayamTidakBertelur" readonly style="
+                  background-color: #e2e8f0;
+                  font-weight: bold;
+                  pointer-events: none;
+                " title="Terisi otomatis dari selisih Total Ayam dan Total Telur" />
+          </div>
+
+          <div class="form-group">
+            <label for="totalAyam">Total Ayam (Ekor)</label>
+            <input type="number" id="totalAyamInput" readonly style="
+                  background-color: #e2e8f0;
+                  font-weight: bold;
+                  pointer-events: none;
+                " title="Diambil otomatis dari database populasi ayam" />
+            <small class="hint-text">📊 Jumlah populasi ayam saat ini dalam batch ini</small>
+          </div>
+
+          <div class="form-group">
+            <label for="totalTelur">Total Telur (Butir)</label>
+            <input type="number" id="totalTelur" readonly style="
+                  background-color: #e2e8f0;
+                  font-weight: bold;
+                  pointer-events: none;
+                " />
+            <!-- Hint validasi real-time -->
+            <small id="validasiHint" style="
+                  display: none;
+                  margin-top: 6px;
+                  font-size: 0.78rem;
+                  font-weight: 500;
+                  padding: 6px 10px;
+                  border-radius: 6px;
+                  background: #fef9ec;
+                  border: 1px solid #fde68a;
+                  line-height: 1.4;
+                "></small>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="telurCacat">Jumlah Telur Cacat/Pecah (Butir)</label>
-          <input type="number" id="telurCacat" min="0" required oninput="calculateTotal()" />
-        </div>
-
-        <div class="form-group">
-          <label for="ayamTidakBertelur">Jumlah Ayam Tidak Bertelur (Ekor)</label>
-          <input type="number" id="ayamTidakBertelur" readonly style="
-                background-color: #e2e8f0;
-                font-weight: bold;
-                pointer-events: none;
-              " title="Terisi otomatis dari selisih Total Ayam dan Total Telur" />
-        </div>
-
-        <div class="form-group">
-          <label for="totalAyam">Total Ayam (Ekor)</label>
-          <input type="number" id="totalAyamInput" readonly style="
-                background-color: #e2e8f0;
-                font-weight: bold;
-                pointer-events: none;
-              " title="Diambil otomatis dari database populasi ayam" />
-          <small class="hint-text">📊 Jumlah populasi ayam saat ini dalam batch ini</small>
-        </div>
-
-        <div class="form-group">
-          <label for="totalTelur">Total Telur (Butir)</label>
-          <input type="number" id="totalTelur" readonly style="
-                background-color: #e2e8f0;
-                font-weight: bold;
-                pointer-events: none;
-              " />
-          <!-- Hint validasi real-time -->
-          <small id="validasiHint" style="
-                display: none;
-                margin-top: 6px;
-                font-size: 0.78rem;
-                font-weight: 500;
-                padding: 6px 10px;
-                border-radius: 6px;
-                background: #fef9ec;
-                border: 1px solid #fde68a;
-                line-height: 1.4;
-              "></small>
+        <!-- ===== CONTAINER FIELD INPUT MINGGUAN ===== -->
+        <div id="weeklyFieldsContainer" style="display: none;">
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label style="color: #4f46e5; font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 1.05rem;">
+              📊 Input Data Produksi 7 Hari
+            </label>
+            <small class="hint-text" style="margin-bottom: 12px; font-size: 0.8rem; line-height: 1.4;">
+              Masukkan data produksi telur harian selama satu minggu berturut-turut. Tanggal tiap baris terhitung otomatis dari tanggal mulai yang Anda pilih di atas.
+            </small>
+            <div id="weeklyRows" class="weekly-rows-container">
+              <!-- Baris hari ke-1 s.d ke-7 diinjeksi via JavaScript -->
+            </div>
+          </div>
         </div>
 
         <!--  <div class="form-group">

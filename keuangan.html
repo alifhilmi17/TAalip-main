@@ -54,8 +54,19 @@
         </div>
 
         <!-- Form ID untuk event listener di JS -->
+        <!-- Form ID untuk event listener di JS -->
         <form id="financeForm">
           <input type="hidden" id="trxId" />
+
+          <!-- ===== SUMBER PENCATATAN ===== -->
+          <div class="form-group" id="trxSourceGroup">
+            <label>Sumber Pencatatan</label>
+            <div class="mode-toggle-container">
+              <button type="button" id="btnSourceManual" class="mode-btn active" onclick="switchTrxSource('manual')">✍️ Manual / Umum</button>
+              <button type="button" id="btnSourceProduksi" class="mode-btn" onclick="switchTrxSource('produksi')">🥚 Hasil Produksi</button>
+            </div>
+            <input type="hidden" id="trxSource" value="manual" />
+          </div>
 
           <!-- 1. Input Tanggal Transaksi -->
           <div class="form-group">
@@ -63,20 +74,88 @@
             <input type="date" id="trxDate" required />
           </div>
 
-          <!-- 2. Pilihan Jenis (Pemasukan atau Pengeluaran) menggunakan Fieldset untuk Aksesibilitas -->
-          <fieldset class="form-group border-none">
+          <!-- 2. Pilihan Jenis (Pemasukan atau Pengeluaran) -->
+          <fieldset class="form-group border-none" id="trxTypeGroup">
             <legend class="form-label">Jenis Transaksi</legend>
             <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="trxType" value="pemasukan" checked required />
+              <label class="radio-label" id="labelTypePemasukan">
+                <input type="radio" name="trxType" id="typePemasukan" value="pemasukan" checked required />
                 <span>Pemasukan</span>
               </label>
-              <label class="radio-label">
-                <input type="radio" name="trxType" value="pengeluaran" required />
+              <label class="radio-label" id="labelTypePengeluaran">
+                <input type="radio" name="trxType" id="typePengeluaran" value="pengeluaran" required />
                 <span>Pengeluaran</span>
               </label>
             </div>
           </fieldset>
+
+          <!-- ===== FIELD KHUSUS SUMBER PRODUKSI (Tampil jika memilih Hasil Produksi) ===== -->
+          <div id="produksiSourceFields" style="display: none;">
+            <div class="form-group">
+              <label for="trxBatch">Batch Ayam</label>
+              <select id="trxBatch" onchange="loadBatchWeeks()">
+                <option value="" disabled selected>Pilih Batch Ayam...</option>
+                <!-- Diisi via JavaScript -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="trxWeek">Minggu Produksi</label>
+              <select id="trxWeek" disabled onchange="showWeekProductionSummary()">
+                <option value="" disabled selected>— pilih batch dahulu —</option>
+                <!-- Diisi via JavaScript -->
+              </select>
+            </div>
+
+            <!-- Kartu Ringkasan Hasil Produksi Mingguan -->
+            <div id="weeklyProductionSummary" class="weekly-summary-card animate__animated animate__fadeIn" style="display: none;">
+              <div class="summary-card-header">
+                <span>📊 Ringkasan Produksi Minggu Ini</span>
+              </div>
+              
+              <!-- Widget Periode -->
+              <div class="summary-periode-widget">
+                <span class="widget-label">📅 Periode Produksi</span>
+                <strong id="summaryPeriode" class="widget-val">-</strong>
+              </div>
+
+              <!-- Grid Mini Widgets -->
+              <div class="summary-widgets-grid">
+                <!-- Widget 1: Telur Baik -->
+                <div class="mini-widget widget-baik">
+                  <span class="widget-icon">🥚</span>
+                  <div class="widget-info">
+                    <span class="widget-label">Telur Baik</span>
+                    <strong id="summaryBaik" class="widget-val">0 Butir</strong>
+                  </div>
+                </div>
+
+                <!-- Widget 2: Telur Cacat -->
+                <div class="mini-widget widget-cacat">
+                  <span class="widget-icon">🍳</span>
+                  <div class="widget-info">
+                    <span class="widget-label">Telur Cacat</span>
+                    <strong id="summaryCacat" class="widget-val">0 Butir</strong>
+                  </div>
+                </div>
+
+                <!-- Widget 3: Total Telur -->
+                <div class="mini-widget widget-total">
+                  <span class="widget-icon">📦</span>
+                  <div class="widget-info">
+                    <span class="widget-label">Total Telur</span>
+                    <strong id="summaryTotal" class="widget-val">0 Butir</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="eggPrice">Harga Jual per Papan (Rp)</label>
+              <input type="text" id="eggPrice" inputmode="numeric" oninput="window.formatNumberInput(this); calculateEggSalesAmount();" placeholder="Contoh: 50.000" />
+              <small class="hint-text">💡 Jumlah Uang akan terhitung otomatis: (Telur Baik / 30) × Harga per Papan</small>
+            </div>
+          </div>
 
           <!-- 3. Input Keterangan atau Catatan Singkat -->
           <div class="form-group">

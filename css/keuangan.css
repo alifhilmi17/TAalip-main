@@ -181,12 +181,13 @@
 }
 
 /* =========================================================
-   ✏️ KOTAK INPUT TEKS, ANGKA, DAN TANGGAL
-========================================================= */
-/* Tampilan standar kotak input: abu muda saat kosong, penuh border membulat */
+   ✏️ KOTAK INPUT TEKS, ANGKA, TANGGAL, DAN SELECT
+ ========================================================= */
+/* Tampilan standar kotak input dan select: abu muda saat kosong, penuh border membulat */
 .form-group input[type="text"],
 .form-group input[type="number"],
-.form-group input[type="date"] {
+.form-group input[type="date"],
+.form-group select {
     width: 100%;
     padding: 12px 16px;
     border: 1px solid #cbd5e1;
@@ -198,13 +199,28 @@
     color: #334155;
 }
 
+/* Kustomisasi tampilan Select Dropdown agar premium */
+.form-group select {
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    cursor: pointer;
+    padding-right: 40px; /* Cegah teks tabrakan dengan ikon panah */
+}
+
 /* =========================================================
-   ✏️ EFEK FOKUS INPUT FORM
-========================================================= */
-/* Garis tepi berubah biru dan kotak naik sedikit saat input diklik untuk diketik */
-.form-group input:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+   ✏️ EFEK FOKUS INPUT & SELECT FORM
+ ========================================================= */
+/* Garis tepi berubah hijau emerald dan kotak naik sedikit saat aktif */
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
     outline: none;
     background-color: #fff;
     transform: translateY(-2px);
@@ -839,4 +855,200 @@
     .search-group input {
         width: 100%;
     }
+}
+
+/* =========================================================
+   📊 STYLE TAMBAHAN: INTEGRASI KEUANGAN DENGAN PRODUKSI
+   ========================================================= */
+
+/* Container segmented toggle */
+.mode-toggle-container {
+    display: flex;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+    margin-top: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.mode-btn.active {
+    background: white;
+    color: #10b981; /* Aksen hijau agar serasi dengan halaman keuangan */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.mode-btn:hover:not(.active) {
+    background: rgba(226, 232, 240, 0.5);
+    color: #334155;
+}
+
+/* Kartu Ringkasan Hasil Produksi Mingguan */
+.weekly-summary-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 20px;
+    margin-top: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 30px rgba(16, 185, 129, 0.06);
+    border-top: 4px solid #10b981;
+}
+
+.summary-card-header {
+    font-weight: 700;
+    color: #065f46;
+    font-size: 0.95rem;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Periode Widget */
+.summary-periode-widget {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.summary-periode-widget .widget-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-periode-widget .widget-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #334155;
+}
+
+/* Grid mini widgets */
+.summary-widgets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.mini-widget {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.mini-widget:hover {
+    transform: translateY(-2px);
+}
+
+.widget-baik {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border: 1px solid #a7f3d0;
+}
+
+.widget-baik .widget-val {
+    color: #15803d;
+}
+
+.widget-cacat {
+    background: linear-gradient(135deg, #fdf2f2 0%, #fee2e2 100%);
+    border: 1px solid #fecaca;
+}
+
+.widget-cacat .widget-val {
+    color: #b91c1c;
+}
+
+.widget-total {
+    grid-column: span 2;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%) !important;
+    border: 1px solid #bfdbfe !important;
+    margin-top: 2px;
+}
+
+.widget-total .widget-val {
+    color: #1e40af;
+}
+
+.widget-icon {
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+}
+
+.widget-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    text-align: left;
+}
+
+.widget-info .widget-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.widget-info .widget-val {
+    font-size: 0.95rem;
+    font-weight: 800;
+}
+
+/* Sub-badge ketertelusuran di bawah Deskripsi Transaksi */
+.sub-badge-produksi {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #f1f5f9;
+    color: #475569;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    border: 1px solid #cbd5e1;
+    letter-spacing: 0.2px;
+}
+
+.desc-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
