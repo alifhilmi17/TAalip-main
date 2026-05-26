@@ -951,14 +951,16 @@ function renderPrediksiWidget() {
         prediksiEggs.textContent = `${(latest.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir`;
         prediksiIncome.textContent = `Rp ${(latest.estimasiPendapatan || 0).toLocaleString('id-ID')}`;
         
-        // Hitung akurasi (Gunakan akurasi asli dari database jika ada)
-        let akurasi = latest.akurasiModel !== undefined && latest.akurasiModel !== null ? latest.akurasiModel : 0;
-        if (akurasi === 0 && latest.keuntungan && latest.estimasiPendapatan && !latest.hasOwnProperty('akurasiModel')) {
-            // Fallback backward compatibility untuk data lama
-            const rasio = (latest.keuntungan / latest.estimasiPendapatan) * 100;
-            akurasi = Math.max(0, Math.min(100, 50 + rasio));
+        if (prediksiAccuracy) {
+            // Hitung akurasi (Gunakan akurasi asli dari database jika ada)
+            let akurasi = latest.akurasiModel !== undefined && latest.akurasiModel !== null ? latest.akurasiModel : 0;
+            if (akurasi === 0 && latest.keuntungan && latest.estimasiPendapatan && !latest.hasOwnProperty('akurasiModel')) {
+                // Fallback backward compatibility untuk data lama
+                const rasio = (latest.keuntungan / latest.estimasiPendapatan) * 100;
+                akurasi = Math.max(0, Math.min(100, 50 + rasio));
+            }
+            prediksiAccuracy.textContent = latest.akurasiModel !== null ? `${Math.round(akurasi)}%` : 'N/A';
         }
-        prediksiAccuracy.textContent = latest.akurasiModel !== null ? `${Math.round(akurasi)}%` : 'N/A';
     }
 }
 
@@ -1519,11 +1521,6 @@ window.openModalPrediksi = function() {
                     <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">💰 Prediksi Pendapatan</p>
                     <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">Rp ${(data.estimasiPendapatan || 0).toLocaleString('id-ID')}</p>
                     <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Estimasi dari penjualan telur besok</p>
-                </div>
-                <div style="padding: 1rem; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 10px; color: white;">
-                    <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">📊 Akurasi Model</p>
-                    <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">${data.akurasiModel !== null ? Math.round(akurasi) + '%' : 'N/A'}</p>
-                    <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">${maeText}</p>
                 </div>
             </div>
             
