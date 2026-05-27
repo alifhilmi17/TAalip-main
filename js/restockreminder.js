@@ -14,17 +14,9 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.9.0/fi
 import { db, auth } from "../firebase.component/firebase-init.js";
 
 // ==========================================
-// HELPER: Anti-XSS HTML Sanitizer
+// HELPER: Menggunakan global window.escapeHTML dari ui-utils.js
 // ==========================================
-function escapeHTML(str) {
-    if (str === undefined || str === null) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
+const escapeHTML = window.escapeHTML || function(str) { return str || ''; };
 
 // ==========================================
 // GLOBAL STATE

@@ -258,7 +258,7 @@ window.saveKesehatan = async function(e) {
             await addDoc(kesCollection, payload);
         }
         window.closeKesehatanModal();
-        Swal.fire("Berhasil", "Data kesehatan disimpan & stok ayam otomatis diperbarui!", "success");
+        window.showToast("Berhasil", "Data kesehatan disimpan & stok ayam otomatis diperbarui!", "success");
     } catch (err) {
         Swal.fire("Error", "Gagal menyimpan: " + err.message, "error");
     }
@@ -298,8 +298,7 @@ function renderKesehatanTable() {
         emptyState.style.display = 'none';
         filtered.forEach(item => {
             let badgeClass = item.status === "Sembuh" ? "badge-success" : (item.status === "Mati Semua" ? "badge-danger" : "badge-warning");
-            const dt = new Date(item.tanggal);
-            const tglIndo = dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            const tglIndo = window.formatTanggal(item.tanggal);
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
@@ -380,7 +379,7 @@ window.saveVaksin = async function(e) {
             await addDoc(vakCollection, payload);
         }
         window.closeVaksinModal();
-        Swal.fire("Berhasil", "Jadwal vaksinasi disimpan!", "success");
+        window.showToast("Berhasil", "Jadwal vaksinasi disimpan!", "success");
     } catch (err) {
         Swal.fire("Error", "Gagal: " + err.message, "error");
     }
@@ -404,7 +403,7 @@ window.hapusVaksin = function(id) {
 window.selesaikanVaksin = async function(id) {
     try {
         await updateDoc(doc(db, "vaksinasi_ayam", id), { status: "Selesai", updatedAt: new Date().toISOString() });
-        Swal.fire("Tuntas!", "Status vaksinasi berubah menjadi selesai.", "success");
+        window.showToast("Tuntas!", "Status vaksinasi berubah menjadi selesai.", "success");
     } catch (err) {
         Swal.fire("Error", err.message, "error");
     }
@@ -435,7 +434,7 @@ function renderVaksinTable() {
             if (dt < today && item.status === "Terjadwal") {
                 badgeClass = "badge-danger";
             }
-            const tglIndo = dt.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            const tglIndo = window.formatTanggal(item.tanggal);
 
             const tr = document.createElement('tr');
             tr.innerHTML = `

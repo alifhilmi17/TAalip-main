@@ -1,12 +1,15 @@
 /* =========================================================
    SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
    File: ui-utils.js
-   Deskripsi: Kumpulan fungsi antarmuka (UI) global agar tidak 
+   Deskripsi: Kumpulan fungsi antarmuka (UI) global, pemformat
+   data, sanitasi input, dan notifikasi Toast terpadu agar tidak
    terjadi duplikasi kode di setiap halaman (DRY Principle).
 ========================================================= */
 
 /**
- * Membuka/menutup sistem menu list (accordion style) di sidebar samping.
+ * 1. SIDEBAR ACCORDION CONTROLLER
+ * Fungsi: Membuka/menutup sistem menu list (accordion style) di sidebar samping.
+ * Digunakan di: Komponen navigasi sidebar global di seluruh halaman utama.
  */
 window.toggleSidebarMenu = function(submenuId) {
     const submenu = document.getElementById(submenuId);
@@ -32,7 +35,9 @@ window.toggleSidebarMenu = function(submenuId) {
 };
 
 /**
- * Memuat isi sidebar secara dinamis dari components/sidebar.html
+ * 2. DYNAMIC SIDEBAR TEMPLATE LOADER
+ * Fungsi: Memuat isi sidebar secara dinamis dari components/sidebar.html.
+ * Digunakan di: Seluruh halaman utama saat DOM selesai dimuat (otomatis berjalan).
  */
 window.loadSidebar = function() {
     const sidebar = document.querySelector("aside.sidebar");
@@ -65,7 +70,9 @@ window.loadSidebar = function() {
 };
 
 /**
- * Otomatis mendeteksi halaman saat ini dan menandai link aktif di sidebar
+ * 3. SIDEBAR NAVIGATION HIGHLIGHTER
+ * Fungsi: Otomatis mendeteksi halaman saat ini dan menandai link aktif di sidebar.
+ * Digunakan di: Berjalan otomatis sesaat setelah loadSidebar() selesai memuat HTML.
  */
 window.highlightActiveSidebarMenu = function() {
     const currentPath = window.location.pathname;
@@ -103,7 +110,9 @@ window.highlightActiveSidebarMenu = function() {
 };
 
 /**
- * Memperbarui nama profil dan tombol admin di sidebar dari state global
+ * 4. SIDEBAR PROFILE & ROLE SYNCRONIZER
+ * Fungsi: Memperbarui nama profil dan tombol admin di sidebar dari state global Firestore.
+ * Digunakan di: Injeksi otomatis oleh auth-state.js dan loadSidebar() saat sesi login terverifikasi.
  */
 window.updateSidebarProfileFromGlobalState = function() {
     if (window.userProfileState) {
@@ -127,7 +136,14 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
- * Format tanggal YYYY-MM-DD ke teks Indonesia (contoh: "18 Mei 2026")
+ * 5. INDONESIAN DATE FORMATTER (YYYY-MM-DD -> Teks Terformat)
+ * Fungsi: Mengonversi format tanggal ISO mentah (YYYY-MM-DD) menjadi teks Indonesia yang rapi.
+ * Contoh: "2026-05-18" -> "18 Mei 2026"
+ * Digunakan di:
+ * - Halaman Riwayat Kesehatan & Vaksinasi (kesehatanayam.html)
+ * - Halaman Pemasukan & Pengeluaran (keuangan.html)
+ * - Halaman Pencatatan Stok Pakan (stokpakan.html)
+ * - Halaman Data Batch Ayam (dataAyamTAalip.html)
  */
 window.formatTanggal = function(tglString) {
     if (!tglString) return "-";
@@ -136,7 +152,13 @@ window.formatTanggal = function(tglString) {
 };
 
 /**
- * Mengamankan string teks dari injeksi HTML/Javascript berbahaya (XSS)
+ * 6. SECURITY: ANTI-XSS SANITIZER (Pembersih Input Karakter Khusus)
+ * Fungsi: Mengamankan teks dari injeksi tag HTML/Javascript berbahaya yang dapat merusak aplikasi.
+ * Digunakan di:
+ * - Halaman Restock Reminder (restockreminder.html) untuk input catatan kebutuhan pakan.
+ * - Halaman Kesehatan & Vaksin (kesehatanayam.html) untuk input gejala dan penanganan medis.
+ * - Halaman Pemasukan & Pengeluaran (keuangan.html) untuk kolom deskripsi transaksi manual.
+ * - Halaman Data Batch Ayam (dataAyamTAalip.html) untuk kolom jenis telur & kandang.
  */
 window.escapeHTML = function(str) {
     if (!str) return '-';
@@ -147,8 +169,13 @@ window.escapeHTML = function(str) {
 };
 
 /**
- * Konversi angka mentah ke Rupiah dengan pemisah titik
+ * 7. FORMAT RUPIAH
+ * Fungsi: Mengonversi angka mentah ke format Rupiah dengan simbol "Rp" dan pemisah titik.
  * Contoh: 45000 -> "Rp 45.000"
+ * Digunakan di:
+ * - Halaman Pembukuan Finansial (keuangan.html) untuk menampilkan jumlah pengeluaran/pemasukan.
+ * - Halaman Analisis Prediktif (prediksihasil.html) untuk menampilkan estimasi keuntungan dan laba.
+ * - Dasbor Utama (dashboardTAalip.html) untuk widget total pendapatan dan pengeluaran bulan ini.
  */
 window.formatRupiah = function(angka) {
     if (angka === undefined || angka === null || isNaN(angka)) return 'Rp 0';
@@ -156,8 +183,13 @@ window.formatRupiah = function(angka) {
 };
 
 /**
- * Konversi angka mentah ke format ribuan Indonesia
+ * 8. FORMAT PEMISAH RIBUAN
+ * Fungsi: Mengonversi angka mentah bulat ke format dengan pemisah ribuan Indonesia (tanpa simbol Rp).
  * Contoh: 1000 -> "1.000"
+ * Digunakan di:
+ * - Halaman Analisis Prediktif (prediksihasil.html) untuk estimasi jumlah butir telur.
+ * - Dasbor Utama (dashboardTAalip.html) untuk widget total butir telur dan total ayam aktif.
+ * - Halaman Data Batch Ayam (dataAyamTAalip.html) untuk populasi awal dan sisa ayam.
  */
 window.formatRibuan = function(angka) {
     if (angka === undefined || angka === null || isNaN(angka)) return '0';
@@ -165,8 +197,11 @@ window.formatRibuan = function(angka) {
 };
 
 /**
- * Memformat input field secara real-time dengan pemisah ribuan saat user mengetik.
- * Hubungkan ke HTML: oninput="window.formatNumberInput(this)"
+ * 9. INPUT FIELD REAL-TIME FORMATTER (Pemisah Ribuan Otomatis)
+ * Fungsi: Memformat isian input numerik secara real-time dengan titik pemisah saat pengguna mengetik.
+ * Digunakan di:
+ * - Halaman Pembukuan Finansial (keuangan.html) pada input nominal jumlah uang.
+ * - Halaman Analisis Prediktif (prediksihasil.html) pada isian input harga pakan per kg.
  */
 window.formatNumberInput = function(inputElem) {
     let val = inputElem.value.replace(/[^,\d]/g, '');
@@ -183,10 +218,13 @@ window.formatNumberInput = function(inputElem) {
 };
 
 /**
- * Menampilkan pesan toast sukses/gagal di pojok kanan atas secara elegan (SweetAlert Wrapper)
- * @param {string} title - Judul pesan
- * @param {string} text - Deskripsi pesan
- * @param {'success'|'error'|'warning'|'info'} icon - Tipe ikon
+ * 10. NOTIFICATION: PREMIUM TOAST ALERT (SweetAlert Wrapper)
+ * Fungsi: Menampilkan pesan notifikasi melayang (Toast) yang elegan di pojok kanan atas layar.
+ * Memiliki sistem fallback otomatis ke alert standar browser jika pustaka SweetAlert2 gagal dimuat.
+ * Digunakan di:
+ * - Halaman Riwayat Kesehatan & Vaksin (kesehatanayam.html) untuk sukses simpan/update data medis.
+ * - Halaman Pencatatan Stok Pakan (stokpakan.html) untuk sukses re-stock dan pemakaian pakan.
+ * - Halaman Pemasukan & Pengeluaran (keuangan.html) untuk pencatatan transaksi baru.
  */
 window.showToast = function(title, text, icon = 'success') {
     if (typeof Swal !== 'undefined') {

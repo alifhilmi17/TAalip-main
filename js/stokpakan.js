@@ -258,10 +258,10 @@ window.savePakanData = async function(event) {
         if (id === "") {
             payload.createdAt = new Date().toISOString();
             await addDoc(pakanCollection, payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil disimpan.', timer: 1500, showConfirmButton: false });
+            window.showToast("Berhasil", "Data berhasil disimpan!", "success");
         } else {
             await updateDoc(doc(db, "stok_pakan", id), payload);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil diperbarui.', timer: 1500, showConfirmButton: false });
+            window.showToast("Berhasil", "Data berhasil diperbarui!", "success");
         }
         window.closePakanModal();
     } catch (err) {

@@ -21,13 +21,7 @@ const keuanganCollection = collection(db, "keuangan");
 // ==========================================
 // 1. UTILITAS
 // ==========================================
-function formatIDR(number) {
-    return new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-    }).format(number);
-}
+const formatIDR = window.formatRupiah || function(angka) { return 'Rp ' + (angka || 0).toLocaleString('id-ID'); };
 
 /**
  * Mengontrol tampilan loading (spinner/skeleton)
