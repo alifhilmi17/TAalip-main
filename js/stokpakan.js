@@ -358,7 +358,7 @@ window.savePakanData = async function(event) {
                 await addDoc(keuanganCollection, {
                     tanggal: payload.tanggal,
                     tipe: "pengeluaran",
-                    deskripsi: `[Otomatis] Pembelian Pakan: ${payload.jenis} (${jumlah} Kg)`,
+                    deskripsi: `Pembelian Pakan: ${payload.jenis} (${jumlah} Kg)`,
                     jumlah: totalBiaya,
                     createdAt: new Date().toISOString(),
                     source: 'stok_pakan',
