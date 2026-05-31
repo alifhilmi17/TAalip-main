@@ -27,10 +27,12 @@ import { db, auth } from "../firebase.component/firebase-init.js";
 // GLOBAL STATE
 // ==========================================
 let dataPakan = [];                          // Semua data stok (masuk + keluar)
+let dataAyam = [];                           // Data batch ayam aktif
 let currentUserName = "Pengguna";           // Nama pengguna yang sedang login
 let currentUserRole = "petugas";            // Role: 'admin' atau 'petugas'
 
 const pakanCollection = collection(db, "stok_pakan");
+const ayamCollection = collection(db, "populasi_ayam");
 
 // ==========================================
 // 1. UTILITAS
@@ -103,7 +105,42 @@ function startFirestoreListener() {
         renderPemakaianTable();
         updateQuickStats();
     });
+
+    onSnapshot(ayamCollection, (snapshot) => {
+        dataAyam = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadBatchOptionsPakan();
+    });
 }
+
+function loadBatchOptionsPakan() {
+    const selectEl = document.getElementById('batchPakan');
+    if (!selectEl) return;
+    
+    const currentVal = selectEl.value;
+    selectEl.innerHTML = '<option value="" selected>-- Pilih Batch Target (Opsional) --</option>';
+    const activeBatches = dataAyam.filter(a => a.status === 'Aktif');
+    activeBatches.forEach(ayam => {
+        const opt = document.createElement('option');
+        opt.value = ayam.id;
+        const customId = ayam.customId || ayam.id.substring(0, 5);
+        opt.textContent = `Batch ${customId} - Kandang: ${ayam.kandang || '-'}`;
+        selectEl.appendChild(opt);
+    });
+    if (currentVal) selectEl.value = currentVal;
+}
+
+window.autoFillPakanKeterangan = function() {
+    const selectEl = document.getElementById('batchPakan');
+    const ketEl = document.getElementById('ketPakan');
+    if (selectEl && selectEl.value && ketEl) {
+        const text = selectEl.options[selectEl.selectedIndex].text;
+        const currentVal = ketEl.value;
+        const autoText = `Diberikan ke ${text}`;
+        if (!currentVal || currentVal.startsWith('Diberikan ke')) {
+            ketEl.value = autoText;
+        }
+    }
+};
 
 // ==========================================
 // 3. TAB NAVIGASI & MODAL PILIHAN (CHOICE)
@@ -175,6 +212,8 @@ window.toggleJenisPakanInput = function() {
     const inputEl = document.getElementById('jenisPakan');
     const selectEl = document.getElementById('jenisPakanSelect');
     const financeGroup = document.getElementById('financeGroup');
+    const batchGroup = document.getElementById('batchGroupPakan');
+    const batchPakanEl = document.getElementById('batchPakan');
     
     if (tipe === "Keluar") {
         inputEl.style.display = 'none';
@@ -193,6 +232,7 @@ window.toggleJenisPakanInput = function() {
         });
 
         if (financeGroup) financeGroup.style.display = 'none';
+        if (batchGroup) batchGroup.style.display = 'block';
     } else {
         selectEl.style.display = 'none';
         selectEl.removeAttribute('required');
@@ -203,6 +243,8 @@ window.toggleJenisPakanInput = function() {
         inputEl.removeAttribute('disabled');
 
         if (financeGroup) financeGroup.style.display = 'block';
+        if (batchGroup) batchGroup.style.display = 'none';
+        if (batchPakanEl) batchPakanEl.value = '';
     }
 };
 
@@ -216,6 +258,10 @@ window.openPakanModal = function(type = '') {
     const catatKeuangan = document.getElementById('catatKeuangan');
     if (catatKeuangan) catatKeuangan.checked = false;
     window.toggleFinanceDetails();
+
+    // Reset batch pakan select
+    const batchPakanEl = document.getElementById('batchPakan');
+    if (batchPakanEl) batchPakanEl.value = "";
     
     // Set tanggal default ke hari ini
     const today = new Date().toISOString().split('T')[0];
@@ -280,6 +326,10 @@ window.savePakanData = async function(event) {
         }
     }
 
+    const batchPakanEl = document.getElementById('batchPakan');
+    const batchIdVal = batchPakanEl ? batchPakanEl.value : '';
+    const batchLabelVal = (batchIdVal && batchPakanEl) ? batchPakanEl.options[batchPakanEl.selectedIndex].text : '';
+
     const payload = {
         tanggal: document.getElementById('tglPakan').value,
         tipe: tipe,
@@ -288,6 +338,8 @@ window.savePakanData = async function(event) {
         keterangan: document.getElementById('ketPakan').value || "",
         dicatatOleh: currentUserName,
         role: currentUserRole,
+        batchId: batchIdVal,
+        batchLabel: batchLabelVal,
         updatedAt: new Date().toISOString()
     };
 
@@ -343,6 +395,8 @@ window.editPakan = function(id) {
     
     if (item.tipe === "Keluar") {
         document.getElementById('jenisPakanSelect').value = item.jenis;
+        const batchPakanEl = document.getElementById('batchPakan');
+        if (batchPakanEl) batchPakanEl.value = item.batchId || "";
     } else {
         document.getElementById('jenisPakan').value = item.jenis;
     }

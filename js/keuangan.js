@@ -1,3 +1,12 @@
+/* ==========================================================================
+   SISTEM ADMINISTRASI PETERNAKAN (LIBAS)
+   File        : keuangan.js
+   Deskripsi   : Mengelola logika frontend halaman Manajemen Keuangan,
+                 termasuk integrasi data produksi, pencatatan transaksi manual/produksi,
+                 penyaringan riwayat transaksi per batch (relasional + teks),
+                 serta pemutakhiran statistik nominal kas secara dinamis.
+   ========================================================================== */
+
 import { 
     collection, 
     addDoc, 
@@ -10,7 +19,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { db } from "../firebase.component/firebase-init.js";
 
-// Global State
+// ==========================================
+// 📌 GLOBAL STATE
+// ==========================================
 let dataKeuangan = [];
 let dataAyam = [];
 let dataProduksi = [];
@@ -19,12 +30,16 @@ let weeklyGroupedProduction = {}; // Memetakan batchId -> minggu -> data produks
 const keuanganCollection = collection(db, "keuangan");
 
 // ==========================================
-// 1. UTILITAS
+// 📌 1. UTILITAS & FORMATTER
 // ==========================================
-const formatIDR = window.formatRupiah || function(angka) { return 'Rp ' + (angka || 0).toLocaleString('id-ID'); };
+const formatIDR = window.formatRupiah || function(angka) { 
+    return 'Rp ' + (angka || 0).toLocaleString('id-ID'); 
+};
 
 /**
  * Mengontrol tampilan loading (spinner/skeleton)
+ * @param {string} target - Lokasi loading ('form' atau 'table')
+ * @param {boolean} isLoading - State loading aktif/tidak
  */
 function toggleLoading(target, isLoading) {
     if (target === 'form') {
@@ -45,7 +60,7 @@ function toggleLoading(target, isLoading) {
 }
 
 // ==========================================
-// 2. INISIALISASI & FIREBASE LISTENER
+// 📌 2. INISIALISASI & FIREBASE LISTENER
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
     // 1. Jalankan Fetch Data Firebase
@@ -55,12 +70,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2. Pasang Event Listeners
     setupEventListeners();
 
-    // 3. Set Default Date
+    // 3. Set Default Date (Hari Ini)
     const today = new Date().toISOString().split('T')[0];
     const dateInput = document.getElementById('trxDate');
     if (dateInput) dateInput.value = today;
 });
 
+/**
+ * Memuat seluruh data keuangan dari Firestore
+ */
 async function loadKeuanganData() {
     toggleLoading('table', true);
     try {
@@ -82,7 +100,9 @@ async function loadKeuanganData() {
     }
 }
 
-// Memuat data Batch Ayam dan Produksi Harian untuk integrasi keuangan
+/**
+ * Memuat data pendukung Batch Ayam dan Produksi Harian
+ */
 async function loadProductionRelatedData() {
     try {
         // Fetch populasi_ayam
@@ -96,14 +116,16 @@ async function loadProductionRelatedData() {
         // Kalkulasi minggu produksi per batch
         precomputeProductionWeeks();
         
-        // Isi pilihan dropdown batch
-        populateBatchDropdown();
+        // Isi pilihan dropdown batch (form + filter)
+        populateBatchDropdowns();
     } catch (err) {
         console.error("Gagal memuat data pendukung produksi: ", err);
     }
 }
 
-// Mengelompokkan data harian menjadi minggu produksi (7 hari per minggu per batch)
+/**
+ * Mengelompokkan data produksi harian menjadi minggu produksi (7 hari per minggu per batch)
+ */
 function precomputeProductionWeeks() {
     weeklyGroupedProduction = {};
 
@@ -114,7 +136,7 @@ function precomputeProductionWeeks() {
     });
 
     Object.keys(batchGroups).forEach(batchId => {
-        // Urutkan kronologis agar urutan minggu 1, 2, dst tepat
+        // Urutkan kronologis agar urutan minggu tepat
         batchGroups[batchId].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
         
         weeklyGroupedProduction[batchId] = {};
@@ -146,22 +168,43 @@ function precomputeProductionWeeks() {
     });
 }
 
-function populateBatchDropdown() {
+/**
+ * Mempopulasikan pilihan Batch ke Dropdown Form (Hanya Aktif) dan Dropdown Filter (Semua Batch)
+ */
+function populateBatchDropdowns() {
     const batchSelect = document.getElementById('trxBatch');
-    if (!batchSelect) return;
+    const filterBatchSelect = document.getElementById('filterBatch');
 
-    batchSelect.innerHTML = '<option value="" disabled selected>Pilih Batch Ayam...</option>';
-    const activeBatches = dataAyam.filter(a => a.status === 'Aktif');
-    
-    activeBatches.forEach(ayam => {
-        const opt = document.createElement('option');
-        opt.value = ayam.id;
-        const customId = ayam.customId || ayam.id.substring(0, 5);
-        opt.textContent = `${customId} - ${ayam.jenis} [${ayam.kandang}]`;
-        batchSelect.appendChild(opt);
-    });
+    // 1. Dropdown Form (Target Batch untuk pencatatan transaksi baru)
+    if (batchSelect) {
+        batchSelect.innerHTML = '<option value="" selected>— Pilih Batch Target (Opsional) —</option>';
+        const activeBatches = dataAyam.filter(a => a.status === 'Aktif');
+        
+        activeBatches.forEach(ayam => {
+            const opt = document.createElement('option');
+            opt.value = ayam.id;
+            const customId = ayam.customId || ayam.id.substring(0, 5);
+            opt.textContent = `${customId} - ${ayam.jenis} [${ayam.kandang}]`;
+            batchSelect.appendChild(opt);
+        });
+    }
+
+    // 2. Dropdown Filter (Menampilkan semua batch untuk keperluan audit historis)
+    if (filterBatchSelect) {
+        filterBatchSelect.innerHTML = '<option value="" selected>🔄 Semua Batch</option>';
+        dataAyam.forEach(ayam => {
+            const opt = document.createElement('option');
+            opt.value = ayam.id;
+            const customId = ayam.customId || ayam.id.substring(0, 5);
+            opt.textContent = `${customId} - ${ayam.jenis}`;
+            filterBatchSelect.appendChild(opt);
+        });
+    }
 }
 
+/**
+ * Memuat daftar minggu produksi ketika Batch dipilih pada form
+ */
 window.loadBatchWeeks = function() {
     const batchSelect = document.getElementById('trxBatch');
     const weekSelect = document.getElementById('trxWeek');
@@ -194,6 +237,9 @@ window.loadBatchWeeks = function() {
     document.getElementById('weeklyProductionSummary').style.display = 'none';
 };
 
+/**
+ * Menampilkan ringkasan hasil produksi mingguan dari batch & minggu terpilih
+ */
 window.showWeekProductionSummary = function() {
     const batchSelect = document.getElementById('trxBatch');
     const weekSelect = document.getElementById('trxWeek');
@@ -227,6 +273,9 @@ window.showWeekProductionSummary = function() {
     window.calculateEggSalesAmount();
 };
 
+/**
+ * Mengkalkulasi otomatis nominal penjualan telur
+ */
 window.calculateEggSalesAmount = function() {
     const batchSelect = document.getElementById('trxBatch');
     const weekSelect = document.getElementById('trxWeek');
@@ -248,6 +297,10 @@ window.calculateEggSalesAmount = function() {
     amountInput.value = Math.round(salesAmount).toLocaleString('id-ID');
 };
 
+/**
+ * Mengubah setelan input form berdasarkan tipe inputan (Manual/Umum vs Hasil Produksi)
+ * @param {string} source - Tipe sumber ('manual' atau 'produksi')
+ */
 window.switchTrxSource = function(source) {
     const sourceEl = document.getElementById('trxSource');
     if (!sourceEl) return;
@@ -263,6 +316,9 @@ window.switchTrxSource = function(source) {
     const trxDesc = document.getElementById('trxDesc');
     const trxAmount = document.getElementById('trxAmount');
 
+    const lblTrxBatch = document.getElementById('lblTrxBatch');
+    const trxBatch = document.getElementById('trxBatch');
+
     if (source === 'manual') {
         if (btnManual) btnManual.classList.add('active');
         if (btnProduksi) btnProduksi.classList.remove('active');
@@ -271,7 +327,16 @@ window.switchTrxSource = function(source) {
         if (typePemasukan) typePemasukan.disabled = false;
         if (typePengeluaran) typePengeluaran.disabled = false;
         
-        document.getElementById('trxBatch').required = false;
+        // Target Batch pada Manual: bersifat opsional
+        if (lblTrxBatch) lblTrxBatch.innerHTML = 'Target Batch Ayam <small style="font-weight: normal; color: #64748b;">(Opsional)</small>';
+        if (trxBatch) {
+            trxBatch.required = false;
+            if (trxBatch.options && trxBatch.options.length > 0) {
+                trxBatch.options[0].text = '— Pilih Batch Target (Opsional) —';
+                trxBatch.options[0].disabled = false;
+            }
+        }
+        
         document.getElementById('trxWeek').required = false;
         document.getElementById('eggPrice').required = false;
 
@@ -288,21 +353,34 @@ window.switchTrxSource = function(source) {
         if (btnProduksi) btnProduksi.classList.add('active');
         if (prodFields) prodFields.style.display = 'block';
 
+        // Hasil produksi otomatis selalu berupa Pemasukan
         if (typePemasukan) {
             typePemasukan.checked = true;
             typePemasukan.disabled = false;
         }
         if (typePengeluaran) typePengeluaran.disabled = true;
 
-        document.getElementById('trxBatch').required = true;
+        // Target Batch pada Produksi: bersifat wajib
+        if (lblTrxBatch) lblTrxBatch.innerHTML = 'Batch Ayam <span style="color: #ef4444;">*</span>';
+        if (trxBatch) {
+            trxBatch.required = true;
+            if (trxBatch.options && trxBatch.options.length > 0) {
+                trxBatch.options[0].text = 'Pilih Batch Ayam...';
+                trxBatch.options[0].disabled = true;
+            }
+        }
+        
         document.getElementById('trxWeek').required = true;
         document.getElementById('eggPrice').required = true;
 
-        if (trxDesc) trxDesc.readOnly = false; // Tetap biarkan bisa diedit jika petugas ingin menambahkan detail
-        if (trxAmount) trxAmount.readOnly = true; // Kunci nominal agar terhitung dari kalkulator telur baik
+        if (trxDesc) trxDesc.readOnly = false;
+        if (trxAmount) trxAmount.readOnly = true; // Nominal dikunci karena terhitung otomatis
     }
 };
 
+/**
+ * Memasang seluruh event listener pada elemen-elemen antarmuka
+ */
 function setupEventListeners() {
     // Form Submit
     const financeForm = document.getElementById('financeForm');
@@ -318,18 +396,23 @@ function setupEventListeners() {
         }
     });
 
+    const filterBatchEl = document.getElementById('filterBatch');
+    if (filterBatchEl) {
+        filterBatchEl.addEventListener('change', () => renderTable());
+    }
+
     const viewModeEl = document.getElementById('viewMode');
     if (viewModeEl) {
         viewModeEl.addEventListener('change', () => renderTable());
     }
 
-    // Export
+    // Export Laporan CSV
     const btnExport = document.getElementById('btnExport');
     if (btnExport) {
         btnExport.addEventListener('click', downloadLaporanCSV);
     }
 
-    // Sidebar Toggle (Mobile)
+    // Sidebar Hamburger Menu (Tampilan Mobile)
     const sidebarToggle = document.getElementById('sidebarToggle');
     if (sidebarToggle) {
         sidebarToggle.addEventListener('click', () => {
@@ -337,7 +420,7 @@ function setupEventListeners() {
         });
     }
 
-    // Event Delegation untuk Hapus
+    // Event Delegation untuk Aksi Hapus Baris
     const tableBody = document.getElementById('financeTableBody');
     if (tableBody) {
         tableBody.addEventListener('click', (e) => {
@@ -351,8 +434,12 @@ function setupEventListeners() {
 }
 
 // ==========================================
-// 3. CRUD LOGIC
+// 📌 3. LOGIKA CRUD (TAMBAH & HAPUS)
 // ==========================================
+
+/**
+ * Menyimpan data transaksi baru ke Firebase Firestore
+ */
 async function handleFormSubmit(event) {
     event.preventDefault();
     toggleLoading('form', true);
@@ -393,6 +480,13 @@ async function handleFormSubmit(event) {
         payload.telurCacat = wGroup ? wGroup.telurCacat : 0;
         payload.totalTelur = wGroup ? wGroup.totalTelur : 0;
         payload.hargaPerPapan = parseFloat(priceInput.value.replace(/\./g, '').replace(/,/g, '.')) || 0;
+    } else {
+        // Hubungkan ke batch secara opsional pada transaksi manual/umum
+        const batchEl = document.getElementById('trxBatch');
+        if (batchEl && batchEl.value) {
+            payload.batchId = batchEl.value;
+            payload.batchLabel = batchEl.options[batchEl.selectedIndex].text;
+        }
     }
 
     try {
@@ -420,6 +514,10 @@ async function handleFormSubmit(event) {
     }
 }
 
+/**
+ * Menghapus data transaksi berdasarkan ID
+ * @param {string} id - ID dokumen transaksi
+ */
 async function deleteTransaction(id) {
     const result = await Swal.fire({
         title: 'Hapus Transaksi?',
@@ -444,8 +542,14 @@ async function deleteTransaction(id) {
 }
 
 // ==========================================
-// 4. DISPLAY & FILTER
+// 📌 4. DISPLAY & FILTER TABEL
 // ==========================================
+
+/**
+ * Merender satu baris data transaksi ke dalam tbody tabel
+ * @param {Object} t - Objek data transaksi
+ * @param {HTMLElement} tbody - Kontainer tabel
+ */
 function renderRow(t, tbody) {
     const tr = document.createElement('tr');
     const isIncome = t.tipe === "pemasukan";
@@ -453,15 +557,23 @@ function renderRow(t, tbody) {
     const textClass = isIncome ? 'text-income' : 'text-expense';
     const typeLabel = t.tipe.charAt(0).toUpperCase() + t.tipe.slice(1);
     
-    // Jika terintegrasi dengan produksi harian, tampilkan sub-badge yang sangat menawan
+    // Tampilkan sub-badge ketertelusuran batch yang menawan
     let subBadgeHtml = '';
-    if (t.source === 'produksi' && t.batchLabel) {
+    if (t.batchLabel) {
         const batchName = t.batchLabel.split(' - ')[0];
-        subBadgeHtml = `
-            <div class="sub-badge-produksi" title="Produksi: ${t.telurBaik.toLocaleString('id-ID')} butir baik, ${t.telurCacat.toLocaleString('id-ID')} butir cacat">
-                🐔 ${batchName} — Minggu ke-${t.minggu}
-            </div>
-        `;
+        if (t.source === 'produksi') {
+            subBadgeHtml = `
+                <div class="sub-badge-produksi" title="Produksi: ${t.telurBaik.toLocaleString('id-ID')} butir baik, ${t.telurCacat.toLocaleString('id-ID')} butir cacat">
+                    🐔 ${batchName} — Minggu ke-${t.minggu}
+                </div>
+            `;
+        } else {
+            subBadgeHtml = `
+                <div class="sub-badge-manual" title="Dihubungkan ke: ${t.batchLabel}">
+                    📦 ${batchName} (Umum)
+                </div>
+            `;
+        }
     }
 
     tr.innerHTML = `
@@ -481,74 +593,121 @@ function renderRow(t, tbody) {
     tbody.appendChild(tr);
 }
 
+/**
+ * Menyaring dan merender tabel riwayat transaksi berdasarkan masukan pencarian dan filter
+ */
 function renderTable() {
     const tbody = document.getElementById('financeTableBody');
     const emptyState = document.getElementById('emptyState');
     if (!tbody) return;
 
-    // Ambil nilai filter
+    // Ambil nilai filter saat ini
     const searchTerm = document.getElementById('searchTrx').value.toLowerCase();
     const startDate = document.getElementById('filterStartDate').value;
+    const filterBatchEl = document.getElementById('filterBatch');
+    const filterBatchId = filterBatchEl ? filterBatchEl.value : '';
     const viewModeEl = document.getElementById('viewMode');
-    const viewMode = viewModeEl ? viewModeEl.value : 'kronologis';
+    const viewMode = viewModeEl ? viewModeEl.value : 'riwayat-keseluruhan';
     
     tbody.innerHTML = "";
 
-    // Logika Filtering (Pencarian Teks & Tanggal Spesifik)
+    // Logika Filtering (Pencarian Teks, Tanggal, & Batch)
     const filtered = dataKeuangan.filter(t => {
         const matchesSearch = t.deskripsi.toLowerCase().includes(searchTerm);
         const matchesDate = !startDate || t.tanggal === startDate;
-        return matchesSearch && matchesDate;
+        
+        let matchesBatch = !filterBatchId || t.batchId === filterBatchId;
+        
+        // Fallback cerdas untuk data manual lama: deteksi string ID Batch di dalam keterangan
+        if (!matchesBatch && filterBatchId && !t.batchId) {
+            const targetBatch = dataAyam.find(a => a.id === filterBatchId);
+            if (targetBatch) {
+                const customId = (targetBatch.customId || '').toLowerCase();
+                const desc = t.deskripsi.toLowerCase();
+                if (customId && desc.includes(customId)) {
+                    matchesBatch = true;
+                }
+            }
+        }
+        return matchesSearch && matchesDate && matchesBatch;
     });
 
-    if (filtered.length === 0) {
-        if (emptyState) emptyState.style.display = 'flex';
-    } else {
+    // Update Ringkasan Saldo Kas secara dinamis berdasarkan data terfilter
+    updateSummary(filtered);
+
+    // Render berdasarkan mode pengelompokan tampilan
+    if (viewMode === 'tipe') {
+        // Tipe view: Selalu sembunyikan emptyState global agar kita bisa menggambar layout Pemasukan dan Pengeluaran
         if (emptyState) emptyState.style.display = 'none';
 
-        if (viewMode === 'tipe') {
-            const pemasukanList = filtered.filter(t => t.tipe === 'pemasukan');
-            const pengeluaranList = filtered.filter(t => t.tipe === 'pengeluaran');
+        const pemasukanList = filtered.filter(t => t.tipe === 'pemasukan');
+        const pengeluaranList = filtered.filter(t => t.tipe === 'pengeluaran');
 
-            // 1. Render Kelompok Pemasukan
-            if (pemasukanList.length > 0) {
-                const subtotalPemasukan = pemasukanList.reduce((sum, t) => sum + t.jumlah, 0);
-                const groupHeader = document.createElement('tr');
-                groupHeader.className = 'group-header-row group-header-income';
-                groupHeader.innerHTML = `
-                    <td colspan="5" style="text-align: left;">
-                        🟢 Pemasukan (${pemasukanList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPemasukan)}
-                    </td>
-                `;
-                tbody.appendChild(groupHeader);
-                pemasukanList.forEach(t => renderRow(t, tbody));
-            }
+        // 1. Kelompok Pemasukan
+        const subtotalPemasukan = pemasukanList.reduce((sum, t) => sum + t.jumlah, 0);
+        const groupHeaderInc = document.createElement('tr');
+        groupHeaderInc.className = 'group-header-row group-header-income';
+        groupHeaderInc.innerHTML = `
+            <td colspan="5" style="text-align: left;">
+                🟢 Pemasukan (${pemasukanList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPemasukan)}
+            </td>
+        `;
+        tbody.appendChild(groupHeaderInc);
 
-            // 2. Render Kelompok Pengeluaran
-            if (pengeluaranList.length > 0) {
-                const subtotalPengeluaran = pengeluaranList.reduce((sum, t) => sum + t.jumlah, 0);
-                const groupHeader = document.createElement('tr');
-                groupHeader.className = 'group-header-row group-header-expense';
-                groupHeader.innerHTML = `
-                    <td colspan="5" style="text-align: left;">
-                        🔴 Pengeluaran (${pengeluaranList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPengeluaran)}
-                    </td>
-                `;
-                tbody.appendChild(groupHeader);
-                pengeluaranList.forEach(t => renderRow(t, tbody));
-            }
+        if (pemasukanList.length > 0) {
+            pemasukanList.forEach(t => renderRow(t, tbody));
         } else {
-            // Default: Tampilan Kronologis (Flat List)
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="5" style="color: #94a3b8; font-style: italic; text-align: center; padding: 15px; background-color: #fff;">
+                    — Belum ada data transaksi pemasukan —
+                </td>
+            `;
+            tbody.appendChild(emptyRow);
+        }
+
+        // 2. Kelompok Pengeluaran (Selalu tampil bahkan jika bernominal Rp 0 demi kejelasan visual)
+        const subtotalPengeluaran = pengeluaranList.reduce((sum, t) => sum + t.jumlah, 0);
+        const groupHeaderExp = document.createElement('tr');
+        groupHeaderExp.className = 'group-header-row group-header-expense';
+        groupHeaderExp.innerHTML = `
+            <td colspan="5" style="text-align: left;">
+                🔴 Pengeluaran (${pengeluaranList.length} Transaksi) &nbsp;•&nbsp; Subtotal: ${formatIDR(subtotalPengeluaran)}
+            </td>
+        `;
+        tbody.appendChild(groupHeaderExp);
+
+        if (pengeluaranList.length > 0) {
+            pengeluaranList.forEach(t => renderRow(t, tbody));
+        } else {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="5" style="color: #94a3b8; font-style: italic; text-align: center; padding: 15px; background-color: #fff;">
+                    — Belum ada data transaksi pengeluaran —
+                </td>
+            `;
+            tbody.appendChild(emptyRow);
+        }
+    } else {
+        // Tampilan Kronologis (Flat List standard)
+        if (filtered.length === 0) {
+            if (emptyState) emptyState.style.display = 'flex';
+        } else {
+            if (emptyState) emptyState.style.display = 'none';
             filtered.forEach(t => renderRow(t, tbody));
         }
     }
 }
 
-function updateSummary() {
+/**
+ * Menghitung dan memperbarui widget box nominal saldo kas keuangan (Pemasukan, Pengeluaran, Saldo Bersih)
+ * @param {Array} filteredList - Array data transaksi terfilter
+ */
+function updateSummary(filteredList = dataKeuangan) {
     let income = 0;
     let expense = 0;
 
-    dataKeuangan.forEach(t => {
+    filteredList.forEach(t => {
         if (t.tipe === "pemasukan") income += t.jumlah;
         else expense += t.jumlah;
     });
@@ -557,11 +716,14 @@ function updateSummary() {
     const expenseEl = document.getElementById('totalPengeluaran');
     const balanceEl = document.getElementById('totalSaldo');
 
-    if(incomeEl) incomeEl.innerText = formatIDR(income);
-    if(expenseEl) expenseEl.innerText = formatIDR(expense);
-    if(balanceEl) balanceEl.innerText = formatIDR(income - expense);
+    if (incomeEl) incomeEl.innerText = formatIDR(income);
+    if (expenseEl) expenseEl.innerText = formatIDR(expense);
+    if (balanceEl) balanceEl.innerText = formatIDR(income - expense);
 }
 
+/**
+ * Mengunduh laporan keuangan berformat CSV dari state data saat ini
+ */
 function downloadLaporanCSV() {
     if (dataKeuangan.length === 0) {
         Swal.fire("Info", "Tidak ada data untuk diekspor.", "info");
@@ -580,8 +742,3 @@ function downloadLaporanCSV() {
     a.download = `Laporan_Keuangan_LIBAS_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
 }
-
-/**
- * Fungsi utilitas untuk sidebar (submenu) - Digunakan oleh button onclick
- * Tetap biarkan window-scoped karena diatur di HTML global sidebar
- */

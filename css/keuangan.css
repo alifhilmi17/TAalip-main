@@ -1047,6 +1047,28 @@
     letter-spacing: 0.2px;
 }
 
+/* Sub-badge ketertelusuran untuk transaksi manual/umum yang dihubungkan ke batch */
+.sub-badge-manual {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #eff6ff;
+    color: #1e40af;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-top: 6px;
+    border: 1px solid #bfdbfe;
+    letter-spacing: 0.2px;
+    transition: all 0.3s ease;
+}
+
+.sub-badge-manual:hover {
+    background-color: #dbeafe;
+    border-color: #93c5fd;
+}
+
 .desc-container {
     display: flex;
     flex-direction: column;

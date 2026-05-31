@@ -89,16 +89,17 @@
             </div>
           </fieldset>
 
+          <!-- ===== FIELD BATCH (Tampil untuk semua, opsional untuk manual, wajib untuk produksi) ===== -->
+          <div class="form-group" id="batchFormGroup">
+            <label for="trxBatch" id="lblTrxBatch">Target Batch Ayam <small style="font-weight: normal; color: #64748b;">(Opsional)</small></label>
+            <select id="trxBatch" onchange="loadBatchWeeks()">
+              <option value="" selected>— Pilih Batch Target (Opsional) —</option>
+              <!-- Diisi via JavaScript -->
+            </select>
+          </div>
+
           <!-- ===== FIELD KHUSUS SUMBER PRODUKSI (Tampil jika memilih Hasil Produksi) ===== -->
           <div id="produksiSourceFields" style="display: none;">
-            <div class="form-group">
-              <label for="trxBatch">Batch Ayam</label>
-              <select id="trxBatch" onchange="loadBatchWeeks()">
-                <option value="" disabled selected>Pilih Batch Ayam...</option>
-                <!-- Diisi via JavaScript -->
-              </select>
-            </div>
-
             <div class="form-group">
               <label for="trxWeek">Minggu Produksi</label>
               <select id="trxWeek" disabled onchange="showWeekProductionSummary()">
@@ -211,8 +212,17 @@
               <label for="viewMode"
                 style="font-weight: 700; color: #475569; font-size: 0.9rem; margin-right: 5px;">Tampilan:</label>
               <select id="viewMode" title="Pilih Tampilan" style="border: none; background: transparent; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: #475569; cursor: pointer; outline: none;">
-                <option value="kronologis" selected>📅 Kronologis</option>
+                <option value="riwayat-keseluruhan" selected>📅 Riwayat Keseluruhan</option>
                 <option value="tipe">📂 Kelompokkan per Tipe</option>
+              </select>
+            </div>
+            <!-- Filter Batch -->
+            <div class="filter-group">
+              <label for="filterBatch"
+                style="font-weight: 700; color: #475569; font-size: 0.9rem; margin-right: 5px;">Filter Batch:</label>
+              <select id="filterBatch" title="Pilih Batch" style="border: none; background: transparent; font-family: inherit; font-size: 0.9rem; font-weight: 600; color: #475569; cursor: pointer; outline: none;">
+                <option value="" selected>🔄 Semua Batch</option>
+                <!-- Diisi via JavaScript -->
               </select>
             </div>
             <!-- Filter Rentang Tanggal -->

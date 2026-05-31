@@ -21,11 +21,13 @@ import { db } from "../firebase.component/firebase-init.js";
 // State Global
 let dataProduksi = [];
 let dataAyam = [];
+let dataPakan = [];
 let collapsedBatches = new Set(); 
 let collapsedWeeks = new Set();
 
 const produksiCollection = collection(db, "produksi_harian");
 const ayamCollection = collection(db, "populasi_ayam");
+const pakanCollection = collection(db, "stok_pakan");
 
 let unsubscribeAyam = null;
 
@@ -74,7 +76,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     }, (error) => {
         console.error("Firestore Error (Ayam): ", error);
     });
+
+    // 3. Real-time listener untuk data pakan (menampilkan list jenis pakan opsional)
+    onSnapshot(pakanCollection, (snapshot) => {
+        dataPakan = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        loadPakanOptions();
+    });
 });
+
+function loadPakanOptions() {
+    const selectEl = document.getElementById('pakanJenisProduksi');
+    if (!selectEl) return;
+
+    // Ambil list unik pakan yang pernah dibeli/dimasukkan (tipe: Masuk)
+    const uniqueFeeds = [...new Set(dataPakan.filter(p => p.tipe === "Masuk" && p.jenis).map(p => p.jenis))];
+    selectEl.innerHTML = '<option value="" selected>-- Pilih Pakan (Opsional) --</option>';
+    
+    uniqueFeeds.forEach(feed => {
+        const opt = document.createElement('option');
+        opt.value = feed;
+        opt.textContent = feed;
+        selectEl.appendChild(opt);
+    });
+}
 
 // =========================================
 // 3. UI INTERACTIONS (DROPDOWNS & AUTOFILL)
@@ -413,6 +437,14 @@ window.openProduksiModal = function() {
     // Reset ayamMatiHariIni value to 0
     const matiEl = document.getElementById('ayamMatiHariIni');
     if (matiEl) matiEl.value = 0;
+
+    // Reset optional pakan inputs & show group
+    const pakanGroup = document.getElementById('pakanProduksiGroup');
+    if (pakanGroup) pakanGroup.style.display = 'block';
+    const pakanJenisEl = document.getElementById('pakanJenisProduksi');
+    const pakanJumlahEl = document.getElementById('pakanJumlahProduksi');
+    if (pakanJenisEl) pakanJenisEl.value = "";
+    if (pakanJumlahEl) pakanJumlahEl.value = "";
     
     // Set tanggal default ke hari ini
     const tglEl = document.getElementById('tglProduksi');
@@ -460,6 +492,31 @@ window.saveProduksiData = async function(event) {
         const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
         const totalAyam        = parseInt(document.getElementById('totalAyamInput').value) || 0;
         const ayamMati         = parseInt(document.getElementById('ayamMatiHariIni').value) || 0;
+
+        const pakanJenis       = document.getElementById('pakanJenisProduksi').value;
+        const pakanJumlah      = parseFloat(document.getElementById('pakanJumlahProduksi').value) || 0;
+
+        // VALIDASI STOK PAKAN (Pencegahan Over-Consumption / Negatif Stok)
+        if (idInput === "" && pakanJenis && pakanJumlah > 0) {
+            const cleanPakanJenis = pakanJenis.trim();
+            let masuk = 0, keluar = 0;
+            dataPakan.forEach(p => {
+                if (p.jenis === cleanPakanJenis) {
+                    if (p.tipe === "Masuk") masuk += p.jumlah;
+                    else keluar += p.jumlah;
+                }
+            });
+            const sisaPakanStok = masuk - keluar;
+            if (pakanJumlah > sisaPakanStok) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Pakan Tidak Cukup',
+                    html: `Gagal mencatat pemakaian pakan otomatis harian.<br>Jumlah pemakaian <b>${pakanJumlah} Kg</b> melebihi sisa stok <b>${cleanPakanJenis}</b>: <b>${sisaPakanStok} Kg</b>.`,
+                    confirmButtonColor: '#f97316'
+                });
+                return;
+            }
+        }
 
         // ── Ambil data batch untuk validasi ──────────────────────────
         const batchData = dataAyam.find(a => a.id === batchEl.value);
@@ -550,6 +607,23 @@ window.saveProduksiData = async function(event) {
             if (idInput === "") {
                 payload.createdAt = new Date().toISOString();
                 await addDoc(produksiCollection, payload);
+
+                // Integrasi otomatis pemakaian pakan (stok pakan keluar) jika diisi
+                if (pakanJenis && pakanJumlah > 0) {
+                    await addDoc(pakanCollection, {
+                        tanggal: tanggalValue,
+                        tipe: "Keluar",
+                        jenis: pakanJenis.trim(),
+                        jumlah: pakanJumlah,
+                        keterangan: `[Otomatis dari Panen] Batch: ${payload.batchLabel.split(' - ')[0]} (Kandang: ${payload.kandang})`,
+                        dicatatOleh: "Sistem Otomatis (Panen)",
+                        role: "petugas",
+                        batchId: batchEl.value,
+                        batchName: batchEl.options[batchEl.selectedIndex].text,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    });
+                }
 
                 // Integrasi otomatis kematian ke kesehatan & populasi ayam
                 if (ayamMati > 0) {
@@ -732,6 +806,10 @@ window.editProduksi = function(id) {
         document.getElementById('totalAyamInput').value = prod.totalAyam !== undefined ? prod.totalAyam : (batchInfo ? batchInfo.sisaAyam : 0);
 
         lockBatchFields();
+
+        // Hide optional pakan inputs in edit mode (as they are independent stok_pakan logs)
+        const pakanGroup = document.getElementById('pakanProduksiGroup');
+        if (pakanGroup) pakanGroup.style.display = 'none';
 
         // Hide Mode Input group in edit mode
         const modeGroup = document.getElementById('inputModeGroup');

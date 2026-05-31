@@ -76,6 +76,7 @@ let predictionChart = null;
 let totalHistoryDays = 7; // Default jumlah hari riwayat
 let batchDataAyam = []; // Data batch ayam dari Firestore
 let dataProduksi = []; // Data produksi harian dari Firestore
+let dataKeuangan = []; // Data transaksi keuangan dari Firestore
 let lastPredictionData = null; // Menyimpan data prediksi terakhir untuk keperluan download CSV
 let konversiButirPerKg = 16; // Konfigurasi default (bisa diubah via Firebase settings)
 
@@ -83,13 +84,18 @@ let konversiButirPerKg = 16; // Konfigurasi default (bisa diubah via Firebase se
 const ayamCollection = collection(db, "populasi_ayam");
 const produksiCollection = collection(db, "produksi_harian");
 const historyCollection = collection(db, "prediksi_history");
+const keuanganCollection = collection(db, "keuangan");
 
 // Inisialisasi awal render input begitu halaman dimuat
 document.addEventListener('DOMContentLoaded', async () => {
     renderHistoricalInputs();
+    
+    // Aktifkan listener real-time untuk data Firestore
+    loadBatchAyam();
+    loadProduksiData();
+    loadKeuanganData();
+    
     await Promise.all([
-        loadBatchAyam(),
-        loadProduksiData(),
         loadPredictionHistory(),
         loadSettings()
     ]);
@@ -130,17 +136,32 @@ async function loadSettings() {
 /**
  * Memuat data batch ayam dari Firestore dan mengisi dropdown Populasi
  */
-async function loadBatchAyam() {
+function loadBatchAyam() {
     const selectEl = document.getElementById('populasiBatch');
     const hiddenPopulasi = document.getElementById('populasi');
     const infoEl = document.getElementById('populasiBatchInfo');
     
     if (!selectEl) return;
 
-    try {
-        const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
-        const snapshot = await getDocs(q);
-        
+    // Tambahkan listener perubahan dropdown sekali saja jika belum ada
+    if (!selectEl.dataset.listenerAttached) {
+        selectEl.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (!selectedOption) return;
+            hiddenPopulasi.value = selectedOption.dataset.populasi || 0;
+            if (infoEl && selectedOption.dataset.info) {
+                infoEl.textContent = selectedOption.dataset.info;
+            }
+            // Perbarui pilihan minggu basis berdasarkan data batch terpilih
+            updateMingguBasisDropdown();
+            // Auto-fill data produksi saat batch dipilih
+            autoFillFromBatch();
+        });
+        selectEl.dataset.listenerAttached = "true";
+    }
+
+    const q = query(ayamCollection, orderBy("tglMasuk", "desc"));
+    onSnapshot(q, (snapshot) => {
         batchDataAyam = snapshot.docs.map(d => ({
             id: d.id,
             ...d.data()
@@ -149,6 +170,7 @@ async function loadBatchAyam() {
         // Filter hanya batch yang statusnya Aktif
         const batchAktif = batchDataAyam.filter(b => b.status === 'Aktif');
 
+        const prevVal = selectEl.value;
         selectEl.innerHTML = '';
 
         if (batchAktif.length === 0) {
@@ -181,24 +203,18 @@ async function loadBatchAyam() {
             selectEl.appendChild(opt);
         });
 
-        // Trigger change untuk initial value
+        // Kembalikan ke pilihan sebelumnya jika ada, jika tidak default ke 'ALL'
+        if (prevVal && Array.from(selectEl.options).some(opt => opt.value === prevVal)) {
+            selectEl.value = prevVal;
+        } else {
+            selectEl.value = 'ALL';
+        }
+
+        // Trigger change untuk sinkronisasi nilai
         selectEl.dispatchEvent(new Event('change'));
-    } catch (error) {
+    }, (error) => {
         console.error("Error loading batch ayam:", error);
         selectEl.innerHTML = '<option value="" disabled selected>❌ Gagal memuat data</option>';
-    }
-
-    // Event listener perubahan dropdown
-    selectEl.addEventListener('change', function() {
-        const selectedOption = this.options[this.selectedIndex];
-        hiddenPopulasi.value = selectedOption.dataset.populasi || 0;
-        if (infoEl && selectedOption.dataset.info) {
-            infoEl.textContent = selectedOption.dataset.info;
-        }
-        // Perbarui pilihan minggu basis berdasarkan data batch terpilih
-        updateMingguBasisDropdown();
-        // Auto-fill data produksi saat batch dipilih
-        autoFillFromBatch();
     });
 }
 
@@ -405,14 +421,29 @@ function updateRealtimeConfigCalculations() {
 /**
  * Memuat data produksi harian dari Firestore
  */
-async function loadProduksiData() {
-    try {
-        const q = query(produksiCollection, orderBy("tanggal", "desc"));
-        const snapshot = await getDocs(q);
+/**
+ * Memuat data produksi harian secara real-time dari Firestore
+ */
+function loadProduksiData() {
+    const q = query(produksiCollection, orderBy("tanggal", "desc"));
+    onSnapshot(q, (snapshot) => {
         dataProduksi = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch (error) {
+        // Perbarui dropdown mingguBasis jika diperlukan
+        updateMingguBasisDropdown();
+    }, (error) => {
         console.error("Error loading produksi data:", error);
-    }
+    });
+}
+
+/**
+ * Memuat data keuangan secara real-time dari Firestore
+ */
+function loadKeuanganData() {
+    onSnapshot(keuanganCollection, (snapshot) => {
+        dataKeuangan = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    }, (error) => {
+        console.error("Error loading keuangan data:", error);
+    });
 }
 
 window.autoFillFromBatch = function() {
@@ -482,6 +513,7 @@ window.autoFillFromBatch = function() {
         }
         
         if (profitEl) {
+            // Dibiarkan kosong (tidak di-autofill) agar petugas menginput secara manual sesuai permintaan user
             profitEl.value = '';
         }
     });

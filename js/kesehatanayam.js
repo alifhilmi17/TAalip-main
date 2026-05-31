@@ -33,10 +33,12 @@ import { db } from "../firebase.component/firebase-init.js";
 let dataKesehatan = [];
 let dataVaksin = [];
 let dataAyam = [];
+let dataProduksi = [];
 
 const kesCollection = collection(db, "kesehatan_ayam");
 const vakCollection = collection(db, "vaksinasi_ayam");
 const ayamCollection = collection(db, "populasi_ayam");
+const produksiCollection = collection(db, "produksi_harian");
 
 // ==========================================
 // 3. TABS & INISIALISASI
@@ -60,6 +62,11 @@ document.addEventListener("DOMContentLoaded", () => {
     onSnapshot(ayamCollection, (snapshot) => {
         dataAyam = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         loadBatchOptions();
+    });
+
+    // Real-time listener untuk Produksi Harian (deteksi double death log)
+    onSnapshot(produksiCollection, (snapshot) => {
+        dataProduksi = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     });
 });
 
@@ -198,6 +205,27 @@ window.saveKesehatan = async function(e) {
     if (jmlSakit + jmlMati > sisaAyam && status !== "Sembuh") {
         Swal.fire("Validasi Gagal", `Jumlah total (Sakit: ${jmlSakit} + Mati: ${jmlMati}) melebihi sisa ayam di batch ini (${sisaAyam} ekor).`, "warning");
         return;
+    }
+
+    // DETEKSI DOUBLE DEATH LOG DENGAN PRODUKSI HARIAN (Pencegahan Double Decrement)
+    const kesTanggal = document.getElementById('kesTanggal').value;
+    if (jmlMati > 0 && !id) {
+        const prodMatiMatch = dataProduksi.find(p => p.tanggal === kesTanggal && p.batchId === batchId && (p.ayamMati || 0) > 0);
+        if (prodMatiMatch) {
+            const confirmSave = await Swal.fire({
+                title: 'Deteksi Kematian di Produksi',
+                html: `⚠️ Pada tanggal <b>${window.formatTanggal ? window.formatTanggal(kesTanggal) : kesTanggal}</b>, modul <b>Produksi Harian</b> telah mencatat kematian <b>${prodMatiMatch.ayamMati} ekor ayam</b> untuk batch ini.<br><br>Jika Anda menyimpan data ini dengan <b>${jmlMati} ekor mati</b>, populasi ayam di database akan berkurang kembali.<br><br>Apakah Anda yakin kematian ini terpisah (bukan kematian yang sama)?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Tetap Simpan',
+                cancelButtonText: 'Batal'
+            });
+            if (!confirmSave.isConfirmed) {
+                return;
+            }
+        }
     }
 
     // Membentuk paket data kesehatan

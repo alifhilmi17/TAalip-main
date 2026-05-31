@@ -229,6 +229,15 @@
                     </select>
                 </div>
 
+                <!-- Target Batch Ayam (Hanya untuk Keluar - Opsional) -->
+                <div class="form-group" id="batchGroupPakan" style="display: none;">
+                    <label for="batchPakan">Target Batch Ayam <small style="font-weight: normal; color: #64748b;">(Opsional)</small></label>
+                    <select id="batchPakan" onchange="window.autoFillPakanKeterangan ? window.autoFillPakanKeterangan() : null" style="font-family: inherit; font-size: 0.9rem; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; width: 100%;">
+                        <option value="" selected>-- Pilih Batch Target (Opsional) --</option>
+                    </select>
+                    <small class="hint-text">*Hubungkan transaksi pakan ini dengan batch tertentu secara relasional</small>
+                </div>
+
                 <div class="form-group">
                     <label for="jenisPakan">Jenis / Nama Pakan</label>
                     <input type="text" id="jenisPakan" placeholder="Contoh: Konsentrat BP11, Jagung Giling" required>
