@@ -1382,4 +1382,95 @@ body.sidebar-open::before {
     height: 0 !important;
 }
 
+/* =========================================
+   N. NESTED ACCORDION FOR EGG PRODUCTION (PREMIUM STYLE)
+   ========================================= */
+.month-row-header {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+    border-left: 5px solid #fb8500 !important;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+.month-row-header:hover {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%) !important;
+    transform: scale(1.002);
+}
+.month-row-header td {
+    color: #b45309 !important;
+}
+
+.week-row-header {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%) !important;
+    border-left: 5px solid #10b981 !important;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+.week-row-header:hover {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%) !important;
+    transform: scale(1.002);
+}
+.week-row-header td {
+    color: #15803d !important;
+}
+
+.batch-row-header {
+    background: #f8fafc !important;
+    border-left: 4px solid #3b82f6 !important;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+.batch-row-header:hover {
+    background: #f1f5f9 !important;
+    transform: scale(1.001);
+}
+.batch-row-header td {
+    color: #1e293b !important;
+}
+
+.daily-row-detail {
+    background: #ffffff !important;
+    transition: all 0.25s ease;
+}
+.daily-row-detail:hover {
+    background: rgba(251, 133, 0, 0.02) !important;
+}
+
+.toggle-icon {
+    display: inline-block;
+    width: 16px;
+    font-size: 0.8rem;
+    transition: transform 0.2s ease;
+    color: inherit;
+    text-align: center;
+}
+
+.accordion-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 6px;
+}
+.accordion-badge.egg-total {
+    background: #ffb703;
+    color: #ffffff;
+}
+.accordion-badge.egg-baik {
+    background: #10b981;
+    color: #ffffff;
+}
+.accordion-badge.egg-cacat {
+    background: #ef4444;
+    color: #ffffff;
+}
+.accordion-badge.batch-count {
+    background: #3b82f6;
+    color: #ffffff;
+}
+
+
 

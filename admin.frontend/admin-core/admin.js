@@ -155,7 +155,7 @@ async function initAdminDashboard() {
 
         updateStatTidakBertelur(totalProd);
         renderAdminCharts();
-        renderAdminProduksiSnapshot(produksiDataAdmin.slice(0, 10));
+        renderAdminProduksiSnapshot(produksiDataAdmin);
         updateAdminSystemHealthIndicators();
     });
 
@@ -901,19 +901,207 @@ function renderAdminKeuanganSnapshot(data) {
         </tr>`).join('');
 }
 
+function getIndoMonthName(monthIndex) {
+    const months = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+    return months[monthIndex];
+}
+
+window.toggleProduksiGroup = function(groupId) {
+    const rows = document.querySelectorAll(`[data-group="${groupId}"]`);
+    const headerRow = document.getElementById(`header-${groupId}`);
+    let isExpanding = false;
+    
+    rows.forEach(row => {
+        if (row.style.display === 'none' || !row.style.display) {
+            row.style.display = 'table-row';
+            isExpanding = true;
+        } else {
+            row.style.display = 'none';
+            // Recursively collapse children
+            if (row.classList.contains('batch-row-header')) {
+                const batchGroupId = row.id.replace('header-', '');
+                const childRows = document.querySelectorAll(`[data-group="${batchGroupId}"]`);
+                childRows.forEach(child => {
+                    child.style.display = 'none';
+                });
+                const childIcon = row.querySelector('.toggle-icon');
+                if (childIcon) childIcon.textContent = '▶';
+            }
+        }
+    });
+
+    if (headerRow) {
+        const icon = headerRow.querySelector('.toggle-icon');
+        if (icon) {
+            icon.textContent = isExpanding ? '▼' : '▶';
+        }
+    }
+};
+
 function renderAdminProduksiSnapshot(data) {
     const tbody = document.getElementById('adminProduksiSnapshot');
     if (!tbody) return;
     if (data.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Data kosong.</td></tr>'; return; }
 
-    tbody.innerHTML = data.map(p => `
-        <tr>
-            <td>${p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID') : '-'}</td>
-            <td style="font-weight:700; color:#1e293b;">${p.totalTelur || 0} Btr</td>
-            <td style="color:#10b981; font-weight:600;">${p.telurBaik || 0}</td>
-            <td style="color:#ef4444; font-weight:600;">${p.telurCacat || 0}</td>
-            <td><button onclick="openProduksiDetail('${p.id || ''}')" class="action-btn-small btn-warning">Edit</button></td>
-        </tr>`).join('');
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const groups = {};
+
+    data.forEach(p => {
+        if (!p.tanggal) return;
+        const parts = p.tanggal.split('-');
+        if (parts.length < 3) return;
+        
+        const yr = parseInt(parts[0]);
+        const mo = parseInt(parts[1]) - 1;
+        const day = parseInt(parts[2]);
+
+        const isActiveMonth = (yr === currentYear && mo === currentMonth);
+        
+        let parentKey, parentLabel, parentType;
+        if (isActiveMonth) {
+            let weekNum = 1;
+            if (day > 21) weekNum = 4;
+            else if (day > 14) weekNum = 3;
+            else if (day > 7) weekNum = 2;
+            
+            parentKey = `week-${yr}-${mo + 1}-${weekNum}`;
+            parentType = "week";
+            
+            let endDay = weekNum * 7;
+            if (weekNum === 4) {
+                endDay = new Date(yr, mo + 1, 0).getDate();
+            }
+            parentLabel = `Minggu ke-${weekNum} (${(weekNum - 1) * 7 + 1} - ${endDay} ${getIndoMonthName(mo)} ${yr})`;
+        } else {
+            parentKey = `month-${yr}-${mo + 1}`;
+            parentType = "month";
+            parentLabel = `Hasil Produksi Bulan ${getIndoMonthName(mo)} ${yr}`;
+        }
+
+        if (!groups[parentKey]) {
+            groups[parentKey] = {
+                key: parentKey,
+                type: parentType,
+                label: parentLabel,
+                total: 0,
+                baik: 0,
+                cacat: 0,
+                batches: {}
+            };
+        }
+        const parentGroup = groups[parentKey];
+
+        const batchId = p.batchId || "global";
+        const batchLabel = p.batchLabel || "Batch Global";
+
+        if (!parentGroup.batches[batchId]) {
+            parentGroup.batches[batchId] = {
+                id: batchId,
+                label: batchLabel,
+                total: 0,
+                baik: 0,
+                cacat: 0,
+                records: []
+            };
+        }
+        const batchGroup = parentGroup.batches[batchId];
+
+        const tTelur = parseInt(p.totalTelur) || 0;
+        const tBaik = parseInt(p.telurBaik) || 0;
+        const tCacat = parseInt(p.telurCacat) || 0;
+
+        parentGroup.total += tTelur;
+        parentGroup.baik += tBaik;
+        parentGroup.cacat += tCacat;
+
+        batchGroup.total += tTelur;
+        batchGroup.baik += tBaik;
+        batchGroup.cacat += tCacat;
+
+        batchGroup.records.push(p);
+    });
+
+    const sortedParentKeys = Object.keys(groups).sort((a, b) => {
+        const aParts = a.split('-');
+        const bParts = b.split('-');
+        
+        const aYr = parseInt(aParts[1]);
+        const aMo = parseInt(aParts[2]);
+        const aExtra = aParts[3] ? parseInt(aParts[3]) : 99;
+        
+        const bYr = parseInt(bParts[1]);
+        const bMo = parseInt(bParts[2]);
+        const bExtra = bParts[3] ? parseInt(bParts[3]) : 99;
+        
+        if (aYr !== bYr) return bYr - aYr;
+        if (aMo !== bMo) return bMo - aMo;
+        return bExtra - aExtra;
+    });
+
+    let html = "";
+    sortedParentKeys.forEach(parentKey => {
+        const parent = groups[parentKey];
+        const icon = parent.type === "month" ? "📅" : "🗓️";
+        const headerClass = parent.type === "month" ? "month-row-header" : "week-row-header";
+
+        html += `
+            <tr id="header-${parentKey}" class="${headerClass}" onclick="window.toggleProduksiGroup('${parentKey}')">
+                <td style="text-align:left;">
+                    <span class="toggle-icon">▶</span>
+                    <strong>${icon} ${escapeHTML(parent.label)}</strong>
+                    <span class="accordion-badge batch-count">${Object.keys(parent.batches).length} Batch</span>
+                </td>
+                <td style="font-weight:700;">${parent.total.toLocaleString('id-ID')} Btr</td>
+                <td style="font-weight:600;">${parent.baik.toLocaleString('id-ID')}</td>
+                <td style="font-weight:600;">${parent.cacat.toLocaleString('id-ID')}</td>
+                <td><span style="font-size:0.75rem; font-weight:700; opacity:0.8;">${parent.type === "month" ? "BULANAN" : "MINGGUAN"}</span></td>
+            </tr>
+        `;
+
+        Object.keys(parent.batches).forEach(batchId => {
+            const batch = parent.batches[batchId];
+            const batchKey = `${parentKey}-${batchId}`;
+
+            html += `
+                <tr id="header-${batchKey}" class="batch-row-header" data-group="${parentKey}" style="display:none;" onclick="window.toggleProduksiGroup('${batchKey}')">
+                    <td style="text-align:left; padding-left: 25px;">
+                        <span class="toggle-icon">▶</span>
+                        <span>🥚 <strong>Batch:</strong> ${escapeHTML(batch.label.split(' - ')[0])}</span>
+                        <small style="color:#64748b; font-size:0.75rem;">(${escapeHTML(batch.label.split(' - ').slice(1).join(' - '))})</small>
+                    </td>
+                    <td style="font-weight:700;">${batch.total.toLocaleString('id-ID')} Btr</td>
+                    <td style="font-weight:600;">${batch.baik.toLocaleString('id-ID')}</td>
+                    <td style="font-weight:600;">${batch.cacat.toLocaleString('id-ID')}</td>
+                    <td><span style="font-size:0.7rem; background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">BATCH</span></td>
+                </tr>
+            `;
+
+            batch.records.forEach(p => {
+                const dateStr = p.tanggal ? new Date(p.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-';
+                html += `
+                    <tr class="daily-row-detail" data-group="${batchKey}" style="display:none;">
+                        <td style="text-align:left; padding-left: 50px; color:#475569;">
+                            <span>└─ 📅 ${dateStr}</span>
+                        </td>
+                        <td style="font-weight:700; color:#475569;">${(p.totalTelur || 0).toLocaleString('id-ID')} Btr</td>
+                        <td style="color:#10b981; font-weight:600;">${(p.telurBaik || 0).toLocaleString('id-ID')}</td>
+                        <td style="color:#ef4444; font-weight:600;">${(p.telurCacat || 0).toLocaleString('id-ID')}</td>
+                        <td>
+                            <button onclick="event.stopPropagation(); window.openProduksiDetail('${p.id || ''}')" class="action-btn-small btn-warning" style="padding: 4px 8px; font-size: 0.7rem;">Edit</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+    });
+
+    tbody.innerHTML = html;
 }
 
 function renderAdminPakanSnapshot(data) {
