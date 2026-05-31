@@ -108,6 +108,7 @@
                 <th>Telur Cacat</th>
                 <th>Total Telur</th>
                 <th>Ayam Tidak Bertelur</th>
+                <th>Ayam Mati</th>
                 <th>Total Ayam</th>
                 <th>Aksi</th>
               </tr>
@@ -221,6 +222,12 @@
           </div>
 
           <div class="form-group">
+            <label for="ayamMatiHariIni">Jumlah Ayam Mati Hari Ini (Ekor)</label>
+            <input type="number" id="ayamMatiHariIni" min="0" value="0" required oninput="calculateTotal()" />
+            <small class="hint-text" style="color: #ef4444; font-weight: 500;">*Ayam mati otomatis memotong populasi & dicatat ke Modul Kesehatan</small>
+          </div>
+
+          <div class="form-group">
             <label for="totalTelur">Total Telur (Butir)</label>
             <input type="number" id="totalTelur" readonly style="
                   background-color: #e2e8f0;
@@ -246,10 +253,10 @@
         <div id="weeklyFieldsContainer" style="display: none;">
           <div class="form-group" style="margin-bottom: 10px;">
             <label style="color: #4f46e5; font-weight: 700; display: flex; align-items: center; gap: 6px; font-size: 1.05rem;">
-              📊 Input Data Produksi 7 Hari
+              📊 Input Data Produksi & Kematian 7 Hari
             </label>
-            <small class="hint-text" style="margin-bottom: 12px; font-size: 0.8rem; line-height: 1.4;">
-              Masukkan data produksi telur harian selama satu minggu berturut-turut. Tanggal tiap baris terhitung otomatis dari tanggal mulai yang Anda pilih di atas.
+            <small class="hint-text" style="margin-bottom: 12px; font-size: 0.8rem; line-height: 1.4; color: #ef4444;">
+              Masukkan data produksi telur harian dan jumlah kematian ayam harian selama satu minggu berturut-turut. Tanggal tiap baris terhitung otomatis dari tanggal mulai yang Anda pilih di atas. Kematian akan langsung tercatat ke Modul Kesehatan dan memotong populasi.
             </small>
             <div id="weeklyRows" class="weekly-rows-container">
               <!-- Baris hari ke-1 s.d ke-7 diinjeksi via JavaScript -->

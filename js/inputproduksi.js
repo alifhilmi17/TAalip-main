@@ -337,6 +337,10 @@ function generateWeeklyRows() {
                         <label>Cacat (Butir)</label>
                         <input type="number" class="weekly-telur-cacat" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
                     </div>
+                    <div class="weekly-input-group">
+                        <label>Mati (Ekor)</label>
+                        <input type="number" class="weekly-ayam-mati" min="0" required placeholder="0" value="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                    </div>
                     <div class="weekly-input-group readonly-group">
                         <label>Total Telur</label>
                         <input type="number" class="weekly-total-telur" readonly value="0" />
@@ -359,11 +363,13 @@ window.calculateWeeklyRow = function(dayNum) {
 
     const baikInput = row.querySelector('.weekly-telur-baik');
     const cacatInput = row.querySelector('.weekly-telur-cacat');
+    const matiInput = row.querySelector('.weekly-ayam-mati');
     const totalInput = row.querySelector('.weekly-total-telur');
     const tidakBertelurInput = row.querySelector('.weekly-tidak-bertelur');
 
     const baik = parseInt(baikInput.value) || 0;
     const cacat = parseInt(cacatInput.value) || 0;
+    const mati = parseInt(matiInput.value) || 0;
     const total = baik + cacat;
     totalInput.value = total;
 
@@ -403,6 +409,10 @@ window.openProduksiModal = function() {
     const modal = document.getElementById('produksiModal');
     if (form) form.reset();
     document.getElementById('produksiId').value = "";
+    
+    // Reset ayamMatiHariIni value to 0
+    const matiEl = document.getElementById('ayamMatiHariIni');
+    if (matiEl) matiEl.value = 0;
     
     // Set tanggal default ke hari ini
     const tglEl = document.getElementById('tglProduksi');
@@ -449,6 +459,7 @@ window.saveProduksiData = async function(event) {
         const totalTelur       = telurBaik + telurCacat;
         const ayamTidakBertelur = parseInt(document.getElementById('ayamTidakBertelur').value) || 0;
         const totalAyam        = parseInt(document.getElementById('totalAyamInput').value) || 0;
+        const ayamMati         = parseInt(document.getElementById('ayamMatiHariIni').value) || 0;
 
         // ── Ambil data batch untuk validasi ──────────────────────────
         const batchData = dataAyam.find(a => a.id === batchEl.value);
@@ -494,8 +505,8 @@ window.saveProduksiData = async function(event) {
                         <div style="text-align: left;">
                             <p>Total ayam terdeteksi: <b>${totalTelur + ayamTidakBertelur} ekor</b></p>
                             <ul>
-                                <li>Bertelur: ${totalTelur} ekor</li>
-                                <li>Tidak Bertelur: ${ayamTidakBertelur} ekor</li>
+                                  <li>Bertelur: ${totalTelur} ekor</li>
+                                  <li>Tidak Bertelur: ${ayamTidakBertelur} ekor</li>
                             </ul>
                             <p>Sedangkan populasi di database hanya: <b>${totalAyam} ekor</b>.</p>
                         </div>
@@ -530,6 +541,7 @@ window.saveProduksiData = async function(event) {
             telurCacat,
             totalTelur,
             ayamTidakBertelur,
+            ayamMati,
             totalAyam,
             updatedAt: new Date().toISOString()
         };
@@ -538,6 +550,32 @@ window.saveProduksiData = async function(event) {
             if (idInput === "") {
                 payload.createdAt = new Date().toISOString();
                 await addDoc(produksiCollection, payload);
+
+                // Integrasi otomatis kematian ke kesehatan & populasi ayam
+                if (ayamMati > 0) {
+                    const kesehatanCollection = collection(db, "kesehatan_ayam");
+                    await addDoc(kesehatanCollection, {
+                        tanggal: tanggalValue,
+                        batchId: batchEl.value,
+                        batchName: batchEl.options[batchEl.selectedIndex].text,
+                        kandang: payload.kandang,
+                        jmlSakit: 0,
+                        jmlMati: ayamMati,
+                        gejala: "Pemeriksaan rutin saat panen telur harian",
+                        penanganan: "Bangkai dievakuasi and dikubur",
+                        status: "Mati",
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    });
+
+                    const batchRef = doc(db, "populasi_ayam", batchEl.value);
+                    const sisaSekarang = Math.max(0, totalAyam - ayamMati);
+                    await updateDoc(batchRef, { 
+                        sisaAyam: sisaSekarang,
+                        updatedAt: new Date().toISOString()
+                    });
+                }
+
                 Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Data produksi ditambahkan.', timer: 2000, showConfirmButton: false });
             } else {
                 await updateDoc(doc(db, "produksi_harian", idInput), payload);
@@ -557,6 +595,7 @@ window.saveProduksiData = async function(event) {
         // Kumpulkan data dari ke-7 baris
         const rows = document.querySelectorAll('.weekly-row');
         const payloads = [];
+        let runningPopulasi = totalAyam;
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
@@ -564,17 +603,25 @@ window.saveProduksiData = async function(event) {
             const dateVal = row.querySelector('.weekly-date-val').value;
             const baik = parseInt(row.querySelector('.weekly-telur-baik').value) || 0;
             const cacat = parseInt(row.querySelector('.weekly-telur-cacat').value) || 0;
+            const mati = parseInt(row.querySelector('.weekly-ayam-mati').value) || 0;
             const total = baik + cacat;
-            const ayamTidakBertelur = totalAyam > 0 ? (totalAyam - total >= 0 ? totalAyam - total : 0) : 0;
+            
+            // Hitung populasi pada hari tersebut sebelum mati (populasi aktif saat itu)
+            const populasiHariIni = runningPopulasi;
+            
+            // Kurangi populasi secara real-time untuk hari berikutnya
+            runningPopulasi = Math.max(0, runningPopulasi - mati);
+            
+            const ayamTidakBertelur = populasiHariIni > 0 ? (populasiHariIni - total >= 0 ? populasiHariIni - total : 0) : 0;
 
             // VALIDASI: telur tidak boleh melebihi jumlah ayam
-            if (totalAyam > 0 && total > totalAyam) {
+            if (populasiHariIni > 0 && total > populasiHariIni) {
                 Swal.fire({
                     icon: 'error',
                     title: `Input Tidak Logis pada Hari Ke-${dayNum}!`,
                     html: `
                         <div style="text-align: left;">
-                            <p>Hari ke-${dayNum} (<b>${dateVal}</b>): Total telur (<b>${total} butir</b>) melebihi jumlah populasi ayam (<b>${totalAyam} ekor</b>).</p>
+                            <p>Hari ke-${dayNum} (<b>${dateVal}</b>): Total telur (<b>${total} butir</b>) melebihi jumlah populasi ayam (<b>${populasiHariIni} ekor</b>).</p>
                             <hr>
                             <p><small><i>Harap periksa kembali input Anda.</i></small></p>
                         </div>
@@ -594,7 +641,8 @@ window.saveProduksiData = async function(event) {
                 telurCacat: cacat,
                 totalTelur: total,
                 ayamTidakBertelur: ayamTidakBertelur,
-                totalAyam: totalAyam,
+                ayamMati: mati,
+                totalAyam: populasiHariIni,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             });
@@ -615,10 +663,43 @@ window.saveProduksiData = async function(event) {
             const savePromises = payloads.map(payload => addDoc(produksiCollection, payload));
             await Promise.all(savePromises);
 
+            // Simpan log kematian untuk setiap hari yang memiliki kematian
+            const kesehatanCollection = collection(db, "kesehatan_ayam");
+            const healthPromises = [];
+            
+            payloads.forEach(p => {
+                if (p.ayamMati > 0) {
+                    healthPromises.push(addDoc(kesehatanCollection, {
+                        tanggal: p.tanggal,
+                        batchId: p.batchId,
+                        batchName: p.batchLabel,
+                        kandang: p.kandang,
+                        jmlSakit: 0,
+                        jmlMati: p.ayamMati,
+                        gejala: "Pemeriksaan rutin saat panen telur harian",
+                        penanganan: "Bangkai dievakuasi dan dikubur",
+                        status: "Mati",
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    }));
+                }
+            });
+            
+            if (healthPromises.length > 0) {
+                await Promise.all(healthPromises);
+            }
+
+            // Update sisaAyam terakhir di populasi_ayam
+            const batchRef = doc(db, "populasi_ayam", batchEl.value);
+            await updateDoc(batchRef, { 
+                sisaAyam: runningPopulasi,
+                updatedAt: new Date().toISOString()
+            });
+
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: '7 data produksi mingguan berhasil disimpan sekaligus.',
+                text: '7 data produksi mingguan berhasil disimpan sekaligus & sisa populasi otomatis diperbarui.',
                 timer: 2500,
                 showConfirmButton: false
             });
@@ -641,6 +722,7 @@ window.editProduksi = function(id) {
         document.getElementById('telurCacat').value = prod.telurCacat;
         document.getElementById('totalTelur').value = prod.totalTelur;
         document.getElementById('ayamTidakBertelur').value = prod.ayamTidakBertelur || 0;
+        document.getElementById('ayamMatiHariIni').value = prod.ayamMati || 0;
         document.getElementById('jenisTelurProduksi').value = prod.jenisTelur;
         document.getElementById('kandangProduksi').value = prod.kandang;
         document.getElementById('kandangProduksiHidden').value = prod.kandang;
@@ -819,7 +901,7 @@ function renderTable() {
                 headerRow.className = `batch-group-header ${isBatchCollapsed ? 'collapsed' : ''}`;
                 headerRow.onclick = () => toggleBatchGroup(prod.batchId);
                 headerRow.innerHTML = `
-                    <td colspan="10">
+                    <td colspan="11">
                         <span class="toggle-icon">${isBatchCollapsed ? '▶' : '▼'}</span>
                         <span style="font-weight: 700; letter-spacing: 0.5px;">${prod.batchLabel.split(' - ')[0]}</span>
                         <span class="header-hint">${isBatchCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
@@ -840,7 +922,7 @@ function renderTable() {
                 weekRow.style.backgroundColor = '#f1f5f9';
                 weekRow.style.borderTop = '1px solid #e2e8f0';
                 weekRow.innerHTML = `
-                    <td colspan="10" style="padding-left: 2rem; padding-right: 1.5rem;">
+                    <td colspan="11" style="padding-left: 2rem; padding-right: 1.5rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                             <div>
                                 <span class="toggle-icon" style="color: #64748b; font-size: 0.9em;">${isWeekCollapsed ? '▶' : '▼'}</span>
@@ -870,6 +952,7 @@ function renderTable() {
                 <td><span class="badge" style="background:#ef4444;color:white;">${prod.telurCacat.toLocaleString('id-ID')}</span></td>
                 <td><strong>${prod.totalTelur.toLocaleString('id-ID')}</strong></td>
                 <td><span class="badge" style="background:#8b5cf6;color:white;">${(prod.ayamTidakBertelur || 0).toLocaleString('id-ID')} Ekor</span></td>
+                <td><span class="badge" style="background:#ef4444;color:white;">${(prod.ayamMati || 0).toLocaleString('id-ID')} Ekor</span></td>
                 <td><span class="badge" style="background:#3b82f6;color:white;">${(prod.totalAyam !== undefined ? prod.totalAyam : (dataAyam.find(a => a.id === prod.batchId)?.sisaAyam || 0)).toLocaleString('id-ID')} Ekor</span></td>
                 <td>
                     <button class="btn-edit" onclick="editProduksi('${prod.id}')">✏️</button>
@@ -932,10 +1015,10 @@ window.resetFilter = function() {
 
 window.downloadLaporanCSV = function() {
     if (dataProduksi.length === 0) return;
-    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur,Ayam Tidak Bertelur,Total Ayam\n";
+    let csv = "ID,Tanggal,Batch,Jenis Telur,Kandang,Telur Baik,Telur Cacat,Total Telur,Ayam Tidak Bertelur,Ayam Mati,Total Ayam\n";
     dataProduksi.forEach(p => {
         const totalAyam = p.totalAyam !== undefined ? p.totalAyam : (dataAyam.find(a => a.id === p.batchId)?.sisaAyam || 0);
-        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur},${p.ayamTidakBertelur || 0},${totalAyam}\n`;
+        csv += `${p.id},${p.tanggal},${p.batchLabel},${p.jenisTelur},${p.kandang},${p.telurBaik},${p.telurCacat},${p.totalTelur},${p.ayamTidakBertelur || 0},${p.ayamMati || 0},${totalAyam}\n`;
     });
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);

@@ -144,10 +144,37 @@ window.selectTransactionType = function(type) {
 // ==========================================
 // 4. MODAL FORM UTAMA (STOK & PEMAKAIAN)
 // ==========================================
+window.toggleFinanceDetails = function() {
+    const check = document.getElementById('catatKeuangan');
+    const details = document.getElementById('financeDetails');
+    if (check && details) {
+        if (check.checked) {
+            details.style.display = 'flex';
+            document.getElementById('hargaPakanKg').setAttribute('required', 'true');
+        } else {
+            details.style.display = 'none';
+            document.getElementById('hargaPakanKg').removeAttribute('required');
+            document.getElementById('hargaPakanKg').value = '';
+            document.getElementById('totalHargaPakan').value = '';
+        }
+    }
+};
+
+window.calculateTotalHargaPakan = function() {
+    const qty = parseFloat(document.getElementById('jumlahPakan').value) || 0;
+    const price = parseFloat(document.getElementById('hargaPakanKg').value) || 0;
+    const total = qty * price;
+    const totalEl = document.getElementById('totalHargaPakan');
+    if (totalEl) {
+        totalEl.value = total > 0 ? Math.round(total) : '';
+    }
+};
+
 window.toggleJenisPakanInput = function() {
     const tipe = document.getElementById('tipePakan').value;
     const inputEl = document.getElementById('jenisPakan');
     const selectEl = document.getElementById('jenisPakanSelect');
+    const financeGroup = document.getElementById('financeGroup');
     
     if (tipe === "Keluar") {
         inputEl.style.display = 'none';
@@ -164,6 +191,8 @@ window.toggleJenisPakanInput = function() {
         uniqueFeeds.forEach(feed => {
             selectEl.innerHTML += `<option value="${feed}">${feed}</option>`;
         });
+
+        if (financeGroup) financeGroup.style.display = 'none';
     } else {
         selectEl.style.display = 'none';
         selectEl.removeAttribute('required');
@@ -172,13 +201,21 @@ window.toggleJenisPakanInput = function() {
         inputEl.style.display = 'block';
         inputEl.setAttribute('required', 'true');
         inputEl.removeAttribute('disabled');
+
+        if (financeGroup) financeGroup.style.display = 'block';
     }
 };
+
 window.openPakanModal = function(type = '') {
     const form = document.getElementById('pakanForm');
     if (form) form.reset();
     
     document.getElementById('pakanId').value = "";
+
+    // Reset finance input fields and state
+    const catatKeuangan = document.getElementById('catatKeuangan');
+    if (catatKeuangan) catatKeuangan.checked = false;
+    window.toggleFinanceDetails();
     
     // Set tanggal default ke hari ini
     const today = new Date().toISOString().split('T')[0];
@@ -257,7 +294,26 @@ window.savePakanData = async function(event) {
     try {
         if (id === "") {
             payload.createdAt = new Date().toISOString();
-            await addDoc(pakanCollection, payload);
+            const docRef = await addDoc(pakanCollection, payload);
+
+            // Integrasi otomatis ke keuangan (kas pengeluaran)
+            const catatKeuangan = document.getElementById('catatKeuangan');
+            if (tipe === "Masuk" && catatKeuangan && catatKeuangan.checked) {
+                const hargaPerKg = parseFloat(document.getElementById('hargaPakanKg').value) || 0;
+                const totalBiaya = Math.round(hargaPerKg * jumlah);
+                
+                const keuanganCollection = collection(db, "keuangan");
+                await addDoc(keuanganCollection, {
+                    tanggal: payload.tanggal,
+                    tipe: "pengeluaran",
+                    deskripsi: `[Otomatis] Pembelian Pakan: ${payload.jenis} (${jumlah} Kg)`,
+                    jumlah: totalBiaya,
+                    createdAt: new Date().toISOString(),
+                    source: 'stok_pakan',
+                    pakanId: docRef.id
+                });
+            }
+
             window.showToast("Berhasil", "Data berhasil disimpan!", "success");
         } else {
             await updateDoc(doc(db, "stok_pakan", id), payload);
