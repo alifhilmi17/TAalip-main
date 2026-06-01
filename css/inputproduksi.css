@@ -961,7 +961,7 @@
 /* Kumpulan input per hari */
 .weekly-row-inputs {
     display: flex;
-    gap: 12px;
+    gap: 6px;
 }
 
 /* Input group */
@@ -979,15 +979,17 @@
     font-weight: 600 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .weekly-input-group input {
-    padding: 10px 12px !important;
-    font-size: 0.9rem !important;
+    padding: 8px 6px !important;
+    font-size: 0.85rem !important;
     border-radius: 8px !important;
     border: 1px solid #cbd5e1 !important;
     background: #ffffff !important;
     font-weight: 500;
+    text-align: center;
 }
 
 .weekly-input-group input:focus {
@@ -1016,4 +1018,37 @@
     .weekly-input-group.readonly-group {
         min-width: calc(50% - 6px);
     }
+}
+
+/* =========================================================
+   🚫 MENYEMBUNYIKAN SPIN BUTTONS (ARROW ATAS/BAWAH)
+   ========================================================= */
+/* Menghapus tombol panah naik/turun bawaan browser pada kolom input angka */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type=number] {
+    -moz-appearance: textfield; /* Untuk kompatibilitas Mozilla Firefox */
+}
+
+/* =========================================================
+   📊 STYLE KHUSUS MODAL UNTUK INPUT MINGGUAN (WEEKLY MODE)
+   ========================================================= */
+/* Ketika formulir dialihkan ke Mode Mingguan, modal tidak boleh scroll di dalam popup.
+   Sebaliknya, ia memanjang secara bebas tanpa scrollbar internal dan scroll pada overlay luar browser,
+   sehingga behave seperti formulir biasa. Kotak modal juga diperlebar agar grid input 7 harinya lega. */
+#produksiModal.weekly-mode {
+    align-items: center;
+    overflow-y: hidden;
+    padding: 0;
+}
+
+#produksiModal.weekly-mode .modal-content {
+    max-height: 90vh; /* Mengembalikan scrollbar internal di dalam pop-up modal */
+    overflow-y: auto;
+    max-width: 500px; /* Disamakan ukurannya dengan Harian (500px) */
+    margin: 0;
 }

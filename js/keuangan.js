@@ -292,8 +292,8 @@ window.calculateEggSalesAmount = function() {
     const cleanPrice = rawPrice.replace(/\./g, '').replace(/,/g, '.');
     const price = parseFloat(cleanPrice) || 0;
 
-    // Kalkulasi per papan: (Total Telur Baik / 30) * Harga per Papan
-    const salesAmount = (wGroup.telurBaik / 30) * price;
+    // Kalkulasi per papan: (Total Telur Baik / 30 dibulatkan ke papan terdekat) * Harga per Papan
+    const salesAmount = Math.round(wGroup.telurBaik / 30) * price;
     amountInput.value = Math.round(salesAmount).toLocaleString('id-ID');
 };
 
