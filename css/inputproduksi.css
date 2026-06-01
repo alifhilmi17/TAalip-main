@@ -973,13 +973,18 @@
 }
 
 .weekly-input-group label {
-    font-size: 0.75rem !important;
+    font-size: 0.65rem !important;
     color: #64748b !important;
     margin-bottom: 0 !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     text-align: center;
+    line-height: 1.2;
+    min-height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .weekly-input-group input {

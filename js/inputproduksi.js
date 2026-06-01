@@ -354,6 +354,14 @@ function generateWeeklyRows() {
                 </div>
                 <div class="weekly-row-inputs">
                     <div class="weekly-input-group">
+                        <label>Papan</label>
+                        <input type="number" class="weekly-telur-papan" min="0" placeholder="0" oninput="window.onWeeklyPapanInput(${i + 1})" />
+                    </div>
+                    <div class="weekly-input-group">
+                        <label>Sisa (Btr)</label>
+                        <input type="number" class="weekly-telur-sisa" min="0" max="29" placeholder="0" oninput="window.onWeeklyPapanInput(${i + 1})" />
+                    </div>
+                    <div class="weekly-input-group">
                         <label>Baik (Butir)</label>
                         <input type="number" class="weekly-telur-baik" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
                     </div>
@@ -381,6 +389,25 @@ function generateWeeklyRows() {
     }
 }
 
+window.onWeeklyPapanInput = function(dayNum) {
+    const row = document.querySelector(`.weekly-row[data-day="${dayNum}"]`);
+    if (!row) return;
+
+    const papanInput = row.querySelector('.weekly-telur-papan');
+    const sisaInput = row.querySelector('.weekly-telur-sisa');
+    const baikInput = row.querySelector('.weekly-telur-baik');
+
+    const papan = parseInt(papanInput.value) || 0;
+    const sisa = parseInt(sisaInput.value) || 0;
+    
+    // Hitung total butir: (Papan * 30) + Sisa
+    const baik = (papan * 30) + sisa;
+    baikInput.value = baik > 0 ? baik : '';
+
+    // Kalkulasi ulang baris mingguan
+    window.calculateWeeklyRow(dayNum);
+};
+
 window.calculateWeeklyRow = function(dayNum) {
     const row = document.querySelector(`.weekly-row[data-day="${dayNum}"]`);
     if (!row) return;
@@ -390,12 +417,27 @@ window.calculateWeeklyRow = function(dayNum) {
     const matiInput = row.querySelector('.weekly-ayam-mati');
     const totalInput = row.querySelector('.weekly-total-telur');
     const tidakBertelurInput = row.querySelector('.weekly-tidak-bertelur');
+    const papanInput = row.querySelector('.weekly-telur-papan');
+    const sisaInput = row.querySelector('.weekly-telur-sisa');
 
     const baik = parseInt(baikInput.value) || 0;
     const cacat = parseInt(cacatInput.value) || 0;
     const mati = parseInt(matiInput.value) || 0;
     const total = baik + cacat;
     totalInput.value = total;
+
+    // Sinkronisasi otomatis Papan & Sisa jika user mengetik langsung di input Telur Baik
+    if (document.activeElement !== papanInput && document.activeElement !== sisaInput) {
+        if (baik > 0) {
+            const papan = Math.floor(baik / 30);
+            const sisa = baik % 30;
+            if (papanInput) papanInput.value = papan > 0 ? papan : '';
+            if (sisaInput) sisaInput.value = sisa > 0 ? sisa : '';
+        } else {
+            if (papanInput) papanInput.value = '';
+            if (sisaInput) sisaInput.value = '';
+        }
+    }
 
     const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
 
