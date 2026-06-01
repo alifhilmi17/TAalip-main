@@ -298,6 +298,37 @@ window.calculateEggSalesAmount = function() {
 };
 
 /**
+ * Mengkalkulasi otomatis Harga Jual per Papan dari Jumlah Uang (Reverse Calculation)
+ */
+window.calculateEggPriceFromAmount = function() {
+    const sourceEl = document.getElementById('trxSource');
+    if (sourceEl && sourceEl.value !== 'produksi') return;
+
+    const batchSelect = document.getElementById('trxBatch');
+    const weekSelect = document.getElementById('trxWeek');
+    const priceInput = document.getElementById('eggPrice');
+    const amountInput = document.getElementById('trxAmount');
+    if (!batchSelect || !weekSelect || !priceInput || !amountInput) return;
+
+    const batchId = batchSelect.value;
+    const minggu = weekSelect.value;
+    const wGroup = weeklyGroupedProduction[batchId]?.[minggu];
+    if (!wGroup) return;
+
+    const rawAmount = amountInput.value;
+    const cleanAmount = rawAmount.replace(/\./g, '').replace(/,/g, '.');
+    const amount = parseFloat(cleanAmount) || 0;
+
+    const papan = Math.round(wGroup.telurBaik / 30);
+    if (papan > 0) {
+        const price = amount / papan;
+        priceInput.value = Math.round(price).toLocaleString('id-ID');
+    } else {
+        priceInput.value = "0";
+    }
+};
+
+/**
  * Mengubah setelan input form berdasarkan tipe inputan (Manual/Umum vs Hasil Produksi)
  * @param {string} source - Tipe sumber ('manual' atau 'produksi')
  */
@@ -374,7 +405,7 @@ window.switchTrxSource = function(source) {
         document.getElementById('eggPrice').required = true;
 
         if (trxDesc) trxDesc.readOnly = false;
-        if (trxAmount) trxAmount.readOnly = true; // Nominal dikunci karena terhitung otomatis
+        if (trxAmount) trxAmount.readOnly = false; // Nominal dibuka agar bisa dikalkulasi bolak-balik
     }
 };
 
