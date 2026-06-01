@@ -1555,11 +1555,19 @@ async function savePredictionHistory(data) {
         const batchSelect = document.getElementById('populasiBatch');
         const selectedBatchLabel = batchSelect ? batchSelect.options[batchSelect.selectedIndex].textContent : '-';
 
+        // Ambil minggu basis yang dipilih untuk mengetahui target minggu
+        const mingguSelect = document.getElementById('mingguBasis');
+        let targetMinggu = '-';
+        if (mingguSelect && mingguSelect.value) {
+            targetMinggu = `Minggu ke-${parseInt(mingguSelect.value) + 1}`;
+        }
+
         const payload = {
             tanggal: new Date().toISOString(),
             periodeMA: data.periodeMA,
             populasi: data.populasi,
             batchLabel: selectedBatchLabel,
+            targetMinggu: targetMinggu,
             prediksiBesokKg: data.prediksiBesokKg,
             prediksiBesokButir: data.prediksiBesokButir,
             estimasiPendapatan: data.estimasiPendapatan,
@@ -1656,9 +1664,12 @@ function renderHistoryTable(histories) {
                 <div style="font-size: 0.78rem; color: #95a5a6;">🕐 ${waktuStr}</div>
             </td>
             <td style="padding: 14px;">
-                <span style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; padding: 3px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700;">
-                    MA-${h.periodeMA}
-                </span>
+                <div style="margin-bottom: 6px;">
+                    <span style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; padding: 3px 10px; border-radius: 6px; font-size: 0.82rem; font-weight: 700;">
+                        MA-${h.periodeMA}
+                    </span>
+                </div>
+                ${h.targetMinggu && h.targetMinggu !== '-' ? `<span style="background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; white-space: nowrap; display: inline-block;">🎯 Proyeksi: ${h.targetMinggu}</span>` : ''}
             </td>
             <td style="padding: 14px; color: #2c3e50;">
                 <span style="font-weight: 700; color: #2980b9;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} Kg ${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Butir</span>
