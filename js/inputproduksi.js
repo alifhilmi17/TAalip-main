@@ -198,11 +198,33 @@ function resetBatchFieldsForNewEntry() {
     });
 }
 
-/**
- * Menghitung otomatis total telur berdasarkan jumlah telur baik dan cacat
- */
 window.calculateTotal = function() {
-    const baik = parseInt(document.getElementById('telurBaik').value) || 0;
+    const papanEl = document.getElementById('telurPapan');
+    const sisaEl = document.getElementById('telurSisa');
+    const baikEl = document.getElementById('telurBaik');
+
+    // Sinkronisasi otomatis Papan & Sisa ke Telur Baik
+    if (document.activeElement === papanEl || document.activeElement === sisaEl) {
+        const papan = parseInt(papanEl.value) || 0;
+        const sisa = parseInt(sisaEl.value) || 0;
+        const baik = (papan * 30) + sisa;
+        baikEl.value = baik > 0 ? baik : '';
+    }
+    // Sinkronisasi otomatis Telur Baik ke Papan & Sisa
+    else if (document.activeElement === baikEl) {
+        const baik = parseInt(baikEl.value) || 0;
+        if (baik > 0) {
+            const papan = Math.floor(baik / 30);
+            const sisa = baik % 30;
+            papanEl.value = papan > 0 ? papan : '';
+            sisaEl.value = sisa > 0 ? sisa : '';
+        } else {
+            papanEl.value = '';
+            sisaEl.value = '';
+        }
+    }
+
+    const baik = parseInt(baikEl.value) || 0;
     const cacat = parseInt(document.getElementById('telurCacat').value) || 0;
     const totalTelur = baik + cacat;
     document.getElementById('totalTelur').value = totalTelur;
@@ -362,16 +384,16 @@ function generateWeeklyRows() {
                         <input type="number" class="weekly-telur-sisa" min="0" max="29" placeholder="0" oninput="window.onWeeklyPapanInput(${i + 1})" />
                     </div>
                     <div class="weekly-input-group">
-                        <label>Baik (Butir)</label>
-                        <input type="number" class="weekly-telur-baik" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <label>Cacat (Butir)</label>
+                        <input type="number" class="weekly-telur-cacat" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
                     </div>
                     <div class="weekly-input-group">
-                        <label>Cacat (Butir)</label>
-                        <input type="number" class="weekly-telur-cacat" min="0" required placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <label>Baik (Butir)</label>
+                        <input type="number" class="weekly-telur-baik" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
                     </div>
                     <div class="weekly-input-group">
                         <label>Mati (Ekor)</label>
-                        <input type="number" class="weekly-ayam-mati" min="0" required placeholder="0" value="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <input type="number" class="weekly-ayam-mati" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
                     </div>
                     <div class="weekly-input-group readonly-group">
                         <label>Total Telur</label>
@@ -715,11 +737,22 @@ window.saveProduksiData = async function(event) {
 
         for (let i = 0; i < rows.length; i++) {
             const row = rows[i];
+            const papanStr = row.querySelector('.weekly-telur-papan').value;
+            const sisaStr = row.querySelector('.weekly-telur-sisa').value;
+            const cacatStr = row.querySelector('.weekly-telur-cacat').value;
+            const baikStr = row.querySelector('.weekly-telur-baik').value;
+            const matiStr = row.querySelector('.weekly-ayam-mati').value;
+
+            // Jika semua input dibiarkan kosong, abaikan hari ini (memungkinkan input parsial minggu)
+            if (papanStr === "" && sisaStr === "" && cacatStr === "" && baikStr === "" && matiStr === "") {
+                continue;
+            }
+
             const dayNum = row.dataset.day;
             const dateVal = row.querySelector('.weekly-date-val').value;
-            const baik = parseInt(row.querySelector('.weekly-telur-baik').value) || 0;
-            const cacat = parseInt(row.querySelector('.weekly-telur-cacat').value) || 0;
-            const mati = parseInt(row.querySelector('.weekly-ayam-mati').value) || 0;
+            const baik = parseInt(baikStr) || 0;
+            const cacat = parseInt(cacatStr) || 0;
+            const mati = parseInt(matiStr) || 0;
             const total = baik + cacat;
             
             // Hitung populasi pada hari tersebut sebelum mati (populasi aktif saat itu)
@@ -764,9 +797,14 @@ window.saveProduksiData = async function(event) {
             });
         }
 
+        if (payloads.length === 0) {
+            Swal.fire('Peringatan', 'Tidak ada data produksi yang diisi. Harap isi minimal 1 hari.', 'warning');
+            return;
+        }
+
         // Tampilkan loading spinner
         Swal.fire({
-            title: 'Menyimpan 7 Data...',
+            title: `Menyimpan ${payloads.length} Data...`,
             html: 'Mohon tunggu sejenak, data sedang dikirim ke Firestore.',
             allowOutsideClick: false,
             didOpen: () => {
@@ -815,7 +853,7 @@ window.saveProduksiData = async function(event) {
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: '7 data produksi mingguan berhasil disimpan sekaligus & sisa populasi otomatis diperbarui.',
+                text: `${payloads.length} data produksi mingguan berhasil disimpan & sisa populasi otomatis diperbarui.`,
                 timer: 2500,
                 showConfirmButton: false
             });
@@ -842,6 +880,13 @@ window.editProduksi = function(id) {
         document.getElementById('jenisTelurProduksi').value = prod.jenisTelur;
         document.getElementById('kandangProduksi').value = prod.kandang;
         document.getElementById('kandangProduksiHidden').value = prod.kandang;
+        
+        // Hitung Papan & Sisa dari telurBaik saat Edit
+        const baik = prod.telurBaik || 0;
+        const papan = Math.floor(baik / 30);
+        const sisa = baik % 30;
+        document.getElementById('telurPapan').value = papan > 0 ? papan : '';
+        document.getElementById('telurSisa').value = sisa > 0 ? sisa : '';
         
         // Load Total Ayam (jika ada di data, atau ambil dari batch info)
         const batchInfo = dataAyam.find(a => a.id === prod.batchId);

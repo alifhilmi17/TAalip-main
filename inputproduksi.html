@@ -192,80 +192,66 @@
 
         <!-- ===== CONTAINER FIELD INPUT HARIAN ===== -->
         <div id="dailyFieldsContainer">
-          <div class="form-group">
-            <label for="telurBaik">Jumlah Telur Baik (Butir)</label>
-            <input type="number" id="telurBaik" min="0" required oninput="calculateTotal()" />
+          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label for="telurPapan" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Papan</label>
+              <input type="number" id="telurPapan" min="0" placeholder="0" oninput="calculateTotal()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; font-family: inherit; font-size: 0.95rem;" />
+            </div>
+            <div style="flex: 1;">
+              <label for="telurSisa" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Sisa (Btr)</label>
+              <input type="number" id="telurSisa" min="0" max="29" placeholder="0" oninput="calculateTotal()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; font-family: inherit; font-size: 0.95rem;" />
+            </div>
+            <div style="flex: 1;">
+              <label for="telurCacat" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Cacat (Btr)</label>
+              <input type="number" id="telurCacat" min="0" required placeholder="0" oninput="calculateTotal()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; font-family: inherit; font-size: 0.95rem;" />
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="telurCacat">Jumlah Telur Cacat/Pecah (Butir)</label>
-            <input type="number" id="telurCacat" min="0" required oninput="calculateTotal()" />
+          <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1;">
+              <label for="telurBaik" style="font-size: 0.85rem; color: #475569; font-weight: 600;">Baik (Btr)</label>
+              <input type="number" id="telurBaik" min="0" required placeholder="0" oninput="calculateTotal()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; font-family: inherit; font-size: 0.95rem;" />
+            </div>
+            <div style="flex: 1;">
+              <label for="ayamMatiHariIni" style="font-size: 0.85rem; color: #ef4444; font-weight: 600;">Mati (Ekor)</label>
+              <input type="number" id="ayamMatiHariIni" min="0" value="0" required placeholder="0" oninput="calculateTotal()" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #fca5a5; margin-top: 5px; font-family: inherit; font-size: 0.95rem;" title="Mati otomatis memotong populasi" />
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="ayamTidakBertelur">Jumlah Ayam Tidak Bertelur (Ekor)</label>
-            <input type="number" id="ayamTidakBertelur" readonly style="
-                  background-color: #e2e8f0;
-                  font-weight: bold;
-                  pointer-events: none;
-                " title="Terisi otomatis dari selisih Total Ayam dan Total Telur" />
+          <div style="display: flex; gap: 10px; margin-bottom: 15px; background-color: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+            <div style="flex: 1;">
+              <label for="totalTelur" style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Total Telur</label>
+              <input type="number" id="totalTelur" readonly style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; background-color: #e2e8f0; font-weight: bold; pointer-events: none; font-family: inherit; font-size: 0.9rem;" value="0" />
+            </div>
+            <div style="flex: 1;">
+              <label for="ayamTidakBertelur" style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Tdk Bertelur</label>
+              <input type="number" id="ayamTidakBertelur" readonly style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; background-color: #e2e8f0; font-weight: bold; pointer-events: none; font-family: inherit; font-size: 0.9rem;" value="0" />
+            </div>
+            <div style="flex: 1;">
+              <label for="totalAyam" style="font-size: 0.8rem; color: #64748b; font-weight: 600;">Total Ayam</label>
+              <input type="number" id="totalAyamInput" readonly style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; margin-top: 5px; background-color: #e2e8f0; font-weight: bold; pointer-events: none; font-family: inherit; font-size: 0.9rem;" value="0" />
+            </div>
           </div>
-
-          <div class="form-group">
-            <label for="totalAyam">Total Ayam (Ekor)</label>
-            <input type="number" id="totalAyamInput" readonly style="
-                  background-color: #e2e8f0;
-                  font-weight: bold;
-                  pointer-events: none;
-                " title="Diambil otomatis dari database populasi ayam" />
-            <small class="hint-text">📊 Jumlah populasi ayam saat ini dalam batch ini</small>
-          </div>
-
-          <div class="form-group">
-            <label for="ayamMatiHariIni">Jumlah Ayam Mati Hari Ini (Ekor)</label>
-            <input type="number" id="ayamMatiHariIni" min="0" value="0" required oninput="calculateTotal()" />
-            <small class="hint-text" style="color: #ef4444; font-weight: 500;">*Ayam mati otomatis memotong populasi & dicatat ke Modul Kesehatan</small>
-          </div>
+          <small id="validasiHint" style="display: none; margin-top: -5px; margin-bottom: 15px; font-size: 0.78rem; font-weight: 500; padding: 6px 10px; border-radius: 6px; background: #fef9ec; border: 1px solid #fde68a; line-height: 1.4;"></small>
 
           <!-- Integrasi Pakan Harian (Opsional) -->
           <div class="form-group" id="pakanProduksiGroup" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; margin-top: 10px;">
-            <label style="font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
+            <label style="font-weight: 600; color: #4f46e5; display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 0.9rem;">
               🥬 Catat Pemakaian Pakan Harian <small style="font-weight: normal; color: #64748b;">(Opsional)</small>
             </label>
             <div style="display: flex; gap: 10px; margin-top: 8px;">
               <div style="flex: 1;">
                 <label for="pakanJenisProduksi" style="font-size: 0.8rem; color: #64748b; font-weight: 500; display: block; margin-bottom: 3px;">Jenis Pakan</label>
-                <select id="pakanJenisProduksi" style="font-family: inherit; font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%;">
-                  <option value="" selected>-- Pilih Pakan (Opsional) --</option>
+                <select id="pakanJenisProduksi" style="font-family: inherit; font-size: 0.85rem; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%;">
+                  <option value="" selected>-- Pilih Pakan --</option>
                 </select>
               </div>
               <div style="flex: 1;">
                 <label for="pakanJumlahProduksi" style="font-size: 0.8rem; color: #64748b; font-weight: 500; display: block; margin-bottom: 3px;">Jumlah (Kg)</label>
-                <input type="number" id="pakanJumlahProduksi" min="0.1" step="0.1" placeholder="cth: 15.5" style="font-family: inherit; font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%;" />
+                <input type="number" id="pakanJumlahProduksi" min="0.1" step="0.1" placeholder="cth: 15.5" style="font-family: inherit; font-size: 0.85rem; padding: 8px 10px; border-radius: 6px; border: 1px solid #cbd5e1; width: 100%;" />
               </div>
             </div>
-            <small class="hint-text" style="margin-top: 5px; display: block; color: #64748b;">*Jika diisi, otomatis memotong stok pakan & dicatat ke Modul Pakan</small>
-          </div>
-
-          <div class="form-group">
-            <label for="totalTelur">Total Telur (Butir)</label>
-            <input type="number" id="totalTelur" readonly style="
-                  background-color: #e2e8f0;
-                  font-weight: bold;
-                  pointer-events: none;
-                " />
-            <!-- Hint validasi real-time -->
-            <small id="validasiHint" style="
-                  display: none;
-                  margin-top: 6px;
-                  font-size: 0.78rem;
-                  font-weight: 500;
-                  padding: 6px 10px;
-                  border-radius: 6px;
-                  background: #fef9ec;
-                  border: 1px solid #fde68a;
-                  line-height: 1.4;
-                "></small>
+            <small class="hint-text" style="margin-top: 8px; display: block; color: #64748b;">*Memotong stok pakan & tercatat ke Modul Pakan</small>
           </div>
         </div>
 
