@@ -10,22 +10,25 @@
  * @param {Array<number>} dataHistoris - Array nilai historis aktual (contoh: berat telur dalam Kg)
  * @param {number} periodeMA - Jumlah hari window/periode pergerakan rata-rata
  * @param {number} hariKedepan - Target lamanya hari masa depan yang ingin diramal (default: 7)
+ * @param {number} penaltyFactor - Faktor penalti (0.0 s/d 1.0) untuk mengurangi prediksi (default: 0)
  * @returns {Object} Hasil prediksi H+1, prediksi array masa depan, dan history terbaru.
  */
-window.calculateMovingAverage = function(dataHistoris, periodeMA, hariKedepan = 7) {
+window.calculateMovingAverage = function(dataHistoris, periodeMA, hariKedepan = 7, penaltyFactor = 0) {
     let proyeksiMasaDepan = [];
     let tempHistory = [...dataHistoris];
     
     // 1. Prediksi Hari Esok (H+1)
     let windowH1 = tempHistory.slice(-periodeMA);
     let sumH1 = windowH1.reduce((a, b) => a + b, 0);
-    let prediksiBesok = sumH1 / periodeMA;
+    // Terapkan penalti ke tebakan esok hari (mengurangi produksi berdasarkan persen ayam sakit)
+    let prediksiBesok = (sumH1 / periodeMA) * (1 - penaltyFactor);
     
     // 2. Prediksi Rantai (Chaining) untuk N Hari Kedepan
     for (let i = 0; i < hariKedepan; i++) {
         let currentWindow = tempHistory.slice(-periodeMA);
         let currSum = currentWindow.reduce((a, b) => a + b, 0);
-        let nextPred = currSum / periodeMA;
+        // Terapkan penalti di setiap rantai agar proyeksi masa depan turun proporsional
+        let nextPred = (currSum / periodeMA) * (1 - penaltyFactor);
         
         proyeksiMasaDepan.push(nextPred);
         tempHistory.push(nextPred); // Masukkan hasil prediksi menjadi sejarah baru untuk hitungan selanjutnya

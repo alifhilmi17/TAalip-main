@@ -76,6 +76,7 @@ let predictionChart = null;
 let totalHistoryDays = 7; // Default jumlah hari riwayat
 let batchDataAyam = []; // Data batch ayam dari Firestore
 let dataProduksi = []; // Data produksi harian dari Firestore
+let dataKesehatan = []; // Data kesehatan harian dari Firestore
 let dataKeuangan = []; // Data transaksi keuangan dari Firestore
 let lastPredictionData = null; // Menyimpan data prediksi terakhir untuk keperluan download CSV
 let konversiButirPerKg = 16; // Konfigurasi default (bisa diubah via Firebase settings)
@@ -83,6 +84,7 @@ let konversiButirPerKg = 16; // Konfigurasi default (bisa diubah via Firebase se
 // Referensi koleksi Firestore
 const ayamCollection = collection(db, "populasi_ayam");
 const produksiCollection = collection(db, "produksi_harian");
+const kesehatanCollection = collection(db, "kesehatan_ayam");
 const historyCollection = collection(db, "prediksi_history");
 const keuanganCollection = collection(db, "keuangan");
 
@@ -93,6 +95,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Aktifkan listener real-time untuk data Firestore
     loadBatchAyam();
     loadProduksiData();
+    loadKesehatanData();
     loadKeuanganData();
     
     await Promise.all([
@@ -432,6 +435,17 @@ function loadProduksiData() {
         updateMingguBasisDropdown();
     }, (error) => {
         console.error("Error loading produksi data:", error);
+    });
+}
+
+/**
+ * Memuat data kesehatan secara real-time dari Firestore
+ */
+function loadKesehatanData() {
+    onSnapshot(kesehatanCollection, (snapshot) => {
+        dataKesehatan = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    }, (error) => {
+        console.error("Error loading kesehatan data:", error);
     });
 }
 
@@ -842,9 +856,32 @@ window.calculatePrediction = function(event) {
     }
     let avgProfitOffset = validOffsetDays > 0 ? (totalOffset / validOffsetDays) : 0;
 
+    // --- STEP 4.5: MENGHITUNG PENALTI KESEHATAN AYAM ---
+    // Cek apakah ada ayam sakit di batch yang dipilih pada hari ini
+    let penaltyFactor = 0;
+    const selectBatchId = document.getElementById('populasiBatch').value;
+    const hariIniStr = new Date().toISOString().split('T')[0];
+    
+    let totalSakitHariIni = 0;
+    // Cari laporan sakit untuk batch ini pada hari ini
+    dataKesehatan.forEach(kes => {
+        if (kes.tanggal === hariIniStr && (selectBatchId === 'ALL' || kes.batchId === selectBatchId)) {
+            // Jika statusnya belum sembuh/mati semua, berarti masih berpotensi mengurangi produksi telur (stres)
+            if (kes.status !== "Sembuh" && kes.status !== "Mati Semua") {
+                totalSakitHariIni += (parseInt(kes.jmlSakit) || 0);
+            }
+        }
+    });
+
+    if (totalSakitHariIni > 0 && populasi > 0) {
+        penaltyFactor = totalSakitHariIni / populasi; // Persentase ayam sakit
+        if (penaltyFactor > 1) penaltyFactor = 1;
+    }
+
     // --- STEP 5: MELAKUKAN KALKULASI PINTAR PREDIKSI "HARI ESOK" (H+1) ---
     // MENGGUNAKAN PURE FUNCTION DARI ma-core.js (Clean Code & DRY)
-    let maResult = window.calculateMovingAverage(fullHistoryKg, periodeMA, 7);
+    // penaltyFactor dikirim untuk memotong tren MA sesuai jumlah ayam sakit
+    let maResult = window.calculateMovingAverage(fullHistoryKg, periodeMA, 7, penaltyFactor);
     let prediksiBesokKg = maResult.prediksiBesok;
 
     // --- STEP 5.5: KALKULASI MAE & AKURASI MODEL (BACKTESTING) ---

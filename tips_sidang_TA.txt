@@ -1,0 +1,33 @@
+====================================================================
+TIPS & TRIK DEMONSTRASI SIDANG TUGAS AKHIR (TA)
+Sistem Administrasi Peternakan (LIBAS)
+====================================================================
+
+Saat melakukan presentasi dan demonstrasi aplikasi di hadapan Dosen Penguji, sangat disarankan untuk menonjolkan fitur-fitur "Pakar/Cerdas" yang ada di aplikasi Anda. Berikut panduannya:
+
+1. PAHAMI LUAR DALAM FILE `ma-core.js` (ALGORITMA PREDIKSI)
+Dosen penguji (terutama penguji bidang algoritma/sistem pakar) biasanya suka mencecar di bagian kata "Prediktif" pada judul Anda.
+- Pastikan Anda bisa menjelaskan secara lisan rumus dasarnya: Prediksi besok = (Total Produksi 7 Hari Terakhir) dibagi 7.
+- Jelaskan teknik "Chaining" (Rantai): Bagaimana cara menebak H+2? Yaitu dengan memasukkan hasil tebakan H+1 ke dalam histori, lalu dihitung ulang rata-ratanya. Teknik ini berulang sampai H+7.
+
+2. TONJOLKAN LOGIKA "OFFSET" KEUANGAN YANG REALISTIS
+Aplikasi Anda tidak hanya menghitung Laba Teoretis (Pendapatan - Biaya Pakan), tapi juga memperhitungkan biaya tak terduga dunia nyata (listrik, air, vitamin).
+- Saat demo: Tunjukkan bahwa ketika Anda menginput data 'Keuntungan (Rp)' yang berbeda dari laba teoretis, sistem akan secara cerdas menghitung "Rata-rata Selisih/Offset".
+- Rata-rata selisih ini kemudian ditambahkan secara otomatis ke prediksi proyeksi 7 hari ke depan. Hal ini membuat aplikasi Anda diklaim "Adaptif terhadap dinamika pengeluaran petani sesungguhnya".
+
+3. DEMONSTRASIKAN PENALTI "AYAM SAKIT" PADA PREDIKSI (FITUR BARU)
+Ini adalah bukti kuat bahwa sistem Anda terintegrasi dan cerdas.
+- Langkah Demo: 
+  a. Buka halaman Prediksi Hasil, biarkan ayam sehat, dan lakukan prediksi (misal hasilnya 1000 Butir). Catat/ingat angka ini.
+  b. Pindah ke halaman Kesehatan Ayam.
+  c. Laporkan "Catat Kesehatan", masukkan misal 200 ekor ayam sedang Sakit (artinya 20% sakit dari total 1000 populasi).
+  d. Kembali ke halaman Prediksi Hasil, tekan tombol "Analisis dengan MA" lagi.
+  e. Tunjukkan ke penguji: "Bapak/Ibu, karena hari ini ada 20% populasi yang dilaporkan sakit, sistem memprediksi bahwa produksi besok akan langsung terpotong/turun 20% (menjadi sekitar 800 Butir) tanpa harus menunggu data historis panen turun."
+
+4. PERHATIKAN WARNA KOTAK REKOMENDASI (SISTEM PAKAR MINI)
+Sistem Anda memiliki indikator peringatan otomatis.
+- Tunjukkan bahwa jika Proyeksi Keuntungan bernilai Minus (Rugi), maka kotak margin yang awalnya hijau/biru akan otomatis berubah menjadi warna MERAH (Peringatan Bahaya/Siaga).
+- Hal ini membuktikan kata "Bantuan Rekomendasi" di judul TA Anda benar-benar berfungsi secara visual.
+
+Semoga sukses untuk Sidang TA di tanggal 4!
+====================================================================
