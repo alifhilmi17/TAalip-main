@@ -118,6 +118,9 @@ async function loadProductionRelatedData() {
         
         // Isi pilihan dropdown batch (form + filter)
         populateBatchDropdowns();
+        
+        // Render ulang tabel agar sub-badge mendapatkan nama ayam setelah data ayam berhasil dimuat
+        renderTable();
     } catch (err) {
         console.error("Gagal memuat data pendukung produksi: ", err);
     }
@@ -264,10 +267,20 @@ window.showWeekProductionSummary = function() {
     
     summaryCard.style.display = 'block';
 
-    const batchLabel = batchSelect.options[batchSelect.selectedIndex].text.split(' - ')[0];
+    const batchOptionText = batchSelect.options[batchSelect.selectedIndex].text;
+    const batchLabel = batchOptionText.split(' - ')[0];
+    
+    let jenisTelurDesc = '';
+    if (batchId && dataAyam) {
+        const ayam = dataAyam.find(a => a.id === batchId);
+        if (ayam && ayam.jenis) {
+            jenisTelurDesc = ` Jenis ${ayam.jenis.charAt(0).toUpperCase() + ayam.jenis.slice(1)}`;
+        }
+    }
+
     const descInput = document.getElementById('trxDesc');
     if (descInput) {
-        descInput.value = `Hasil Jual Telur ${batchLabel} - Minggu ke-${minggu}`;
+        descInput.value = `Hasil Jual Telur ${batchLabel}${jenisTelurDesc} - Minggu ke-${minggu}`;
     }
 
     window.calculateEggSalesAmount();
@@ -592,16 +605,36 @@ function renderRow(t, tbody) {
     let subBadgeHtml = '';
     if (t.batchLabel) {
         const batchName = t.batchLabel.split(' - ')[0];
+        
+        let jenisTelur = '';
+        let targetAyam = null;
+
+        if (t.batchId) {
+            targetAyam = dataAyam.find(a => a.id === t.batchId);
+        }
+        
+        // Fallback cerdas untuk data lama tanpa batchId
+        if (!targetAyam && dataAyam.length > 0) {
+            targetAyam = dataAyam.find(a => {
+                const cId = a.customId || a.id.substring(0, 5);
+                return cId === batchName || batchName.includes(cId);
+            });
+        }
+
+        if (targetAyam && targetAyam.jenis) {
+            jenisTelur = ` — Telur Jenis ${targetAyam.jenis.charAt(0).toUpperCase() + targetAyam.jenis.slice(1)}`;
+        }
+
         if (t.source === 'produksi') {
             subBadgeHtml = `
                 <div class="sub-badge-produksi" title="Produksi: ${t.telurBaik.toLocaleString('id-ID')} butir baik, ${t.telurCacat.toLocaleString('id-ID')} butir cacat">
-                    🐔 ${batchName} — Minggu ke-${t.minggu}
+                    🐔 ${batchName} — Minggu ke-${t.minggu}${jenisTelur}
                 </div>
             `;
         } else {
             subBadgeHtml = `
                 <div class="sub-badge-manual" title="Dihubungkan ke: ${t.batchLabel}">
-                    📦 ${batchName} (Umum)
+                    📦 ${batchName} (Umum)${jenisTelur}
                 </div>
             `;
         }

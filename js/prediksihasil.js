@@ -201,8 +201,9 @@ function loadBatchAyam() {
             opt.value = b.id;
             opt.dataset.populasi = b.sisaAyam;
             const customId = b.customId || b.id.substring(0, 5);
-            opt.textContent = `🐓 Batch ${customId} (${parseInt(b.sisaAyam).toLocaleString('id-ID')} Ekor)`;
-            opt.dataset.info = `Batch ${customId} masuk pada ${b.tglMasuk}. Kandang: ${b.kandang || '-'}`;
+            const jenisAyam = b.jenis ? ` - ${b.jenis.charAt(0).toUpperCase() + b.jenis.slice(1)}` : '';
+            opt.textContent = `🐓 Batch ${customId}${jenisAyam} (${parseInt(b.sisaAyam).toLocaleString('id-ID')} Ekor)`;
+            opt.dataset.info = `Batch ${customId}${jenisAyam} masuk pada ${b.tglMasuk}. Kandang: ${b.kandang || '-'}`;
             selectEl.appendChild(opt);
         });
 
