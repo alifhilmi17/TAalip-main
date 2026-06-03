@@ -145,7 +145,7 @@ function precomputeProductionWeeks() {
         weeklyGroupedProduction[batchId] = {};
         
         batchGroups[batchId].forEach((prod, index) => {
-            const minggu = Math.floor(index / 7) + 1;
+            const minggu = prod.mingguKe ? parseInt(prod.mingguKe) : Math.floor(index / 7) + 1;
             prod.minggu = minggu;
 
             if (!weeklyGroupedProduction[batchId][minggu]) {

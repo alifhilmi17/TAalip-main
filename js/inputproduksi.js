@@ -492,11 +492,16 @@ window.calculateWeeklyRow = function(dayNum) {
 // =========================================
 // 4. CRUD FIRESTORE
 // =========================================
-window.openProduksiModal = function() {
+window.openProduksiModal = function(batchId = '', minggu = null) {
     const form = document.getElementById('produksiForm');
     const modal = document.getElementById('produksiModal');
     if (form) form.reset();
     document.getElementById('produksiId').value = "";
+    
+    const targetMingguEl = document.getElementById('targetMinggu');
+    if (targetMingguEl) {
+        targetMingguEl.value = minggu ? minggu : "";
+    }
     
     // Reset ayamMatiHariIni value to 0
     const matiEl = document.getElementById('ayamMatiHariIni');
@@ -516,8 +521,18 @@ window.openProduksiModal = function() {
         tglEl.value = new Date().toISOString().split('T')[0];
     }
 
-    loadBatchOptions();
+    loadBatchOptions(typeof batchId === 'string' ? batchId : '');
     resetBatchFieldsForNewEntry();
+
+    if (typeof batchId === 'string' && batchId !== '') {
+        setTimeout(() => {
+            const batchEl = document.getElementById('batchProduksi');
+            if (batchEl) {
+                batchEl.value = batchId;
+                autoFillFromBatch();
+            }
+        }, 100);
+    }
 
     // Show Mode Input group in add mode
     const modeGroup = document.getElementById('inputModeGroup');
@@ -651,6 +666,7 @@ window.saveProduksiData = async function(event) {
 
         // ── Bentuk payload ────────────────────────────────────────────
         const tanggalValue = document.getElementById('tglProduksi').value;
+        const targetMinggu = document.getElementById('targetMinggu') ? document.getElementById('targetMinggu').value : "";
 
         const payload = {
             tanggal: tanggalValue,
@@ -666,6 +682,10 @@ window.saveProduksiData = async function(event) {
             totalAyam,
             updatedAt: new Date().toISOString()
         };
+        
+        if (targetMinggu) {
+            payload.mingguKe = parseInt(targetMinggu);
+        }
 
         try {
             if (idInput === "") {
@@ -780,7 +800,7 @@ window.saveProduksiData = async function(event) {
                 return;
             }
 
-            payloads.push({
+            const pData = {
                 tanggal: dateVal,
                 batchId: batchEl.value,
                 batchLabel: batchEl.options[batchEl.selectedIndex].text,
@@ -794,7 +814,12 @@ window.saveProduksiData = async function(event) {
                 totalAyam: populasiHariIni,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
-            });
+            };
+            const targetMingguBulk = document.getElementById('targetMinggu') ? document.getElementById('targetMinggu').value : "";
+            if (targetMingguBulk) {
+                pData.mingguKe = parseInt(targetMingguBulk);
+            }
+            payloads.push(pData);
         }
 
         if (payloads.length === 0) {
@@ -1024,7 +1049,7 @@ function renderTable() {
     Object.keys(batchGroups).forEach(batchId => {
         batchGroups[batchId].sort((a, b) => a.tanggal.localeCompare(b.tanggal));
         batchGroups[batchId].forEach((prod, index) => {
-            prod.minggu = Math.floor(index / 7) + 1;
+            prod.minggu = prod.mingguKe ? parseInt(prod.mingguKe) : Math.floor(index / 7) + 1;
         });
     });
 
@@ -1094,9 +1119,14 @@ function renderTable() {
                                 <span style="font-weight: 600; color: #475569; font-size: 0.95em;">Minggu ke-${prod.minggu}</span>
                                 <span class="header-hint" style="color: #94a3b8; font-size: 0.85em;">${isWeekCollapsed ? 'Buka Detail' : 'Tutup Detail'}</span>
                             </div>
-                            <button class="btn-delete-week" onclick="event.stopPropagation(); deleteMinggu('${prod.batchId}', ${prod.minggu})" title="Hapus semua data minggu ini">
-                                🗑️ Hapus Minggu Ini
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-add-week" onclick="event.stopPropagation(); openProduksiModal('${prod.batchId}', ${prod.minggu})" title="Tambah data untuk minggu ini" style="background-color: #10b981; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: background-color 0.2s;">
+                                    ➕ Tambah Data
+                                </button>
+                                <button class="btn-delete-week" onclick="event.stopPropagation(); deleteMinggu('${prod.batchId}', ${prod.minggu})" title="Hapus semua data minggu ini">
+                                    🗑️ Hapus Minggu Ini
+                                </button>
+                            </div>
                         </div>
                     </td>
                 `;
