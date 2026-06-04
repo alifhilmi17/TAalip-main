@@ -146,7 +146,7 @@ window.autoFillFromBatch = function() {
         // Jangan timpa tanggal jika sudah diisi, atau set ke hari ini jika kosong
         const tglEl = document.getElementById('tglProduksi');
         if (tglEl && !tglEl.value) {
-            tglEl.value = new Date().toISOString().split('T')[0];
+            tglEl.value = window.getLocalDateString();
         }
 
         if (kandangEl) kandangEl.value = batchData.kandang || '';
@@ -503,9 +503,12 @@ window.openProduksiModal = function(batchId = '', minggu = null) {
         targetMingguEl.value = minggu ? minggu : "";
     }
     
-    // Reset ayamMatiHariIni value to 0
+    // Reset ayamMatiHariIni value to 0 dan buka kuncinya
     const matiEl = document.getElementById('ayamMatiHariIni');
-    if (matiEl) matiEl.value = 0;
+    if (matiEl) {
+        matiEl.value = 0;
+        matiEl.readOnly = false;
+    }
 
     // Reset optional pakan inputs & show group
     const pakanGroup = document.getElementById('pakanProduksiGroup');
@@ -518,7 +521,7 @@ window.openProduksiModal = function(batchId = '', minggu = null) {
     // Set tanggal default ke hari ini
     const tglEl = document.getElementById('tglProduksi');
     if (tglEl) {
-        tglEl.value = new Date().toISOString().split('T')[0];
+        tglEl.value = window.getLocalDateString();
     }
 
     loadBatchOptions(typeof batchId === 'string' ? batchId : '');
@@ -902,6 +905,7 @@ window.editProduksi = function(id) {
         document.getElementById('totalTelur').value = prod.totalTelur;
         document.getElementById('ayamTidakBertelur').value = prod.ayamTidakBertelur || 0;
         document.getElementById('ayamMatiHariIni').value = prod.ayamMati || 0;
+        document.getElementById('ayamMatiHariIni').readOnly = true; // Kunci edit ayam mati agar sinkronisasi populasi tidak rusak
         document.getElementById('jenisTelurProduksi').value = prod.jenisTelur;
         document.getElementById('kandangProduksi').value = prod.kandang;
         document.getElementById('kandangProduksiHidden').value = prod.kandang;
@@ -1219,7 +1223,7 @@ window.downloadLaporanCSV = function() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Laporan_Produksi_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `Laporan_Produksi_${window.getLocalDateString()}.csv`;
     a.click();
 };
 

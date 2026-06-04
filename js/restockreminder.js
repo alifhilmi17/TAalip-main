@@ -341,7 +341,7 @@ window.openReminderModal = function() {
     // Default tomorrow
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('tglReminder').value = tomorrow.toISOString().split('T')[0];
+    document.getElementById('tglReminder').value = window.getLocalDateString(tomorrow);
 
     document.getElementById('modalTitle').innerText = currentUserRole === 'admin' ? "Buat Reminder Baru" : "Ajukan Usulan Kebutuhan Pakan";
     document.getElementById('reminderModal').classList.add('show');

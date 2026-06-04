@@ -179,7 +179,7 @@ window.openKesehatanModal = function(id = null) {
     } else {
         // MODE TAMBAH BARU
         title.innerText = "Catat Kesehatan Ayam";
-        document.getElementById('kesTanggal').value = new Date().toISOString().split('T')[0]; // Default hari ini
+        document.getElementById('kesTanggal').value = window.getLocalDateString(); // Default hari ini
     }
     modal.classList.add('show');
 };
@@ -373,7 +373,7 @@ window.openVaksinModal = function(id = null) {
         }
     } else {
         title.innerText = "Buat Jadwal Vaksin";
-        document.getElementById('vakTanggal').value = new Date().toISOString().split('T')[0];
+        document.getElementById('vakTanggal').value = window.getLocalDateString();
     }
     modal.classList.add('show');
 };

@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupEventListeners();
 
     // 3. Set Default Date (Hari Ini)
-    const today = new Date().toISOString().split('T')[0];
+    const today = window.getLocalDateString();
     const dateInput = document.getElementById('trxDate');
     if (dateInput) dateInput.value = today;
 });
@@ -544,7 +544,7 @@ async function handleFormSubmit(event) {
         });
         
         document.getElementById('financeForm').reset();
-        document.getElementById('trxDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('trxDate').value = window.getLocalDateString();
         
         // Reset toggle ke manual
         switchTrxSource('manual');
@@ -803,6 +803,6 @@ function downloadLaporanCSV() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Laporan_Keuangan_LIBAS_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `Laporan_Keuangan_LIBAS_${window.getLocalDateString()}.csv`;
     a.click();
 }

@@ -242,3 +242,14 @@ window.showToast = function(title, text, icon = 'success') {
         alert(`${title}: ${text}`);
     }
 };
+
+/**
+ * 11. LOCAL DATE STRINGER (Timezone Aware YYYY-MM-DD)
+ * Fungsi: Mengembalikan string tanggal format YYYY-MM-DD berdasarkan zona waktu lokal (misal: WIB).
+ * Mencegah bug perubahan tanggal menjadi kemarin akibat konversi ke UTC.
+ */
+window.getLocalDateString = function(dateObj) {
+    const d = dateObj || new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};

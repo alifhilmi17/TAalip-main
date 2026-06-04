@@ -380,7 +380,7 @@ window.eksporCSV = async function(modul) {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `laporan_${modul}_${new Date().toISOString().split('T')[0]}.xlsx`;
+    anchor.download = `laporan_${modul}_${window.getLocalDateString()}.xlsx`;
     anchor.click();
     window.URL.revokeObjectURL(url);
     
@@ -703,7 +703,7 @@ window.eksporGabunganCSV = async function() {
     const url = window.URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `Laporan_Gabungan_LIBAS_${new Date().toISOString().split('T')[0]}.xlsx`;
+    anchor.download = `Laporan_Gabungan_LIBAS_${window.getLocalDateString()}.xlsx`;
     anchor.click();
     window.URL.revokeObjectURL(url);
     

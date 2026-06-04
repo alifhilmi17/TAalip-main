@@ -264,7 +264,7 @@ window.openPakanModal = function(type = '') {
     if (batchPakanEl) batchPakanEl.value = "";
     
     // Set tanggal default ke hari ini
-    const today = new Date().toISOString().split('T')[0];
+    const today = window.getLocalDateString();
     document.getElementById('tglPakan').value = today;
 
     const tipeEl = document.getElementById('tipePakan');
@@ -652,7 +652,7 @@ window.downloadLaporanCSV = function(mode = 'masuk') {
     const a = document.createElement('a');
     a.href = url;
     const suffix = mode === 'keluar' ? 'Pemakaian' : 'Masuk';
-    a.download = `Laporan_${suffix}_Pakan_${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `Laporan_${suffix}_Pakan_${window.getLocalDateString()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 };

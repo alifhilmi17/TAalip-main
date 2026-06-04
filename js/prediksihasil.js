@@ -2001,7 +2001,7 @@ window.downloadPrediksiCSV = function() {
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    const tglFile = new Date(d.tanggal).toISOString().split('T')[0];
+    const tglFile = window.getLocalDateString(new Date(d.tanggal));
     link.href = url;
     link.download = `laporan_prediksi_MA${d.periodeMA}_${tglFile}.csv`;
     link.click();
