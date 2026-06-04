@@ -308,19 +308,45 @@ window.editAyam = function(id) {
  */
 window.deleteAyam = function(id) {
     Swal.fire({
-        title: 'Hapus Data?',
-        text: "Data batch ini akan dihapus secara permanen dari database cloud.",
+        title: 'Hapus Data Batch?',
+        text: "Peringatan: Seluruh data Produksi Harian dan Rekam Medis (Kesehatan) milik batch ini juga akan ikut terhapus secara permanen!",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ff6b6b',
         cancelButtonColor: '#999',
-        confirmButtonText: 'Ya, Hapus!',
+        confirmButtonText: 'Ya, Hapus Semua!',
         cancelButtonText: 'Batal'
     }).then(async (result) => {
         if (result.isConfirmed) {
             try {
+                // Tampilkan loading karena proses bisa memakan waktu
+                Swal.fire({
+                    title: 'Menghapus data...',
+                    html: 'Mohon tunggu sejenak.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                // 1. Hapus semua data kesehatan terkait
+                const kesSnapshot = await getDocs(collection(db, "kesehatan_ayam"));
+                const kesPromises = [];
+                kesSnapshot.forEach(docSnap => {
+                    if (docSnap.data().batchId === id) kesPromises.push(deleteDoc(docSnap.ref));
+                });
+                
+                // 2. Hapus semua data produksi terkait
+                const prodSnapshot = await getDocs(collection(db, "produksi_harian"));
+                const prodPromises = [];
+                prodSnapshot.forEach(docSnap => {
+                    if (docSnap.data().batchId === id) prodPromises.push(deleteDoc(docSnap.ref));
+                });
+                
+                // Eksekusi cascade delete paralel
+                await Promise.all([...kesPromises, ...prodPromises]);
+
+                // 3. Hapus data batch utama
                 await deleteDoc(doc(db, "populasi_ayam", id)); // Hapus dari Firestore
-                Swal.fire('Terhapus!', 'Data batch telah dihapus.', 'success');
+                Swal.fire('Terhapus!', 'Data batch beserta riwayatnya telah dihapus.', 'success');
                 
                 // Refresh data tidak perlu dipanggil manual karena sudah pakai onSnapshot
             } catch (error) {

@@ -112,13 +112,19 @@ function startFirestoreListener() {
     });
 }
 
-function loadBatchOptionsPakan() {
+function loadBatchOptionsPakan(selectedId = '') {
     const selectEl = document.getElementById('batchPakan');
     if (!selectEl) return;
     
-    const currentVal = selectEl.value;
+    const currentVal = selectedId || selectEl.value;
     selectEl.innerHTML = '<option value="" selected>-- Pilih Batch Target (Opsional) --</option>';
-    const activeBatches = dataAyam.filter(a => a.status === 'Aktif');
+    let activeBatches = dataAyam.filter(a => a.status === 'Aktif');
+    
+    if (currentVal && !activeBatches.some(a => a.id === currentVal)) {
+        const missing = dataAyam.find(a => a.id === currentVal);
+        if (missing) activeBatches.push(missing);
+    }
+    
     activeBatches.forEach(ayam => {
         const opt = document.createElement('option');
         opt.value = ayam.id;
@@ -396,7 +402,10 @@ window.editPakan = function(id) {
     if (item.tipe === "Keluar") {
         document.getElementById('jenisPakanSelect').value = item.jenis;
         const batchPakanEl = document.getElementById('batchPakan');
-        if (batchPakanEl) batchPakanEl.value = item.batchId || "";
+        if (batchPakanEl) {
+            loadBatchOptionsPakan(item.batchId);
+            batchPakanEl.value = item.batchId || "";
+        }
     } else {
         document.getElementById('jenisPakan').value = item.jenis;
     }

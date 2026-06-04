@@ -99,19 +99,29 @@ window.switchTab = function(tabId) {
 // ==========================================
 // 4. LOAD DATA BATCH
 // ==========================================
-function loadBatchOptions() {
+function loadBatchOptions(selectedIdKes = null, selectedIdVak = null) {
     const kesBatch = document.getElementById('kesBatch');
     const vakBatch = document.getElementById('vakBatch');
     if (!kesBatch || !vakBatch) return;
 
-    const currentKesVal = kesBatch.value;
-    const currentVakVal = vakBatch.value;
+    const currentKesVal = selectedIdKes || kesBatch.value;
+    const currentVakVal = selectedIdVak || vakBatch.value;
 
     kesBatch.innerHTML = '<option value="" disabled selected>Pilih Batch...</option>';
     vakBatch.innerHTML = '<option value="" disabled selected>Pilih Batch Target...</option>';
 
-    // Hanya tampilkan batch yang statusnya "Aktif"
-    dataAyam.filter(a => (a.status || "").toLowerCase() === "aktif").forEach(ayam => {
+    let dataAktif = dataAyam.filter(a => (a.status || "").toLowerCase() === "aktif");
+
+    const checkAndPush = (val) => {
+        if (val && !dataAktif.some(a => a.id === val)) {
+            const missing = dataAyam.find(a => a.id === val);
+            if (missing) dataAktif.push(missing);
+        }
+    };
+    checkAndPush(currentKesVal);
+    checkAndPush(currentVakVal);
+
+    dataAktif.forEach(ayam => {
         const customId = ayam.customId || ayam.id.substring(0, 5);
         const optText = `${customId} (${ayam.kandang}) - Sisa: ${ayam.sisaAyam}`;
 
@@ -168,6 +178,7 @@ window.openKesehatanModal = function(id = null) {
         if (item) {
             document.getElementById('kesehatanId').value = item.id;
             document.getElementById('kesTanggal').value = item.tanggal;
+            loadBatchOptions(item.batchId, null);
             document.getElementById('kesBatch').value = item.batchId;
             document.getElementById('kesKandang').value = item.kandang;
             document.getElementById('kesJmlSakit').value = item.jmlSakit;
@@ -364,6 +375,7 @@ window.openVaksinModal = function(id = null) {
         if (item) {
             document.getElementById('vaksinId').value = item.id;
             document.getElementById('vakTanggal').value = item.tanggal;
+            loadBatchOptions(null, item.batchId);
             document.getElementById('vakBatch').value = item.batchId;
             document.getElementById('vakKandang').value = item.kandang;
             document.getElementById('vakJenis').value = item.jenis;

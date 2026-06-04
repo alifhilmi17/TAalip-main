@@ -839,22 +839,28 @@ window.calculatePrediction = function(event) {
 
     // --- KALKULASI SELISIH OPERASIONAL (OFFSET KEUANGAN) ---
     // Menghitung selisih rata-rata antara keuntungan aktual (input pengguna) dengan perhitungan teoritis.
-    // Hal ini agar proyeksi laba masa depan mengikuti tren "jumlah pendapatan" historis yang diubah pengguna.
     let totalOffset = 0;
     let validOffsetDays = 0;
-    for (let i = 0; i < fullHistoryProfit.length; i++) {
-        if (!isNaN(fullHistoryProfit[i])) {
-            let butirHist = fullHistoryButir[i];
-            let teoritisPendapatan = (butirHist / 30) * hargaTelur; // Harga per papan (30 butir)
-            let teoritisTotalPakanKg = (populasi * pakanPerEkor) / 1000;
-            let teoritisBiayaPakan = teoritisTotalPakanKg * hargaPakan;
-            let teoritisLaba = teoritisPendapatan - teoritisBiayaPakan;
-            
-            let selisih = fullHistoryProfit[i] - teoritisLaba;
-            totalOffset += selisih;
-            validOffsetDays++;
+    
+    // Mencegah Kontaminasi Laba Lintas Kandang (Farm-Level vs Batch-Level)
+    // Data Keuangan bersifat global, tidak bisa dipakai untuk menghitung selisih batch tunggal.
+    const currentSelectedBatch = document.getElementById('populasiBatch').value;
+    if (currentSelectedBatch === 'ALL') {
+        for (let i = 0; i < fullHistoryProfit.length; i++) {
+            if (!isNaN(fullHistoryProfit[i])) {
+                let butirHist = fullHistoryButir[i];
+                let teoritisPendapatan = (butirHist / 30) * hargaTelur; // Harga per papan (30 butir)
+                let teoritisTotalPakanKg = (populasi * pakanPerEkor) / 1000;
+                let teoritisBiayaPakan = teoritisTotalPakanKg * hargaPakan;
+                let teoritisLaba = teoritisPendapatan - teoritisBiayaPakan;
+                
+                let selisih = fullHistoryProfit[i] - teoritisLaba;
+                totalOffset += selisih;
+                validOffsetDays++;
+            }
         }
     }
+    
     let avgProfitOffset = validOffsetDays > 0 ? (totalOffset / validOffsetDays) : 0;
 
     // --- STEP 4.5: MENGHITUNG PENALTI KESEHATAN AYAM ---

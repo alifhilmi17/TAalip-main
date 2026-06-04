@@ -112,7 +112,12 @@ function loadBatchOptions(selectedId = '') {
     if (!selectEl) return;
 
     selectEl.innerHTML = '<option value="" disabled selected>Pilih Batch Ayam...</option>';
-    const dataAktif = dataAyam.filter(a => a.status === 'Aktif');
+    let dataAktif = dataAyam.filter(a => a.status === 'Aktif');
+
+    if (selectedId && !dataAktif.some(a => a.id === selectedId)) {
+        const missing = dataAyam.find(a => a.id === selectedId);
+        if (missing) dataAktif.push(missing);
+    }
 
     if (dataAktif.length === 0) {
         const opt = document.createElement('option');
@@ -692,6 +697,18 @@ window.saveProduksiData = async function(event) {
 
         try {
             if (idInput === "") {
+                // Mencegah duplicate entry pada hari yang sama untuk batch yang sama
+                const isDuplicate = dataProduksi.find(p => p.tanggal === tanggalValue && p.batchId === batchEl.value);
+                if (isDuplicate) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Data Ganda!',
+                        text: `Data produksi untuk tanggal ${window.formatTanggal ? window.formatTanggal(tanggalValue) : tanggalValue} sudah ada. Gunakan fitur Edit pada riwayat yang sudah ada.`,
+                        confirmButtonColor: '#ef4444'
+                    });
+                    return;
+                }
+                
                 payload.createdAt = new Date().toISOString();
                 await addDoc(produksiCollection, payload);
 
@@ -798,6 +815,18 @@ window.saveProduksiData = async function(event) {
                             <p><small><i>Harap periksa kembali input Anda.</i></small></p>
                         </div>
                     `,
+                    confirmButtonColor: '#ef4444'
+                });
+                return;
+            }
+
+            // Mencegah duplicate entry pada mode mingguan
+            const isDuplicate = dataProduksi.find(p => p.tanggal === dateVal && p.batchId === batchEl.value);
+            if (isDuplicate) {
+                Swal.fire({
+                    icon: 'error',
+                    title: `Data Ganda pada Hari Ke-${dayNum}!`,
+                    html: `Data produksi pada tanggal <b>${window.formatTanggal ? window.formatTanggal(dateVal) : dateVal}</b> sudah ada di database.<br>Harap edit data yang ada, atau kosongkan baris ini agar dilewati.`,
                     confirmButtonColor: '#ef4444'
                 });
                 return;
