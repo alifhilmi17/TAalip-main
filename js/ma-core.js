@@ -27,11 +27,17 @@ window.calculateMovingAverage = function(dataHistoris, periodeMA, hariKedepan = 
     for (let i = 0; i < hariKedepan; i++) {
         let currentWindow = tempHistory.slice(-periodeMA);
         let currSum = currentWindow.reduce((a, b) => a + b, 0);
-        // Terapkan penalti di setiap rantai agar proyeksi masa depan turun proporsional
-        let nextPred = (currSum / periodeMA) * (1 - penaltyFactor);
+        
+        // 1. Hitung prediksi murni (tanpa penalti)
+        let pureNextPred = currSum / periodeMA;
+        
+        // 2. Terapkan penalti HANYA pada hasil akhirnya
+        let nextPred = pureNextPred * (1 - penaltyFactor);
         
         proyeksiMasaDepan.push(nextPred);
-        tempHistory.push(nextPred); // Masukkan hasil prediksi menjadi sejarah baru untuk hitungan selanjutnya
+        
+        // 3. Masukkan hasil murni ke riwayat perhitungan selanjutnya agar grafik tidak anjlok eksponensial
+        tempHistory.push(pureNextPred);
     }
     
     return {

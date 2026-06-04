@@ -861,14 +861,13 @@ window.calculatePrediction = function(event) {
     // Cek apakah ada ayam sakit di batch yang dipilih pada hari ini
     let penaltyFactor = 0;
     const selectBatchId = document.getElementById('populasiBatch').value;
-    const hariIniStr = new Date().toISOString().split('T')[0];
     
     let totalSakitHariIni = 0;
-    // Cari laporan sakit untuk batch ini pada hari ini
+    // Cari laporan sakit untuk batch ini (yang masih dalam status "Dalam Perawatan")
     dataKesehatan.forEach(kes => {
-        if (kes.tanggal === hariIniStr && (selectBatchId === 'ALL' || kes.batchId === selectBatchId)) {
-            // Jika statusnya belum sembuh/mati semua, berarti masih berpotensi mengurangi produksi telur (stres)
-            if (kes.status !== "Sembuh" && kes.status !== "Mati Semua") {
+        if (selectBatchId === 'ALL' || kes.batchId === selectBatchId) {
+            // Abaikan filter kes.tanggal, cukup fokus pada status aktif perawatannya saja
+            if (kes.status === "Dalam Perawatan") {
                 totalSakitHariIni += (parseInt(kes.jmlSakit) || 0);
             }
         }
