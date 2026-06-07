@@ -1824,6 +1824,16 @@ window.viewHistoryDetail = async function(historyId) {
                             <div style="font-size: 0.75rem; color: #0369a1; font-weight: 700; text-transform: uppercase; margin-bottom: 5px;">Produksi</div>
                             <div style="font-size: 1.1rem; font-weight: 800; color: #0284c7;">${h.prediksiBesokKg ? h.prediksiBesokKg.toFixed(2) : '0'} <span style="font-size: 0.8rem;">Kg</span></div>
                             <div style="font-size: 0.8rem; font-weight: 600; color: #0369a1; margin-top: 2px;">${(h.prediksiBesokButir || 0).toLocaleString('id-ID')} Btr</div>
+                            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #bae6fd; display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                                <div>
+                                    <div style="font-size: 0.65rem; color: #0284c7; text-transform: uppercase; font-weight: 700;">Sisa Telur</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #f59e0b;">${(h.prediksiBesokButir || 0) % 30} Btr</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.65rem; color: #0284c7; text-transform: uppercase; font-weight: 700;">Reject/Cacat</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #ef4444;">${Math.round((h.prediksiBesokButir || 0) * 0.015)} Btr</div>
+                                </div>
+                            </div>
                         </div>
                         <!-- Kartu Laba -->
                         <div style="background: ${h.keuntungan < 0 ? '#fff5f5' : '#f0fdf4'}; border: 1.5px solid ${h.keuntungan < 0 ? '#fecdd3' : '#bcebcf'}; padding: 15px; border-radius: 14px; text-align: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">

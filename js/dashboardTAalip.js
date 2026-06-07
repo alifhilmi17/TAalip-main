@@ -1516,6 +1516,16 @@ window.openModalPrediksi = function() {
                     <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">🥚 Prediksi Telur</p>
                     <p style="margin: 5px 0 0 0; font-size: 1.8rem; font-weight: 700;">${(data.prediksiBesokButir || 0).toLocaleString('id-ID')}</p>
                     <p style="margin: 5px 0 0 0; font-size: 0.75rem; opacity: 0.8;">Jumlah telur yang diprediksi besok</p>
+                    <div style="display: flex; gap: 15px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <div>
+                            <p style="margin: 0; font-size: 0.7rem; opacity: 0.8;">Sisa Telur</p>
+                            <p style="margin: 2px 0 0 0; font-size: 0.9rem; font-weight: 700;">${(data.prediksiBesokButir || 0) % 30} Btr</p>
+                        </div>
+                        <div>
+                            <p style="margin: 0; font-size: 0.7rem; opacity: 0.8;">Reject/Cacat</p>
+                            <p style="margin: 2px 0 0 0; font-size: 0.9rem; font-weight: 700;">${Math.round((data.prediksiBesokButir || 0) * 0.015)} Btr</p>
+                        </div>
+                    </div>
                 </div>
                 <div style="padding: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 10px; color: white;">
                     <p style="margin: 0; font-size: 0.85rem; opacity: 0.9;">💰 Prediksi Pendapatan</p>
