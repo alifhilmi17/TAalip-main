@@ -1141,6 +1141,9 @@ function generateRekomendasi(data) {
     const perubahanProduksi = produksiHariIni - produksiKemarin;
     const persentasePerubahan = produksiKemarin > 0 ? ((perubahanProduksi / produksiKemarin) * 100) : 0;
 
+    // HDP Aktual Hari Ini
+const hdpHariIni = populasi > 0 ? ((produksiHariIni / populasi) * 100) : 0;
+
     // Hitung HDP (Hen Day Production) — indikator kinerja produksi
     const hdp = populasi > 0 ? ((prediksiBesokButir / populasi) * 100) : 0;
 
@@ -1192,42 +1195,48 @@ function generateRekomendasi(data) {
         });
     }
 
-    // ===== REKOMENDASI 2: KINERJA PRODUKSI (HDP) =====
+    // ===== REKOMENDASI 2: KINERJA PRODUKSI (HDP AKTUAL VS PREDIKSI) =====
+    const trenHdp = hdp - hdpHariIni;
+    let trenText = trenHdp > 0 ? `(Prediksi Naik +${trenHdp.toFixed(1)}%)` : trenHdp < 0 ? `(Prediksi Turun ${Math.abs(trenHdp).toFixed(1)}%)` : `(Prediksi Stabil)`;
+
+    // Kita menggunakan prediksi HDP besok (hdp) sebagai acuan kondisi utama untuk tindakan antisipatif
     if (hdp >= 80) {
         rekomendasi.push({
             level: 'success',
             icon: '🏆',
-            title: `Performa Produksi Sangat Baik (HDP: ${hdp.toFixed(1)}%)`,
-            description: `Tingkat HDP (Hen Day Production) mencapai <strong>${hdp.toFixed(1)}%</strong>. Ini menunjukkan performa produksi ayam Anda di atas rata-rata industri (standar optimal ≥80%).`,
+            title: `Proyeksi Performa Sangat Baik (HDP Besok: ${hdp.toFixed(1)}%)`,
+            description: `HDP aktual hari ini <strong>${hdpHariIni.toFixed(1)}%</strong> dan diprediksi menjadi <strong>${hdp.toFixed(1)}%</strong> besok <strong>${trenText}</strong>. Ini menunjukkan performa produksi di atas rata-rata industri (≥80%).`,
             actions: [
-                '🌟 Dokumentasikan kondisi pakan dan perawatan saat ini sebagai standar referensi',
-                '🧪 Pastikan jadwal vaksinasi tetap terjaga untuk mempertahankan stamina ayam'
+                '🥚 Perhatikan asupan kalsium ekstra (grit/tepung tulang) di sore hari untuk menjaga kualitas kerabang telur saat produksi tinggi.',
+                '💧 Jaga ketersediaan air minum bersih 24 jam; kebutuhan air meningkat tajam saat masa bertelur intensif.',
+                '⚖️ Lakukan penimbangan bobot badan (sampling) rutin agar energi ayam tidak drop / kurus saat puncak produksi.',
+                '🔍 Segera pisahkan (culling) ayam yang tampak lesu/sakit agar tidak mengganggu kawanan yang sedang produktif.'
             ]
         });
     } else if (hdp >= 60) {
         rekomendasi.push({
             level: 'info',
             icon: '📊',
-            title: `Produksi Cukup Baik — Masih Bisa Ditingkatkan (HDP: ${hdp.toFixed(1)}%)`,
-            description: `HDP saat ini <strong>${hdp.toFixed(1)}%</strong>, masih di bawah standar optimal. Ada ruang peningkatan yang signifikan.`,
+            title: `Proyeksi Produksi Cukup Baik (HDP Besok: ${hdp.toFixed(1)}%)`,
+            description: `HDP aktual hari ini <strong>${hdpHariIni.toFixed(1)}%</strong> dan diprediksi menjadi <strong>${hdp.toFixed(1)}%</strong> besok <strong>${trenText}</strong>. Masih di bawah standar optimal (80%), ada ruang peningkatan.`,
             actions: [
-                '💡 Periksa intensitas dan durasi pencahayaan kandang (idealnya 16 jam/hari)',
-                '🥬 Evaluasi kualitas dan komposisi pakan — pertimbangkan tambahan kalsium/mineral',
-                '🌡️ Pastikan suhu kandang optimal (20-25°C) dan ventilasi memadai',
-                '💧 Pastikan akses air minum bersih dan cukup sepanjang hari'
+                '💡 Cek kembali jam nyala lampu kandang (ideal 16 jam/hari) karena kurangnya cahaya akan menghambat hormon bertelur.',
+                '🌾 Periksa apakah ada perubahan tekstur, bau, atau formulasi ransum pakan yang menyebabkan ayam kurang nafsu makan.',
+                '🌬️ Atur bukaan tirai atau kipas untuk memastikan kadar amonia di kandang tidak tinggi yang memicu stres pernapasan.',
+                '💊 Berikan multivitamin anti-stres melalui air minum, terutama jika sedang terjadi perubahan cuaca atau suhu ekstrem.'
             ]
         });
     } else {
         rekomendasi.push({
             level: 'danger',
             icon: '📉',
-            title: `Produksi di Bawah Standar (HDP: ${hdp.toFixed(1)}%)`,
-            description: `HDP hanya <strong>${hdp.toFixed(1)}%</strong>, jauh di bawah standar industri. Perlu tindakan segera untuk meningkatkan produktivitas ternak.`,
+            title: `PERINGATAN: Proyeksi Produksi di Bawah Standar (HDP Besok: ${hdp.toFixed(1)}%)`,
+            description: `HDP aktual hari ini <strong>${hdpHariIni.toFixed(1)}%</strong> dan diprediksi menjadi <strong>${hdp.toFixed(1)}%</strong> besok <strong>${trenText}</strong>. Jauh di bawah standar industri, perlu tindakan segera.`,
             actions: [
-                '🩺 Lakukan pemeriksaan kesehatan menyeluruh — kemungkinan ada penyakit atau stres',
-                '🥚 Periksa umur ayam — jika sudah melebihi masa produktif, pertimbangkan replacement',
-                '🏠 Audit kondisi kandang (kebersihan, kepadatan, ventilasi, pencahayaan)',
-                '🧪 Konsultasikan ke dokter hewan atau tenaga penyuluhan ternak terdekat'
+                '✂️ Lakukan seleksi ketat dan afkir (culling) ayam yang jenggernya pucat/kering dan perutnya keras untuk menghentikan kerugian pakan.',
+                '🦠 Waspadai wabah: Jika produksi drop drastis (>10%) dalam 1-2 hari, segera hubungi dokter hewan (Technical Service).',
+                '🔬 Lakukan bedah bangkai (nekropsi) jika ada ayam yang mati mendadak untuk mendeteksi penyakit ND, AI, atau IB.',
+                '🕷️ Periksa indikasi serangan parasit luar (kutu/tungau) pada ayam atau cacingan yang sangat menguras nutrisi ayam.'
             ]
         });
     }
