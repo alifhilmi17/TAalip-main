@@ -829,7 +829,7 @@ window.calculatePrediction = function(event) {
         const prodVal = parseFloat(cleanProdStr);
         const profitVal = parseFloat(cleanProfStr);
         fullHistoryButir.push(isNaN(prodVal) ? 0 : prodVal);
-        fullHistoryProfit.push(isNaN(profitVal) ? 0 : profitVal);
+        fullHistoryProfit.push(isNaN(profitVal) ? NaN : profitVal);
     }
 
     // KONVERSI EMAS MA (Butir -> Kilogram)
@@ -845,19 +845,17 @@ window.calculatePrediction = function(event) {
     // Mencegah Kontaminasi Laba Lintas Kandang (Farm-Level vs Batch-Level)
     // Data Keuangan bersifat global, tidak bisa dipakai untuk menghitung selisih batch tunggal.
     const currentSelectedBatch = document.getElementById('populasiBatch').value;
-    if (currentSelectedBatch === 'ALL') {
-        for (let i = 0; i < fullHistoryProfit.length; i++) {
-            if (!isNaN(fullHistoryProfit[i])) {
-                let butirHist = fullHistoryButir[i];
-                let teoritisPendapatan = (butirHist / 30) * hargaTelur; // Harga per papan (30 butir)
-                let teoritisTotalPakanKg = (populasi * pakanPerEkor) / 1000;
-                let teoritisBiayaPakan = teoritisTotalPakanKg * hargaPakan;
-                let teoritisLaba = teoritisPendapatan - teoritisBiayaPakan;
-                
-                let selisih = fullHistoryProfit[i] - teoritisLaba;
-                totalOffset += selisih;
-                validOffsetDays++;
-            }
+    for (let i = 0; i < fullHistoryProfit.length; i++) {
+        if (!isNaN(fullHistoryProfit[i])) {
+            let butirHist = fullHistoryButir[i];
+            let teoritisPendapatan = (butirHist / 30) * hargaTelur; // Harga per papan (30 butir)
+            let teoritisTotalPakanKg = (populasi * pakanPerEkor) / 1000;
+            let teoritisBiayaPakan = teoritisTotalPakanKg * hargaPakan;
+            let teoritisLaba = teoritisPendapatan - teoritisBiayaPakan;
+            
+            let selisih = fullHistoryProfit[i] - teoritisLaba;
+            totalOffset += selisih;
+            validOffsetDays++;
         }
     }
     
@@ -899,7 +897,16 @@ window.calculatePrediction = function(event) {
     if (selectedBatchIdForEval) {
         let dbFiltered = [];
         if (selectedBatchIdForEval === 'ALL') {
-            dbFiltered = [...dataProduksi];
+            // BUG FIX: Aggregate eggs per date when ALL batches are selected
+            let aggregated = {};
+            dataProduksi.forEach(p => {
+                if (!aggregated[p.tanggal]) aggregated[p.tanggal] = 0;
+                aggregated[p.tanggal] += (p.totalTelur || 0);
+            });
+            dbFiltered = Object.keys(aggregated).map(tgl => ({
+                tanggal: tgl,
+                totalTelur: aggregated[tgl]
+            }));
         } else {
             dbFiltered = dataProduksi.filter(p => p.batchId === selectedBatchIdForEval);
         }
@@ -934,6 +941,16 @@ window.calculatePrediction = function(event) {
     animateValue(outPendEl, 0, estimasiPendapatan, 1200, 'Rp ', '', true);
     animateValue(outBiayaEl, 0, biayaPakan, 1200, 'Rp ', '', true);
     animateValue(outKeuntunganEl, 0, keuntungan, 1500, 'Rp ', '', true);
+
+    const outAkurasiEl = document.getElementById('outAkurasi');
+    if (outAkurasiEl) {
+        if (isAkurasiValid) {
+            outAkurasiEl.innerHTML = `✓ Tingkat Akurasi: ${akurasiModel.toFixed(1)}% (MAE ±${maeButir.toFixed(1)} Butir)`;
+            outAkurasiEl.style.display = 'block';
+        } else {
+            outAkurasiEl.style.display = 'none';
+        }
+    }
 
     // Fitur Tambahan Cerdas: Jika keuntungannya (Laba Besih) MINUS (Negatif/Rugi)
     // maka kita merubah tema warna kotak Margin nya dari Biru/Hijau, langsung menjadi MERAH SIAGA BENCANA!
