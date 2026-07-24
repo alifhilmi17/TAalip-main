@@ -357,9 +357,21 @@ function generateWeeklyRows() {
     container.innerHTML = "";
     const totalAyam = parseInt(document.getElementById('totalAyamInput').value) || 0;
 
+    // Ambil tanggal hari ini (tanpa jam) sebagai batas maksimum
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let rowCount = 0;
+
     for (let i = 0; i < 7; i++) {
         const dateObj = new Date(startDateStr);
         dateObj.setDate(dateObj.getDate() + i);
+        dateObj.setHours(0, 0, 0, 0);
+
+        // Skip tanggal yang belum terjadi (masa depan)
+        if (dateObj > today) break;
+
+        rowCount++;
 
         const yyyy = dateObj.getFullYear();
         const mm = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -374,31 +386,31 @@ function generateWeeklyRows() {
         });
 
         const rowHtml = `
-            <div class="weekly-row" data-day="${i + 1}">
+            <div class="weekly-row" data-day="${rowCount}">
                 <div class="weekly-row-date">
-                    <span class="day-name">🗓️ Hari ke-${i + 1}</span>
+                    <span class="day-name">🗓️ Hari ke-${rowCount}</span>
                     <span class="day-date">${formattedDate}</span>
                 </div>
                 <div class="weekly-row-inputs">
                     <div class="weekly-input-group">
                         <label>Papan</label>
-                        <input type="number" class="weekly-telur-papan" min="0" placeholder="0" oninput="window.onWeeklyPapanInput(${i + 1})" />
+                        <input type="number" class="weekly-telur-papan" min="0" placeholder="0" oninput="window.onWeeklyPapanInput(${rowCount})" />
                     </div>
                     <div class="weekly-input-group">
                         <label>Sisa (Btr)</label>
-                        <input type="number" class="weekly-telur-sisa" min="0" max="29" placeholder="0" oninput="window.onWeeklyPapanInput(${i + 1})" />
+                        <input type="number" class="weekly-telur-sisa" min="0" max="29" placeholder="0" oninput="window.onWeeklyPapanInput(${rowCount})" />
                     </div>
                     <div class="weekly-input-group">
                         <label>Cacat (Butir)</label>
-                        <input type="number" class="weekly-telur-cacat" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <input type="number" class="weekly-telur-cacat" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${rowCount})" />
                     </div>
                     <div class="weekly-input-group">
                         <label>Baik (Butir)</label>
-                        <input type="number" class="weekly-telur-baik" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <input type="number" class="weekly-telur-baik" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${rowCount})" />
                     </div>
                     <div class="weekly-input-group">
                         <label>Mati (Ekor)</label>
-                        <input type="number" class="weekly-ayam-mati" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${i + 1})" />
+                        <input type="number" class="weekly-ayam-mati" min="0" placeholder="0" oninput="window.calculateWeeklyRow(${rowCount})" />
                     </div>
                     <div class="weekly-input-group readonly-group">
                         <label>Total Telur</label>
@@ -413,6 +425,25 @@ function generateWeeklyRows() {
             </div>
         `;
         container.insertAdjacentHTML('beforeend', rowHtml);
+    }
+
+    // Tampilkan info jumlah hari yang tersedia
+    if (rowCount < 7 && rowCount > 0) {
+        const infoHtml = `
+            <div style="margin-top: 10px; padding: 10px 14px; background: #fef9ec; border: 1px solid #fde68a; border-radius: 8px; font-size: 0.85rem; color: #92400e; line-height: 1.5;">
+                ℹ️ Hanya menampilkan <b>${rowCount} dari 7 hari</b> karena ${7 - rowCount} hari sisanya belum terjadi (tanggal masa depan). 
+                Pilih tanggal mulai yang lebih lampau untuk mengisi 7 hari penuh.
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', infoHtml);
+    } else if (rowCount === 0) {
+        const warningHtml = `
+            <div style="margin-top: 10px; padding: 10px 14px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 8px; font-size: 0.85rem; color: #b91c1c; line-height: 1.5;">
+                ⚠️ Tanggal mulai yang dipilih adalah <b>masa depan</b>. Tidak ada hari yang bisa diinput. 
+                Silakan pilih tanggal mulai ≤ hari ini.
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', warningHtml);
     }
 }
 
