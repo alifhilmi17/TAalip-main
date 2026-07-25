@@ -318,13 +318,13 @@ Proyek ini menggunakan Firebase sebagai backend cloud. Konfigurasi koneksi Fireb
 
 ```javascript
 const firebaseConfig = {
-  apiKey: "AIzaSyD265EEi0UE9wYNvOWKQ46huxpPTfZOcOE",
-  authDomain: "libas-db.firebaseapp.com",
-  projectId: "libas-db",
-  storageBucket: "libas-db.firebasestorage.app",
-  messagingSenderId: "918841790171",
-  appId: "1:918841790171:web:04ce25a5727fddbd78c6fe",
-  measurementId: "G-5VPZQD4DKY"
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
+  measurementId: "YOUR_MEASUREMENT_ID"
 };
 ```
 

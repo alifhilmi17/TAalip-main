@@ -1,0 +1,10 @@
+# File sensitif variabel lingkungan
+.env
+.env.local
+*.env
+
+# System / IDE files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
