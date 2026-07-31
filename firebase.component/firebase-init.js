@@ -19,7 +19,7 @@ import { getFirestore, enableIndexedDbPersistence } from "https://www.gstatic.co
    Objek konfigurasi koneksi yang didapatkan dari platform Firebase Console.
    Berisi kumpulan "kunci rahasia" (API keys) dan alamat ID unik project Web.
 */
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyD265EEi0UE9wYNvOWKQ46huxpPTfZOcOE",
   authDomain: "libas-db.firebaseapp.com",
   projectId: "libas-db",
