@@ -2,6 +2,7 @@
 .env
 .env.local
 *.env
+firebase-env.js
 
 # System / IDE files
 .DS_Store
