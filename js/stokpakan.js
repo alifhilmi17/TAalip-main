@@ -665,7 +665,3 @@ window.downloadLaporanCSV = function(mode = 'masuk') {
     a.click();
     URL.revokeObjectURL(url);
 };
-
-// ==========================================
-// 14. SIDEBAR TOGGLE
-// ==========================================
