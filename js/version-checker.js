@@ -4,7 +4,7 @@
  * File: version-checker.js
  * Deskripsi: Modul kontrol versi terpusat berbasis Cloud Firestore.
  * Mendeteksi versi aplikasi saat ini dan memunculkan modal
- * "Force Update" (seperti game online) jika ada versi baru.
+ * "Force Update" jika ada versi baru.
  * =========================================================
  */
 
