@@ -17,7 +17,7 @@
     "desktop",
     "electron"
   ],
-  "author": "Alip",
+  "author": "Muhammad Alif Hilmi",
   "license": "ISC",
   "devDependencies": {
     "electron": "^44.8.0",
@@ -26,9 +26,9 @@
   "build": {
     "appId": "com.libas.peternakan",
     "productName": "LIBAS",
-    "copyright": "Copyright © 2026 Alip - Tugas Akhir",
+    "copyright": "Copyright © 2026 Muhammad Alif Hilmi - Final Project - Politeknik Negeri Batam",
     "directories": {
-      "output": "dist_installer"
+      "output": "LIBAS_installer"
     },
     "files": [
       "**/*",

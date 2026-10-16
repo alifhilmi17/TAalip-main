@@ -21,52 +21,69 @@ firebase-env.js
 secrets/
 
 # ==========================================
-# 2. Node.js & Electron Dependencies / Build
+# 2. Node.js, Electron & Build Artifacts
 # ==========================================
 node_modules/
 dist/
 dist*/
-build/
-out/
-
-# File auto-generated (dibuat otomatis oleh scripts/sync-version.js)
-js/app-version.js
+dist_installer/
+win-unpacked/
+win-unpacked*/
+*.tmp
+*.tmp/
 .cache/
 
-# Log Files
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-electron-debug.log*
+# Lindungi icon aplikasi agar TETAP masuk ke Git
+build/*
+!build/*.ico
+!build/*.png
 
-# Installer, Binari & Archive Outputs
+# File auto-generated versi
+js/app-version.js
+
+# Output installer, binari & arsip kompresi
 *.exe
 *.dmg
 *.AppImage
 *.rar
 *.zip
+*.7z
+*.tar.gz
 *.blockmap
 builder-debug.yml
 latest.yml
 builder-effective-config.yaml
 
-# Skrip Launcher Lokal (.bat, .cmd, .ps1, .sh)
-*.bat
-*.cmd
-*.ps1
-*.sh
+# ==========================================
+# 3. Log Files & Crash Dumps
+# ==========================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+electron-debug.log*
+firebase-debug.log*
+firestore-debug.log*
+*.dmp
+*.stackdump
 
 # ==========================================
-# 3. System & Editor Files
+# 4. System & Editor Files
 # ==========================================
 .DS_Store
+.DS_Store?
+._*
 Thumbs.db
+ehthumbs.db
+desktop.ini
 .vscode/
 .idea/
+.firebase/
 
 # ==========================================
-# 4. Installer
+# 5. Dokumen Internal (Opsional)
 # ==========================================
-dist_installer/
-installer/
+ROADMAP_ENTERPRISE_LIBAS.html
+ROADMAP_ENTERPRISE_LIBAS.pdf
+ROADMAP_ENTERPRISE_LIBAS.txt
