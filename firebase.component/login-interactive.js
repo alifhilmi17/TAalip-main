@@ -7,6 +7,7 @@
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { auth, db } from "./firebase-init.js";
+import { initVersionChecker } from "../js/version-checker.js";
 
 // Semua instruksi baru boleh dijalankan apabila struktur HTML layar selesai dimuat
 function initializeLogin() {
@@ -253,6 +254,14 @@ function initializeLogin() {
 
                 // 3. Deteksi Role untuk Pengalihan Pintar (Redirect)
                 const finalRedirectRole = isAdmin ? 'admin' : 'user';
+
+                // 4. Pengecekan versi HANYA untuk Petugas/User (Admin dilewati)
+                if (finalRedirectRole === 'user') {
+                    console.log("[VersionChecker] Role = petugas/user → Memulai pengecekan versi...");
+                    initVersionChecker();
+                } else {
+                    console.log("[VersionChecker] Role = admin → Pengecekan versi dilewati.");
+                }
 
                 // Setelah berhasil masuk, jalankan animasi sejenak lalu alihkan berdasarkan role
                 setTimeout(() => {

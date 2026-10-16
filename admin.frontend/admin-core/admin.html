@@ -47,6 +47,8 @@
           
           <a href="#section-audit-log" onclick="switchAdminPage('section-audit-log')">📋 Log Keamanan</a>
 
+          <a href="#section-update-manager" onclick="switchAdminPage('section-update-manager')">🚀 Manajemen Pembaruan</a>
+
           <!-- Switch Tampilan -->
           <a
             href="../../dashboardTAalip.html"
@@ -1384,6 +1386,156 @@
           </div>
         </div>
       </section>
+
+      <!-- M. Section 8: Manajemen Pembaruan Aplikasi (Version Update Publisher) -->
+      <section id="section-update-manager" class="update-manager-section admin-page-section animate__animated animate__fadeInUp" style="margin-top: 2.5rem;">
+        <div class="management-card">
+          <!-- Header -->
+          <div class="card-header-flex" style="border-bottom: 1px solid #f1f5f9; margin-bottom: 1.5rem; padding-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <h3 style="margin: 0;">🚀 Manajemen Pembaruan Aplikasi</h3>
+              <span class="badge" style="background: #ede9fe; color: #7c3aed; border: 1px solid #ddd6fe;">Version Control</span>
+            </div>
+            <button id="btnLoadCurrentVersion" class="um-btn-secondary" title="Muat data versi terkini dari Firestore">
+              🔄 Muat Data Terkini
+            </button>
+          </div>
+
+          <!-- Content: Form + Preview -->
+          <div class="um-grid">
+            <!-- LEFT: Form Input -->
+            <div class="um-form-panel">
+              <h4 class="um-panel-title">📝 Formulir Pemberitahuan Update</h4>
+
+              <!-- Versi Terbaru -->
+              <div class="um-form-group">
+                <label for="umLatestVersion">Versi Terbaru <span class="um-required">*</span></label>
+                <input type="text" id="umLatestVersion" placeholder="Contoh: 1.1.0" required />
+                <small class="um-hint">Format semver: major.minor.patch</small>
+              </div>
+
+              <!-- Versi Minimum -->
+              <div class="um-form-group">
+                <label for="umMinVersion">Versi Minimum Wajib</label>
+                <input type="text" id="umMinVersion" placeholder="Contoh: 1.0.0" />
+                <small class="um-hint">Pengguna di bawah versi ini akan dipaksa update</small>
+              </div>
+
+              <!-- Judul Pemberitahuan -->
+              <div class="um-form-group">
+                <label for="umTitle">Judul Pemberitahuan</label>
+                <input type="text" id="umTitle" placeholder="Contoh: Pembaruan Sistem LIBAS v1.1.0" />
+              </div>
+
+              <!-- Tanggal Rilis -->
+              <div class="um-form-group">
+                <label for="umReleaseDate">Tanggal Rilis</label>
+                <input type="date" id="umReleaseDate" />
+              </div>
+
+              <!-- Catatan Perubahan (What's New) -->
+              <div class="um-form-group">
+                <label for="umWhatsNew">Catatan Perubahan <span class="um-required">*</span></label>
+                <div class="um-changelog-container">
+                  <div id="umChangelogList" class="um-changelog-list">
+                    <!-- Item changelog akan ditambahkan secara dinamis -->
+                  </div>
+                  <div class="um-changelog-input-row">
+                    <input type="text" id="umNewChangelogItem" placeholder="Tulis perubahan baru..." />
+                    <button type="button" id="btnAddChangelog" class="um-btn-add" title="Tambah">+</button>
+                  </div>
+                </div>
+                <small class="um-hint">Tekan Enter atau tombol + untuk menambahkan item</small>
+              </div>
+
+              <!-- URL Download -->
+              <div class="um-form-group">
+                <label for="umDownloadUrl">URL Download Installer</label>
+                <input type="url" id="umDownloadUrl" placeholder="https://drive.google.com/file/d/.../view" />
+                <small class="um-hint">Link Google Drive atau hosting file lainnya</small>
+              </div>
+
+              <!-- Force Update Toggle -->
+              <div class="um-form-group">
+                <div class="um-toggle-row">
+                  <div>
+                    <label for="umForceUpdate" style="margin-bottom: 0;">Wajib Update (Force)</label>
+                    <small class="um-hint" style="margin-top: 2px;">Jika aktif, pengguna tidak bisa login tanpa update</small>
+                  </div>
+                  <label class="um-switch">
+                    <input type="checkbox" id="umForceUpdate" />
+                    <span class="um-slider"></span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="um-action-buttons">
+                <button type="button" id="btnPreviewUpdate" class="um-btn-preview">
+                  👁️ Preview Popup
+                </button>
+                <button type="button" id="btnPublishUpdate" class="um-btn-publish">
+                  📢 Publish Pembaruan
+                </button>
+              </div>
+            </div>
+
+            <!-- RIGHT: Live Preview -->
+            <div class="um-preview-panel">
+              <h4 class="um-panel-title">👁️ Pratinjau Tampilan</h4>
+              <div class="um-preview-card">
+                <div class="um-preview-icon">
+                  <div class="um-preview-icon-circle">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <h3 class="um-preview-title" id="umPreviewTitle">Pembaruan Sistem LIBAS</h3>
+
+                <div class="um-preview-version-box">
+                  <div class="um-pv-row">
+                    <span class="um-pv-label">Versi Terpasang:</span>
+                    <strong class="um-pv-current" id="umPreviewCurrentVer">v1.0.0</strong>
+                  </div>
+                  <div class="um-pv-row">
+                    <span class="um-pv-label" style="color: #fff;">Versi Terbaru:</span>
+                    <strong class="um-pv-latest" id="umPreviewLatestVer">v1.0.0</strong>
+                  </div>
+                  <div class="um-pv-date" id="umPreviewDate">-</div>
+                </div>
+
+                <div class="um-preview-changelog">
+                  <div class="um-pc-header">📋 Catatan Perubahan:</div>
+                  <ul id="umPreviewChangelog" class="um-pc-list">
+                    <li class="um-pc-empty">Belum ada catatan perubahan</li>
+                  </ul>
+                </div>
+
+                <div class="um-preview-force-badge" id="umPreviewForceBadge" style="display: none;">
+                  ⚠️ Anda wajib memperbarui aplikasi ke versi terbaru agar sinkronisasi data peternakan tetap akurat.
+                </div>
+
+                <div class="um-preview-buttons">
+                  <div class="um-pbtn-download">📥 Unduh Pembaruan Sekarang</div>
+                  <div class="um-pbtn-later" id="umPreviewBtnLater">Nanti Saja</div>
+                </div>
+              </div>
+
+              <!-- Status Publish Terakhir -->
+              <div class="um-status-card" id="umPublishStatus">
+                <div class="um-status-icon">📡</div>
+                <div class="um-status-text">
+                  <span class="um-status-label">Status:</span>
+                  <span class="um-status-value" id="umStatusValue">Belum ada data terpublish</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       </section>
     </main>
 
@@ -1488,5 +1640,10 @@
 
     <!-- Restock Reminder JS -->
     <script type="module" src="../../js/restockreminder.js"></script>
+
+    <!-- Simulasi Versi (hanya mendaftarkan helper simulateServerVersion ke window, TANPA auto-check) -->
+    <script type="module">
+      import "../../js/version-checker.js";
+    </script>
   </body>
 </html>
