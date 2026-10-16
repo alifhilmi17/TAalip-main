@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node scripts/sync-version.js && electron .",
     "version:sync": "node scripts/sync-version.js",
-    "clean": "powershell -NoProfile -Command \"if (Test-Path dist_installer) { Remove-Item -Path dist_installer -Recurse -Force; Write-Host 'Folder dist_installer berhasil dibersihkan!' } else { Write-Host 'Folder dist_installer sudah bersih.' }\"",
+    "clean": "powershell -NoProfile -Command \"if (Test-Path dist_installer) { Remove-Item -Path dist_installer -Recurse -Force; Write-Host 'Folder dist_installer berhasil dibersihkan!' }\"",
     "predist": "node scripts/sync-version.js",
     "dist": "electron-builder --win",
     "dist:portable": "electron-builder --win portable"
@@ -28,7 +28,7 @@
     "productName": "LIBAS",
     "copyright": "Copyright © 2026 Muhammad Alif Hilmi - Final Project - Politeknik Negeri Batam",
     "directories": {
-      "output": "LIBAS_installer"
+      "output": "dist_installer"
     },
     "files": [
       "**/*",
@@ -66,6 +66,9 @@
       "shortcutName": "LIBAS - Sistem Administrasi Peternakan",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico"
+    },
+    "portable": {
+      "artifactName": "${productName} Portable ${version}.${ext}"
     }
   }
 }

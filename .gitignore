@@ -27,6 +27,7 @@ node_modules/
 dist/
 dist*/
 dist_installer/
+installer/
 win-unpacked/
 win-unpacked*/
 *.tmp

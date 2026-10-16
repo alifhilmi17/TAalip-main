@@ -1,15 +1,22 @@
 {
     "workbench.preferredDarkColorTheme": "Kiro Dark",
+    "files.exclude": {
+        "**/dist_installer": true,
+        "**/win-unpacked*": true,
+        "**/*.tmp": true
+    },
     "files.watcherExclude": {
         "**/.git/objects/**": true,
         "**/.git/subtree-cache/**": true,
         "**/node_modules/**": true,
         "**/dist/**": true,
         "**/dist_*/**": true,
+        "**/dist_installer/**": true,
         "**/*.tmp/**": true
     },
     "search.exclude": {
         "**/dist/**": true,
+        "**/dist_installer/**": true,
         "**/node_modules/**": true
     }
 }
