@@ -1,3 +1,15 @@
 {
-    "workbench.preferredDarkColorTheme": "Kiro Dark"
+    "workbench.preferredDarkColorTheme": "Kiro Dark",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/node_modules/**": true,
+        "**/dist/**": true,
+        "**/dist_*/**": true,
+        "**/*.tmp/**": true
+    },
+    "search.exclude": {
+        "**/dist/**": true,
+        "**/node_modules/**": true
+    }
 }

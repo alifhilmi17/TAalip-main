@@ -154,6 +154,12 @@
   <!-- Memanggil Logic JS perihal Efek Spotlight Kaca, Animasi Hover Ayam, dan Toggle Mata Sandi -->
   <script type="module" src="firebase.component/login-interactive.js"></script>
 
+  <!-- Pengecekan Versi Aplikasi Otomatis (Force Update via Cloud Firestore) -->
+  <script type="module">
+    import { initVersionChecker } from "./js/version-checker.js";
+    initVersionChecker();
+  </script>
+
   <script src="js/ui-utils.js"></script>
 </body>
 

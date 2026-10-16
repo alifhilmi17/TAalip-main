@@ -25,6 +25,7 @@ secrets/
 # ==========================================
 node_modules/
 dist/
+dist*/
 build/
 out/
 .cache/

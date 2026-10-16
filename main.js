@@ -107,7 +107,7 @@ function startInternalServer() {
  */
 function createWindow() {
     console.log('[DEBUG 3] Membuat jendela BrowserWindow...');
-    const iconPath = path.join(__dirname, 'images', 'chicken_running-removebg-preview.png');
+    const iconPath = path.join(__dirname, 'build', 'icon.png');
 
     mainWindow = new BrowserWindow({
         width: 1280,

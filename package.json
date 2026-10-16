@@ -4,7 +4,9 @@
   "description": "Lintau Buo Administration System - Desktop Application",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
   },
   "keywords": [
     "libas",
@@ -15,6 +17,52 @@
   "author": "Alip",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^44.8.0"
+    "electron": "^44.8.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.libas.peternakan",
+    "productName": "LIBAS",
+    "copyright": "Copyright © 2026 Alip - Tugas Akhir",
+    "directories": {
+      "output": "dist_installer"
+    },
+    "files": [
+      "**/*",
+      "!dist*/*",
+      "!build/*",
+      "!.git/*",
+      "!.vscode/*",
+      "!*.rar",
+      "!*.log",
+      "!jalankan-libas.bat",
+      "!buat-installer.bat"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "LIBAS - Sistem Administrasi Peternakan",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    }
   }
 }

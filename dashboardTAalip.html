@@ -828,6 +828,13 @@
 
   <!-- Skrip Utama Sinkronasi Autentikasi -->
   <script type="module" src="firebase.component/auth-state.js"></script>
+
+  <!-- Pengecekan Versi Aplikasi Otomatis (Force Update via Cloud Firestore) -->
+  <script type="module">
+    import { initVersionChecker } from "./js/version-checker.js";
+    initVersionChecker();
+  </script>
+
   <!-- ========================= UTILITAS UI & SIDEBAR DINAMIS ========================== -->
   <!-- Memuat skrip helper antarmuka global dan injeksi komponen sidebar otomatis -->
   <script src="js/ui-utils.js"></script>
