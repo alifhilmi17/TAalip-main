@@ -1,0 +1,20 @@
+{
+  "name": "libas-desktop",
+  "version": "1.0.0",
+  "description": "Lintau Buo Administration System - Desktop Application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "libas",
+    "peternakan",
+    "desktop",
+    "electron"
+  ],
+  "author": "Alip",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^44.8.0"
+  }
+}
