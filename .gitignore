@@ -28,6 +28,9 @@ dist/
 dist*/
 build/
 out/
+
+# File auto-generated (dibuat otomatis oleh scripts/sync-version.js)
+js/app-version.js
 .cache/
 
 # Log Files
@@ -61,3 +64,9 @@ builder-effective-config.yaml
 Thumbs.db
 .vscode/
 .idea/
+
+# ==========================================
+# 4. Installer
+# ==========================================
+dist_installer/
+installer/

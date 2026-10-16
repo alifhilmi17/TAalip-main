@@ -1,10 +1,13 @@
 {
   "name": "libas-desktop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Lintau Buo Administration System - Desktop Application",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start": "node scripts/sync-version.js && electron .",
+    "version:sync": "node scripts/sync-version.js",
+    "clean": "powershell -NoProfile -Command \"if (Test-Path dist_installer) { Remove-Item -Path dist_installer -Recurse -Force; Write-Host 'Folder dist_installer berhasil dibersihkan!' } else { Write-Host 'Folder dist_installer sudah bersih.' }\"",
+    "predist": "node scripts/sync-version.js",
     "dist": "electron-builder --win",
     "dist:portable": "electron-builder --win portable"
   },
@@ -35,8 +38,8 @@
       "!.vscode/*",
       "!*.rar",
       "!*.log",
-      "!jalankan-libas.bat",
-      "!buat-installer.bat"
+      "!*.bat",
+      "!installer/*"
     ],
     "win": {
       "target": [

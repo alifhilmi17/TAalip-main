@@ -8,12 +8,13 @@
  */
 
 const { contextBridge, ipcRenderer } = require('electron');
+const pkg = require('./package.json');
 
 // Mengekspos API desktop yang aman ke objek `window.electronAPI`
 contextBridge.exposeInMainWorld('electronAPI', {
     isDesktop: true,
     platform: process.platform,
-    version: '1.0.0',
+    version: pkg.version || '1.0.0', // Otomatis membaca versi dari package.json
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize'),
     close: () => ipcRenderer.send('window-close')

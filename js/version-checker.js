@@ -11,8 +11,32 @@
 import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 import { db } from "../firebase.component/firebase-init.js";
 
-// Versi aplikasi yang sedang terpasang di komputer saat ini
-export const CURRENT_APP_VERSION = "1.0.0";
+/**
+ * SINGLE SOURCE OF TRUTH untuk versi aplikasi.
+ *
+ * ✅ Mode Desktop (Electron):
+ *    Versi dibaca OTOMATIS dari package.json via window.electronAPI.version
+ *    yang diinjeksikan oleh preload.js. Cukup ubah "version" di package.json,
+ *    semua akan ikut berubah tanpa edit file lain.
+ *
+ * ✅ Mode Web Konvensional (Browser/XAMPP):
+ *    Membaca meta tag <meta name="app-version"> di HTML,
+ *    atau menggunakan versi fallback jika tidak ditemukan.
+ */
+function resolveCurrentVersion() {
+    // 1. Prioritas utama: baca dari Electron preload (otomatis dari package.json)
+    if (typeof window !== 'undefined' && window.electronAPI && window.electronAPI.version) {
+        return window.electronAPI.version;
+    }
+    // 2. Fallback: baca dari app-version.js (otomatis dari package.json via sync-version.js)
+    if (typeof window !== 'undefined' && window.LIBAS_VERSION) {
+        return window.LIBAS_VERSION;
+    }
+    // 3. Fallback terakhir
+    return '1.0.0';
+}
+
+export const CURRENT_APP_VERSION = resolveCurrentVersion();
 
 /**
  * Membandingkan 2 nomor versi semver (misal "1.0.0" vs "1.1.0").
