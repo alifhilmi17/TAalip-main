@@ -37,12 +37,22 @@ yarn-debug.log*
 yarn-error.log*
 electron-debug.log*
 
-# Installer & Archive Outputs
+# Installer, Binari & Archive Outputs
 *.exe
 *.dmg
 *.AppImage
 *.rar
 *.zip
+*.blockmap
+builder-debug.yml
+latest.yml
+builder-effective-config.yaml
+
+# Skrip Launcher Lokal (.bat, .cmd, .ps1, .sh)
+*.bat
+*.cmd
+*.ps1
+*.sh
 
 # ==========================================
 # 3. System & Editor Files
